@@ -1,24 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
+import { Product } from "@/data-list/products";
+import Image from "next/image";
 
-interface MediaItem {
-  type: string;
-  src: string;
+interface Props {
+  product: Product;
 }
 
-interface MediaCarouselProps {
-  media: MediaItem[];
-  colors: {
-    primary: string;
-    primary2: string;
-    secondary: string;
-    tertiary: string;
-    text: string;
-  };
-}
-
-export default function MediaCarousel({ media, colors }: MediaCarouselProps) {
+export default function MediaCarousel({ product }: Props) {
   const [current, setCurrent] = useState(0);
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     initial: 0,
@@ -28,12 +18,25 @@ export default function MediaCarousel({ media, colors }: MediaCarouselProps) {
     loop: true,
   });
 
+  const { media } = product;
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const [videoPaused] = useState<{ [key: number]: boolean }>({});
+
+  useEffect(() => {
+    media.forEach((m, i) => {
+      if (m.type === "video" && videoRefs.current[i]) {
+        if (i === current && !videoPaused[i]) {
+          videoRefs.current[i]?.play();
+        } else {
+          videoRefs.current[i]?.pause();
+        }
+      }
+    });
+  }, [current, media, videoPaused]);
+
   return (
     <div className="flex flex-col items-center w-full">
-      <div
-        className="w-full max-w-2xl h-80 md:h-[34rem] flex items-center justify-center rounded-2xl overflow-hidden shadow-lg relative"
-        style={{ background: colors.tertiary }}
-      >
+      <div className="w-full max-w-2xl h-auto md:h-[40rem] flex items-center justify-center rounded-3xl overflow-hidden shadow-lg relative">
         <div ref={sliderRef} className="keen-slider w-full h-full">
           {media.map((m, i) => (
             <div
@@ -41,46 +44,57 @@ export default function MediaCarousel({ media, colors }: MediaCarouselProps) {
               key={i}
             >
               {m.type === "image" ? (
-                <img
+                <Image
                   src={m.src}
+                  width={1000}
+                  height={1000}
                   alt="Imagen del producto"
-                  className="w-full h-full object-cover rounded-2xl"
-                  style={{ background: colors.tertiary }}
+                  className="w-full h-full object-cover relative z-10"
                 />
               ) : (
-                <video
-                  src={m.src}
-                  controls
-                  className="w-full h-full object-cover rounded-2xl"
-                  style={{ background: colors.tertiary }}
-                />
+                <div className="relative w-full h-full flex items-center justify-center relative">
+                  <div
+                    style={{
+                      background: "url(./images/education-projectors.jpg)",
+                      backgroundSize: "cover",
+                      filter: "blur(8px)",
+                    }}
+                    className="absolute inset-0"
+                  ></div>
+                  <video
+                    ref={(el) => {
+                      videoRefs.current[i] = el;
+                    }}
+                    src={m.src}
+                    width={1000}
+                    height={1000}
+                    controls
+                    className="w-full h-full object-contain relative z-10"
+                  />
+                </div>
               )}
             </div>
           ))}
         </div>
-        {/* Navigation arrows */}
         {media.length > 1 && (
           <>
             <button
               onClick={() => slider.current?.prev()}
-              className="absolute w-[3em] h-[3em] left-4 top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer"
+              className="absolute w-[3em] h-[3em] left-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
               aria-label="Anterior"
-              style={{ border: `2px solid ${colors.primary}` }}
             >
               ◀
             </button>
             <button
               onClick={() => slider.current?.next()}
-              className="absolute w-[3em] h-[3em] right-4 top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer"
+              className="absolute w-[3em] h-[3em] right-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
               aria-label="Siguiente"
-              style={{ border: `2px solid ${colors.primary}` }}
             >
               ▶
             </button>
           </>
         )}
       </div>
-      {/* Dots navigation */}
       {media.length > 1 && (
         <div className="mt-4 flex gap-2 justify-center">
           {media.map((_, idx) => (
@@ -89,8 +103,8 @@ export default function MediaCarousel({ media, colors }: MediaCarouselProps) {
               onClick={() => slider.current?.moveToIdx(idx)}
               className={`w-3 h-3 rounded-full border-2 cursor-pointer ${
                 current === idx
-                  ? "border-[#f25c05] bg-[#f25c05]"
-                  : "border-gray-800 bg-white"
+                  ? "border-primary/100 bg-primary/80"
+                  : "border-secondary bg-white"
               } transition`}
               aria-label={`Ver media ${idx + 1}`}
             />

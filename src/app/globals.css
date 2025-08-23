@@ -5,6 +5,12 @@
   --foreground: #171717;
 }
 
+@theme {
+    --color-primary: #f25c05;
+    --color-secondary: #112237;
+    --color-font: #67798C;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
