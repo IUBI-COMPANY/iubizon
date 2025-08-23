@@ -69,6 +69,8 @@ export const products: Product[] = [
     note: `Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam?
   Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam.
   
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam.
+  
   Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam,
   lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam
   `,
