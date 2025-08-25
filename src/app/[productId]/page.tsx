@@ -7,12 +7,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { products } from "@/data-list/products";
 import { Info, XCircle } from "lucide-react";
-
-const product = products[0];
-const options = [product.model, product.badge].filter(Boolean);
+import { useParams } from "next/navigation";
 
 export default function ProductDetailPage() {
+  const { productId } = useParams();
   const [showModal, setShowModal] = useState(false);
+
+  const product = products.find((product) => product.id === productId);
 
   useEffect(() => {
     document.body.style.overflow = showModal ? "hidden" : "auto";
@@ -20,6 +21,15 @@ export default function ProductDetailPage() {
       document.body.style.overflow = "auto";
     };
   }, [showModal]);
+
+  if (!product)
+    return (
+      <div className="min-h-screen flex flex-col w-full bg-white">
+        <h2>404</h2>
+      </div>
+    );
+
+  const options = [product.model, product.badge].filter(Boolean);
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-white">

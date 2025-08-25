@@ -43,11 +43,11 @@ export const products: Product[] = [
     badge: "Oferta",
     mainImage: "/images/98H/98h.jpg",
     media: [
-      { type: "image", src: "/images/980W/2.png" },
-      { type: "image", src: "/images/980W/3.png" },
-      { type: "image", src: "/images/980W/4.png" },
-      { type: "image", src: "/images/980W/5.png" },
+      { type: "image", src: "/images/98H/2.jpg" },
       { type: "video", src: "/videos/bg-video-epson.mp4" },
+      { type: "image", src: "/images/98H/3.jpg" },
+      { type: "image", src: "/images/98H/4.jpg" },
+      { type: "image", src: "/images/98H/5.jpg" },
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta la descripción del vendedor para más detalles y descripción de cualquier imperfección.",
@@ -153,17 +153,45 @@ export const products: Product[] = [
   },
   {
     id: "108",
-    model: "108",
-    name: "Proyector Epson 98H",
+    model: "V11H860020",
+    name: "Proyector Epson 108",
+    oldStock: 12,
     units: 4,
-    description: "Buena proyección, detalles estéticos",
-    price: "S/ 1,100 c/u",
-    mainImage: "/images/98h.jpg",
+    price: "800",
+    sub: "Desde S/ 700 por volumen",
+    badge: "Oferta",
+    mainImage: "/images/108/108.jpg",
     media: [
-      { type: "image", src: "/images/98h.png" },
-      { type: "video", src: "/bg-video-epson.mp4" },
-      { type: "image", src: "/images/98h.png" },
-      { type: "image", src: "/images/98h.png" },
+      { type: "image", src: "/images/108/2.jpg" },
+      { type: "video", src: "/videos/bg-video-epson.mp4" },
+      { type: "image", src: "/images/108/3.jpg" },
+      { type: "image", src: "/images/108/4.jpg" },
+      { type: "image", src: "/images/108/5.jpg" },
     ],
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta la descripción del vendedor para más detalles y descripción de cualquier imperfección.",
+    imageBrightness: "2700 lúmenes ANSI",
+    brand: "Epson",
+    type: "Proyector",
+    contrastRatio: "10,000:1",
+    connectivity: "HDMI estándar, VGA/SVGA D-Sub",
+    features: "Altavoces integrados",
+    nativeResolution: "1024 x 768",
+    aspectRatio: "4:3",
+    throwRatio: "Proyección media/estándar",
+    category: [
+      "Electrónica",
+      "TV, Video y Audio para el Hogar",
+      "TV y Video",
+      "Proyectores para Home Theater",
+    ],
+    note: `Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam?
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam.
+  
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam.
+  
+  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam,
+  lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis deleniti nisi totam! A, accusamus assumenda, at blanditiis enim, error et ipsa ipsum itaque minima nam neque numquam quod reprehenderit veniam
+  `,
   },
 ];

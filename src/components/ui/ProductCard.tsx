@@ -14,7 +14,7 @@ export const ProductCard = ({ product }: Props) => {
       className="keen-slider__slide flex flex-col h-full group rounded-2xl p-5 shadow-sm hover:shadow-md border-solid border-1 border-gray-400/40 bg-white"
     >
       <div className="mb-3">
-        <div className="relative w-full h-48 rounded-xl overflow-hidden bg-gray-300">
+        <div className="relative w-full h-48 rounded-xl overflow-hidden bg-white">
           {product.badge && (
             <span className="rounded-full px-2.5 py-1 text-xs font-semibold bg-primary text-white absolute top-1 left-1">
               {product.badge}
@@ -94,7 +94,7 @@ export const ProductCard = ({ product }: Props) => {
           Pedir cotización
         </a>
         <Link
-          href={`/${product.model}`}
+          href={`/${product.id}`}
           className="rounded-xl px-4 py-2 text-sm font-semibold text-secondary border-solid border-1 border-tertiary"
         >
           Ver más
