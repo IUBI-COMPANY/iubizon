@@ -237,7 +237,7 @@ export default function ProductDetailPage() {
                 </div>
               </section>
               {/*Product information and price*/}
-              <section className="col-span-12 lg:col-span-4 w-full mx-auto mt-15 px-0 lg:px-10 md:sticky top-4 self-start">
+              <section className="col-span-12 lg:col-span-4 w-full mx-auto mt-15 lg:mt-0 px-0 lg:px-10 md:sticky top-4 self-start">
                 <div className="product-price-card bg-white/40 rounded-3xl p-5 border-1 border-secondary shadow-md">
                   <h1 className="text-4xl font-bold text-left mb-8 text-secondary">
                     {product.name || product.model}
@@ -353,7 +353,6 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
-      );
     </>
   );
 }
