@@ -67,13 +67,13 @@ export default function ProductDetailPage() {
           <NoFoundComponent />
         ) : (
           <div className="content-wrapper px-7 max-w-[1470px] m-auto w-full">
-            <main className="grid grid-cols-12 py-15 w-full relative">
+            <main className="grid grid-cols-12 py-7 md:py-15 w-full relative">
               <section className="col-span-12 lg:col-span-8 w-full flex justify-center items-center">
                 <div className="w-full">
                   {/*Product media*/}
                   <MediaCarousel product={product} />
                   {/*Product specifications*/}
-                  <div className="w-full h-auto m-auto py-10">
+                  <div className="w-full h-auto m-auto my-10 md:my-0 md:pt-20">
                     <div className="text-2xl mb-5 text-secondary font-bold">
                       Especificaciones del producto:
                     </div>
@@ -237,7 +237,7 @@ export default function ProductDetailPage() {
                 </div>
               </section>
               {/*Product information and price*/}
-              <section className="col-span-12 lg:col-span-4 w-full mx-auto px-0 lg:px-10 py-13 md:py-2 md:sticky top-0 self-start">
+              <section className="col-span-12 lg:col-span-4 w-full mx-auto px-0 lg:px-10 py-7 md:py-2 md:sticky top-0 self-start">
                 <h1 className="text-4xl font-bold text-left mb-8 text-secondary">
                   {product.name || product.model}
                 </h1>
@@ -338,7 +338,7 @@ export default function ProductDetailPage() {
               </section>
             </main>
             {product?.note && (
-              <div className="w-full h-auto m-auto py-10">
+              <div className="w-full h-auto m-auto py-10 md:py-5 mb-0 md:mb-10">
                 <div className="text-2xl mb-3 text-secondary font-bold">
                   Nota:
                 </div>
