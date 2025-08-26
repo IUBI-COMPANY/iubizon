@@ -50,7 +50,7 @@ export const products: Product[] = [
       { type: "image", src: "/images/98H/5.jpg" },
     ],
     condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta la descripción del vendedor para más detalles y descripción de cualquier imperfección.",
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "2700 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -89,7 +89,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/980W/4.png" },
       { type: "image", src: "/images/980W/5.png" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "3800 lúmenes",
     brand: "Epson",
     type: "Proyector",
@@ -123,7 +124,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/975W/4.jpg" },
       { type: "image", src: "/images/975W/5.jpg" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "3600 lúmenes",
     brand: "Epson",
     type: "Proyector",
@@ -156,7 +158,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/1925W/4.jpg" },
       { type: "image", src: "/images/1925W/5.jpg" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "4,000 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -188,7 +191,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/970/4.jpg" },
       { type: "image", src: "/images/970/5.jpg" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "4000 lúmenes",
     brand: "Epson",
     type: "Proyector",
@@ -221,7 +225,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/119W/4.jpg" },
       { type: "image", src: "/images/119W/5.jpg" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "4000 lúmenes",
     brand: "Epson",
     type: "Proyector",
@@ -257,7 +262,8 @@ export const products: Product[] = [
       { type: "image", src: "/images/108/4.jpg" },
       { type: "image", src: "/images/108/5.jpg" },
     ],
-    condition: "Exhibición",
+    condition:
+      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
     imageBrightness: "3700 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
