@@ -13,6 +13,7 @@ export interface Product {
   mainImage?: string;
   media: MediaItem[];
   condition?: string;
+  displayTechnology?: string;
   imageBrightness?: string;
   brand?: string;
   type?: string;
@@ -50,6 +51,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "2700 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -91,6 +93,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "3800 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -128,6 +131,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "3600 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -163,6 +167,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "4,000 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -197,6 +202,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "4000 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -232,6 +238,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "4000 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",
@@ -269,6 +276,7 @@ export const products: Product[] = [
     ],
     condition:
       "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    displayTechnology: "3LCD",
     imageBrightness: "3700 lúmenes ANSI",
     brand: "Epson",
     type: "Proyector",

@@ -6,7 +6,7 @@ import OtherProductsCarousel from "../../components/ui/OtherProductsCarousel";
 import Link from "next/link";
 import Image from "next/image";
 import { products } from "@/data-list/products";
-import { Info, XCircle } from "lucide-react";
+import { ChevronRight, Info, XCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { NoFoundComponent } from "@/components/ui/NoFoundComponent";
 
@@ -110,20 +110,21 @@ export default function ProductDetailPage() {
                             animation: "scalePulse 1.5s ease-in-out infinite",
                           }}
                         >
-                          <span>Precio de {product.badge}</span>
+                          <span>{product.badge}</span>
                         </div>
                       )}
                     </div>
-
-                    <div className="mb-7">
-                      <span className="text-sm font-semibold text-secondary">
-                        {product.sub}
-                      </span>
-                    </div>
+                    {product?.sub && (
+                      <div className="mb-7">
+                        <span className="text-sm font-semibold text-secondary">
+                          {product.sub}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
                 <ul className="mb-7 space-y-4 list-style-none">
-                  {product.description && (
+                  {product?.condition && (
                     <li className="flex items-start">
                       <span className="mt-1 text-xl text-primary"></span>
                       <span className="text-sm inline-flex items-center gap-4 text-font">
@@ -171,31 +172,150 @@ export default function ProductDetailPage() {
               </section>
             </main>
             <div className="w-full h-auto m-auto py-10">
-              <li className="flex gap-2 items-start">
-                <span className="text-base md:text-lg">
-                  <div className="text-2xl mb-3 text-secondary font-bold">
-                    Especificaciones del artículo:
-                  </div>
-                  <p className="pre-line text-base text-black/90">
-                    {product.note}
-                  </p>
-                </span>
-              </li>
-            </div>
-            <div className="w-full h-auto m-auto py-10">
-              {product?.note && (
-                <li className="flex gap-2 items-start">
-                  <span className="text-base md:text-lg">
-                    <div className="text-2xl mb-3 text-secondary font-bold">
-                      Nota:
+              <div className="text-2xl mb-5 text-secondary font-bold">
+                Especificaciones del producto:
+              </div>
+              <div className="product-characteristics w-full grid grid-cols-1 md:grid-cols-[1fr_40%] gap-x-15 gap-y-4">
+                <div className="w-full flex flex-col gap-2 text-font font-mediun text-[.9em] ">
+                  {product?.condition && (
+                    <div className=" grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div>Condición:</div>{" "}
+                      <div className="text-secondary">
+                        <strong
+                          className="inline-flex items-center gap-1 cursor-pointer"
+                          onClick={() => setShowModal(true)}
+                        >
+                          De exhibición <Info className="w-4" />
+                        </strong>
+                      </div>
                     </div>
-                    <p className="pre-line text-base text-black/90">
-                      {product.note}
-                    </p>
-                  </span>
-                </li>
-              )}
+                  )}
+                  {product?.displayTechnology && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Tecnología de visualización:</div>{" "}
+                      <div className="text-secondary">
+                        {product.displayTechnology}
+                      </div>
+                    </div>
+                  )}
+                  {product?.aspectRatio && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Relación de aspecto:</div>{" "}
+                      <div className="text-secondary">
+                        {product.aspectRatio}
+                      </div>
+                    </div>
+                  )}
+                  {product?.brand && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Marca:</div>{" "}
+                      <div className="text-secondary">{product.brand}</div>
+                    </div>
+                  )}
+                  {product?.type && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Tipo:</div>{" "}
+                      <div className="text-secondary">{product.type}</div>
+                    </div>
+                  )}
+                  {product?.contrastRatio && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Relación de contraste:</div>{" "}
+                      <div className="text-secondary">
+                        {product.contrastRatio}
+                      </div>
+                    </div>
+                  )}
+                  {product?.connectivity && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Conectividad:</div>{" "}
+                      <div className="text-secondary">
+                        {product.connectivity}
+                      </div>
+                    </div>
+                  )}
+                  {product?.features && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Características:</div>{" "}
+                      <div className="text-secondary">{product.features}</div>
+                    </div>
+                  )}
+                  {product?.throwRatio && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Relación de proyección:</div>{" "}
+                      <div className="text-secondary">{product.throwRatio}</div>
+                    </div>
+                  )}
+                  {product?.category && (
+                    <div className="grid grid-cols-1 md:grid-cols-[14em_1fr]">
+                      <div className="pr-4">Categoría:</div>{" "}
+                      <div className="text-secondary flex flex-wrap">
+                        {(product?.category || []).map((category, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-1 m-0"
+                          >
+                            {index !== 0 && (
+                              <ChevronRight className="h-[1em]" />
+                            )}
+                            <span>{category}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="w-full flex flex-col gap-2 text-font font-mediun text-[.9em]">
+                  <div className="grid grid-cols-1 md:grid-cols-[11em_1fr]">
+                    <div className="pr-4">Advertencia:</div>{" "}
+                    <div className="text-secondary">
+                      Las lámparas del proyector contienen mercurio.
+                    </div>
+                  </div>
+                  {product?.imageBrightness && (
+                    <div className="grid grid-cols-1 md:grid-cols-[11em_1fr]">
+                      <div className="pr-4">Brillo de la imagen :</div>{" "}
+                      <div className="text-secondary">
+                        {product.imageBrightness}
+                      </div>
+                    </div>
+                  )}
+                  {product?.aspectRatio && (
+                    <div className="grid grid-cols-1 md:grid-cols-[11em_1fr]">
+                      <div className="pr-4">Relación de aspecto:</div>{" "}
+                      <div className="text-secondary">
+                        {product.aspectRatio}
+                      </div>
+                    </div>
+                  )}
+
+                  {product?.model && (
+                    <div className="grid grid-cols-1 md:grid-cols-[11em_1fr]">
+                      <div className="pr-4">Modelo:</div>{" "}
+                      <div className="text-secondary">{product.model}</div>
+                    </div>
+                  )}
+                  {product?.nativeResolution && (
+                    <div className="grid grid-cols-1 md:grid-cols-[11em_1fr]">
+                      <div className="pr-4">Resolución nativa:</div>{" "}
+                      <div className="text-secondary">
+                        {product.nativeResolution}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+            {product?.note && (
+              <div className="w-full h-auto m-auto py-10">
+                <div className="text-2xl mb-3 text-secondary font-bold">
+                  Nota:
+                </div>
+                <p className="pre-line text-base text-black/90">
+                  {product.note}
+                </p>
+              </div>
+            )}
             <OtherProductsCarousel currentProduct={product} />
           </div>
         )}
