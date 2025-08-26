@@ -48,12 +48,12 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </header>
-      <div className="content-wrapper px-7">
-        <main className="grid grid-cols-12 md:grid-cols-7 md:px-12 py-15 w-full">
+      <div className="content-wrapper px-7 max-w-6xl m-auto w-full">
+        <main className="grid grid-cols-12 md:px-12 py-15 w-full">
           <section className="col-span-12 md:col-span-7 w-full flex justify-center items-center">
             <MediaCarousel product={product} />
           </section>
-          <section className="col-span-12 md:col-span-5 flex flex-col justify-start w-full mx-auto py-13">
+          <section className="col-span-12 md:col-span-5 w-full mx-auto px-0 md:px-10 py-13 md:py-2">
             <h1 className="text-4xl font-bold text-left mb-5 text-secondary">
               {product.name || product.model}
             </h1>

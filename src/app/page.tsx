@@ -2,6 +2,7 @@ import React from "react";
 import { BadgePercent, MapPin } from "lucide-react";
 import { products } from "@/data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -24,8 +25,10 @@ export default function Home() {
         </video>
         <div className="top-header absolute top-2 left-0 w-full p-4">
           <div className="item-logo">
-            <img
-              src="./images/logo.png"
+            <Image
+              width={300}
+              height={100}
+              src="/images/logo.png"
               alt="iubizon logo"
               className="w-[9em] h-auto object-contain m-auto"
             />
