@@ -55,7 +55,7 @@ export default function MediaCarousel({ product }: Props) {
                 <div className="relative w-full h-full flex items-center justify-center">
                   <div
                     style={{
-                      background: "url(./images/education-projectors.jpg)",
+                      background: `url(.${media[0].src})`,
                       backgroundSize: "cover",
                       filter: "blur(8px)",
                     }}

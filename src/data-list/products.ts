@@ -38,13 +38,12 @@ export const products: Product[] = [
     name: "Proyector Epson 98H",
     oldStock: 12,
     units: 4,
-    price: 800,
-    sub: "Desde S/ 700 por volumen",
+    price: 700,
     badge: "Oferta",
     mainImage: "/images/98H/98h.jpg",
     media: [
       { type: "image", src: "/images/98H/2.jpg" },
-      { type: "video", src: "/videos/bg-video-epson.mp4" },
+      { type: "video", src: "/videos/98H.mp4" },
       { type: "image", src: "/images/98H/3.jpg" },
       { type: "image", src: "/images/98H/4.jpg" },
       { type: "image", src: "/images/98H/5.jpg" },
@@ -85,6 +84,7 @@ export const products: Product[] = [
     mainImage: "/images/980W/980w.jpg",
     media: [
       { type: "image", src: "/images/980W/2.png" },
+      { type: "video", src: "/videos/980W.mp4" },
       { type: "image", src: "/images/980W/3.png" },
       { type: "image", src: "/images/980W/4.png" },
       { type: "image", src: "/images/980W/5.png" },
@@ -119,6 +119,7 @@ export const products: Product[] = [
     mainImage: "/images/975W/975w.jpg",
     media: [
       { type: "image", src: "/images/975W/2.jpg" },
+      { type: "video", src: "/videos/975W.mp4" },
       { type: "image", src: "/images/975W/3.jpg" },
       { type: "image", src: "/images/975W/4.jpg" },
       { type: "image", src: "/images/975W/5.jpg" },
@@ -152,6 +153,7 @@ export const products: Product[] = [
     mainImage: "/images/1925W/1925w.jpg",
     media: [
       { type: "image", src: "/images/1925W/2.jpg" },
+      { type: "video", src: "/videos/1925W.mp4" },
       { type: "image", src: "/images/1925W/3.jpg" },
       { type: "image", src: "/images/1925W/4.jpg" },
       { type: "image", src: "/images/1925W/5.jpg" },
@@ -184,6 +186,7 @@ export const products: Product[] = [
     mainImage: "/images/970/970.jpg",
     media: [
       { type: "image", src: "/images/970/2.jpg" },
+      { type: "video", src: "/videos/970.mp4" },
       { type: "image", src: "/images/970/3.jpg" },
       { type: "image", src: "/images/970/4.jpg" },
       { type: "image", src: "/images/970/5.jpg" },
@@ -217,6 +220,7 @@ export const products: Product[] = [
     mainImage: "/images/119W/119w.jpg",
     media: [
       { type: "image", src: "/images/119W/2.jpg" },
+      { type: "video", src: "/videos/119W.mp4" },
       { type: "image", src: "/images/119W/3.jpg" },
       { type: "image", src: "/images/119W/4.jpg" },
       { type: "image", src: "/images/119W/5.jpg" },
@@ -252,7 +256,7 @@ export const products: Product[] = [
     mainImage: "/images/108/108.jpg",
     media: [
       { type: "image", src: "/images/108/2.jpg" },
-      { type: "video", src: "/videos/bg-video-epson.mp4" },
+      { type: "video", src: "/videos/108.mp4" },
       { type: "image", src: "/images/108/3.jpg" },
       { type: "image", src: "/images/108/4.jpg" },
       { type: "image", src: "/images/108/5.jpg" },
