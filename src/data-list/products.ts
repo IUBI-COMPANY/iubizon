@@ -7,7 +7,7 @@ export interface Product {
   oldStock?: number;
   units: number;
   description?: string;
-  price: string;
+  price: number;
   sub?: string;
   badge?: string;
   mainImage?: string;
@@ -38,7 +38,7 @@ export const products: Product[] = [
     name: "Proyector Epson 98H",
     oldStock: 12,
     units: 4,
-    price: "800",
+    price: 800,
     sub: "Desde S/ 700 por volumen",
     badge: "Oferta",
     mainImage: "/images/98H/98h.jpg",
@@ -80,7 +80,7 @@ export const products: Product[] = [
     name: "Proyector Epson 980W",
     units: 5,
     description: "Buena proyección, detalles estéticos",
-    price: "S/ 1,100 c/u",
+    price: 1100,
     badge: "Top venta",
     mainImage: "/images/980W/980w.jpg",
     media: [
@@ -115,7 +115,7 @@ export const products: Product[] = [
     name: "Proyector Epson 975W",
     units: 3,
     description: "Buena proyección, detalles estéticos",
-    price: "S/ 1,100 c/u",
+    price: 1100,
     mainImage: "/images/975W/975w.jpg",
     media: [
       { type: "image", src: "/images/975W/2.jpg" },
@@ -148,7 +148,7 @@ export const products: Product[] = [
     name: "Proyector Epson 1925W",
     units: 1,
     description: "Buena proyección, detalles estéticos",
-    price: "S/ 1,200",
+    price: 1200,
     mainImage: "/images/1925W/1925w.jpg",
     media: [
       { type: "image", src: "/images/1925W/2.jpg" },
@@ -180,7 +180,7 @@ export const products: Product[] = [
     name: "Proyector Epson 970",
     units: 1,
     description: "Bajo brillo, detalles estéticos",
-    price: "S/ 850",
+    price: 850,
     mainImage: "/images/970/970.jpg",
     media: [
       { type: "image", src: "/images/970/2.jpg" },
@@ -213,7 +213,7 @@ export const products: Product[] = [
     name: "Proyector Epson 119W",
     units: 1,
     description: "Buena proyección, detalles estéticos",
-    price: "S/ 1,100",
+    price: 1100,
     mainImage: "/images/119W/119w.jpg",
     media: [
       { type: "image", src: "/images/119W/2.jpg" },
@@ -246,7 +246,7 @@ export const products: Product[] = [
     model: "H860A",
     name: "Proyector Epson 108",
     units: 4,
-    price: "800",
+    price: 800,
     sub: "Desde S/ 700 por volumen",
     badge: "Oferta",
     mainImage: "/images/108/108.jpg",

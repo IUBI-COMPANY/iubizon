@@ -74,9 +74,13 @@ export default function ProductDetailPage() {
               </div>
             )}
             {product.price && (
-              <div className="text-left">
-                <span className="text-2xl font-semibold text-primary">
-                  S/ {product.price} c/u
+              <div className="flex items-center justify-start gap-1">
+                <p className="text-base font-bold text-primary flex justify-center items-start gap-1">
+                  <span className="text-[1em]">S/</span>
+                  <span className="text-3xl">{product.price}</span>
+                </p>
+                <span className="text-secondary text-lg font-light ml-1">
+                  c/u
                 </span>
               </div>
             )}
