@@ -27,7 +27,7 @@ export default function OtherProductsCarousel({
 
   return (
     <div className="my-6 rounded-xl w-full max-w-[1370px] mx-auto">
-      <h2 className="ml-4 text-[2em] font-semibold mb-2 text-primary">
+      <h2 className="text-[2em] font-semibold mb-2 text-primary">
         Otros productos
       </h2>
       <div className="w-full relative">

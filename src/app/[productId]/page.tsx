@@ -137,10 +137,9 @@ export default function ProductDetailPage() {
         <div className="w-full h-auto m-auto py-10">
           <li className="flex gap-2 items-start">
             <span className="text-base md:text-lg">
-              <strong className="text-secondary">
+              <div className="text-2xl mb-3 text-secondary font-bold">
                 Especificaciones del artículo:
-              </strong>{" "}
-              <br />
+              </div>
               <p className="pre-line text-base text-black/90">{product.note}</p>
             </span>
           </li>
@@ -149,7 +148,9 @@ export default function ProductDetailPage() {
           {product?.note && (
             <li className="flex gap-2 items-start">
               <span className="text-base md:text-lg">
-                <strong className="text-secondary">Nota:</strong> <br />
+                <div className="text-2xl mb-3 text-secondary font-bold">
+                  Nota:
+                </div>
                 <p className="pre-line text-base text-black/90">
                   {product.note}
                 </p>
