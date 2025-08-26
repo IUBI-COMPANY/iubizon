@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
               {product.description && (
                 <li className="flex items-start">
                   <span className="mt-1 text-xl text-primary"></span>
-                  <span className="text-sm inline-flex items-center gap-4 text-gray">
+                  <span className="text-sm inline-flex items-center gap-4 text-font">
                     Condición:
                     <strong
                       className="inline-flex items-center gap-1 cursor-pointer"
@@ -114,10 +114,10 @@ export default function ProductDetailPage() {
                         className="absolute bg-gray right-3 top-3 cursor-pointer text-gray-500 hover:text-gray-700"
                         onClick={() => setShowModal(false)}
                       />
-                      <h2 className="text-xl font-bold mb-4">
+                      <h2 className="text-xl font-bold mb-4 text-secondary">
                         Condición del producto
                       </h2>
-                      <p className="text-base mb-6">
+                      <p className="text-base mb-6 text-font">
                         Este producto es de exhibición y puede tener detalles
                         menores por uso en tienda.
                       </p>
