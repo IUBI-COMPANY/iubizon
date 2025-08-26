@@ -118,8 +118,7 @@ export default function ProductDetailPage() {
                         Condición del producto
                       </h2>
                       <p className="text-base mb-6 text-font">
-                        Este producto es de exhibición y puede tener detalles
-                        menores por uso en tienda.
+                        {product.condition}
                       </p>
                     </div>
                   </div>
