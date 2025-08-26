@@ -90,6 +90,42 @@ export const ProductCard = ({ product }: Props) => {
         </svg>
         Prueba de funcionamiento verificada
       </div>
+      {product.classification === "premium" ? (
+        <div className="flex items-center text-sm text-gray-600 mb-1">
+          <svg
+            className="w-5 h-5 text-green-500 mr-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          Garantía de 3 meses
+        </div>
+      ) : (
+        <div className="flex items-center text-sm text-gray-600 mb-1">
+          <svg
+            className="w-5 h-5 text-green-500 mr-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          Negociable
+        </div>
+      )}
+
       <div className="mt-3 grid gap-2 grid-cols-[1fr_auto] row-span-1 items-end">
         <a
           href={`https://wa.me/51972300301?text=Hola%20iubizon,%20me%20interesa%20el%20${product.type}%20modelo%20${product.model}`}

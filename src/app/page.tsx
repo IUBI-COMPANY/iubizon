@@ -5,6 +5,26 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import Image from "next/image";
 
 export default function Home() {
+  const premiumProducts = products.filter(
+    (products) => products.classification === "premium",
+  );
+
+  const standardProducts = products.filter(
+    (products) => products.classification === "standard",
+  );
+
+  const budgetProducts = products.filter(
+    (products) => products.classification === "budget",
+  );
+
+  const clearanceProducts = products.filter(
+    (products) => products.classification === "clearance",
+  );
+
+  const wholesaleProducts = products.filter(
+    (products) => products.classification === "wholesale",
+  );
+
   const quantityProjectors = products
     .filter((product) => product.type === "Proyector")
     .reduce((acc, product) => {
@@ -83,24 +103,106 @@ export default function Home() {
         </div>
       </div>
       <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
-        <div className="mb-6 flex items-end justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-secondary">
-              Modelos disponibles
-            </h2>
-            <p className="text-sm text-secondary/70">
-              Stock actualizado • Prueba al recoger
-            </p>
+        {premiumProducts.length > 0 && (
+          <div className="!mt-10 !mb-[5em]">
+            <div className="mt-6 mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-secondary">
+                  Modelos Premium
+                </h2>
+                <p className="text-sm text-secondary/70">
+                  Stock actualizado • Prueba al recoger
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {premiumProducts.map((product, index) => (
+                <ProductCard key={index} product={product} />
+              ))}
+            </div>
           </div>
-          <span className="hidden rounded-full px-3 py-1 text-sm md:inline bg-secondary/10 text-secondary">
-            Lote total: 19 unidades
-          </span>
-        </div>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
-            <ProductCard key={index} product={product} />
-          ))}
-        </div>
+        )}
+
+        {standardProducts.length > 0 && (
+          <div className="!mt-10 !mb-[5em]">
+            <div className="mt-6 mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-secondary">
+                  Modelos Estándar
+                </h2>
+                <p className="text-sm text-secondary/70">
+                  Stock actualizado • Prueba al recoger
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {standardProducts.map((product, index) => (
+                <ProductCard key={index} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {budgetProducts.length > 0 && (
+          <div className="!mt-10 !mb-[5em]">
+            <div className="mt-6 mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-secondary">
+                  Modelos Económicos
+                </h2>
+                <p className="text-sm text-secondary/70">
+                  Stock actualizado • Prueba al recoger
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {budgetProducts.map((product, index) => (
+                <ProductCard key={index} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {clearanceProducts.length > 0 && (
+          <div className="!mt-10 !mb-[5em]">
+            <div className="mt-6 mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-secondary">
+                  Modelos en Remate
+                </h2>
+                <p className="text-sm text-secondary/70">
+                  Stock actualizado • Prueba al recoger
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {clearanceProducts.map((product, index) => (
+                <ProductCard key={index} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {wholesaleProducts.length > 0 && (
+          <div className="!mt-10 !mb-[5em]">
+            <div className="mt-6 mb-6 flex items-end justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-secondary">
+                  Modelos por Lote
+                </h2>
+                <p className="text-sm text-secondary/70">
+                  Stock actualizado • Prueba al recoger
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {wholesaleProducts.map((product, index) => (
+                <ProductCard key={index} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
         <section className="mt-10 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90">
           <h3 className="text-xl font-bold">
             🔥 Oferta por compra de lote Completo
