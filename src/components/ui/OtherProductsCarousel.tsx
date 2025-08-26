@@ -26,7 +26,7 @@ export default function OtherProductsCarousel({
   });
 
   return (
-    <div className="my-6 p-3 rounded-xl w-full max-w-[1370px] mx-auto">
+    <div className="my-6 rounded-xl w-full max-w-[1370px] mx-auto">
       <h2 className="ml-4 text-[2em] font-semibold mb-2 text-primary">
         Otros productos
       </h2>
@@ -42,14 +42,14 @@ export default function OtherProductsCarousel({
             <div className="flex items-center justify-center w-full h-full">
               <button
                 onClick={() => slider.current?.prev()}
-                className="absolute w-[3em] h-[3em] left-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-[#222f40] hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
+                className="hidden md:block md:absolute w-[3em] h-[3em] left-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-secondary/60 hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
                 aria-label="Anterior"
               >
                 ◀
               </button>
               <button
                 onClick={() => slider.current?.next()}
-                className="absolute w-[3em] h-[3em] right-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-[#222f40] hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
+                className="hidden md:block md:absolute w-[3em] h-[3em] right-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-secondary/60 hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
                 aria-label="Siguiente"
               >
                 ▶

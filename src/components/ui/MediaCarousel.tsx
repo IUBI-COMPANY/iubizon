@@ -35,8 +35,8 @@ export default function MediaCarousel({ product }: Props) {
   }, [current, media, videoPaused]);
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <div className="w-full max-w-2xl h-auto md:h-[40rem] flex items-center justify-center rounded-3xl overflow-hidden shadow-lg relative">
+    <div className="w-full">
+      <div className="w-full h-[30em] md:h-[40rem] flex items-center justify-center rounded-3xl overflow-hidden shadow-lg relative">
         <div ref={sliderRef} className="keen-slider w-full h-full">
           {media.map((m, i) => (
             <div
@@ -52,7 +52,7 @@ export default function MediaCarousel({ product }: Props) {
                   className="w-full h-full object-cover relative z-10"
                 />
               ) : (
-                <div className="relative w-full h-full flex items-center justify-center relative">
+                <div className="relative w-full h-full flex items-center justify-center">
                   <div
                     style={{
                       background: "url(./images/education-projectors.jpg)",
