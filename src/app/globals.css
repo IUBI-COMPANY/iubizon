@@ -6,9 +6,9 @@
 }
 
 @theme {
-    --color-primary: #f25c05;
-    --color-secondary: #112237;
-    --color-font: #67798C;
+  --color-primary: #f25c05;
+  --color-secondary: #112237;
+  --color-font: #67798c;
 }
 
 @theme inline {
