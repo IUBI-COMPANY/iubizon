@@ -36,7 +36,7 @@ export const products: Product[] = [
   {
     id: "98H",
     model: "H687A",
-    name: "Proyector Epson 98H",
+    name: "Epson PowerLite 98H",
     oldStock: 12,
     units: 4,
     price: 700,
@@ -78,7 +78,7 @@ export const products: Product[] = [
   {
     id: "980W",
     model: "H866A",
-    name: "Proyector Epson 980W",
+    name: "Epson PowerLite 980W",
     units: 5,
     description: "Buena proyección, detalles estéticos",
     price: 1100,
@@ -117,7 +117,7 @@ export const products: Product[] = [
   {
     id: "975W",
     model: "H835A",
-    name: "Proyector Epson 975W",
+    name: "Epson PowerLite 975W",
     units: 3,
     description: "Buena proyección, detalles estéticos",
     price: 1100,
@@ -153,7 +153,7 @@ export const products: Product[] = [
   {
     id: "1925W",
     model: "V11H314020",
-    name: "Proyector Epson 1925W",
+    name: "Epson PowerLite 1925W",
     units: 1,
     description: "Buena proyección, detalles estéticos",
     price: 1200,
@@ -188,7 +188,7 @@ export const products: Product[] = [
   {
     id: "970",
     model: "H865A",
-    name: "Proyector Epson 970",
+    name: "Epson PowerLite 970",
     units: 1,
     description: "Bajo brillo, detalles estéticos",
     price: 850,
@@ -224,7 +224,7 @@ export const products: Product[] = [
   {
     id: "119W",
     model: "H985A",
-    name: "Proyector Epson 119W",
+    name: "Epson PowerLite 119W",
     units: 1,
     description: "Buena proyección, detalles estéticos",
     price: 1100,
@@ -261,7 +261,7 @@ export const products: Product[] = [
   {
     id: "108",
     model: "H860A",
-    name: "Proyector Epson 108",
+    name: "Epson PowerLite 108",
     units: 4,
     price: 800,
     sub: "Desde S/ 700 por volumen",

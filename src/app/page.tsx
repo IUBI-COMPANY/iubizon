@@ -64,7 +64,7 @@ export default function Home() {
         </div>
       </header>
       <div className="border-y border-secondary/70">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-4 text-sm md:flex-row md:justify-between">
+        <div className="mx-auto flex max-w-[1370px] flex-col items-center gap-4 px-6 py-4 text-sm md:flex-row md:justify-between">
           <div className="flex items-center gap-2 text-[15px] text-secondary/70">
             <MapPin className="h-4 w-4" /> Chorrillos, Lima
           </div>
@@ -76,7 +76,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <main id="lista" className="mx-auto max-w-6xl px-6 py-10">
+      <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold text-secondary">

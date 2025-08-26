@@ -66,17 +66,17 @@ export default function ProductDetailPage() {
         {!product ? (
           <NoFoundComponent />
         ) : (
-          <div className="content-wrapper px-7 max-w-6xl m-auto w-full">
+          <div className="content-wrapper px-7 max-w-[1470px] m-auto w-full">
             <main className="grid grid-cols-12 py-15 w-full">
               <section className="col-span-12 md:col-span-7 w-full flex justify-center items-center">
                 <MediaCarousel product={product} />
               </section>
               <section className="col-span-12 md:col-span-5 w-full mx-auto px-0 md:px-10 py-13 md:py-2">
-                <h1 className="text-4xl font-bold text-left mb-5 text-secondary">
+                <h1 className="text-4xl font-bold text-left mb-8 text-secondary">
                   {product.name || product.model}
                 </h1>
                 {options.length > 0 && (
-                  <div className="flex flex-wrap gap-3 mb-6">
+                  <div className="flex flex-wrap gap-3 mb-8">
                     {options.map((opt, idx) => (
                       <span
                         key={idx}
