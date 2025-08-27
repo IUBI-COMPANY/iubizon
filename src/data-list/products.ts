@@ -196,7 +196,7 @@ export const products: Product[] = [
     name: "Epson PowerLite 970",
     units: 1,
     description: "Bajo brillo, detalles estéticos",
-    price: 1150,
+    price: 1000,
     mainImage: "/images/970/970.jpg",
     media: [
       { type: "image", src: "/images/970/2.jpg" },
