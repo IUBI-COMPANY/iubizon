@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
+import Script from "next/script";
 import "./globals.css";
 import Head from "next/head";
 import { NextSeo } from "next-seo";
@@ -73,6 +74,19 @@ export default function RootLayout({
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
       </Head>
+    <Script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=AW-17511349348"
+      strategy="afterInteractive"
+    />
+    <Script id="google-analytics" strategy="afterInteractive">
+      {`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-17511349348');
+        `}
+    </Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
