@@ -79,7 +79,9 @@ export default function ProductDetailPage() {
                       <div className="w-full flex flex-col gap-2 text-font font-mediun text-[.9em] ">
                         {product?.condition && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">Condición:</div>{" "}
+                            <div className="pr-4 w-[11em] leading-5">
+                              Condición:
+                            </div>{" "}
                             <div className="text-secondary">
                               <strong
                                 className="inline-flex items-center gap-1 cursor-pointer"
@@ -92,7 +94,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.displayTechnology && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">
+                            <div className="pr-4 w-[11em] leading-5">
                               Tecnología de visualización:
                             </div>{" "}
                             <div className="text-secondary">
@@ -102,7 +104,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.aspectRatio && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">
+                            <div className="pr-4 w-[11em] leading-5">
                               Relación de aspecto:
                             </div>{" "}
                             <div className="text-secondary">
@@ -112,7 +114,9 @@ export default function ProductDetailPage() {
                         )}
                         {product?.brand && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">Marca:</div>{" "}
+                            <div className="pr-4 w-[11em] leading-5">
+                              Marca:
+                            </div>{" "}
                             <div className="text-secondary">
                               {product.brand}
                             </div>
@@ -120,13 +124,13 @@ export default function ProductDetailPage() {
                         )}
                         {product?.type && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">Tipo:</div>{" "}
+                            <div className="pr-4 w-[11em] leading-5">Tipo:</div>{" "}
                             <div className="text-secondary">{product.type}</div>
                           </div>
                         )}
                         {product?.contrastRatio && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">
+                            <div className="pr-4 w-[11em] leading-5">
                               Relación de contraste:
                             </div>{" "}
                             <div className="text-secondary">
@@ -136,7 +140,9 @@ export default function ProductDetailPage() {
                         )}
                         {product?.connectivity && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">Conectividad:</div>{" "}
+                            <div className="pr-4 w-[11em] leading-5">
+                              Conectividad:
+                            </div>{" "}
                             <div className="text-secondary">
                               {product.connectivity}
                             </div>
@@ -144,7 +150,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.features && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">
+                            <div className="pr-4 w-[11em] leading-5">
                               Características:
                             </div>{" "}
                             <div className="text-secondary">
@@ -154,7 +160,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.throwRatio && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">
+                            <div className="pr-4 w-[11em] leading-5">
                               Relación de proyección:
                             </div>{" "}
                             <div className="text-secondary">
@@ -164,7 +170,9 @@ export default function ProductDetailPage() {
                         )}
                         {product?.category && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em]">Categoría:</div>
+                            <div className="pr-4 w-[11em] leading-5">
+                              Categoría:
+                            </div>
                             <div className="text-secondary flex flex-wrap">
                               {(product?.category || []).map(
                                 (category, index) => (
@@ -185,14 +193,16 @@ export default function ProductDetailPage() {
                       </div>
                       <div className="w-full flex flex-col gap-2 text-font font-mediun text-[.9em]">
                         <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                          <div className="pr-4 w-[11em]">Advertencia:</div>
+                          <div className="pr-4 w-[11em] leading-5">
+                            Advertencia:
+                          </div>
                           <div className="text-secondary">
                             Las lámparas del proyector contienen mercurio.
                           </div>
                         </div>
                         {product?.imageBrightness && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em] ">
+                            <div className="pr-4 w-[11em] leading-5 ">
                               Brillo de la imagen :
                             </div>{" "}
                             <div className="text-secondary">
@@ -202,7 +212,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.aspectRatio && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em] ">
+                            <div className="pr-4 w-[11em] leading-5 ">
                               Relación de aspecto:
                             </div>{" "}
                             <div className="text-secondary">
@@ -213,7 +223,9 @@ export default function ProductDetailPage() {
 
                         {product?.model && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em] ">Modelo:</div>{" "}
+                            <div className="pr-4 w-[11em] leading-5 ">
+                              Modelo:
+                            </div>{" "}
                             <div className="text-secondary">
                               {product.model}
                             </div>
@@ -221,7 +233,7 @@ export default function ProductDetailPage() {
                         )}
                         {product?.nativeResolution && (
                           <div className="flex flex-col md:flex-row flex-wrap items-start md:items-end">
-                            <div className="pr-4 w-[11em] ">
+                            <div className="pr-4 w-[11em] leading-5 ">
                               Resolución nativa:
                             </div>{" "}
                             <div className="text-secondary">
