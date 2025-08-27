@@ -33,11 +33,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen h-auto w-full bg-slate-50">
-      <header
-        className="h-[30em] relative overflow-hidden"
+      <div
         style={{
           background: `linear-gradient(135deg, #112237,#000 50%, #112237)`,
         }}
+        className="h-auto relative"
       >
         <video
           autoPlay
@@ -49,7 +49,7 @@ export default function Home() {
           <source src="./videos/education-projectors.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <div className="top-header absolute top-2 left-0 w-full p-4">
+        <header className="top-header absolute top-2 left-0 w-full p-4">
           <div className="item-logo">
             <Image
               width={300}
@@ -59,18 +59,17 @@ export default function Home() {
               className="w-[9em] h-auto object-contain m-auto"
             />
           </div>
-        </div>
-        <div className="w-full h-full m-auto grid place-items-center text-center text-white relative">
-          <div className="items mt-[2em]">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">
+        </header>
+        <div className="w-full h-full m-auto flex justify-center flex-wrap text-center text-white relative">
+          <div className="items m-[2em] relative flex flex-col items-center lg:items-start justify-center text-center lg:text-left pt-20 lg:pt-0">
+            <span className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">
               <BadgePercent className="h-4 w-4" /> Descuentos por volumen
             </span>
             <h1 className="mt-4 text-3xl font-bold leading-tight md:text-5xl">
               Venta de Proyectores <span className="opacity-90">Epson</span>
             </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-base md:text-lg opacity-95">
-              De exhibición verificada • Totalmente funcionales • Precios de
-              remate
+            <p className="mt-3 max-w-2xl md:text-lg opacity-95">
+              De exhibición verificada • Totalmente funcionales • Precios bajos
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
@@ -87,8 +86,18 @@ export default function Home() {
               </a>
             </div>
           </div>
+          <div className="pet">
+            <Image
+              src="/images/pet-saludando.png"
+              alt="pet iubizon"
+              width={500}
+              height={500}
+              className="relative top-[1em] lg:top-[1em] right-[1em] w-[26em] md:w-[30em] -scale-x-100 mx-auto"
+            />
+          </div>
         </div>
-      </header>
+      </div>
+
       <div className="border-y border-secondary/70">
         <div className="mx-auto flex max-w-[1370px] flex-col items-center gap-4 px-6 py-4 text-sm md:flex-row md:justify-between">
           <div className="flex items-center gap-2 text-[15px] text-secondary/70">
