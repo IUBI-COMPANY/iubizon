@@ -30,7 +30,26 @@ export const ProductCard = ({ product }: Props) => {
         </div>
       </div>
       {/* Título */}
-      <h2 className="text-xl font-semibold text-gray-800">{product.name}</h2>
+      <div className="flex flex-wrap gap-2 item-center">
+        <h2 className="text-xl font-semibold text-gray-800">{product.name}</h2>
+      </div>
+      <div className="my-2 flex flex-wrap gap-2 justify-start items-center">
+        {product?.brand && (
+          <span className="px-3 py-[.4em] rounded-full font-semibold text-[.6em] shadow-sm focus:outline-none bg-white/90 text-secondary border border-secondary/40">
+            {product.brand}
+          </span>
+        )}
+        {product?.imageBrightness && (
+          <span className="px-3 py-[.4em] rounded-full font-semibold text-[.6em] shadow-sm focus:outline-none bg-white/90 text-secondary border border-secondary/40">
+            {product.imageBrightness}
+          </span>
+        )}
+        {product?.throwRatio && (
+          <span className="px-3 py-[.4em] rounded-full font-semibold text-[.6em] shadow-sm focus:outline-none bg-white/90 text-secondary border border-secondary/40">
+            {product.throwRatio}
+          </span>
+        )}
+      </div>
       {/* Stock */}
       <p className="mt-1 text-sm text-secondary/70">
         Cantidad: {product.units} {product.units === 1 ? "unidad" : "unidades"}
