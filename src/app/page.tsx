@@ -116,7 +116,7 @@ export default function Home() {
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-secondary">
+                <h2 className="text-2xl font-bold text-primary">
                   Modelos Premium
                 </h2>
                 <p className="text-sm text-secondary/70">
