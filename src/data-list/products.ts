@@ -197,6 +197,7 @@ export const products: Product[] = [
     units: 1,
     description: "Bajo brillo, detalles estéticos",
     price: 1000,
+    badge: "Oferta",
     mainImage: "/images/970/970.jpg",
     media: [
       { type: "image", src: "/images/970/2.jpg" },
@@ -234,6 +235,7 @@ export const products: Product[] = [
     units: 1,
     description: "Buena proyección, detalles estéticos",
     price: 1150,
+    badge: "Top venta",
     mainImage: "/images/119W/119w.jpg",
     media: [
       { type: "image", src: "/images/119W/2.jpg" },

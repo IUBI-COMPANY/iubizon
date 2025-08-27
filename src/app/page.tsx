@@ -203,7 +203,14 @@ export default function Home() {
           </div>
         )}
 
-        <section className="mt-10 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90">
+        <section className="mt-10 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90 relative">
+          <Image
+            src="/images/pet-corriendo.png"
+            alt="pet iubizon"
+            width={500}
+            height={500}
+            className="relative lg:absolute top-[1em] lg:top-[-8em] right-[1em] lg:right-[4em] w-[23em] -scale-x-100 mx-auto"
+          />
           <h3 className="text-xl font-bold">
             🔥 Oferta por compra de lote Completo
           </h3>
@@ -218,6 +225,7 @@ export default function Home() {
           </p>
           <a
             href="https://wa.me/51972300301?text=Hola%20iubizon,%20quiero%20el%20lote%20completo"
+            target="_blank"
             className="mt-4 inline-flex rounded-full px-5 py-3 text-sm font-semibold shadow bg-primary"
           >
             Reservar ahora
