@@ -26,7 +26,7 @@ export default function OtherProductsCarousel({
   });
 
   return (
-    <div className="my-6 rounded-xl w-full max-w-[1370px] mx-auto">
+    <div className="rounded-xl w-full max-w-[1370px] mx-auto my-20">
       <h2 className="text-[2em] font-semibold mb-2 text-primary">
         Otros productos
       </h2>

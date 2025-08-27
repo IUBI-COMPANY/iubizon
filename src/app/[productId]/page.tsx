@@ -63,7 +63,7 @@ export default function ProductDetailPage() {
                 <div className="w-full">
                   {/*Product media*/}
                   <MediaCarousel product={product} />
-                  <div className="block md:hidden w-full my-10 mb-30">
+                  <div className="block lg:hidden w-full my-10 mb-10 lg:mb-30">
                     <InformationAndPriceCard
                       product={product}
                       showModal={showModal}
@@ -246,7 +246,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
               </section>
-              <div className="hidden md:block col-span-12 lg:col-span-4 w-full mx-auto mt-15 lg:mt-0 px-0 lg:px-10 md:sticky top-4 self-start">
+              <div className="hidden lg:block col-span-12 lg:col-span-4 w-full mx-auto mt-15 lg:mt-0 px-0 lg:px-10 md:sticky top-4 self-start">
                 <InformationAndPriceCard
                   product={product}
                   showModal={showModal}

@@ -91,13 +91,13 @@ export const InformationAndPriceCard = ({
                 </strong>
               </span>
               <div
-                className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
                   showModal ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
                 onClick={() => setShowModal(false)}
               >
                 <div
-                  className="relative bg-white rounded-lg shadow-lg p-8 max-w-md w-full transform transition-transform duration-300 scale-100"
+                  className="relative z-40 bg-white rounded-lg shadow-lg p-8 max-w-md w-full transform transition-transform duration-300 scale-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <XCircle
