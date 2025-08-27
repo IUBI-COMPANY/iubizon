@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "iubizon",
+  title: "iubizon - Tu mundo multimedia",
   description:
     "De todo multimedia a precios accesibles para mayoristas y minoristas.",
 };
@@ -29,7 +29,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Head>
-        <title>iubizon - Tu mundo multimedia</title>
         <meta
           name="description"
           content="Compra proyectores, laptops y tecnología multimedia al mejor precio en iubizon."

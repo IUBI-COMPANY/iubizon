@@ -10,6 +10,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "^5.2.6",
     "@tailwindcss/vite": "^4.1.12",
     "@vercel/speed-insights": "^1.2.0",
     "keen-slider": "^6.8.6",

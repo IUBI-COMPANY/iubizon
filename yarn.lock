@@ -95,6 +95,11 @@
     "@eslint/core" "^0.15.2"
     levn "^0.4.1"
 
+"@fontsource-variable/manrope@^5.2.6":
+  version "5.2.6"
+  resolved "https://registry.yarnpkg.com/@fontsource-variable/manrope/-/manrope-5.2.6.tgz#5dec6ba84ae3dbd4cf85ab47686f5219456ace2f"
+  integrity sha512-8a0INmmJfrcOO+MDThDefifCqreErfhNX1qy9l9VMc0FNCUTJtJi8Lclk8H5RqsDmR5PBYfTot1iUZFZ7qX57A==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.npmjs.org/@humanfs/core/-/core-0.19.1.tgz"
