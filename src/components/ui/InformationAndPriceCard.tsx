@@ -47,7 +47,7 @@ export const InformationAndPriceCard = ({
         )}
         {product?.price && (
           <div className="w-full h-auto my-7">
-            <div className="flex flex-wrap gap-7">
+            <div className="flex flex-wrap gap-7 mb-3">
               <div className="flex items-center justify-start gap-1">
                 <p className="text-base font-bold text-primary flex justify-center items-start gap-1">
                   <span className="text-[1em]">S/</span>
@@ -78,6 +78,25 @@ export const InformationAndPriceCard = ({
           </div>
         )}
         <ul className="mb-7 space-y-4 list-style-none">
+          {product?.units && (
+            <li className="my-3">
+              <span className="text-sm text-secondary/90">
+                <p className="mt-1 text-sm text-secondary/70">
+                  Cantidad: {product.units}{" "}
+                  {product.units === 1 ? "unidad" : "unidades"}
+                  {product?.oldStock && (
+                    <>
+                      {" "}
+                      /{" "}
+                      <span className="line-through text-gray-400 mr-2">
+                        {product?.oldStock}
+                      </span>
+                    </>
+                  )}
+                </p>
+              </span>
+            </li>
+          )}
           {product?.condition && (
             <li className="flex items-start">
               <span className="mt-1 text-xl text-primary"></span>

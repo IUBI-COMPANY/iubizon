@@ -33,7 +33,16 @@ export const ProductCard = ({ product }: Props) => {
       <h2 className="text-xl font-semibold text-gray-800">{product.name}</h2>
       {/* Stock */}
       <p className="mt-1 text-sm text-secondary/70">
-        Stock: {product.units} {product.units === 1 ? "unidad" : "unidades"}
+        Cantidad: {product.units} {product.units === 1 ? "unidad" : "unidades"}
+        {product?.oldStock && (
+          <>
+            {" "}
+            /{" "}
+            <span className="line-through text-gray-400 mr-2">
+              {product?.oldStock}
+            </span>
+          </>
+        )}
       </p>
       {/* Precio */}
       <div className="bg-orange-50 rounded-lg py-2 px-4 my-3 text-center">
