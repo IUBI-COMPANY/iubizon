@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,35 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <title>iubizon - Tu mundo multimedia</title>
+        <meta
+          name="description"
+          content="Compra proyectores, laptops y tecnología multimedia al mejor precio en iubizon."
+        />
+        <meta
+          name="keywords"
+          content="proyectores, laptops, tecnología multimedia, iubizon, equipos usados"
+        />
+        <meta name="author" content="iubizon" />
+        <meta name="robots" content="index, follow" />
+
+        {/* Open Graph (para redes sociales) */}
+        <meta property="og:title" content="iubizon - Tu mundo multimedia" />
+        <meta
+          property="og:description"
+          content="Compra proyectores, laptops y tecnología multimedia al mejor precio en iubizon."
+        />
+        <meta
+          property="og:image"
+          content="https://storage.googleapis.com/iubi-website.appspot.com/resources/seo-banner.jpg"
+        />
+        <meta property="og:url" content="https://www.iubizon.com" />
+        <meta property="og:type" content="website" />
+
+        {/* Favicon */}
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
