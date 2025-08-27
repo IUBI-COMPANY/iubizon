@@ -5,6 +5,12 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import Image from "next/image";
 
 export default function Home() {
+  const quantityProjectors = products
+    .filter((product) => product.type === "Proyector")
+    .reduce((acc, product) => {
+      return acc + product.units;
+    }, 0);
+
   return (
     <div className="min-h-screen h-auto w-full bg-slate-50">
       <header
@@ -99,7 +105,9 @@ export default function Home() {
           <h3 className="text-xl font-bold">
             🔥 Oferta por compra de lote Completo
           </h3>
-          <p className="mt-1 opaproducty-90">19 proyectores mixtos</p>
+          <p className="mt-1 opaproducty-90">
+            {quantityProjectors} proyectores mixtos
+          </p>
           <p className="mt-2 text-2xl font-extrabold text-primary">
             A UN PRECIO ESPECIAL
           </p>
