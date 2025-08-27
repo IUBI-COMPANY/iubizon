@@ -5,7 +5,6 @@ import Image from "next/image";
 import Script from "next/script";
 import "./globals.css";
 import Head from "next/head";
-import { NextSeo } from "next-seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,6 +20,18 @@ export const metadata: Metadata = {
   title: "iubizon - Tu mundo multimedia",
   description:
     "De todo multimedia a precios accesibles para mayoristas y minoristas.",
+  openGraph: {
+    type: "website",
+    url: "https://www.iubizon.com",
+    title: "iubizon - Tu mundo multimedia",
+    description:
+      "De todo multimedia a precios accesibles para mayoristas y minoristas.",
+    images: [
+      {
+        url: "https://storage.googleapis.com/iubi-website.appspot.com/resources/seo-banner.jpg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -30,22 +41,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <NextSeo
-        title="iubizon - Tu mundo multimedia"
-        description="Compra proyectores, laptops y tecnología multimedia al mejor precio."
-        openGraph={{
-          url: "https://www.iubizon.com",
-          title: "iubizon - Tu mundo multimedia",
-          description:
-            "Compra proyectores, laptops y tecnología multimedia al mejor precio.",
-          images: [
-            {
-              url: "https://storage.googleapis.com/iubi-website.appspot.com/resources/seo-banner.jpg",
-            },
-          ],
-          site_name: "iubizon",
-        }}
-      />
       <Head>
         <meta
           name="description"
@@ -74,19 +69,19 @@ export default function RootLayout({
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
       </Head>
-    <Script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=AW-17511349348"
-      strategy="afterInteractive"
-    />
-    <Script id="google-analytics" strategy="afterInteractive">
-      {`
+      <Script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=AW-17511349348"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'AW-17511349348');
         `}
-    </Script>
+      </Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
