@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <SpeedInsights />
         <footer className="pt-10 pb-6 px-4 bg-gradient-to-b from-secondary/100 to-secondary/95">
           <div className="max-w-6xl min-h-[7em] mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-10">
             <div className="flex flex-col items-center md:items-start gap-4">
