@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import "./globals.css";
 import Head from "next/head";
+import { NextSeo } from "next-seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <NextSeo
+        title="iubizon - Tu mundo multimedia"
+        description="Compra proyectores, laptops y tecnología multimedia al mejor precio."
+        openGraph={{
+          url: "https://www.iubizon.com",
+          title: "iubizon - Tu mundo multimedia",
+          description:
+            "Compra proyectores, laptops y tecnología multimedia al mejor precio.",
+          images: [
+            {
+              url: "https://storage.googleapis.com/iubi-website.appspot.com/resources/seo-banner.jpg",
+            },
+          ],
+          site_name: "iubizon",
+        }}
+      />
       <Head>
         <meta
           name="description"
