@@ -50,8 +50,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/98H/4.jpg" },
       { type: "image", src: "/images/98H/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "2700 lúmenes ANSI",
     brand: "Epson",
@@ -93,8 +94,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/980W/4.png" },
       { type: "image", src: "/images/980W/5.png" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "3800 lúmenes ANSI",
     brand: "Epson",
@@ -132,8 +134,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/975W/4.jpg" },
       { type: "image", src: "/images/975W/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "3600 lúmenes ANSI",
     brand: "Epson",
@@ -169,8 +172,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/1925W/4.jpg" },
       { type: "image", src: "/images/1925W/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "4,000 lúmenes ANSI",
     brand: "Epson",
@@ -206,8 +210,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/970/4.jpg" },
       { type: "image", src: "/images/970/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "4000 lúmenes ANSI",
     brand: "Epson",
@@ -244,8 +249,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/119W/4.jpg" },
       { type: "image", src: "/images/119W/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "4000 lúmenes ANSI",
     brand: "Epson",
@@ -283,8 +289,9 @@ export const products: Product[] = [
       { type: "image", src: "/images/108/4.jpg" },
       { type: "image", src: "/images/108/5.jpg" },
     ],
-    condition:
-      "Usado: Un artículo que ha sido utilizado previamente. El artículo puede tener algunas señales de desgaste cosmético, pero es completamente funcional y opera como se espera. Este artículo puede ser un modelo de exhibición o una devolución de tienda que ha sido usado. Consulta para más detalles y descripción de cualquier imperfección.",
+    condition: `Artículo usado / de exhibición, en excelente estado físico y con funcionamiento 100% garantizado. 
+      Puede presentar ligeros signos de uso o detalles estéticos mínimos propios de la manipulación, pero no afectan en absoluto su rendimiento.
+      Ideal para quienes buscan calidad a un precio más accesible.`,
     displayTechnology: "3LCD",
     imageBrightness: "3700 lúmenes ANSI",
     brand: "Epson",
