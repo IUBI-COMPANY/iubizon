@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import Image from "next/image";
 
 interface MediaCarouselInCardProps {
-  media: string[]; // array of image/video URLs
+  media: string[];
 }
 
 export default function MediaCarouselInCard({
@@ -22,8 +23,10 @@ export default function MediaCarouselInCard({
             style={{ background: "#222f40" }}
           />
         ) : (
-          <img
+          <Image
             src={media[current]}
+            width={500}
+            height={500}
             alt="Imagen del producto"
             className="w-full h-full object-cover rounded-2xl"
             style={{ background: "#222f40" }}
