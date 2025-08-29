@@ -5,7 +5,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import Script from "next/script";
 import "./globals.css";
-import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,34 +41,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Head>
-        <meta
-          name="description"
-          content="Compra proyectores, laptops y tecnología multimedia al mejor precio en iubizon."
-        />
-        <meta
-          name="keywords"
-          content="proyectores, laptops, tecnología multimedia, iubizon, equipos usados"
-        />
-        <meta name="author" content="iubizon" />
-        <meta name="robots" content="index, follow" />
-
-        {/* Open Graph (para redes sociales) */}
-        <meta property="og:title" content="iubizon - Tu mundo multimedia" />
-        <meta
-          property="og:description"
-          content="Compra proyectores, laptops y tecnología multimedia al mejor precio en iubizon."
-        />
-        <meta
-          property="og:image"
-          content="https://storage.googleapis.com/iubi-website.appspot.com/resources/seo-banner.jpg"
-        />
-        <meta property="og:url" content="https://www.iubizon.com" />
-        <meta property="og:type" content="website" />
-
-        {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <Script
         async
         src="https://www.googletagmanager.com/gtag/js?id=AW-17511349348"
@@ -83,28 +54,24 @@ export default function RootLayout({
         gtag('config', 'AW-17511349348');
         `}
       </Script>
-      <Script
-        id="google-tag-manager"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-P8X65GN4');`,
-        }}
-      />
+      <Script id="google-tag-manager" strategy="afterInteractive">{`
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-P8X65GN4');
+`}</Script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Script
-          id="google-tag-manager-noscript"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8X65GN4"
-          height="0" width="0" style="display:none;visibility:hidden"></iframe>`,
-          }}
-        />
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-P8X65GN4"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
         {children}
         <SpeedInsights />
         <Analytics />
