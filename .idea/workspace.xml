@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Refactoring  code">
+    <list default="true" id="ccf3f82e-f8ec-43a4-9d89-1b81b2da66b6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-client/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-client/src/app/[productId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/[productId]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-client/src/app/not-found.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/not-found.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,31 +55,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;migrate__to__multirepo&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/public/images&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/prettier&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-panel/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "last_opened_file_path": "/Users/noel/Desktop/IUBI/Projects/iubizon/public/images",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "yarn",
+    "prettierjs.PrettierConfiguration.Package": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/prettier",
+    "ts.external.directory.path": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
-      &quot;directory&quot;,
-      &quot;module&quot;,
-      &quot;repository&quot;
+  "keyToStringList": {
+    "GitStage.ChangesTree.GroupingKeys": [
+      "directory",
+      "module",
+      "repository"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public/images" />
@@ -154,7 +158,7 @@
       <updated>1756178202215</updated>
     </task>
     <task active="true" id="Default" summary="Default task">
-      <changelist id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="" />
+      <changelist id="ccf3f82e-f8ec-43a4-9d89-1b81b2da66b6" name="Changes" comment="" />
       <created>1756236143967</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -163,6 +167,7 @@
       <workItem from="1756258820980" duration="16341000" />
       <workItem from="1756400333557" duration="1662000" />
       <workItem from="1756410560489" duration="27992000" />
+      <workItem from="1756510571102" duration="11000" />
     </task>
     <task id="LOCAL-00010" summary="Updated product information">
       <option name="closed" value="true" />

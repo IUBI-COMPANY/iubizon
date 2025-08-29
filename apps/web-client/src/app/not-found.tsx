@@ -17,7 +17,7 @@ export default function NotFound() {
           alt="producto no encontrado"
         />
         <Link
-          href="/apps/web-client/public"
+          href="/"
           className="bg-primary py-3 px-10 mx-auto rounded-2xl text-white flex gap-3 cursor-pointer"
         >
           <HomeIcon /> Ir a la página de inicio
