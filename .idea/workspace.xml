@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ccf3f82e-f8ec-43a4-9d89-1b81b2da66b6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-client/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-client/src/app/[productId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/[productId]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-client/src/app/not-found.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/not-found.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="ccf3f82e-f8ec-43a4-9d89-1b81b2da66b6" name="Changes" comment="Fix: update config turbopack" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -117,14 +112,6 @@
     </attachedChunks>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00005" summary="Updated padding of media item for desktop">
-      <option name="closed" value="true" />
-      <created>1756175702792</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1756175702792</updated>
-    </task>
     <task id="LOCAL-00006" summary="Added socials svgs and updated texts in product card">
       <option name="closed" value="true" />
       <created>1756177538013</created>
@@ -167,7 +154,7 @@
       <workItem from="1756258820980" duration="16341000" />
       <workItem from="1756400333557" duration="1662000" />
       <workItem from="1756410560489" duration="27992000" />
-      <workItem from="1756510571102" duration="11000" />
+      <workItem from="1756510571102" duration="44000" />
     </task>
     <task id="LOCAL-00010" summary="Updated product information">
       <option name="closed" value="true" />
@@ -521,7 +508,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756508429323</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="Fix: update config turbopack">
+      <option name="closed" value="true" />
+      <created>1756510613266</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1756510613266</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -556,7 +551,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Added pet images and use in promotion section" />
     <MESSAGE value="Updated home page in mobile" />
     <MESSAGE value="Added classifications.json" />
     <MESSAGE value="added page not found" />
@@ -581,7 +575,8 @@
     <MESSAGE value="Update classifications names" />
     <MESSAGE value="Update web panel home page" />
     <MESSAGE value="Refactoring  code" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactoring  code" />
+    <MESSAGE value="Fix: update config turbopack" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix: update config turbopack" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
