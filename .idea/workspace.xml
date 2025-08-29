@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Update classifications names">
+    <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Update web panel home page">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-panel/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-panel/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web-panel/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/src/main.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -116,14 +114,6 @@
     </attachedChunks>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00003" summary="Updated title styles">
-      <option name="closed" value="true" />
-      <created>1756174623242</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1756174623242</updated>
-    </task>
     <task id="LOCAL-00004" summary="Updated max with in father containers">
       <option name="closed" value="true" />
       <created>1756175386945</created>
@@ -181,7 +171,7 @@
       <workItem from="1756236145404" duration="22626000" />
       <workItem from="1756258820980" duration="16341000" />
       <workItem from="1756400333557" duration="1662000" />
-      <workItem from="1756410560489" duration="25984000" />
+      <workItem from="1756410560489" duration="27880000" />
     </task>
     <task id="LOCAL-00010" summary="Updated product information">
       <option name="closed" value="true" />
@@ -519,7 +509,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756504433388</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="Update web panel home page">
+      <option name="closed" value="true" />
+      <created>1756505423087</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1756505423087</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -554,7 +552,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="Updated price for 970" />
     <MESSAGE value="Updated text of button" />
     <MESSAGE value="Added pet images and use in promotion section" />
     <MESSAGE value="Updated home page in mobile" />
@@ -579,7 +576,8 @@
     <MESSAGE value="Fix Warning social icons" />
     <MESSAGE value="Implement multirepo" />
     <MESSAGE value="Update classifications names" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update classifications names" />
+    <MESSAGE value="Update web panel home page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update web panel home page" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
