@@ -1,36 +1,23 @@
 {
   "name": "iubizon",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/IUBI-COMPANY/iubizon.git",
+  "author": "Noel Moriano <nmoriano26@gmail.com>",
+  "license": "MIT",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@fontsource-variable/manrope": "^5.2.6",
-    "@tailwindcss/vite": "^4.1.12",
-    "@vercel/analytics": "^1.5.0",
-    "@vercel/speed-insights": "^1.2.0",
-    "keen-slider": "^6.8.6",
-    "lucide-react": "^0.540.0",
-    "next": "15.5.0",
-    "postcss": "^8.5.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4.1.12",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.0",
-    "prettier": "^3.6.2",
-    "tailwindcss": "^4.1.12",
-    "typescript": "^5"
+    "api": "yarn --cwd apps/api",
+    "web-panel": "yarn --cwd apps/web-panel",
+    "web-client": "yarn --cwd apps/web-client",
+    "install:all": "yarn api install && yarn web-panel install && yarn web-client install",
+    "deploy": "firebase deploy",
+    "deploy:simple": "firebase deploy --only api,hosting",
+    "deploy:api": "yarn api deploy",
+    "deploy:web-panel": "yarn web-panel deploy",
+    "deploy:web-client": "yarn web-client deploy",
+    "deploy:hosting-api": "yarn hosting-api deploy",
+    "deploy:indexes": "firebase deploy --only firestore:indexes",
+    "deploy:extensions": "firebase deploy --only extensions",
+    "export:extensions": "firebase ext:export"
   }
 }
