@@ -80,14 +80,14 @@ export default function MediaCarousel({ product }: Props) {
           <>
             <button
               onClick={() => slider.current?.prev()}
-              className="absolute w-[3em] h-[3em] left-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
+              className="hidden lg:block absolute w-[3em] h-[3em] left-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition cursor-pointer border-solid border-2 border-primary"
               aria-label="Anterior"
             >
               ◀
             </button>
             <button
               onClick={() => slider.current?.next()}
-              className="absolute w-[3em] h-[3em] right-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
+              className="hidden lg:block absolute w-[3em] h-[3em] right-4 top-1/2 -translate-y-1/2 text-black/60 rounded-full p-2 shadow hover:bg-[#f25c05] transition cursor-pointer border-solid border-2 border-primary"
               aria-label="Siguiente"
             >
               ▶
