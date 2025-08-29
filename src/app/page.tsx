@@ -3,27 +3,41 @@ import { BadgePercent, MapPin } from "lucide-react";
 import { products } from "@/data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
 import Image from "next/image";
+import { classifications } from "@/data-list/classifications";
 
 export default function Home() {
-  const premiumProducts = products.filter(
-    (products) => products.classification === "premium",
-  );
-
-  const standardProducts = products.filter(
-    (products) => products.classification === "standard",
-  );
-
-  const budgetProducts = products.filter(
-    (products) => products.classification === "budget",
-  );
-
-  const clearanceProducts = products.filter(
-    (products) => products.classification === "clearance",
-  );
-
-  const wholesaleProducts = products.filter(
-    (products) => products.classification === "wholesale",
-  );
+  const productsByClassification = {
+    premium: {
+      ...classifications.premium,
+      products: products.filter(
+        (products) => products.classification === "premium",
+      ),
+    },
+    standard: {
+      ...classifications.standard,
+      products: products.filter(
+        (products) => products.classification === "standard",
+      ),
+    },
+    budget: {
+      ...classifications.budget,
+      products: products.filter(
+        (products) => products.classification === "budget",
+      ),
+    },
+    clearance: {
+      ...classifications.clearance,
+      products: products.filter(
+        (products) => products.classification === "clearance",
+      ),
+    },
+    wholesale: {
+      ...classifications.wholesale,
+      products: products.filter(
+        (products) => products.classification === "wholesale",
+      ),
+    },
+  };
 
   const quantityProjectors = products
     .filter((product) => product.type === "Proyector")
@@ -97,7 +111,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
       <div className="border-y border-secondary/70">
         <div className="mx-auto flex max-w-[1370px] flex-col items-center gap-4 px-6 py-4 text-sm md:flex-row md:justify-between">
           <div className="flex items-center gap-2 text-[15px] text-secondary/70">
@@ -112,106 +125,126 @@ export default function Home() {
         </div>
       </div>
       <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
-        {premiumProducts.length > 0 && (
+        {productsByClassification.premium.products.length > 0 && (
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-primary">
-                  Modelos Premium
+                  {productsByClassification.premium.name}
                 </h2>
-                <p className="text-sm text-secondary/70">
-                  Stock actualizado • Prueba al recoger
+                <p className="text-sm text-secondary/70 max-w-[60em]">
+                  {productsByClassification.premium.description}
+                </p>
+                <p className="text-primary text-[.8em] mt-2">
+                  <span>Todos los productos salen probados</span>
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {premiumProducts.map((product, index) => (
-                <ProductCard key={index} product={product} />
-              ))}
+              {productsByClassification.premium.products.map(
+                (product, index) => (
+                  <ProductCard key={index} product={product} />
+                ),
+              )}
             </div>
           </div>
         )}
-
-        {standardProducts.length > 0 && (
+        {productsByClassification.standard.products.length > 0 && (
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-secondary">
-                  Modelos Estándar
+                  {productsByClassification.standard.name}
                 </h2>
-                <p className="text-sm text-secondary/70">
-                  Stock actualizado • Prueba al recoger
+                <p className="text-sm text-secondary/70 max-w-[60em]">
+                  {productsByClassification.standard.description}
+                </p>
+                <p className="text-primary text-[.8em] mt-2">
+                  <span>Todos los productos salen probados</span>
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {standardProducts.map((product, index) => (
-                <ProductCard key={index} product={product} />
-              ))}
+              {productsByClassification.standard.products.map(
+                (product, index) => (
+                  <ProductCard key={index} product={product} />
+                ),
+              )}
             </div>
           </div>
         )}
-
-        {budgetProducts.length > 0 && (
+        {productsByClassification.budget.products.length > 0 && (
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-secondary">
-                  Modelos Económicos
+                  {productsByClassification.budget.name}
                 </h2>
-                <p className="text-sm text-secondary/70">
-                  Stock actualizado • Prueba al recoger
+                <p className="text-sm text-secondary/70 max-w-[60em]">
+                  {productsByClassification.budget.description}
+                </p>
+                <p className="text-primary text-[.8em] mt-2">
+                  <span>Todos los productos salen probados</span>
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {budgetProducts.map((product, index) => (
-                <ProductCard key={index} product={product} />
-              ))}
+              {productsByClassification.budget.products.map(
+                (product, index) => (
+                  <ProductCard key={index} product={product} />
+                ),
+              )}
             </div>
           </div>
         )}
-
-        {clearanceProducts.length > 0 && (
+        {productsByClassification.clearance.products.length > 0 && (
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-secondary">
-                  Modelos en Remate
+                  {productsByClassification.clearance.name}
                 </h2>
-                <p className="text-sm text-secondary/70">
-                  Stock actualizado • Prueba al recoger
+                <p className="text-sm text-secondary/70 max-w-[60em]">
+                  {productsByClassification.clearance.description}
+                </p>
+                <p className="text-primary text-[.8em] mt-2">
+                  <span>Todos los productos salen probados</span>
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {clearanceProducts.map((product, index) => (
-                <ProductCard key={index} product={product} />
-              ))}
+              {productsByClassification.clearance.products.map(
+                (product, index) => (
+                  <ProductCard key={index} product={product} />
+                ),
+              )}
             </div>
           </div>
         )}
-
-        {wholesaleProducts.length > 0 && (
+        {productsByClassification.wholesale.products.length > 0 && (
           <div className="!mt-10 !mb-[5em]">
             <div className="mt-6 mb-6 flex items-end justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-secondary">
-                  Modelos por Lote
+                  {productsByClassification.wholesale.name}
                 </h2>
-                <p className="text-sm text-secondary/70">
-                  Stock actualizado • Prueba al recoger
+                <p className="text-sm text-secondary/70 max-w-[60em]">
+                  {productsByClassification.wholesale.description}
+                </p>
+                <p className="text-primary text-[.8em] mt-2">
+                  <span>Todos los productos salen probados</span>
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {wholesaleProducts.map((product, index) => (
-                <ProductCard key={index} product={product} />
-              ))}
+              {productsByClassification.wholesale.products.map(
+                (product, index) => (
+                  <ProductCard key={index} product={product} />
+                ),
+              )}
             </div>
           </div>
         )}
-
         <section className="mt-10 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90 relative">
           <Image
             src="/images/pet-corriendo-izquierda.png"

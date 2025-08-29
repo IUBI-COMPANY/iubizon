@@ -1,5 +1,12 @@
 import { ReactNode } from "react";
 
+export type Classification =
+  | "premium"
+  | "standard"
+  | "budget"
+  | "clearance"
+  | "wholesale";
+
 export interface Product {
   id: string;
   model: string;
@@ -24,7 +31,7 @@ export interface Product {
   aspectRatio?: string;
   throwRatio?: string;
   category?: string[];
-  classification: "premium" | "standard" | "budget" | "clearance" | "wholesale";
+  classification: Classification;
   note?: string | ReactNode;
 }
 
@@ -40,7 +47,7 @@ export const products: Product[] = [
     name: "Epson PowerLite 98H",
     oldStock: 12,
     units: 4,
-    price: 700,
+    price: 600,
     badge: "Oferta",
     mainImage: "/images/98H/98h.jpg",
     media: [
