@@ -107,7 +107,7 @@ export default function RootLayout({
               </div>
             </div>
             <div className="flex flex-col gap-4 items-center md:items-end">
-              <div className="flex gap-4 mt-2">
+              <div className="flex gap-6 mt-2">
                 <a
                   href="https://www.facebook.com/iubizon/"
                   target="_blank"
@@ -120,6 +120,7 @@ export default function RootLayout({
                     alt="Instagram"
                     width={24}
                     height={24}
+                    className="w-[1.8em] h-[1.8em]"
                   />
                 </a>
                 <a
@@ -134,6 +135,7 @@ export default function RootLayout({
                     alt="Instagram"
                     width={24}
                     height={24}
+                    className="w-[1.8em] h-[1.8em]"
                   />
                 </a>
                 <a
@@ -148,6 +150,7 @@ export default function RootLayout({
                     alt="Instagram"
                     width={20}
                     height={20}
+                    className="w-[1.7em] h-[1.7em]"
                   />
                 </a>
               </div>
