@@ -6,34 +6,40 @@ import Image from "next/image";
 import { classifications } from "@/data-list/classifications";
 
 export default function Home() {
+
+  const updateProjectorsClassificationByQuantity = products.map((product)=> ({
+    ...product,
+    classification: product.units > 2 ? "wholesale" : product.classification
+  }));
+  
   const productsByClassification = {
     premium: {
       ...classifications.premium,
-      products: products.filter(
+      products: updateProjectorsClassificationByQuantity.filter(
         (products) => products.classification === "premium",
       ),
     },
     standard: {
       ...classifications.standard,
-      products: products.filter(
+      products: updateProjectorsClassificationByQuantity.filter(
         (products) => products.classification === "standard",
       ),
     },
     budget: {
       ...classifications.budget,
-      products: products.filter(
+      products: updateProjectorsClassificationByQuantity.filter(
         (products) => products.classification === "budget",
       ),
     },
     clearance: {
       ...classifications.clearance,
-      products: products.filter(
+      products: updateProjectorsClassificationByQuantity.filter(
         (products) => products.classification === "clearance",
       ),
     },
     wholesale: {
       ...classifications.wholesale,
-      products: products.filter(
+      products: updateProjectorsClassificationByQuantity.filter(
         (products) => products.classification === "wholesale",
       ),
     },
