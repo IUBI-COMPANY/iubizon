@@ -214,7 +214,7 @@ export default function Home() {
 
         <section className="mt-10 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90 relative">
           <Image
-            src="/images/pet-corriendo-reverso.png"
+            src="/images/pet-corriendo-izquierda.png"
             alt="pet iubizon"
             width={500}
             height={500}
