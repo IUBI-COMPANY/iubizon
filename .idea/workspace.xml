@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Implement multirepo">
+    <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Update classifications names">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web-client/src/data-list/classifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/data-list/classifications.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-panel/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-panel/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-panel/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-panel/src/main.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,31 +55,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "migrate__to__multirepo",
-    "js.debugger.nextJs.config.created.client": "true",
-    "js.debugger.nextJs.config.created.server": "true",
-    "last_opened_file_path": "/Users/noel/Desktop/IUBI/Projects/iubizon/public/images",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "yarn",
-    "prettierjs.PrettierConfiguration.Package": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/prettier",
-    "ts.external.directory.path": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-panel/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;migrate__to__multirepo&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/public/images&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/prettier&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-panel/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "GitStage.ChangesTree.GroupingKeys": [
-      "directory",
-      "module",
-      "repository"
+  &quot;keyToStringList&quot;: {
+    &quot;GitStage.ChangesTree.GroupingKeys&quot;: [
+      &quot;directory&quot;,
+      &quot;module&quot;,
+      &quot;repository&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/public/images" />
@@ -114,14 +116,6 @@
     </attachedChunks>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00002" summary="Updated responsive product page and components">
-      <option name="closed" value="true" />
-      <created>1756174335591</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1756174335591</updated>
-    </task>
     <task id="LOCAL-00003" summary="Updated title styles">
       <option name="closed" value="true" />
       <created>1756174623242</created>
@@ -187,7 +181,7 @@
       <workItem from="1756236145404" duration="22626000" />
       <workItem from="1756258820980" duration="16341000" />
       <workItem from="1756400333557" duration="1662000" />
-      <workItem from="1756410560489" duration="25229000" />
+      <workItem from="1756410560489" duration="25984000" />
     </task>
     <task id="LOCAL-00010" summary="Updated product information">
       <option name="closed" value="true" />
@@ -517,7 +511,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756504018809</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="Update classifications names">
+      <option name="closed" value="true" />
+      <created>1756504433388</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1756504433388</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -552,7 +554,6 @@
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
-    <MESSAGE value="added dynamic quantityProjectors" />
     <MESSAGE value="Updated price for 970" />
     <MESSAGE value="Updated text of button" />
     <MESSAGE value="Added pet images and use in promotion section" />
@@ -577,7 +578,8 @@
     <MESSAGE value="Refactoring meta tags" />
     <MESSAGE value="Fix Warning social icons" />
     <MESSAGE value="Implement multirepo" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement multirepo" />
+    <MESSAGE value="Update classifications names" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update classifications names" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="NON_MODAL_COMMIT_POSTPONE_SLOW_CHECKS" value="false" />
   </component>
