@@ -5,110 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e32bf44c-7f65-4fbc-956f-797f2104ca05" name="Changes" comment="Implement multirepo">
-      <change afterPath="$PROJECT_DIR$/apps/web-client/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/FooterLayout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/eslint.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/public/vite.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/App.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/App.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/assets/react.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/index.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/main.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/src/vite-env.d.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/tsconfig.app.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/tsconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/tsconfig.node.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/vite.config.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/apps/web-panel/yarn.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/eslint.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/eslint.config.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/next.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/postcss.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/postcss.config.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/108/108.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/108/108.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/108/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/108/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/108/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/108/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/108/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/108/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/108/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/108/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/119W/119w.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/119W/119w.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/119W/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/119W/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/119W/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/119W/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/119W/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/119W/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/119W/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/119W/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/1925W/1925w.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/1925W/1925w.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/1925W/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/1925W/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/1925W/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/1925W/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/1925W/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/1925W/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/1925W/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/1925W/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/970/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/970/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/970/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/970/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/970/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/970/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/970/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/970/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/970/970.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/970/970.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/975W/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/975W/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/975W/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/975W/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/975W/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/975W/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/975W/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/975W/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/975W/975w.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/975W/975w.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/980W/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/980W/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/980W/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/980W/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/980W/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/980W/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/980W/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/980W/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/980W/980w.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/980W/980w.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/98H/2.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/98H/2.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/98H/3.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/98H/3.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/98H/4.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/98H/4.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/98H/5.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/98H/5.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/98H/98h.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/98H/98h.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/education-projectors.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/education-projectors.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/epson-banner.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/epson-banner.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/favicon.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/favicon.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/iubizon-pet.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/iubizon-pet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/logo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/pet-corriendo-derecha.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/pet-corriendo-derecha.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/pet-corriendo-izquierda.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/pet-corriendo-izquierda.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/pet-de-pie.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/pet-de-pie.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/pet-saludando.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/pet-saludando.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/pet-sentado-saludando.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/pet-sentado-saludando.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/product-not-found.png" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/product-not-found.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/images/seo-banner.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/images/seo-banner.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/svg/facebook.svg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/svg/facebook.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/svg/instagram.svg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/svg/instagram.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/svg/tiktok.svg" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/svg/tiktok.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/108.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/108.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/119W.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/119W.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/1925W.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/1925W.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/970.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/970.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/975W.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/975W.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/980W.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/980W.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/98H.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/98H.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/bg-video-epson.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/bg-video-epson.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/videos/education-projectors.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/public/videos/education-projectors.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/[productId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/[productId]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/favicon.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/not-found.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/not-found.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/InformationAndPriceCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/InformationAndPriceCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/MediaCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/MediaCarousel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/MediaCarouselInCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/MediaCarouselInCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/NoFoundComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/NoFoundComponent.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/OtherProductsCarousel.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/OtherProductsCarousel.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/ProductCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/components/ui/ProductCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/data-list/classifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/data-list/classifications.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/data-list/products.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/data-list/products.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tailwind.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/tailwind.config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/yarn.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web-client/src/data-list/classifications.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web-client/src/data-list/classifications.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -169,7 +67,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "yarn",
     "prettierjs.PrettierConfiguration.Package": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/prettier",
-    "ts.external.directory.path": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-client/node_modules/typescript/lib",
+    "ts.external.directory.path": "/Users/noel/Desktop/IUBI/Projects/iubizon/apps/web-panel/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -216,14 +114,6 @@
     </attachedChunks>
   </component>
   <component name="TaskManager">
-    <task id="LOCAL-00001" summary="added .idea in gitignore">
-      <option name="closed" value="true" />
-      <created>1756146613972</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1756146613972</updated>
-    </task>
     <task id="LOCAL-00002" summary="Updated responsive product page and components">
       <option name="closed" value="true" />
       <created>1756174335591</created>
@@ -297,7 +187,7 @@
       <workItem from="1756236145404" duration="22626000" />
       <workItem from="1756258820980" duration="16341000" />
       <workItem from="1756400333557" duration="1662000" />
-      <workItem from="1756410560489" duration="24752000" />
+      <workItem from="1756410560489" duration="25229000" />
     </task>
     <task id="LOCAL-00010" summary="Updated product information">
       <option name="closed" value="true" />
@@ -619,7 +509,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756482720635</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="Implement multirepo">
+      <option name="closed" value="true" />
+      <created>1756504018808</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1756504018809</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
