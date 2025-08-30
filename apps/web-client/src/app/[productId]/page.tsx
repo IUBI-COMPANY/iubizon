@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
         <header className="relative overflow-hidden bg-gradient-to-r from-secondary/90 via-secondary/100 to-secondary/90">
           <div className="top-header w-full p-4">
             <div className="item-logo flex justify-center">
-              <Link href="/apps/web-client/public">
+              <Link href="/">
                 <Image
                   src="/images/logo.png"
                   width={144}
