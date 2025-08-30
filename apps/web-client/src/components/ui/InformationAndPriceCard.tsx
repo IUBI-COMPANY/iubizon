@@ -1,6 +1,7 @@
 import React from "react";
 import { Info, XCircle } from "lucide-react";
 import { Product } from "@/data-list/products";
+import { GiftCard } from "./GiftCard";
 
 interface Props {
   product: Product;
@@ -133,6 +134,13 @@ export const InformationAndPriceCard = ({
               </div>
             </li>
           )}
+          <li className="items-start">
+            <span className="mt-1 text-xl text-primary bg-ambar-500"></span>
+
+            <span className="flex flex-col items-center">
+              <GiftCard />
+            </span>
+          </li>
         </ul>
         <a
           href={`https://wa.me/51972300301?text=Hola%20iubizon,%20me%20interesa%20el%20${product.type}%20${product.name}`}
