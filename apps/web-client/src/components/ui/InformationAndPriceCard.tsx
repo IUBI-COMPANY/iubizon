@@ -35,10 +35,11 @@ export const InformationAndPriceCard = ({
             {options.map((opt, idx) => (
               <span
                 key={idx}
-                className={`px-4 py-[.3em] rounded-full font-semibold text-[.8em] shadow-sm focus:outline-none ${idx === 0
-                  ? "bg-secondary text-white"
-                  : "bg-white/90 text-secondary border border-secondary/40"
-                  }`}
+                className={`px-4 py-[.3em] rounded-full font-semibold text-[.8em] shadow-sm focus:outline-none ${
+                  idx === 0
+                    ? "bg-secondary text-white"
+                    : "bg-white/90 text-secondary border border-secondary/40"
+                }`}
               >
                 {opt}
               </span>
@@ -110,8 +111,9 @@ export const InformationAndPriceCard = ({
                 </strong>
               </span>
               <div
-                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${showModal ? "opacity-100" : "opacity-0 pointer-events-none"
-                  }`}
+                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
+                  showModal ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
                 onClick={() => setShowModal(false)}
               >
                 <div
@@ -138,7 +140,6 @@ export const InformationAndPriceCard = ({
             <span className="flex flex-col items-center">
               <GiftCard />
             </span>
-
           </li>
         </ul>
         <a
