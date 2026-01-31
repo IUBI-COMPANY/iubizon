@@ -14,6 +14,11 @@ const STORAGE_KEYS = {
   formData: "organization_formData",
 };
 
+export type OrganizationRepairStep1 = {
+  products: ProductItem[];
+  description_more_details?: string;
+};
+
 export type OrganizationRepairStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;

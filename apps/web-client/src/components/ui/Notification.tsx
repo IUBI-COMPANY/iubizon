@@ -28,7 +28,7 @@ export const Notification = ({
   title,
   message,
   duration = 5000,
-  position = "top-right",
+  position = "top-left",
   onClose,
   visible = true,
 }: Props) => {

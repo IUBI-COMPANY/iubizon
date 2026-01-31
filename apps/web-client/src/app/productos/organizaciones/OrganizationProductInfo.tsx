@@ -42,7 +42,6 @@ export const OrganizationProductInfo = ({
       return productFormData.products.map((p) => ({
         ...p,
         service_type: "maintenance" as ServiceType,
-        type: "sale" as const,
       }));
     }
     return [
@@ -51,7 +50,6 @@ export const OrganizationProductInfo = ({
         quantity: 1,
         brand: "",
         model: "",
-        type: "sale",
         service_type: "maintenance",
       },
     ];

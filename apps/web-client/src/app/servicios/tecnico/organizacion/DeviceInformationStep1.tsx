@@ -1,33 +1,18 @@
 import { Form } from "@/components/ui/Form";
 import * as yup from "yup";
-import { Controller, Resolver, useForm } from "react-hook-form";
+import { ObjectSchema } from "yup";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
-
-interface TechnicalServiceProduct {
-  id: string;
-  quantity: number;
-  brand: string;
-  model: string;
-  service_type: ServiceType;
-}
-
-// Definir el tipo localmente
-interface OrganizationRepairStep1 {
-  products: TechnicalServiceProduct[];
-  description_more_details?: string;
-}
-
-interface FormData {
-  products: TechnicalServiceProduct[];
-  description_more_details?: string;
-}
+import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/OrganizationsTechnicalServiceStepsGroup";
+import { OrganizationProductStep1 } from "@/components/ui/OrganizationsProductRequestForm";
+import { ServiceType, TechnicalServiceProduct } from "@/types/lead";
 
 interface Props {
   globalStep: number;
@@ -47,83 +32,49 @@ export const DeviceInformationStep1 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    products: yup
-      .array()
-      .of(
-        yup.object({
-          id: yup.string().required(),
-          quantity: yup
-            .number()
-            .required("La cantidad es requerida")
-            .min(1, "La cantidad debe ser al menos 1"),
-          brand: yup.string().required("La marca es requerida"),
-          model: yup.string().required("El modelo es requerido"),
-          service_type: yup
-            .string()
-            .oneOf([
-              "maintenance",
-              "repair",
-              "installation",
-              "calibration",
-              "cleaning",
-              "diagnosis",
-              "warranty",
-              "training",
-              "other",
-            ])
-            .required("El tipo de servicio es requerido"),
-        }),
-      )
-      .min(1, "Debes agregar al menos un producto")
-      .required(),
     description_more_details: yup.string().notRequired(),
-  });
+  }) as ObjectSchema<
+    Pick<OrganizationProductStep1, "description_more_details">
+  >;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
-  const initialProducts: TechnicalServiceProduct[] =
-    repairsFormData?.products && repairsFormData.products.length > 0
-      ? repairsFormData.products.map((p: TechnicalServiceProduct) => ({
-          id: p.id || crypto.randomUUID(),
-          quantity: p.quantity || 1,
-          brand: p.brand || "",
-          model: p.model || "",
-          service_type: p.service_type || "maintenance",
-        }))
-      : [
-          {
-            id: crypto.randomUUID(),
-            quantity: 1,
-            brand: "",
-            model: "",
-            service_type: "maintenance",
-          },
-        ];
+  const initializeProducts = (): TechnicalServiceProduct[] => {
+    if (repairsFormData?.products && repairsFormData.products.length > 0) {
+      return repairsFormData.products.map((p) => ({
+        ...p,
+        service_type: "maintenance" as ServiceType,
+      }));
+    }
+    return [
+      {
+        id: crypto.randomUUID(),
+        quantity: 1,
+        brand: "",
+        model: "",
+        service_type: "maintenance",
+      },
+    ];
+  };
 
   const [products, setProducts] =
-    useState<TechnicalServiceProduct[]>(initialProducts);
+    useState<TechnicalServiceProduct[]>(initializeProducts());
 
   const {
     handleSubmit,
     control,
     formState: { errors },
-    setValue,
-  } = useForm<FormData>({
-    resolver: yupResolver(schema) as Resolver<FormData>,
+  } = useForm<Pick<OrganizationProductStep1, "description_more_details">>({
+    resolver: yupResolver(schema),
     defaultValues: {
-      products: initialProducts,
       description_more_details: repairsFormData?.description_more_details || "",
     },
   });
 
-  useEffect(() => {
-    setValue("products", products);
-  }, [products, setValue]);
-
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
-  const onSubmit = async (formData: FormData) => {
-    console.log({ formData });
-
+  const onSubmit = async (
+    formData: Pick<OrganizationProductStep1, "description_more_details">,
+  ) => {
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
     );
@@ -138,7 +89,7 @@ export const DeviceInformationStep1 = ({
     }
 
     const completeFormData: OrganizationRepairStep1 = {
-      products: formData.products.map((p) => ({
+      products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,
         brand: p.brand,
