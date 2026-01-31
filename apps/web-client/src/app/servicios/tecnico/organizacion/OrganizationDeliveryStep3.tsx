@@ -295,7 +295,7 @@ export const OrganizationDeliveryStep3 = ({
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-6 mx-auto max-w-xl">
+          <div className="w-full grid gap-6 mx-auto">
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Controller

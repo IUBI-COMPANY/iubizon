@@ -83,7 +83,7 @@ const ProductItem = ({
         className={`flex flex-col gap-3 w-full sm:flex-row sm:items-center sm:gap-4`}
       >
         {/* Quantity */}
-        <div className={hideServiceTypeField ? "w-full" : "w-full sm:w-1/6"}>
+        <div className={hideServiceTypeField ? "w-full" : "w-full sm:w-1/8"}>
           <InputNumber
             label={index === 0 ? "Cantidad" : ""}
             name={`products.${index}.quantity`}
@@ -124,7 +124,7 @@ const ProductItem = ({
         </div>
         {/* Service Type (condicional) */}
         {!hideServiceTypeField && (
-          <div className="w-full sm:w-1/4">
+          <div className="w-full sm:w-1/3">
             <Select
               label={index === 0 ? "Tipo de Servicio" : ""}
               name={`products.${index}.service_type`}
@@ -204,7 +204,6 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
       return !hasErrors;
     };
 
-    // Exponer método de validación al componente padre
     useImperativeHandle(ref, () => ({
       validate: validateProducts,
     }));

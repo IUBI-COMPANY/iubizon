@@ -183,7 +183,7 @@ export const OrganizationInfoStep2 = ({
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-6 mx-auto max-w-xl">
+          <div className="w-full grid gap-6 mx-auto">
             <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-2">
                 <Controller
