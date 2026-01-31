@@ -30,6 +30,12 @@ export const OrganizationProductInfo = ({
 }: Props) => {
   const { showNotification, NotificationComponent } = useNotification();
 
+  const schema = yup.object({
+    description_more_details: yup.string().notRequired(),
+  }) as ObjectSchema<
+    Pick<OrganizationProductStep1, "description_more_details">
+  >;
+
   // Inicializar productos para el formulario
   const initializeProducts = (): TechnicalServiceProduct[] => {
     if (productFormData?.products && productFormData.products.length > 0) {
@@ -53,12 +59,6 @@ export const OrganizationProductInfo = ({
 
   const [products, setProducts] =
     useState<TechnicalServiceProduct[]>(initializeProducts());
-
-  const schema = yup.object({
-    description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<
-    Pick<OrganizationProductStep1, "description_more_details">
-  >;
 
   const {
     handleSubmit,

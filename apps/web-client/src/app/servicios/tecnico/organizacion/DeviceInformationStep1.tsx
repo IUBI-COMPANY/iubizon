@@ -8,6 +8,7 @@ import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
 import { useNotification } from "@/components/ui/Notification";
+import { useFormUtils } from "@/hooks/useFormUtils";
 
 interface TechnicalServiceProduct {
   id: string;
@@ -118,7 +119,11 @@ export const DeviceInformationStep1 = ({
     setValue("products", products);
   }, [products, setValue]);
 
+  const { error, errorMessage } = useFormUtils({ errors, schema });
+
   const onSubmit = async (formData: FormData) => {
+    console.log({ formData });
+
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
     );
@@ -158,13 +163,15 @@ export const DeviceInformationStep1 = ({
           <Form onSubmit={handleSubmit(onSubmit)}>
             <div className="w-full grid gap-6 mx-auto">
               <div className="grid grid-cols-1 gap-x-8 gap-y-6">
-                <ProductListComponent
-                  products={products}
-                  onChange={(prods: TechnicalServiceProduct[]) =>
-                    setProducts(prods)
-                  }
-                  hideServiceTypeField={false}
-                />
+                <div>
+                  <ProductListComponent
+                    products={products}
+                    onChange={(prods: TechnicalServiceProduct[]) =>
+                      setProducts(prods)
+                    }
+                    hideServiceTypeField={false}
+                  />
+                </div>
                 <div>
                   <Controller
                     name="description_more_details"
@@ -173,9 +180,12 @@ export const DeviceInformationStep1 = ({
                       <TextArea
                         label="Describa más detalles (Opcional)"
                         name={name}
-                        value={(value as string) || ""}
-                        error={!!errors[name]?.message}
-                        helperText={errors[name]?.message}
+                        value={value}
+                        error={error(name)}
+                        helperText={
+                          errorMessage(name) ||
+                          "Puedes agregar detalles sobre el uso, plazos, presupuesto u otra información relevante"
+                        }
                         rows={3}
                         onChange={onChange}
                         placeholder="Describa más detalles sobre el servicio que necesita"
@@ -195,8 +205,8 @@ export const DeviceInformationStep1 = ({
             </div>
           </Form>
         </div>
+        {NotificationComponent}
       </div>
-      {NotificationComponent}
     </>
   );
 };
