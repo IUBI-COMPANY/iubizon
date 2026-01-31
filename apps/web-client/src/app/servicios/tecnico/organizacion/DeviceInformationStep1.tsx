@@ -10,7 +10,7 @@ import { TextArea } from "@/components/ui/TextArea";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
-import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/OrganizationsTechnicalServiceStepsGroup";
+import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/Group.OrganizationsTechnicalServiceSteps";
 import { OrganizationProductStep1 } from "@/components/ui/OrganizationsProductRequestForm";
 import { ServiceType, TechnicalServiceProduct } from "@/types/lead";
 

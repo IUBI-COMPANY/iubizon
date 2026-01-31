@@ -11,7 +11,7 @@ import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { OrganizationRepairStep2 } from "@/app/servicios/tecnico/organizacion/OrganizationsTechnicalServiceStepsGroup";
+import { OrganizationRepairStep2 } from "@/app/servicios/tecnico/organizacion/Group.OrganizationsTechnicalServiceSteps";
 
 interface FormData {
   document_type: string;

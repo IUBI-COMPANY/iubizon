@@ -36,7 +36,7 @@ export type OrganizationRepairStep3 = {
   terms_and_conditions: boolean;
 };
 
-export const OrganizationsTechnicalServiceStepsGroup = () => {
+export const GroupOrganizationsTechnicalServiceSteps = () => {
   const [globalStep, setGlobalStep] = useState<number>(0);
   const [repairsFormData, setRepairsFormData] = useState<
     Partial<LeadForIubizon>

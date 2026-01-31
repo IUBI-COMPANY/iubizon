@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendTechnicalServiceEmail } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { OrganizationRepairStep3 } from "@/app/servicios/tecnico/organizacion/OrganizationsTechnicalServiceStepsGroup";
+import { OrganizationRepairStep3 } from "@/app/servicios/tecnico/organizacion/Group.OrganizationsTechnicalServiceSteps";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
