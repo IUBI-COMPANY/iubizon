@@ -379,7 +379,7 @@ export const DeliveryStep3 = ({
                 {isQuoteOnly && (
                   <Alert
                     type="success"
-                    message="✓ Te contactaremos en menos de 24 horas con tu cotización personalizada"
+                    message="✓ Te contactaremos lo pronto posible con tu cotización personalizada"
                   />
                 )}
               </div>
