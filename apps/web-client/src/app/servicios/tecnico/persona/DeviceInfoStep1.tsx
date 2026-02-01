@@ -103,44 +103,38 @@ export const DeviceInfoStep1 = ({
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
-        Datos del equipo a reparar
+        Datos del equipos
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-6 mx-auto max-w-4xl">
+          <div className="w-full grid gap-6 mx-auto">
             <div className="grid grid-cols-1 gap-x-8 gap-y-6">
-              {/* Lista de Productos */}
               <ProductListComponent
                 products={products}
                 onChange={(prods: ProductItemList[]) => setProducts(prods)}
                 hideServiceTypeField={false}
               />
-
-              {/* Descripción adicional */}
-              <div>
-                <Controller
-                  name="description_more_details"
-                  control={control}
-                  render={({ field: { onChange, value, name } }) => (
-                    <TextArea
-                      label="Describa más detalles (Opcional)"
-                      name={name}
-                      value={value}
-                      error={error(name)}
-                      helperText={
-                        errorMessage(name) ||
-                        "Puedes agregar detalles sobre el uso, plazos, presupuesto u otra información relevante"
-                      }
-                      rows={3}
-                      onChange={onChange}
-                      placeholder="Describa más detalles sobre el servicio que necesita"
-                    />
-                  )}
-                />
-              </div>
+              <Controller
+                name="description_more_details"
+                control={control}
+                render={({ field: { onChange, value, name } }) => (
+                  <TextArea
+                    label="Describa más detalles (Opcional)"
+                    name={name}
+                    value={value}
+                    error={error(name)}
+                    helperText={
+                      errorMessage(name) ||
+                      "Puedes agregar detalles sobre el uso, plazos, presupuesto u otra información relevante"
+                    }
+                    rows={3}
+                    onChange={onChange}
+                    placeholder="Describa más detalles sobre el servicio que necesita"
+                  />
+                )}
+              />
             </div>
-
-            <div className="mt-2 grid grid-cols-1 gap-3">
+            <div className="flex justify-end">
               <Button block variant="primary" type="submit">
                 <div className="flex gap-2 items-center justify-center">
                   Continuar

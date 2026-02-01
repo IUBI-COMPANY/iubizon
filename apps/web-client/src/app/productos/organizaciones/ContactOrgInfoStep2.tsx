@@ -353,19 +353,16 @@ export const ContactOrgInfoStep2 = ({
               <Button
                 type="button"
                 variant="secondary"
-                size="md"
                 block
                 onClick={() => setCurrentStepToLocalStorage(globalStep - 1)}
               >
                 <div className="flex gap-2 items-center justify-center">
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Anterior</span>
+                  <ArrowLeft /> <span>Atrás</span>
                 </div>
               </Button>
-              <Button type="submit" size="md" block>
+              <Button block variant="primary" type="submit">
                 <div className="flex gap-2 items-center justify-center">
-                  <span className="hidden sm:inline">Continuar</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Siguiente</span> <ArrowRight />
                 </div>
               </Button>
             </div>

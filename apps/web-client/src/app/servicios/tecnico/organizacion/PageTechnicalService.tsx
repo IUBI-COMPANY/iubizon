@@ -179,15 +179,23 @@ export default function PageTechnicalService() {
           <div className="max-w-4xl mx-auto">
             <div className="relative z-10 h-auto px-[2em] pt-[3em] 2xl:pt-[5em] flex flex-col justify-center items-center text-center">
               <div className="max-w-4xl mx-auto mb-8">
+                <div className="w-full flex justify-center">
+                  <span className="inline-block bg-primary/13 text-primary font-semibold px-4 py-1 rounded-full mb-4">
+                    Solicita o Cotiza
+                  </span>
+                </div>
                 <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
                   Mantenimiento y reparación de Proyectores para Instituciones y
                   Empresas
                 </h1>
                 <p className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto">
                   Soluciones profesionales en mantenimiento, diagnóstico y
-                  reparación de proyectores en Lima para instituciones y/o
-                  empresas. Ofrecemos garantía, repuestos para todas las marcas
-                  originales y atención 24/7.
+                  reparación de proyectores para{" "}
+                  <strong className="text-primary">
+                    empresas, colegios y organizaciones
+                  </strong>
+                  . Ofrecemos garantía, repuestos para todas las marcas
+                  originales.
                 </p>
               </div>
             </div>

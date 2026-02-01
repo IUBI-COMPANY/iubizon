@@ -109,13 +109,13 @@ export const DeviceInfoStep1 = ({
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid gap-6 mx-auto max-w-xl">
-            <ProductListComponent
-              products={products}
-              onChange={(prods: ProductItemList[]) => setProducts(prods)}
-              hideServiceTypeField={true}
-            />
-            <div className="sm:col-span-2">
+          <div className="w-full grid gap-6 mx-auto">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-6">
+              <ProductListComponent
+                products={products}
+                onChange={(prods: ProductItemList[]) => setProducts(prods)}
+                hideServiceTypeField={true}
+              />
               <Controller
                 name="description_more_details"
                 control={control}
@@ -136,15 +136,14 @@ export const DeviceInfoStep1 = ({
                   />
                 )}
               />
-            </div>
-            {/* Submit Button */}
-            <div className="flex justify-end">
-              <Button type="submit" size="md" variant="primary" block>
-                <div className="flex gap-2 items-center justify-center">
-                  Continuar
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </Button>
+              <div className="flex justify-end">
+                <Button block variant="primary" type="submit">
+                  <div className="flex gap-2 items-center justify-center">
+                    Continuar
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </Button>
+              </div>
             </div>
           </div>
         </Form>

@@ -209,6 +209,11 @@ export default function PageTechnicalService() {
           <div className="max-w-4xl mx-auto">
             <div className="relative z-10 h-auto px-[2em] pt-[3em] 2xl:pt-[5em] flex flex-col justify-center items-center text-center">
               <div className="max-w-4xl mx-auto mb-8">
+                <div className="w-full flex justify-center">
+                  <span className="inline-block bg-primary/13 text-primary font-semibold px-4 py-1 rounded-full mb-4">
+                    Solicita o Cotiza
+                  </span>
+                </div>
                 <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
                   Servicio Técnico de Proyectores
                 </h1>

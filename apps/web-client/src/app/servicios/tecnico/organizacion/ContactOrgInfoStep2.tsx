@@ -355,7 +355,7 @@ export const ContactOrgInfoStep2 = ({
                 />
               </div>
             </div>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-row justify-between gap-3 mt-4">
               <Button
                 type="button"
                 variant="secondary"
@@ -368,7 +368,7 @@ export const ContactOrgInfoStep2 = ({
               </Button>
               <Button block variant="primary" type="submit">
                 <div className="flex gap-2 items-center justify-center">
-                  <ArrowRight /> <span>Siguiente</span>
+                  <span>Siguiente</span> <ArrowRight />
                 </div>
               </Button>
             </div>

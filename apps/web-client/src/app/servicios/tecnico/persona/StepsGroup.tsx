@@ -100,7 +100,7 @@ export const StepsGroup = () => {
     },
     {
       step: 2,
-      label: "Visita",
+      label: "Tipo servicio",
       classButton: "flex items-center justify-center rounded-r-full",
       icon: <Wrench />,
     },

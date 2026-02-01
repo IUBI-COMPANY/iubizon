@@ -27,7 +27,6 @@ const SERVICE_TYPE_OPTIONS = [
   { label: "Calibración", value: "calibration" },
   { label: "Limpieza", value: "cleaning" },
   { label: "Diagnóstico", value: "diagnosis" },
-  { label: "Garantía", value: "warranty" },
   { label: "Capacitación", value: "training" },
   { label: "Otro", value: "other" },
 ];

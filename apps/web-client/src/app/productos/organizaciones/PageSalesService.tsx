@@ -124,13 +124,21 @@ export default function PageSalesService() {
         <div className="max-w-4xl mx-auto">
           <div className="relative z-10 h-auto px-[2em] pt-[3em] 2xl:pt-[5em] flex flex-col justify-center items-center text-center">
             <div className="max-w-4xl mx-auto mb-8">
+              <div className="w-full flex justify-center">
+                <span className="inline-block bg-primary/13 text-primary font-semibold px-4 py-1 rounded-full mb-4">
+                  Solicita o Cotiza
+                </span>
+              </div>
               <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
-                Solicita o Cotiza Productos para tu Organización
+                Productos para Instituciones y Empresas
               </h1>
               <p className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto">
-                Cotiza proyectores, accesorios y equipos audiovisuales para tu
-                empresa, institución u organización. Soluciones personalizadas
-                según tus necesidades.
+                Proyectores, accesorios y soluciones audiovisuales a medida para{" "}
+                <strong className="text-primary">
+                  empresas, colegios y organizaciones
+                </strong>
+                . Recibe asesoría especializada y una propuesta adaptada a tus
+                necesidades.
               </p>
             </div>
           </div>
