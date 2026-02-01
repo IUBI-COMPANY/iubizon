@@ -402,3 +402,20 @@ interface LeadHistoryEntry {
   new_value?: unknown;
   details?: Record<string, unknown>;
 }
+
+interface ClaimForIubizon extends Partial<DefaultFirestoreProps> {
+  client_id: string;
+  contact: ContactInfo;
+  document?: DocumentInfo;
+  details: {
+    incident_date: formClaim.incident_date;
+    incident_time: formClaim.incident_time;
+    purchase_date: formClaim.purchase_date;
+    invoice_number: formClaim.invoice_number;
+    claim_motive: formClaim.claim_motive;
+    product_service_description: formClaim.product_service_description;
+    problem_description: formClaim.problem_description;
+    claimed_amount: formClaim.claimed_amount;
+    requested_solution: formClaim.requested_solution;
+  };
+}

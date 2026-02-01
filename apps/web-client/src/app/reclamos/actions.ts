@@ -1,30 +1,34 @@
 "use server";
 
-const API_URL = "https://api-iubisales.web.app/claims";
+const API_URL = "https://api-iubisales.web.app/iubizon/claims";
 
-const mapFormClaim = (formClaim: LeadForIubizon) => ({
+const mapFormClaim = (formClaim: ClaimForIubizon) => ({
   client_id: "gYn8QUB8g35wEAZcZz7D",
-  full_name: formClaim.full_name,
-  document_type: formClaim.document_type,
-  document_id: formClaim.document_id,
-  address: formClaim.address,
-  phone_prefix: formClaim.phone_prefix,
-  phone_number: formClaim.phone_number,
-  email: formClaim.email,
-  incident_date: formClaim.incident_date,
-  incident_time: formClaim.incident_time,
-  purchase_date: formClaim.purchase_date,
-  invoice_number: formClaim.invoice_number,
-  claim_motive: formClaim.claim_motive,
-  product_service_description: formClaim.product_service_description,
-  problem_description: formClaim.problem_description,
-  claimed_amount: formClaim.claimed_amount,
-  requested_solution: formClaim.requested_solution,
-  hostname: "iubizon.com",
+  contact: {
+    first_name: formClaim.contact.first_name,
+    last_name: formClaim.contact.last_name,
+    full_name: formClaim.contact.full_name,
+    social_reason: formClaim.contact.social_reason,
+    email: formClaim.contact.email,
+    phone: formClaim.contact.phone,
+    document: formClaim.document,
+    details: {
+      incident_date: formClaim.details.incident_date,
+      incident_time: formClaim.details.incident_time,
+      purchase_date: formClaim.details.purchase_date,
+      invoice_number: formClaim.details.invoice_number,
+      claim_motive: formClaim.details.claim_motive,
+      product_service_description:
+        formClaim.details.product_service_description,
+      problem_description: formClaim.details.problem_description,
+      claimed_amount: formClaim.details.claimed_amount,
+      requested_solution: formClaim.details.requested_solution,
+    },
+  },
 });
 
 export async function sendReclamation(
-  formClaim: LeadForIubizon,
+  formClaim: ClaimForIubizon,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch(API_URL, {
