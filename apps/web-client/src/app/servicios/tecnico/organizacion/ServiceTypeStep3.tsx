@@ -437,7 +437,7 @@ export const ServiceTypeStep3 = ({
                         )}
                       />
                     </div>
-                    <div className="sm: col-span-4">
+                    <div className="sm:col-span-4">
                       <Controller
                         name="address"
                         control={control}
@@ -457,7 +457,7 @@ export const ServiceTypeStep3 = ({
                     </div>
                   </div>
                 )}
-                <div className="sm: col-span-2">
+                <div className="sm:col-span-2 my-4">
                   <Controller
                     name="terms_and_conditions"
                     control={control}

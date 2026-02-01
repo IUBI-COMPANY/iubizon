@@ -614,34 +614,35 @@ export const DeliveryStep3 = ({
                         </div>
                       </>
                     )}
-                    <div className="sm:col-span-2 mt-4">
-                      <Controller
-                        name="terms_and_conditions"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Checkbox
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          >
-                            <div>
-                              Acepto los{" "}
-                              <a
-                                href="#"
-                                className="hover:text-slate-800 font-semibold underline"
-                              >
-                                términos y condiciones
-                              </a>
-                            </div>
-                          </Checkbox>
-                        )}
-                      />
-                    </div>
                   </>
                 )}
+                <div className="sm:col-span-2 mt-4">
+                  <Controller
+                    name="terms_and_conditions"
+                    control={control}
+                    render={({ field: { onChange, value, name } }) => (
+                      <Checkbox
+                        name={name}
+                        value={value}
+                        error={error(name)}
+                        helperText={errorMessage(name)}
+                        required={required(name)}
+                        onChange={onChange}
+                      >
+                        <div>
+                          Acepto los{" "}
+                          <a
+                            href="#"
+                            className="hover:text-slate-800 font-semibold underline"
+                          >
+                            términos y condiciones
+                          </a>
+                        </div>
+                      </Checkbox>
+                    )}
+                  />
+                </div>
+
                 <div className="mt-6 flex flex-row justify-between gap-3">
                   <Button
                     variant="secondary"
