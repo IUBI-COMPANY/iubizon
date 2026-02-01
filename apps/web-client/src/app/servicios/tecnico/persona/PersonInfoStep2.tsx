@@ -254,6 +254,7 @@ export const PersonInfoStep2 = ({
             </div>
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Button
+                block
                 type="button"
                 variant="secondary"
                 onClick={() => setCurrentStepToLocalStorage(globalStep - 1)}

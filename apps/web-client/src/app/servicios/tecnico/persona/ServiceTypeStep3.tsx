@@ -481,7 +481,7 @@ export const ServiceTypeStep3 = ({
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox
                         name={name}
-                        checked={value}
+                        value={value}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}
