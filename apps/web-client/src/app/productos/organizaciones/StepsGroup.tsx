@@ -15,13 +15,11 @@ const STORAGE_KEYS = {
   formData: "org_products_formData",
 };
 
-// Step 1: Product Information
 export type SaleForOrgStep1 = {
   products: ProductItem[];
   description_more_details?: string;
 };
 
-// Step 2: Contact Information
 export type SaleForOrgStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
@@ -32,7 +30,6 @@ export type SaleForOrgStep2 = {
   };
 };
 
-// Step 3: Delivery/Visit Information
 export type SaleForOrgStep3 = {
   delivery?: DeliveryInfo;
   attendance_type?: AttendanceType;
