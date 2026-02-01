@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { StepsRepairsContactForm } from "@/components/ui/StepsRepairsContactForm";
+import { StepItem } from "@/components/ui/StepItem";
 import { Loader2, Projector, User, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { DeviceInformationStep1 } from "@/app/servicios/tecnico/organizacion/DeviceInformationStep1";
-import { OrganizationInfoStep2 } from "@/app/servicios/tecnico/organizacion/OrganizationInfoStep2";
-import { OrganizationDeliveryStep3 } from "@/app/servicios/tecnico/organizacion/OrganizationDeliveryStep3";
+import { DeviceInfoStep1 } from "@/app/servicios/tecnico/organizacion/DeviceInfoStep1";
+import { OrgInfoStep2 } from "@/app/servicios/tecnico/organizacion/OrgInfoStep2";
+import { ServiceTypeStep3 } from "@/app/servicios/tecnico/organizacion/ServiceTypeStep3";
 import { NotificationWithConfetii } from "@/components/sales-and-services/NotificationWithConfetii";
 
 const STORAGE_KEYS = {
@@ -36,7 +36,7 @@ export type OrganizationRepairStep3 = {
   terms_and_conditions: boolean;
 };
 
-export const GroupOrganizationsTechnicalServiceSteps = () => {
+export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState<number>(0);
   const [repairsFormData, setRepairsFormData] = useState<
     Partial<LeadForIubizon>
@@ -143,14 +143,14 @@ export const GroupOrganizationsTechnicalServiceSteps = () => {
     </div>
   ) : (
     <div ref={formRef} className="grid gap-5 pb-10 w-full max-w-3xl mx-auto">
-      <StepsRepairsContactForm
+      <StepItem
         items={stepItems}
         globalStep={globalStep}
         setGlobalStep={setCurrentStepToLocalStorage}
       />
       <div className="w-full max-w-3xl mx-auto shadow-lg  py-10 px-6 rounded-2xl bg-white border-2 border-solid border-primary">
         {globalStep === 0 && (
-          <DeviceInformationStep1
+          <DeviceInfoStep1
             globalStep={globalStep}
             repairsFormData={{
               ...repairsFormData,
@@ -162,7 +162,7 @@ export const GroupOrganizationsTechnicalServiceSteps = () => {
           />
         )}
         {globalStep === 1 && (
-          <OrganizationInfoStep2
+          <OrgInfoStep2
             globalStep={globalStep}
             repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}
@@ -171,7 +171,7 @@ export const GroupOrganizationsTechnicalServiceSteps = () => {
           />
         )}
         {globalStep === 2 && (
-          <OrganizationDeliveryStep3
+          <ServiceTypeStep3
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}

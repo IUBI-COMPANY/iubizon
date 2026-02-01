@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle, GripVertical, Plus, X } from "lucide-react";
-import { TechnicalServiceProduct } from "@/types/lead";
+import { ProductItemList } from "@/types/lead";
 
 interface Props {
-  products: TechnicalServiceProduct[];
-  onChange: (products: TechnicalServiceProduct[]) => void;
+  products: ProductItemList[];
+  onChange: (products: ProductItemList[]) => void;
   errors?: {
     [key: string]: string | undefined;
   };
@@ -34,11 +34,11 @@ const SERVICE_TYPE_OPTIONS = [
 
 // Componente para cada producto con drag and drop nativo
 interface ProductItemProps {
-  product: TechnicalServiceProduct;
+  product: ProductItemList;
   index: number;
   updateProduct: (
     id: string,
-    field: keyof TechnicalServiceProduct,
+    field: keyof ProductItemList,
     value: string | number,
   ) => void;
   removeProduct: (id: string) => void;
@@ -209,7 +209,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
     }));
 
     const addProduct = () => {
-      const newProduct: TechnicalServiceProduct = {
+      const newProduct: ProductItemList = {
         id: crypto.randomUUID(),
         quantity: 1,
         brand: "",
@@ -227,7 +227,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
 
     const updateProduct = (
       id: string,
-      field: keyof TechnicalServiceProduct,
+      field: keyof ProductItemList,
       value: string | number,
     ) => {
       onChange(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { StepsRepairsContactForm } from "@/components/ui/StepsRepairsContactForm";
+import { StepItem } from "@/components/ui/StepItem";
 import { CircleCheck, Loader2, Projector, User, Wrench } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
@@ -134,7 +134,7 @@ export const RetailTechnicalServiceForm = () => {
     </div>
   ) : (
     <div ref={formRef} className="grid gap-5 pb-10 w-full max-w-2xl mx-auto">
-      <StepsRepairsContactForm
+      <StepItem
         items={stepItems}
         globalStep={globalStep}
         setGlobalStep={setCurrentStepToLocalStorage}

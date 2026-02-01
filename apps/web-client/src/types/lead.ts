@@ -10,7 +10,7 @@ export type ServiceType =
   | "training"
   | "other";
 
-export interface TechnicalServiceProduct {
+export interface ProductItemList {
   id: string;
   quantity: number;
   brand: string;

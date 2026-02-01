@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { useNotification } from "@/components/ui/Notification";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
-import { ServiceType, TechnicalServiceProduct } from "@/types/lead";
+import { ServiceType, ProductItemList } from "@/types/lead";
 
 interface Props {
   globalStep: number;
@@ -37,7 +37,7 @@ export const OrganizationProductInfo = ({
   >;
 
   // Inicializar productos para el formulario
-  const initializeProducts = (): TechnicalServiceProduct[] => {
+  const initializeProducts = (): ProductItemList[] => {
     if (productFormData?.products && productFormData.products.length > 0) {
       return productFormData.products.map((p) => ({
         ...p,
@@ -56,7 +56,7 @@ export const OrganizationProductInfo = ({
   };
 
   const [products, setProducts] =
-    useState<TechnicalServiceProduct[]>(initializeProducts());
+    useState<ProductItemList[]>(initializeProducts());
 
   const {
     handleSubmit,
@@ -112,9 +112,7 @@ export const OrganizationProductInfo = ({
           <div className="grid gap-6 mx-auto max-w-xl">
             <ProductListComponent
               products={products}
-              onChange={(prods: TechnicalServiceProduct[]) =>
-                setProducts(prods)
-              }
+              onChange={(prods: ProductItemList[]) => setProducts(prods)}
               hideServiceTypeField={true}
             />
             <div className="sm:col-span-2">

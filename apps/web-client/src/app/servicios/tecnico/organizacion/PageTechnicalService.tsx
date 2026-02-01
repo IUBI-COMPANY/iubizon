@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
-import { GroupOrganizationsTechnicalServiceSteps } from "@/app/servicios/tecnico/organizacion/Group.OrganizationsTechnicalServiceSteps";
+import { StepsGroup } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 import FAQAccordion from "@/components/ui/layout/FAQAccordion";
 import AnimateCards from "@/components/ui/AnimateCards";
 import Brands from "@/components/ui/Brands";
@@ -112,7 +112,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PageOrganizationsTechnicalService() {
+export default function PageTechnicalService() {
   return (
     <>
       <Head>
@@ -191,7 +191,7 @@ export default function PageOrganizationsTechnicalService() {
                 </p>
               </div>
             </div>
-            <GroupOrganizationsTechnicalServiceSteps />
+            <StepsGroup />
           </div>
         </section>
         <WorksGallery type="organization" />

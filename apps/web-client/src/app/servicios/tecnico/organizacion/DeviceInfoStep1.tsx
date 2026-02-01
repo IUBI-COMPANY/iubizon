@@ -10,9 +10,9 @@ import { TextArea } from "@/components/ui/TextArea";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
-import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/Group.OrganizationsTechnicalServiceSteps";
+import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 import { OrganizationProductStep1 } from "@/components/ui/OrganizationsProductRequestForm";
-import { ServiceType, TechnicalServiceProduct } from "@/types/lead";
+import { ServiceType, ProductItemList } from "@/types/lead";
 
 interface Props {
   globalStep: number;
@@ -22,7 +22,7 @@ interface Props {
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
-export const DeviceInformationStep1 = ({
+export const DeviceInfoStep1 = ({
   globalStep,
   repairsFormData,
   setRepairsFormData,
@@ -38,7 +38,7 @@ export const DeviceInformationStep1 = ({
   >;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
-  const initializeProducts = (): TechnicalServiceProduct[] => {
+  const initializeProducts = (): ProductItemList[] => {
     if (repairsFormData?.products && repairsFormData.products.length > 0) {
       return repairsFormData.products.map((p) => ({
         ...p,
@@ -57,7 +57,7 @@ export const DeviceInformationStep1 = ({
   };
 
   const [products, setProducts] =
-    useState<TechnicalServiceProduct[]>(initializeProducts());
+    useState<ProductItemList[]>(initializeProducts());
 
   const {
     handleSubmit,
@@ -117,9 +117,7 @@ export const DeviceInformationStep1 = ({
                 <div>
                   <ProductListComponent
                     products={products}
-                    onChange={(prods: TechnicalServiceProduct[]) =>
-                      setProducts(prods)
-                    }
+                    onChange={(prods: ProductItemList[]) => setProducts(prods)}
                     hideServiceTypeField={false}
                   />
                 </div>

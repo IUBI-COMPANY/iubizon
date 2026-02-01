@@ -16,11 +16,7 @@ interface Props {
   setGlobalStep: (step: number) => void;
 }
 
-export const StepsRepairsContactForm = ({
-  items,
-  globalStep,
-  setGlobalStep,
-}: Props) => {
+export const StepItem = ({ items, globalStep, setGlobalStep }: Props) => {
   return (
     <div className="flex justify-center rounded-full px-2 sm:px-0">
       <ol className="w-full max-w-2xl flex justify-center gap-1 rounded-l-full rounded-r-full overflow-hidden">
