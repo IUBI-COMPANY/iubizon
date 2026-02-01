@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { SaleForOrganizationStep1 } from "@/app/productos/organizaciones/StepsGroup";
+import { SaleForOrgStep1 } from "@/app/productos/organizaciones/StepsGroup";
 import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { useNotification } from "@/components/ui/Notification";
@@ -15,8 +15,8 @@ import { ProductItemList, ServiceType } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<SaleForOrganizationStep1>;
-  setProductFormData: (data: Partial<SaleForOrganizationStep1>) => void;
+  productFormData: Partial<SaleForOrgStep1>;
+  setProductFormData: (data: Partial<SaleForOrgStep1>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
@@ -32,9 +32,7 @@ export const DeviceInfoStep1 = ({
 
   const schema = yup.object({
     description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<
-    Pick<SaleForOrganizationStep1, "description_more_details">
-  >;
+  }) as ObjectSchema<Pick<SaleForOrgStep1, "description_more_details">>;
 
   // Inicializar productos para el formulario
   const initializeProducts = (): ProductItemList[] => {
@@ -62,7 +60,7 @@ export const DeviceInfoStep1 = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<SaleForOrganizationStep1, "description_more_details">>({
+  } = useForm<Pick<SaleForOrgStep1, "description_more_details">>({
     resolver: yupResolver(schema),
     defaultValues: {
       description_more_details: productFormData?.description_more_details || "",
@@ -72,7 +70,7 @@ export const DeviceInfoStep1 = ({
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = (
-    formData: Pick<SaleForOrganizationStep1, "description_more_details">,
+    formData: Pick<SaleForOrgStep1, "description_more_details">,
   ) => {
     // Validar productos (marca, modelo, cantidad)
     const hasEmptyProduct = products.some(
@@ -86,7 +84,7 @@ export const DeviceInfoStep1 = ({
       );
       return;
     }
-    const completeFormData: SaleForOrganizationStep1 = {
+    const completeFormData: SaleForOrgStep1 = {
       products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,

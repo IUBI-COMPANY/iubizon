@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { sendTechnicalServiceEmail } from "./actions";
-import { PersonRepairStep3 } from "@/app/servicios/tecnico/persona/StepsGroup";
+import { ServiceForPersonStep3 } from "@/app/servicios/tecnico/persona/StepsGroup";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
 import { useNotification } from "@/components/ui/Notification";
@@ -36,8 +36,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<PersonRepairStep3>;
-  setRepairsFormData: (data: Partial<PersonRepairStep3>) => void;
+  repairsFormData: Partial<ServiceForPersonStep3>;
+  setRepairsFormData: (data: Partial<ServiceForPersonStep3>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -172,7 +172,7 @@ export const ServiceTypeStep3 = ({
     setLoading(true);
 
     // Transformar FormData a RepairStep3
-    const completeFormData: PersonRepairStep3 = {
+    const completeFormData: ServiceForPersonStep3 = {
       service_details: {
         // ServiceDetails no incluye attendance_type
       },

@@ -11,7 +11,7 @@ import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { OrganizationRepairStep2 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
+import { ServiceForOrgStep2 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 
 interface FormData {
   document_type: string;
@@ -26,8 +26,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<OrganizationRepairStep2>;
-  setRepairsFormData: (data: Partial<OrganizationRepairStep2>) => void;
+  repairsFormData: Partial<ServiceForOrgStep2>;
+  setRepairsFormData: (data: Partial<ServiceForOrgStep2>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
@@ -137,7 +137,7 @@ export const ContactOrgInfoStep2 = ({
   };
 
   const onSubmit = (formData: FormData) => {
-    const completeFormData: OrganizationRepairStep2 = {
+    const completeFormData: ServiceForOrgStep2 = {
       contact: {
         ...(formData.document_type === "DNI"
           ? {

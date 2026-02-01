@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/Select";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { PersonRepairStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
+import { ServiceForPersonStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
 
 interface FormData {
   document_type: string;
@@ -25,8 +25,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<PersonRepairStep2>;
-  setRepairsFormData: (data: Partial<PersonRepairStep2>) => void;
+  repairsFormData: Partial<ServiceForPersonStep2>;
+  setRepairsFormData: (data: Partial<ServiceForPersonStep2>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;

@@ -10,14 +10,14 @@ import { TextArea } from "@/components/ui/TextArea";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
-import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
-import { SaleForOrganizationStep1 } from "@/app/productos/organizaciones/StepsGroup";
+import { ServiceForOrgStep1 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
+import { SaleForOrgStep1 } from "@/app/productos/organizaciones/StepsGroup";
 import { ProductItemList } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<OrganizationRepairStep1>;
-  setRepairsFormData: (data: Partial<OrganizationRepairStep1>) => void;
+  repairsFormData: Partial<ServiceForOrgStep1>;
+  setRepairsFormData: (data: Partial<ServiceForOrgStep1>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
@@ -33,9 +33,7 @@ export const DeviceInfoStep1 = ({
 
   const schema = yup.object({
     description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<
-    Pick<SaleForOrganizationStep1, "description_more_details">
-  >;
+  }) as ObjectSchema<Pick<SaleForOrgStep1, "description_more_details">>;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
   const initializeProducts: ProductItemList[] =
@@ -64,7 +62,7 @@ export const DeviceInfoStep1 = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<SaleForOrganizationStep1, "description_more_details">>({
+  } = useForm<Pick<SaleForOrgStep1, "description_more_details">>({
     resolver: yupResolver(schema),
     defaultValues: {
       description_more_details: repairsFormData?.description_more_details || "",
@@ -74,7 +72,7 @@ export const DeviceInfoStep1 = ({
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = async (
-    formData: Pick<SaleForOrganizationStep1, "description_more_details">,
+    formData: Pick<SaleForOrgStep1, "description_more_details">,
   ) => {
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
@@ -89,7 +87,7 @@ export const DeviceInfoStep1 = ({
       return;
     }
 
-    const completeFormData: OrganizationRepairStep1 = {
+    const completeFormData: ServiceForOrgStep1 = {
       products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,

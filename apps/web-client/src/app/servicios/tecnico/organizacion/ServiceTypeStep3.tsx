@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendTechnicalServiceEmail } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { OrganizationRepairStep3 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
+import { ServiceForOrgStep3 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
@@ -37,8 +37,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<OrganizationRepairStep3>;
-  setRepairsFormData: (data: Partial<OrganizationRepairStep3>) => void;
+  repairsFormData: Partial<ServiceForOrgStep3>;
+  setRepairsFormData: (data: Partial<ServiceForOrgStep3>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -174,7 +174,7 @@ export const ServiceTypeStep3 = ({
     setLoading(true);
 
     // Transformar FormData a OrganizationRepairStep3
-    const completeFormData: OrganizationRepairStep3 = {
+    const completeFormData: ServiceForOrgStep3 = {
       service_details: {
         // ServiceDetails no incluye attendance_type, solo service_type
         // que ya viene del Step 1

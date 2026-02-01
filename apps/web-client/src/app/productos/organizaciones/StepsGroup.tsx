@@ -16,13 +16,13 @@ const STORAGE_KEYS = {
 };
 
 // Step 1: Product Information
-export type SaleForOrganizationStep1 = {
+export type SaleForOrgStep1 = {
   products: ProductItem[];
   description_more_details?: string;
 };
 
 // Step 2: Contact Information
-export type SaleForOrganizationStep2 = {
+export type SaleForOrgStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
   client_type: ClientType;
@@ -33,7 +33,7 @@ export type SaleForOrganizationStep2 = {
 };
 
 // Step 3: Delivery/Visit Information
-export type SaleForOrganizationStep3 = {
+export type SaleForOrgStep3 = {
   delivery?: DeliveryInfo;
   attendance_type?: AttendanceType;
   quote_only?: boolean;

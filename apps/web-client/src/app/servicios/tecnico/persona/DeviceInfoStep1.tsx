@@ -11,12 +11,12 @@ import { ProductListComponent } from "@/components/sales-and-services/ProductLis
 import { ProductItemList } from "@/types/lead";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { useNotification } from "@/components/ui/Notification";
-import { PersonRepairStep1 } from "@/app/servicios/tecnico/persona/StepsGroup";
+import { ServiceForPersonStep1 } from "@/app/servicios/tecnico/persona/StepsGroup";
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<PersonRepairStep1>;
-  setRepairsFormData: (data: Partial<PersonRepairStep1>) => void;
+  repairsFormData: Partial<ServiceForPersonStep1>;
+  setRepairsFormData: (data: Partial<ServiceForPersonStep1>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
@@ -32,7 +32,7 @@ export const DeviceInfoStep1 = ({
 
   const schema = yup.object({
     description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<Pick<PersonRepairStep1, "description_more_details">>;
+  }) as ObjectSchema<Pick<ServiceForPersonStep1, "description_more_details">>;
 
   const initialProducts: ProductItemList[] =
     repairsFormData?.products && repairsFormData.products.length > 0
@@ -59,7 +59,7 @@ export const DeviceInfoStep1 = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<PersonRepairStep1, "description_more_details">>({
+  } = useForm<Pick<ServiceForPersonStep1, "description_more_details">>({
     resolver: yupResolver(schema),
     defaultValues: {
       description_more_details: repairsFormData?.description_more_details || "",
@@ -69,7 +69,7 @@ export const DeviceInfoStep1 = ({
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = async (
-    formData: Pick<PersonRepairStep1, "description_more_details">,
+    formData: Pick<ServiceForPersonStep1, "description_more_details">,
   ) => {
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
@@ -84,7 +84,7 @@ export const DeviceInfoStep1 = ({
       return;
     }
 
-    const completeFormData: PersonRepairStep1 = {
+    const completeFormData: ServiceForPersonStep1 = {
       products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,

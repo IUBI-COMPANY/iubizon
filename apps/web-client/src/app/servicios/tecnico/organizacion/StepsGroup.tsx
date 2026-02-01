@@ -14,12 +14,12 @@ const STORAGE_KEYS = {
   formData: "organization_formData",
 };
 
-export type OrganizationRepairStep1 = {
+export type ServiceForOrgStep1 = {
   products: ProductItem[];
   description_more_details?: string;
 };
 
-export type OrganizationRepairStep2 = {
+export type ServiceForOrgStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
   client_type: ClientType;
@@ -29,7 +29,7 @@ export type OrganizationRepairStep2 = {
   };
 };
 
-export type OrganizationRepairStep3 = {
+export type ServiceForOrgStep3 = {
   service_details?: ServiceDetails;
   visit_schedule?: VisitSchedule;
   address?: AddressInfo;

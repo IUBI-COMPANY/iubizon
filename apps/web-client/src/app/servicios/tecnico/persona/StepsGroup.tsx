@@ -15,18 +15,18 @@ const STORAGE_KEYS = {
   formData: "retail_formData",
 };
 
-export type PersonRepairStep1 = {
+export type ServiceForPersonStep1 = {
   products?: ProductItem[];
   description_more_details?: string;
 };
 
-export type PersonRepairStep2 = {
+export type ServiceForPersonStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
   client_type: ClientType;
 };
 
-export type PersonRepairStep3 = {
+export type ServiceForPersonStep3 = {
   service_details?: ServiceDetails;
   visit_schedule?: VisitSchedule;
   address?: AddressInfo;
