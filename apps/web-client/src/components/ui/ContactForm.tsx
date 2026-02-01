@@ -41,7 +41,7 @@ export const ContactForm = ({
     email: yup.string().email().required(),
     phone: yup.object({
       prefix: yup.string().required(),
-      number: yup.number().required(),
+      number: yup.string().required(),
     }),
     message: yup.string().required(),
     termsAndConditions: yup
@@ -219,7 +219,7 @@ export const ContactForm = ({
                 render={({ field: { onChange, value, name } }) => (
                   <Checkbox
                     name={name}
-                    checked={value}
+                    value={value}
                     error={error(name)}
                     helperText={errorMessage(name)}
                     required={required(name)}

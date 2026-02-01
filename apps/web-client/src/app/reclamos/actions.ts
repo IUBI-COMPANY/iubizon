@@ -2,30 +2,42 @@
 
 const API_URL = "https://api-iubisales.web.app/iubizon/claims";
 
-const mapFormClaim = (formClaim: ClaimForIubizon) => ({
-  client_id: "gYn8QUB8g35wEAZcZz7D",
-  contact: {
-    first_name: formClaim.contact.first_name,
-    last_name: formClaim.contact.last_name,
-    full_name: formClaim.contact.full_name,
-    social_reason: formClaim.contact.social_reason,
-    email: formClaim.contact.email,
-    phone: formClaim.contact.phone,
-    document: formClaim.document,
-    details: {
-      incident_date: formClaim.details.incident_date,
-      incident_time: formClaim.details.incident_time,
-      purchase_date: formClaim.details.purchase_date,
-      invoice_number: formClaim.details.invoice_number,
-      claim_motive: formClaim.details.claim_motive,
-      product_service_description:
-        formClaim.details.product_service_description,
-      problem_description: formClaim.details.problem_description,
-      claimed_amount: formClaim.details.claimed_amount,
-      requested_solution: formClaim.details.requested_solution,
+const mapFormClaim = (formClaim: ClaimForIubizon) => {
+  // Separar el nombre completo en first_name y last_name
+  const nameParts = formClaim.full_name.trim().split(" ");
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || "";
+
+  return {
+    client_id: "gYn8QUB8g35wEAZcZz7D",
+    contact: {
+      first_name: firstName,
+      last_name: lastName,
+      full_name: formClaim.full_name,
+      email: formClaim.email,
+      phone: {
+        prefix: formClaim.phone_prefix,
+        number: formClaim.phone_number,
+      },
+      address: formClaim.address,
     },
-  },
-});
+    document: {
+      type: formClaim.document_type,
+      number: formClaim.document_id,
+    },
+    details: {
+      incident_date: formClaim.incident_date,
+      incident_time: formClaim.incident_time || "",
+      purchase_date: formClaim.purchase_date,
+      invoice_number: formClaim.invoice_number,
+      claim_motive: formClaim.claim_motive,
+      product_service_description: formClaim.product_service_description || "",
+      problem_description: formClaim.problem_description,
+      claimed_amount: formClaim.claimed_amount || "",
+      requested_solution: formClaim.requested_solution,
+    },
+  };
+};
 
 export async function sendReclamation(
   formClaim: ClaimForIubizon,

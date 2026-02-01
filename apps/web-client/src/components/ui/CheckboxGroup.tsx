@@ -93,7 +93,7 @@ export const CheckboxGroup = ({
           <Checkbox
             key={`${name}-${option.value}-${index}`}
             name={`${name}-${option.value}`}
-            checked={values.includes(option.value)}
+            value={values.includes(option.value)}
             onChange={(checked) => handleCheckboxChange(option.value, checked)}
             error={false} // Individual checkboxes don't show errors, only the group
             disabled={disabled || option.disabled}

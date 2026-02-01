@@ -18,7 +18,7 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { sendReclamation } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 
-const schema: ObjectSchema<LeadForIubizon> = yup.object({
+const schema: ObjectSchema<ClaimForIubizon> = yup.object({
   full_name: yup
     .string()
     .required("El nombre completo es requerido")
@@ -58,7 +58,7 @@ const schema: ObjectSchema<LeadForIubizon> = yup.object({
     .min(10, "La descripción debe tener al menos 10 caracteres"),
   claimed_amount: yup.string().optional(),
   requested_solution: yup.string().required("Selecciona una solución"),
-}) as ObjectSchema<LeadForIubizon>;
+}) as ObjectSchema<ClaimForIubizon>;
 
 export default function ClaimClientPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -71,7 +71,7 @@ export default function ClaimClientPage() {
     formState: { errors },
     watch,
     reset,
-  } = useForm<LeadForIubizon>({
+  } = useForm<ClaimForIubizon>({
     resolver: yupResolver(schema),
     defaultValues: {
       full_name: "",
@@ -96,7 +96,7 @@ export default function ClaimClientPage() {
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
   const claimMotive = watch("claim_motive");
 
-  const onSubmit = async (data: LeadForIubizon) => {
+  const onSubmit = async (data: ClaimForIubizon) => {
     setErrorMsg(null);
     setLoading(true);
     try {
