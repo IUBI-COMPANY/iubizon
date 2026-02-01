@@ -34,7 +34,7 @@ interface Props {
   hideControls?: boolean;
 }
 
-export const OrgInfoStep2 = ({
+export const ContactOrgInfoStep2 = ({
   globalStep,
   repairsFormData,
   setRepairsFormData,
@@ -217,6 +217,7 @@ export const OrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="N° de Documento"
+                      type="number"
                       name={name}
                       value={value}
                       error={error(name)}
@@ -312,8 +313,6 @@ export const OrgInfoStep2 = ({
                   )}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-1">
                 <Controller
                   name="phone_prefix"

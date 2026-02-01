@@ -211,6 +211,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="N° de Documento"
+                      type="number"
                       name={name}
                       value={value}
                       error={error(name)}
@@ -306,57 +307,46 @@ export const ContactOrgInfoStep2 = ({
                   )}
                 />
               </div>
-              <div className="sm:col-span-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono / Celular <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-12 gap-2">
-                  <div className="col-span-4">
-                    <Controller
-                      name="phone_prefix"
-                      control={control}
-                      render={({ field: { onChange, value, name } }) => (
-                        <Select
-                          label=""
-                          name={name}
-                          value={value}
-                          error={error(name)}
-                          helperText=""
-                          required={required(name)}
-                          onChange={onChange}
-                          options={countriesISO.map((country) => ({
-                            label: `${country.name} ${country.phonePrefix}`,
-                            value: country.phonePrefix,
-                          }))}
-                        />
-                      )}
+              <div className="sm:col-span-1">
+                <Controller
+                  name="phone_prefix"
+                  control={control}
+                  render={({ field: { onChange, value, name } }) => (
+                    <Select
+                      label="Prefijo"
+                      placeholder="Selecciona un país"
+                      name={name}
+                      value={value}
+                      error={error(name)}
+                      helperText={errorMessage(name)}
+                      required={required(name)}
+                      onChange={onChange}
+                      options={countriesISO.map((iso) => ({
+                        label: `${iso.name} (${iso.phonePrefix})`,
+                        value: iso.phonePrefix,
+                      }))}
                     />
-                  </div>
-                  <div className="col-span-8">
-                    <Controller
-                      name="phone_number"
-                      control={control}
-                      render={({ field: { onChange, value, name } }) => (
-                        <Input
-                          label=""
-                          name={name}
-                          type="tel"
-                          value={value}
-                          error={error(name)}
-                          helperText=""
-                          required={required(name)}
-                          onChange={onChange}
-                          placeholder="XXX XXX XXX"
-                        />
-                      )}
+                  )}
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <Controller
+                  name="phone_number"
+                  control={control}
+                  render={({ field: { onChange, value, name } }) => (
+                    <Input
+                      label="Teléfono"
+                      placeholder="9XXXXXXXX"
+                      type="number"
+                      name={name}
+                      value={value}
+                      error={error(name)}
+                      helperText={errorMessage(name)}
+                      required={required(name)}
+                      onChange={onChange}
                     />
-                  </div>
-                </div>
-                {error("phone_number") && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errorMessage("phone_number")}
-                  </p>
-                )}
+                  )}
+                />
               </div>
             </div>
             <div className="flex flex-row justify-between gap-3 mt-4">

@@ -6,7 +6,7 @@ import { CircleCheck, Loader2, Projector, User, Wrench } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
-import { PersonInfoStep2 } from "@/app/servicios/tecnico/persona/PersonInfoStep2";
+import { ContactPersonInfoStep2 } from "@/app/servicios/tecnico/persona/ContactPersonInfoStep2";
 import { DeviceInfoStep1 } from "@/app/servicios/tecnico/persona/DeviceInfoStep1";
 import { ServiceTypeStep3 } from "@/app/servicios/tecnico/persona/ServiceTypeStep3";
 
@@ -150,7 +150,7 @@ export const StepsGroup = () => {
           />
         )}
         {globalStep === 1 && (
-          <PersonInfoStep2
+          <ContactPersonInfoStep2
             globalStep={globalStep}
             repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}

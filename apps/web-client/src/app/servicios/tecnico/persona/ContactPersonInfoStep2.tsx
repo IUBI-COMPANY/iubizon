@@ -33,7 +33,7 @@ interface Props {
   hideControls?: boolean;
 }
 
-export const PersonInfoStep2 = ({
+export const ContactPersonInfoStep2 = ({
   globalStep,
   repairsFormData,
   setRepairsFormData,
@@ -208,8 +208,6 @@ export const PersonInfoStep2 = ({
                   )}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-1">
                 <Controller
                   name="phone_prefix"

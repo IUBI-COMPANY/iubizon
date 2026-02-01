@@ -5,7 +5,7 @@ import { StepItem } from "@/components/ui/StepItem";
 import { Loader2, Projector, User, Wrench } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DeviceInfoStep1 } from "@/app/servicios/tecnico/organizacion/DeviceInfoStep1";
-import { OrgInfoStep2 } from "@/app/servicios/tecnico/organizacion/OrgInfoStep2";
+import { ContactOrgInfoStep2 } from "@/app/servicios/tecnico/organizacion/ContactOrgInfoStep2";
 import { ServiceTypeStep3 } from "@/app/servicios/tecnico/organizacion/ServiceTypeStep3";
 import { NotificationWithConfetii } from "@/components/sales-and-services/NotificationWithConfetii";
 
@@ -153,7 +153,7 @@ export const StepsGroup = () => {
           />
         )}
         {globalStep === 1 && (
-          <OrgInfoStep2
+          <ContactOrgInfoStep2
             globalStep={globalStep}
             repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}
