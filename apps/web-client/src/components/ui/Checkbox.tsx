@@ -67,7 +67,7 @@ export const Checkbox = ({
         <label
           htmlFor={name}
           className={twMerge(
-            "text-sm text-slate-600 leading-5 flex-1",
+            "text-sm leading-5 flex-1 font-medium",
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           )}
         >

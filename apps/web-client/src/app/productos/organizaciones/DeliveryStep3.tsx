@@ -372,7 +372,7 @@ export const DeliveryStep3 = ({
                       required={required(name)}
                       onChange={onChange}
                     >
-                      Quiero una cotización por el momento
+                      Solo quiero una cotización por el momento
                     </Checkbox>
                   )}
                 />
