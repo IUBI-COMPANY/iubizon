@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 interface Props {
   name: string;
-  checked: boolean;
+  value?: boolean;
   onChange?: (checked: boolean) => void;
   error?: boolean;
   helperText?: string;
@@ -16,7 +16,7 @@ interface Props {
 
 export const Checkbox = ({
   name,
-  checked = false,
+  value = false,
   onChange,
   error = false,
   helperText,
@@ -39,7 +39,7 @@ export const Checkbox = ({
             id={name}
             name={name}
             type="checkbox"
-            checked={checked}
+            checked={value}
             onChange={handleChange}
             disabled={disabled}
             className={twMerge(

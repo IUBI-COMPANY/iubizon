@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import ProductsOrganizationPage from "@/app/productos/organizaciones/ProductsOrganizationPage";
+import PageSalesService from "@/app/productos/organizaciones/PageSalesService";
 
 export const metadata: Metadata = {
   title: "Productos para Organizaciones | Iubizon Perú",
@@ -32,5 +32,5 @@ export const metadata: Metadata = {
 // 🔹 Página principal (Server)
 // ==========================
 export default async function Page() {
-  return <ProductsOrganizationPage />;
+  return <PageSalesService />;
 }

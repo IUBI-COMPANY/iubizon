@@ -1,8 +1,7 @@
 import React from "react";
 import * as yup from "yup";
-import { Controller, useForm, Resolver } from "react-hook-form";
+import { Controller, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-// ...existing code...
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Form } from "@/components/ui/Form";
 import { RadioGroup } from "@/components/ui/RadioGroup";
@@ -17,7 +16,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendProductRequestEmail } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { OrganizationProductStep3 } from "@/components/ui/OrganizationsProductRequestForm";
+import { SaleForOrganizationStep3 } from "@/app/productos/organizaciones/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
@@ -25,11 +24,8 @@ import {
 } from "@/utils/validateDatetimeToSupportInformation";
 
 interface FormData {
-  delivery_option:
-    | "store_pickup"
-    | "home_delivery"
-    | "province_shipping"
-    | "quote_only";
+  delivery_option?: DeliveryType;
+  is_quotation?: boolean;
   visit_date?: string;
   visit_time?: string;
   department?: string;
@@ -41,15 +37,15 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<OrganizationProductStep3>;
-  setProductFormData: (data: Partial<OrganizationProductStep3>) => void;
+  productFormData: Partial<SaleForOrganizationStep3>;
+  setProductFormData: (data: Partial<SaleForOrganizationStep3>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
 }
 
-export const OrganizationDeliveryInfo = ({
+export const DeliveryStep3 = ({
   globalStep,
   productFormData,
   setProductFormData,
@@ -61,15 +57,8 @@ export const OrganizationDeliveryInfo = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    delivery_option: yup
-      .string()
-      .oneOf([
-        "store_pickup",
-        "home_delivery",
-        "province_shipping",
-        "quote_only",
-      ])
-      .required("Debes seleccionar una opción"),
+    delivery_option: yup.string().required("Debes seleccionar una opción"),
+    is_quotation: yup.boolean().notRequired(),
     visit_date: yup.string().when("delivery_option", {
       is: "home_delivery",
       then: (schema) =>
@@ -138,22 +127,11 @@ export const OrganizationDeliveryInfo = ({
       .required(),
   });
 
-  // Determinar el valor inicial basado en productFormData
-  const getInitialDeliveryOption = (): FormData["delivery_option"] => {
-    if (productFormData?.quote_only) {
-      return "quote_only";
-    }
-    if (productFormData?.delivery?.type) {
-      return productFormData.delivery.type;
-    }
-    return "quote_only";
-  };
-
   const getInitialValues = () => {
     const delivery = productFormData?.delivery;
 
     return {
-      delivery_option: getInitialDeliveryOption(),
+      delivery_option: productFormData?.delivery?.type || "store_pickup",
       visit_date: delivery?.home_delivery?.preferred_date || "",
       visit_time: delivery?.home_delivery?.preferred_time || "",
       department: delivery?.province_shipping?.address.department || "",
@@ -186,7 +164,7 @@ export const OrganizationDeliveryInfo = ({
   const isPickup = deliveryOption === "store_pickup";
   const isDelivery = deliveryOption === "home_delivery";
   const isShipping = deliveryOption === "province_shipping";
-  const isQuoteOnly = deliveryOption === "quote_only";
+  const isQuoteOnly = watch("is_quotation");
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -203,13 +181,13 @@ export const OrganizationDeliveryInfo = ({
     setLoading(true);
 
     // 1. Transformar datos del formulario a la nueva estructura
-    const completeFormData: OrganizationProductStep3 = {
-      quote_only: formData.delivery_option === "quote_only",
+    const completeFormData: SaleForOrganizationStep3 = {
+      ...(formData.is_quotation && { attendance_type: "quotation" }),
       terms_and_conditions: formData.terms_and_conditions,
     };
 
     // Si NO es solo cotización, construir el objeto delivery
-    if (formData.delivery_option !== "quote_only") {
+    if (!formData.is_quotation) {
       switch (formData.delivery_option) {
         case "store_pickup":
           completeFormData.delivery = {
@@ -335,7 +313,10 @@ export const OrganizationDeliveryInfo = ({
 
       // Delivery (nueva estructura)
       delivery: completeFormData.delivery,
-      quote_only: completeFormData.quote_only,
+      // Attendance Type (OPTIONAL)
+      ...(completeFormData?.attendance_type && {
+        attendance_type: completeFormData?.attendance_type,
+      }),
 
       // Communication
       terms_and_conditions: completeFormData.terms_and_conditions,
@@ -380,258 +361,294 @@ export const OrganizationDeliveryInfo = ({
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Controller
-                  name="delivery_option"
+                  name="is_quotation"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
-                    <RadioGroup
-                      label="¿Cómo deseas recibir los productos?"
+                    <Checkbox
                       name={name}
                       value={value}
                       error={error(name)}
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      options={[
-                        {
-                          label: "Recojo en tienda",
-                          value: "store_pickup",
-                        },
-                        {
-                          label: "Entrega a domicilio",
-                          value: "home_delivery",
-                          message: "Para Lima Metropolitana",
-                        },
-                        {
-                          label: "Envío a provincias",
-                          value: "province_shipping",
-                          message: "Envío por courier",
-                        },
-                        {
-                          label: "Solo quiero una cotización",
-                          value: "quote_only",
-                        },
-                      ]}
-                    />
+                    >
+                      Quiero una cotización por el momento
+                    </Checkbox>
                   )}
                 />
-
-                {isPickup && <BusinessAddress />}
                 {isQuoteOnly && (
                   <Alert
                     type="success"
                     message="✓ Te contactaremos en menos de 24 horas con tu cotización personalizada"
                   />
                 )}
-                {isDelivery && (
-                  <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="visit_date"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <DatePicker
-                            label="Fecha preferida de entrega"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="visit_time"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <TimePicker
-                            label="Horario preferido"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="district"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Select
-                            label="Distrito"
-                            placeholder="Ej. Miraflores"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                            options={districtsByLimaProvince.map((dist) => ({
-                              value: dist.name,
-                              label: dist.name,
-                            }))}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="address"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Input
-                            label="Dirección completa"
-                            placeholder="Av. Larco 1234, Of. 501"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
-                )}
-                {isShipping && (
+              </div>
+
+              <div className="sm:col-span-2">
+                {!isQuoteOnly && (
                   <>
-                    <div className="my-6">
-                      <Alert
-                        type="info"
-                        message="Necesitamos tu dirección completa para coordinar el envío de los productos."
+                    <Controller
+                      name="delivery_option"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <RadioGroup
+                          label="¿Cómo deseas recibir los productos?"
+                          name={name}
+                          value={value}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          hidden={isQuoteOnly}
+                          options={[
+                            {
+                              label: "Recojo en tienda",
+                              value: "store_pickup",
+                            },
+                            {
+                              label: "Entrega a domicilio",
+                              value: "home_delivery",
+                              message: "Para Lima Metropolitana",
+                            },
+                            {
+                              label: "Envío a provincias",
+                              value: "province_shipping",
+                              message: "Envío por courier",
+                            },
+                          ]}
+                        />
+                      )}
+                    />
+
+                    {isPickup && <BusinessAddress />}
+
+                    {isDelivery && (
+                      <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="visit_date"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <DatePicker
+                                label="Fecha preferida de entrega"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="visit_time"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <TimePicker
+                                label="Horario preferido"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="district"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <Select
+                                label="Distrito"
+                                placeholder="Ej. Miraflores"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                                options={districtsByLimaProvince.map(
+                                  (dist) => ({
+                                    value: dist.name,
+                                    label: dist.name,
+                                  }),
+                                )}
+                              />
+                            )}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="address"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <Input
+                                label="Dirección completa"
+                                placeholder="Av. Larco 1234, Of. 501"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {isShipping && (
+                      <>
+                        <div className="my-6">
+                          <Alert
+                            type="info"
+                            message="Necesitamos tu dirección completa para coordinar el envío de los productos."
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="department"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Select
+                                  label="Departamento"
+                                  placeholder="Ej. Arequipa"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                  options={peruUbigeo.map((dep) => ({
+                                    value: dep.name,
+                                    label: dep.name,
+                                  }))}
+                                />
+                              )}
+                            />
+                          </div>
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="province"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Select
+                                  label="Provincia"
+                                  placeholder="Ej. Arequipa"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                  options={
+                                    _departmentSelected?.provinces.map(
+                                      (prov) => ({
+                                        value: prov.name,
+                                        label: prov.name,
+                                      }),
+                                    ) || []
+                                  }
+                                />
+                              )}
+                            />
+                          </div>
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="district"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Select
+                                  label="Distrito"
+                                  placeholder="Ej. Cayma"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                  options={
+                                    _provinceSelected?.districts.map(
+                                      (dist) => ({
+                                        value: dist.name,
+                                        label: dist.name,
+                                      }),
+                                    ) || []
+                                  }
+                                />
+                              )}
+                            />
+                          </div>
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="address"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Input
+                                  label="Dirección completa"
+                                  placeholder="Av. Ejercito 456"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                />
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className="sm:col-span-2 mt-4">
+                      <Controller
+                        name="terms_and_conditions"
+                        control={control}
+                        render={({ field: { onChange, value, name } }) => (
+                          <Checkbox
+                            name={name}
+                            value={value}
+                            error={error(name)}
+                            helperText={errorMessage(name)}
+                            required={required(name)}
+                            onChange={onChange}
+                          >
+                            <div>
+                              Acepto los{" "}
+                              <a
+                                href="#"
+                                className="hover:text-slate-800 font-semibold underline"
+                              >
+                                términos y condiciones
+                              </a>
+                            </div>
+                          </Checkbox>
+                        )}
                       />
-                    </div>
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="department"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Select
-                              label="Departamento"
-                              placeholder="Ej. Arequipa"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                              options={peruUbigeo.map((dep) => ({
-                                value: dep.name,
-                                label: dep.name,
-                              }))}
-                            />
-                          )}
-                        />
-                      </div>
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="province"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Select
-                              label="Provincia"
-                              placeholder="Ej. Arequipa"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                              options={
-                                _departmentSelected?.provinces.map((prov) => ({
-                                  value: prov.name,
-                                  label: prov.name,
-                                })) || []
-                              }
-                            />
-                          )}
-                        />
-                      </div>
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="district"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Select
-                              label="Distrito"
-                              placeholder="Ej. Cayma"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                              options={
-                                _provinceSelected?.districts.map((dist) => ({
-                                  value: dist.name,
-                                  label: dist.name,
-                                })) || []
-                              }
-                            />
-                          )}
-                        />
-                      </div>
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="address"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Input
-                              label="Dirección completa"
-                              placeholder="Av. Ejercito 456"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                            />
-                          )}
-                        />
-                      </div>
                     </div>
                   </>
                 )}
-                <div className="sm:col-span-2 mt-4">
-                  <Controller
-                    name="terms_and_conditions"
-                    control={control}
-                    render={({ field: { onChange, value, name } }) => (
-                      <Checkbox
-                        name={name}
-                        checked={value}
-                        error={error(name)}
-                        helperText={errorMessage(name)}
-                        required={required(name)}
-                        onChange={onChange}
-                      >
-                        <div>
-                          Acepto los{" "}
-                          <a
-                            href="#"
-                            className="hover:text-slate-800 font-semibold underline"
-                          >
-                            términos y condiciones
-                          </a>
-                        </div>
-                      </Checkbox>
-                    )}
-                  />
-                </div>
                 <div className="mt-6 flex flex-row justify-between gap-3">
                   <Button
                     variant="secondary"
                     type="button"
                     disabled={loading}
                     size="md"
+                    block
                     onClick={() => setCurrentStepToLocalStorage(globalStep - 1)}
                   >
                     <div className="flex gap-2 items-center justify-center">
@@ -644,6 +661,7 @@ export const OrganizationDeliveryInfo = ({
                     type="submit"
                     loading={loading}
                     size="md"
+                    block
                   >
                     <div className="flex gap-2 items-center justify-center">
                       <SendIcon className="w-4 h-4" />

@@ -6,9 +6,9 @@ import { CircleCheck, Loader2, Package, User, Truck } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
-import { OrganizationProductInfo } from "@/app/productos/organizaciones/OrganizationProductInfo";
-import { OrganizationContactInfo } from "@/app/productos/organizaciones/OrganizationContactInfo";
-import { OrganizationDeliveryInfo } from "@/app/productos/organizaciones/OrganizationDeliveryInfo";
+import { DeviceInfoStep1 } from "@/app/productos/organizaciones/DeviceInfoStep1";
+import { ContactOrgInfoStep2 } from "@/app/productos/organizaciones/ContactOrgInfoStep2";
+import { DeliveryStep3 } from "@/app/productos/organizaciones/DeliveryStep3";
 
 const STORAGE_KEYS = {
   currentStep: "org_products_currentStep",
@@ -16,16 +16,16 @@ const STORAGE_KEYS = {
 };
 
 // Step 1: Product Information
-export type OrganizationProductStep1 = {
+export type SaleForOrganizationStep1 = {
   products: ProductItem[];
   description_more_details?: string;
 };
 
 // Step 2: Contact Information
-export type OrganizationProductStep2 = {
+export type SaleForOrganizationStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: "individual" | "organization";
+  client_type: ClientType;
   organization_info?: {
     company_name?: string;
     tax_id?: string;
@@ -33,13 +33,14 @@ export type OrganizationProductStep2 = {
 };
 
 // Step 3: Delivery/Visit Information
-export type OrganizationProductStep3 = {
+export type SaleForOrganizationStep3 = {
   delivery?: DeliveryInfo;
+  attendance_type?: AttendanceType;
   quote_only?: boolean;
   terms_and_conditions: boolean;
 };
 
-export const OrganizationsProductRequestForm = () => {
+export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
   const [productFormData, setProductFormData] = useState<
     Partial<LeadForIubizon>
@@ -108,7 +109,7 @@ export const OrganizationsProductRequestForm = () => {
     },
     {
       step: 2,
-      label: "Entrega",
+      label: "Tipo de entrega",
       classButton: "flex items-center justify-center rounded-r-full",
       icon: <Truck className="w-4 h-4 sm:w-5 sm:h-5" />,
     },
@@ -153,7 +154,7 @@ export const OrganizationsProductRequestForm = () => {
       />
       <div className="w-full max-w-2xl mx-auto shadow-lg py-6 sm:py-10 px-4 sm:px-6 rounded-2xl bg-white border-2 border-solid border-primary">
         {globalStep === 0 && (
-          <OrganizationProductInfo
+          <DeviceInfoStep1
             globalStep={globalStep}
             productFormData={productFormData}
             setProductFormData={setProductFormData}
@@ -162,7 +163,7 @@ export const OrganizationsProductRequestForm = () => {
           />
         )}
         {globalStep === 1 && (
-          <OrganizationContactInfo
+          <ContactOrgInfoStep2
             globalStep={globalStep}
             productFormData={productFormData}
             setProductFormData={setProductFormData}
@@ -171,7 +172,7 @@ export const OrganizationsProductRequestForm = () => {
           />
         )}
         {globalStep === 2 && (
-          <OrganizationDeliveryInfo
+          <DeliveryStep3
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}

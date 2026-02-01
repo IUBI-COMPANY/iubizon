@@ -4,7 +4,7 @@ import { CheckCircle, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
-import { OrganizationsProductRequestForm } from "@/components/ui/OrganizationsProductRequestForm";
+import { StepsGroup } from "@/app/productos/organizaciones/StepsGroup";
 import { useState } from "react";
 import Brands from "@/components/ui/Brands";
 
@@ -58,7 +58,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export default function ProductsOrganizationPage() {
+export default function PageSalesService() {
   return (
     <>
       <Head>
@@ -134,7 +134,7 @@ export default function ProductsOrganizationPage() {
               </p>
             </div>
           </div>
-          <OrganizationsProductRequestForm />
+          <StepsGroup />
         </div>
       </section>
 

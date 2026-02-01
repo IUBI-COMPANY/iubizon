@@ -360,6 +360,7 @@ export const OrgInfoStep2 = ({
               <Button
                 type="button"
                 variant="secondary"
+                block
                 onClick={() => setCurrentStepToLocalStorage(globalStep - 1)}
               >
                 <div className="flex gap-2 items-center justify-center">

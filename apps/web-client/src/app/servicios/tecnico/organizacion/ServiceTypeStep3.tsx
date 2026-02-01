@@ -22,9 +22,10 @@ import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
+import { attendanceTypes } from "@/data-list/attendaceTypes";
 
 interface FormData {
-  attendance_type: string;
+  attendance_type: AttendanceType;
   visit_date?: string;
   visit_time?: string;
   department?: string;
@@ -130,7 +131,8 @@ export const ServiceTypeStep3 = ({
     const parsedData = storedData ? JSON.parse(storedData) : {};
 
     return {
-      attendance_type: (parsedData.attendance_type as string) || "go_to_store",
+      attendance_type:
+        (parsedData?.attendance_type as AttendanceType) || "go_to_store",
       visit_date: repairsFormData?.visit_schedule?.preferred_date || "",
       visit_time: repairsFormData?.visit_schedule?.preferred_time || "",
       department: repairsFormData?.address?.department || "",
@@ -305,34 +307,10 @@ export const ServiceTypeStep3 = ({
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      options={[
-                        {
-                          label: "Quiero ir al local",
-                          value: "go_to_store",
-                        },
-                        {
-                          label: "Quiero una visita técnica a mi domicilio",
-                          value: "home_visit",
-                          message: "Solo para Lima",
-                        },
-                        {
-                          label: "Quiero enviar mi producto al local",
-                          value: "send_to_store",
-                          message: "Solo para provincias",
-                        },
-                        {
-                          label: "Quiero una cotización",
-                          value: "quotation",
-                        },
-                        {
-                          label: "Otro",
-                          value: "other",
-                        },
-                      ]}
+                      options={attendanceTypes}
                     />
                   )}
                 />
-
                 {isLocalVisit && <BusinessAddress />}
                 {isHouseVisit && (
                   <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
@@ -486,7 +464,7 @@ export const ServiceTypeStep3 = ({
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox
                         name={name}
-                        checked={value}
+                        value={value}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}

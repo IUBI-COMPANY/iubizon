@@ -11,7 +11,7 @@ import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { OrganizationProductStep2 } from "@/components/ui/OrganizationsProductRequestForm";
+import { SaleForOrganizationStep2 } from "@/app/productos/organizaciones/StepsGroup";
 
 interface FormData {
   document_type: string;
@@ -26,13 +26,13 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<OrganizationProductStep2>;
-  setProductFormData: (data: Partial<OrganizationProductStep2>) => void;
+  productFormData: Partial<SaleForOrganizationStep2>;
+  setProductFormData: (data: Partial<SaleForOrganizationStep2>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
-export const OrganizationContactInfo = ({
+export const ContactOrgInfoStep2 = ({
   globalStep,
   productFormData,
   setProductFormData,
@@ -135,7 +135,7 @@ export const OrganizationContactInfo = ({
   };
 
   const onSubmit = (formData: FormData) => {
-    const completeFormData: OrganizationProductStep2 = {
+    const completeFormData: SaleForOrganizationStep2 = {
       contact: {
         first_name: formData.first_name || "",
         last_name: formData.last_name || "",
@@ -364,6 +364,7 @@ export const OrganizationContactInfo = ({
                 type="button"
                 variant="secondary"
                 size="md"
+                block
                 onClick={() => setCurrentStepToLocalStorage(globalStep - 1)}
               >
                 <div className="flex gap-2 items-center justify-center">
@@ -371,7 +372,7 @@ export const OrganizationContactInfo = ({
                   <span className="hidden sm:inline">Anterior</span>
                 </div>
               </Button>
-              <Button type="submit" size="md">
+              <Button type="submit" size="md" block>
                 <div className="flex gap-2 items-center justify-center">
                   <span className="hidden sm:inline">Continuar</span>
                   <ArrowRight className="w-4 h-4" />

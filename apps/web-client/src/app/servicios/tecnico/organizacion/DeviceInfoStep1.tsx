@@ -11,8 +11,8 @@ import { ProductListComponent } from "@/components/sales-and-services/ProductLis
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { OrganizationRepairStep1 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
-import { OrganizationProductStep1 } from "@/components/ui/OrganizationsProductRequestForm";
-import { ServiceType, ProductItemList } from "@/types/lead";
+import { SaleForOrganizationStep1 } from "@/app/productos/organizaciones/StepsGroup";
+import { ProductItemList } from "@/types/lead";
 
 interface Props {
   globalStep: number;
@@ -34,7 +34,7 @@ export const DeviceInfoStep1 = ({
   const schema = yup.object({
     description_more_details: yup.string().notRequired(),
   }) as ObjectSchema<
-    Pick<OrganizationProductStep1, "description_more_details">
+    Pick<SaleForOrganizationStep1, "description_more_details">
   >;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
@@ -64,7 +64,7 @@ export const DeviceInfoStep1 = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<OrganizationProductStep1, "description_more_details">>({
+  } = useForm<Pick<SaleForOrganizationStep1, "description_more_details">>({
     resolver: yupResolver(schema),
     defaultValues: {
       description_more_details: repairsFormData?.description_more_details || "",
@@ -74,7 +74,7 @@ export const DeviceInfoStep1 = ({
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = async (
-    formData: Pick<OrganizationProductStep1, "description_more_details">,
+    formData: Pick<SaleForOrganizationStep1, "description_more_details">,
   ) => {
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,

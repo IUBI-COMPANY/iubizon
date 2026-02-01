@@ -46,8 +46,7 @@ type AttendanceType =
   | "home_visit" // Visita a domicilio
   | "send_to_store" // Enviar equipo a tienda
   | "quotation" // Solo cotización
-  | "remote_support" // Soporte remoto
-  | "on_site_service" // Servicio en sitio (para organizaciones)
+  | "sale"
   | "other";
 
 type Priority = "low" | "medium" | "high" | "urgent";
@@ -269,6 +268,7 @@ interface LeadForIubizon extends Partial<DefaultFirestoreProps> {
 
   // Entrega de productos
   delivery?: DeliveryInfo;
+  attendance_type?: AttendanceType;
 
   // Solo cotización (sin compra inmediata)
   quote_only?: boolean; // Si true, el cliente solo quiere cotización

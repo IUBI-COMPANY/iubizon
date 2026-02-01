@@ -103,7 +103,7 @@ export const StepsGroup = () => {
     },
     {
       step: 2,
-      label: "Visita",
+      label: "Tipo servicio",
       classButton: "flex items-center justify-center rounded-r-full",
       icon: <Wrench />,
     },
@@ -131,12 +131,6 @@ export const StepsGroup = () => {
     }
   }, [globalStep, router]);
 
-  const normalizeProducts = (products: ProductItem[] = []) =>
-    products.map((p) => ({
-      ...p,
-      service_type: p.service_type ?? "maintenance", // Valor por defecto
-    }));
-
   return loading ? (
     <div className="w-full h-full min-h-[40svh] grid place-items-center">
       <Loader2 className="w-20 h-20 text-primary animate-spin" />
@@ -152,10 +146,7 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            repairsFormData={{
-              ...repairsFormData,
-              products: normalizeProducts(repairsFormData.products),
-            }}
+            repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}

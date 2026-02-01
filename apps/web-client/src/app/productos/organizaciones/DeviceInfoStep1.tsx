@@ -6,22 +6,22 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { OrganizationProductStep1 } from "@/components/ui/OrganizationsProductRequestForm";
+import { SaleForOrganizationStep1 } from "@/app/productos/organizaciones/StepsGroup";
 import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { useNotification } from "@/components/ui/Notification";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
-import { ServiceType, ProductItemList } from "@/types/lead";
+import { ProductItemList, ServiceType } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<OrganizationProductStep1>;
-  setProductFormData: (data: Partial<OrganizationProductStep1>) => void;
+  productFormData: Partial<SaleForOrganizationStep1>;
+  setProductFormData: (data: Partial<SaleForOrganizationStep1>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
-export const OrganizationProductInfo = ({
+export const DeviceInfoStep1 = ({
   globalStep,
   productFormData,
   setProductFormData,
@@ -33,7 +33,7 @@ export const OrganizationProductInfo = ({
   const schema = yup.object({
     description_more_details: yup.string().notRequired(),
   }) as ObjectSchema<
-    Pick<OrganizationProductStep1, "description_more_details">
+    Pick<SaleForOrganizationStep1, "description_more_details">
   >;
 
   // Inicializar productos para el formulario
@@ -62,7 +62,7 @@ export const OrganizationProductInfo = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<OrganizationProductStep1, "description_more_details">>({
+  } = useForm<Pick<SaleForOrganizationStep1, "description_more_details">>({
     resolver: yupResolver(schema),
     defaultValues: {
       description_more_details: productFormData?.description_more_details || "",
@@ -72,7 +72,7 @@ export const OrganizationProductInfo = ({
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = (
-    formData: Pick<OrganizationProductStep1, "description_more_details">,
+    formData: Pick<SaleForOrganizationStep1, "description_more_details">,
   ) => {
     // Validar productos (marca, modelo, cantidad)
     const hasEmptyProduct = products.some(
@@ -86,14 +86,16 @@ export const OrganizationProductInfo = ({
       );
       return;
     }
-    const completeFormData: OrganizationProductStep1 = {
-      products: products.map((p) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { service_type, ...rest } = p;
-        return { ...rest, type: "sale" as const };
-      }),
+    const completeFormData: SaleForOrganizationStep1 = {
+      products: products.map((p) => ({
+        id: p.id,
+        quantity: p.quantity,
+        brand: p.brand,
+        model: p.model,
+      })),
       description_more_details: formData.description_more_details,
     };
+
     setProductFormData({ ...productFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
