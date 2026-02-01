@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendProductRequestEmail } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { SaleForOrgStep3 } from "@/app/productos/organizaciones/StepsGroup";
+import { AnOrderStep3 } from "@/app/productos/pedido/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
@@ -37,8 +37,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<SaleForOrgStep3>;
-  setProductFormData: (data: Partial<SaleForOrgStep3>) => void;
+  productFormData: Partial<AnOrderStep3>;
+  setProductFormData: (data: Partial<AnOrderStep3>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -181,7 +181,7 @@ export const DeliveryStep3 = ({
     setLoading(true);
 
     // 1. Transformar datos del formulario a la nueva estructura
-    const completeFormData: SaleForOrgStep3 = {
+    const completeFormData: AnOrderStep3 = {
       ...(formData.is_quotation && { attendance_type: "quotation" }),
       terms_and_conditions: formData.terms_and_conditions,
     };

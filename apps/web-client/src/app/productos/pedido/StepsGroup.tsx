@@ -6,21 +6,21 @@ import { CircleCheck, Loader2, Package, User, Truck } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
-import { DeviceInfoStep1 } from "@/app/productos/organizaciones/DeviceInfoStep1";
-import { ContactOrgInfoStep2 } from "@/app/productos/organizaciones/ContactOrgInfoStep2";
-import { DeliveryStep3 } from "@/app/productos/organizaciones/DeliveryStep3";
+import { DeviceInfoStep1 } from "@/app/productos/pedido/DeviceInfoStep1";
+import { ContactInfoStep2 } from "@/app/productos/pedido/ContactInfoStep2";
+import { DeliveryStep3 } from "@/app/productos/pedido/DeliveryStep3";
 
 const STORAGE_KEYS = {
   currentStep: "org_products_currentStep",
   formData: "org_products_formData",
 };
 
-export type SaleForOrgStep1 = {
+export type AnOrderStep1 = {
   products: ProductItem[];
   description_more_details?: string;
 };
 
-export type SaleForOrgStep2 = {
+export type AnOrderStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
   client_type: ClientType;
@@ -30,7 +30,7 @@ export type SaleForOrgStep2 = {
   };
 };
 
-export type SaleForOrgStep3 = {
+export type AnOrderStep3 = {
   delivery?: DeliveryInfo;
   attendance_type?: AttendanceType;
   quote_only?: boolean;
@@ -160,7 +160,7 @@ export const StepsGroup = () => {
           />
         )}
         {globalStep === 1 && (
-          <ContactOrgInfoStep2
+          <ContactInfoStep2
             globalStep={globalStep}
             productFormData={productFormData}
             setProductFormData={setProductFormData}

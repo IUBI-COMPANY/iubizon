@@ -46,7 +46,6 @@ export async function sendProductRequestEmail(
       quantity: product.quantity,
       brand: product.brand,
       model: product.model,
-      type: product.type, // "sale"
     })),
 
     // Additional product details (Step 1)

@@ -11,7 +11,7 @@ import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { SaleForOrgStep2 } from "@/app/productos/organizaciones/StepsGroup";
+import { AnOrderStep2 } from "@/app/productos/pedido/StepsGroup";
 
 interface FormData {
   document_type: string;
@@ -26,13 +26,13 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<SaleForOrgStep2>;
-  setProductFormData: (data: Partial<SaleForOrgStep2>) => void;
+  productFormData: Partial<AnOrderStep2>;
+  setProductFormData: (data: Partial<AnOrderStep2>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
-export const ContactOrgInfoStep2 = ({
+export const ContactInfoStep2 = ({
   globalStep,
   productFormData,
   setProductFormData,
@@ -135,7 +135,7 @@ export const ContactOrgInfoStep2 = ({
   };
 
   const onSubmit = (formData: FormData) => {
-    const completeFormData: SaleForOrgStep2 = {
+    const completeFormData: AnOrderStep2 = {
       contact: {
         first_name: formData.first_name || "",
         last_name: formData.last_name || "",

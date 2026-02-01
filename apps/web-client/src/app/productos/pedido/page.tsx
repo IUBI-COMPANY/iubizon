@@ -1,13 +1,14 @@
 import React from "react";
 import type { Metadata } from "next";
 
-import PageSalesService from "@/app/productos/organizaciones/PageSalesService";
+import PageAnOrder from "@/app/productos/pedido/PageAnOrder";
 
 export const metadata: Metadata = {
-  title: "Productos para Organizaciones | Iubizon Perú",
+  title: "Productos a pedido | Iubizon Perú",
   description:
     "Soluciones en proyectores y equipos multimedia para empresas, instituciones y organizaciones. Proyectores, accesorios y más para tu organización en Perú.",
   keywords: [
+    "productos para personas",
     "productos para organizaciones",
     "proyectores para empresas",
     "soluciones en proyectores",
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     "equipos presentación Perú",
   ],
   openGraph: {
-    title: "Productos para Organizaciones | Iubizon Perú",
+    title: "Productos a pedido | Iubizon Perú",
     description:
       "Soluciones en proyectores y equipos multimedia para empresas, instituciones y organizaciones. Proyectores, accesorios y más para tu organización en Perú.",
     url: "https://iubizon.com/productos/organizaciones",
@@ -32,5 +33,5 @@ export const metadata: Metadata = {
 // 🔹 Página principal (Server)
 // ==========================
 export default async function Page() {
-  return <PageSalesService />;
+  return <PageAnOrder />;
 }

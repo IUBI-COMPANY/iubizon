@@ -28,14 +28,14 @@ const navigation: HeaderNavigation[] = [
   {
     name: "Productos",
     href: "/productos",
-    options: [{ name: "Organización", href: "/productos/organizaciones" }],
+    options: [{ name: "Solicítalo a pedido", href: "/productos/pedido" }],
   },
   {
     name: "Servicio Técnico",
     href: "/servicios/tecnico",
     options: [
-      { name: "Persona", href: "/servicios/tecnico/persona" },
-      { name: "Organización", href: "/servicios/tecnico/organizacion" },
+      { name: "Para Personas", href: "/servicios/tecnico/persona" },
+      { name: "Para Organizaciónes", href: "/servicios/tecnico/organizacion" },
     ],
   },
   { name: "Contacto", href: "/contacto" },

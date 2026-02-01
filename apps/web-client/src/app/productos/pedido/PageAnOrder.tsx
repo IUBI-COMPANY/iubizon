@@ -4,7 +4,7 @@ import { CheckCircle, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Head from "next/head";
 import Link from "next/link";
-import { StepsGroup } from "@/app/productos/organizaciones/StepsGroup";
+import { StepsGroup } from "@/app/productos/pedido/StepsGroup";
 import { useState } from "react";
 import Brands from "@/components/ui/Brands";
 
@@ -27,8 +27,8 @@ const breadcrumbData = {
     {
       "@type": "ListItem",
       position: 3,
-      name: "Organizaciones",
-      item: "https://www.iubizon.com/productos/organizaciones",
+      name: "A Pedido",
+      item: "https://www.iubizon.com/productos/pedido",
     },
   ],
 };
@@ -58,7 +58,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export default function PageSalesService() {
+export default function PageAnOrder() {
   return (
     <>
       <Head>
@@ -74,8 +74,8 @@ export default function PageSalesService() {
               "@type": "LocalBusiness",
               name: "iubizon",
               image: "https://www.iubizon.com/images/logo.png",
-              "@id": "https://www.iubizon.com/productos/organizaciones",
-              url: "https://www.iubizon.com/productos/organizaciones",
+              "@id": "https://www.iubizon.com/productos/pedido",
+              url: "https://www.iubizon.com/productos/pedido",
               telephone: "+51 972 300 301",
               address: {
                 "@type": "PostalAddress",
@@ -130,15 +130,13 @@ export default function PageSalesService() {
                 </span>
               </div>
               <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
-                Productos para Instituciones y Empresas
+                ¿No encuentras lo que buscas? Solicita productos a pedido
               </h1>
               <p className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto">
                 Proyectores, accesorios y soluciones audiovisuales a medida para{" "}
                 <strong className="text-primary">
-                  empresas, colegios y organizaciones
+                  personas, empresas, colegios y organizaciones
                 </strong>
-                . Recibe asesoría especializada y una propuesta adaptada a tus
-                necesidades.
               </p>
             </div>
           </div>
