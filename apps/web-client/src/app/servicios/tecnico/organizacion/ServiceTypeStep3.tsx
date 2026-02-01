@@ -125,10 +125,7 @@ export const ServiceTypeStep3 = ({
       .required(),
   });
 
-  // Obtener valores iniciales de la estructura
   const getInitialValues = () => {
-    // Para servicio técnico, attendance_type no está en service_details
-    // Lo sacamos directamente del repairsFormData si fue guardado antes
     const storedData = localStorage.getItem("organization_formData");
     const parsedData = storedData ? JSON.parse(storedData) : {};
 
@@ -233,9 +230,7 @@ export const ServiceTypeStep3 = ({
       // Core Fields
       client_id: "gYn8QUB8g35wEAZcZz7D",
       lead_type: "technical_service",
-      client_type:
-        (fullData.client_type as "individual" | "organization") ||
-        "organization",
+      client_type: "organization",
       status: "new",
       archived: false,
 

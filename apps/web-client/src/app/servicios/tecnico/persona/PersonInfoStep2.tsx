@@ -4,18 +4,20 @@ import React from "react";
 import { Input } from "@/components/ui/Input";
 import * as yup from "yup";
 import { Form } from "@/components/ui/Form";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Select } from "@/components/ui/Select";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { PersonRepairStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
 
-// Definir RepairStep2 localmente
-interface RepairStep2 {
-  first_name: string;
-  last_name: string;
+interface FormData {
+  document_type: string;
+  document_number: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   phone_prefix: string;
   phone_number: string;
@@ -23,15 +25,15 @@ interface RepairStep2 {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<RepairStep2>;
-  setRepairsFormData: (data: Partial<RepairStep2>) => void;
+  repairsFormData: Partial<PersonRepairStep2>;
+  setRepairsFormData: (data: Partial<PersonRepairStep2>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
   hideControls?: boolean;
 }
 
-export const ClientInformation = ({
+export const PersonInfoStep2 = ({
   globalStep,
   repairsFormData,
   setRepairsFormData,
@@ -47,6 +49,19 @@ export const ClientInformation = ({
   };
 
   const schema = yup.object({
+    document_type: yup.string().required(),
+    document_number: yup
+      .string()
+      .required()
+      .test("is-valid-doc", "Número de documento inválido", function (value) {
+        const { document_type } = this.parent;
+        if (document_type === "DNI") {
+          return /^\d{8}$/.test(value);
+        } else if (document_type === "RUC") {
+          return /^(10|20)\d{9}$/.test(value);
+        }
+        return true;
+      }),
     first_name: yup.string().required("Nombres requeridos"),
     last_name: yup.string().required("Apellidos requeridos"),
     email: yup.string().email("Email inválido").required("Email requerido"),
@@ -64,20 +79,22 @@ export const ClientInformation = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<RepairStep2>({
-    resolver: yupResolver(schema),
+  } = useForm<FormData>({
+    resolver: yupResolver(schema) as Resolver<FormData>,
     defaultValues: {
-      first_name: repairsFormData?.first_name || "",
-      last_name: repairsFormData?.last_name || "",
-      email: repairsFormData?.email || "",
-      phone_prefix: repairsFormData?.phone_prefix || "+51",
-      phone_number: repairsFormData?.phone_number || "",
+      document_type: repairsFormData?.document?.type || undefined,
+      document_number: repairsFormData?.document?.number || "",
+      first_name: repairsFormData?.contact?.first_name || "",
+      last_name: repairsFormData?.contact?.last_name || "",
+      email: repairsFormData?.contact?.email || "",
+      phone_prefix: repairsFormData?.contact?.phone?.prefix || "+51",
+      phone_number: repairsFormData?.contact?.phone?.number || "",
     },
   });
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const onSubmit = (formData: RepairStep2) => {
+  const onSubmit = (formData: FormData) => {
     setRepairsFormData({ ...repairsFormData, ...formData });
     addLocalStorageData(formData);
     setCurrentStepToLocalStorage(globalStep + 1);
@@ -92,6 +109,50 @@ export const ClientInformation = ({
         <Form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-6 mx-auto max-w-xl">
             <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
+              <div className="sm:col-span-2">
+                <Controller
+                  name="document_type"
+                  control={control}
+                  render={({ field: { onChange, value, name } }) => (
+                    <Select
+                      label="Tipo de Documento"
+                      name={name}
+                      value={value}
+                      error={error(name)}
+                      helperText={errorMessage(name)}
+                      required={required(name)}
+                      onChange={onChange}
+                      placeholder="Seleccionar"
+                      options={[
+                        { label: "DNI", value: "DNI" },
+                        { label: "RUC", value: "RUC" },
+                        { label: "CE (Carnet de Extranjería)", value: "CE" },
+                        { label: "Pasaporte", value: "PASSPORT" },
+                        { label: "Otro", value: "OTHER" },
+                      ]}
+                    />
+                  )}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Controller
+                  name="document_number"
+                  control={control}
+                  render={({ field: { onChange, value, name } }) => (
+                    <Input
+                      label="N° de Documento"
+                      type="number"
+                      name={name}
+                      value={value}
+                      error={error(name)}
+                      helperText={errorMessage(name)}
+                      required={required(name)}
+                      onChange={onChange}
+                      placeholder="71XXXXX"
+                    />
+                  )}
+                />
+              </div>
               <div className="sm:col-span-2">
                 <Controller
                   name="first_name"

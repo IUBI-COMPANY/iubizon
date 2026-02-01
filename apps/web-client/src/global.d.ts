@@ -72,6 +72,8 @@ type LostReason =
   | "not_interested" // No interesado
   | "other";
 
+type ClientType = "individual" | "organization";
+
 // ==================== INTERFACES AUXILIARES ====================
 
 interface ContactInfo {
@@ -231,7 +233,7 @@ interface LeadForIubizon extends Partial<DefaultFirestoreProps> {
   // ========================================
   client_id?: string; // ID del cliente (iubizon) en sistema
   lead_type: "sale" | "technical_service";
-  client_type: "individual" | "organization";
+  client_type: ClientType;
   status: LeadStatus;
   priority?: Priority;
   archived: boolean;
@@ -242,6 +244,7 @@ interface LeadForIubizon extends Partial<DefaultFirestoreProps> {
   contact: ContactInfo;
   document?: DocumentInfo;
   organization_info?: {
+    ruc?: string;
     company_name?: string;
     tax_id?: string; // RUC
     industry?: string;

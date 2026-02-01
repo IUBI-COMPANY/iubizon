@@ -22,7 +22,7 @@ export type OrganizationRepairStep1 = {
 export type OrganizationRepairStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: "individual" | "organization";
+  client_type: ClientType;
   organization_info?: {
     company_name?: string;
     tax_id?: string;

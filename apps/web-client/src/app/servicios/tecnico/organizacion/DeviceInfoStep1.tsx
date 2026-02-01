@@ -38,26 +38,27 @@ export const DeviceInfoStep1 = ({
   >;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
-  const initializeProducts = (): ProductItemList[] => {
-    if (repairsFormData?.products && repairsFormData.products.length > 0) {
-      return repairsFormData.products.map((p) => ({
-        ...p,
-        service_type: "maintenance" as ServiceType,
-      }));
-    }
-    return [
-      {
-        id: crypto.randomUUID(),
-        quantity: 1,
-        brand: "",
-        model: "",
-        service_type: "maintenance",
-      },
-    ];
-  };
+  const initializeProducts: ProductItemList[] =
+    repairsFormData?.products && repairsFormData.products.length > 0
+      ? repairsFormData.products.map((p) => ({
+          id: p.id || crypto.randomUUID(),
+          quantity: p.quantity || 1,
+          brand: p.brand || "",
+          model: p.model || "",
+          service_type: p.service_type || "maintenance",
+        }))
+      : [
+          {
+            id: crypto.randomUUID(),
+            quantity: 1,
+            brand: "",
+            model: "",
+            service_type: "maintenance",
+          },
+        ];
 
   const [products, setProducts] =
-    useState<ProductItemList[]>(initializeProducts());
+    useState<ProductItemList[]>(initializeProducts);
 
   const {
     handleSubmit,

@@ -6,34 +6,34 @@ import { CircleCheck, Loader2, Projector, User, Wrench } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
-import { ClientInformation } from "@/app/servicios/tecnico/persona/ClientInformation";
-import { DeviceInformation } from "@/app/servicios/tecnico/persona/DeviceInformation";
-import { SupportInformation } from "@/app/servicios/tecnico/persona/SupportInformation";
+import { PersonInfoStep2 } from "@/app/servicios/tecnico/persona/PersonInfoStep2";
+import { DeviceInfoStep1 } from "@/app/servicios/tecnico/persona/DeviceInfoStep1";
+import { ServiceTypeStep3 } from "@/app/servicios/tecnico/persona/ServiceTypeStep3";
 
 const STORAGE_KEYS = {
   currentStep: "retail_currentStep",
   formData: "retail_formData",
 };
 
-export type RepairStep1 = {
+export type PersonRepairStep1 = {
   products?: ProductItem[];
   description_more_details?: string;
 };
 
-export type RepairStep2 = {
+export type PersonRepairStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: "individual";
+  client_type: ClientType;
 };
 
-export type RepairStep3 = {
+export type PersonRepairStep3 = {
   service_details?: ServiceDetails;
   visit_schedule?: VisitSchedule;
   address?: AddressInfo;
   terms_and_conditions: boolean;
 };
 
-export const RetailTechnicalServiceForm = () => {
+export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
   const [repairsFormData, setRepairsFormData] = useState<
     Partial<LeadForIubizon>
@@ -141,7 +141,7 @@ export const RetailTechnicalServiceForm = () => {
       />
       <div className="w-full max-w-2xl mx-auto shadow-lg  py-10 px-6 rounded-2xl bg-white border-2 border-solid border-primary">
         {globalStep === 0 && (
-          <DeviceInformation
+          <DeviceInfoStep1
             globalStep={globalStep}
             repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}
@@ -150,7 +150,7 @@ export const RetailTechnicalServiceForm = () => {
           />
         )}
         {globalStep === 1 && (
-          <ClientInformation
+          <PersonInfoStep2
             globalStep={globalStep}
             repairsFormData={repairsFormData}
             setRepairsFormData={setRepairsFormData}
@@ -159,7 +159,7 @@ export const RetailTechnicalServiceForm = () => {
           />
         )}
         {globalStep === 2 && (
-          <SupportInformation
+          <ServiceTypeStep3
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import RetailTechnicalServicePage from "./RetailTechnicalServicePage";
+import PageTechnicalService from "./PageTechnicalService";
 
 // ==========================
 // 🔹 Dynamic Metada
@@ -81,5 +81,5 @@ export async function generateMetadata(): Promise<Metadata> {
 // 🔹 Página principal (Server)
 // ==========================
 export default async function Page() {
-  return <RetailTechnicalServicePage />;
+  return <PageTechnicalService />;
 }

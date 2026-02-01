@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { sendTechnicalServiceEmail } from "./actions";
-import { RepairStep3 } from "@/components/ui/RetailTechnicalServiceForm";
+import { PersonRepairStep3 } from "@/app/servicios/tecnico/persona/StepsGroup";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
 import { useNotification } from "@/components/ui/Notification";
@@ -36,15 +36,15 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<RepairStep3>;
-  setRepairsFormData: (data: Partial<RepairStep3>) => void;
+  repairsFormData: Partial<PersonRepairStep3>;
+  setRepairsFormData: (data: Partial<PersonRepairStep3>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
 }
 
-export const SupportInformation = ({
+export const ServiceTypeStep3 = ({
   globalStep,
   repairsFormData,
   setRepairsFormData,
@@ -172,7 +172,7 @@ export const SupportInformation = ({
     setLoading(true);
 
     // Transformar FormData a RepairStep3
-    const completeFormData: RepairStep3 = {
+    const completeFormData: PersonRepairStep3 = {
       service_details: {
         // ServiceDetails no incluye attendance_type
       },
@@ -306,10 +306,6 @@ export const SupportInformation = ({
                           value: "go_to_store",
                         },
                         {
-                          label: "Quiero una cotización",
-                          value: "quotation",
-                        },
-                        {
                           label: "Quiero una visita técnica a mi domicilio",
                           value: "home_visit",
                           message: "Solo para Lima",
@@ -318,6 +314,14 @@ export const SupportInformation = ({
                           label: "Quiero enviar mi producto al local",
                           value: "send_to_store",
                           message: "Solo para provincias",
+                        },
+                        {
+                          label: "Quiero una cotización",
+                          value: "quotation",
+                        },
+                        {
+                          label: "Otro",
+                          value: "other",
                         },
                       ]}
                     />

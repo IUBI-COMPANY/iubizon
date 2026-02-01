@@ -1,7 +1,7 @@
 "use client";
 
 import { Metadata } from "next";
-import { RetailTechnicalServiceForm } from "@/components/ui/RetailTechnicalServiceForm";
+import { StepsGroup } from "@/app/servicios/tecnico/persona/StepsGroup";
 import FAQAccordion from "@/components/ui/layout/FAQAccordion";
 import { CheckCircle, ShieldCheck, Clock, CircleCheck } from "lucide-react";
 import GridCards, { GridCardItem } from "@/components/ui/GridCards";
@@ -142,7 +142,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RetailTechnicalServicePage() {
+export default function PageTechnicalService() {
   return (
     <>
       <Head>
@@ -219,7 +219,7 @@ export default function RetailTechnicalServicePage() {
                 </p>
               </div>
             </div>
-            <RetailTechnicalServiceForm />
+            <StepsGroup />
           </div>
         </section>
         <WorksGallery type="individual" />
