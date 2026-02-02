@@ -2,9 +2,9 @@
 
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
-export async function sendTechnicalServiceEmail(
+export async function sendLead(
   formTechnicalService: LeadForIubizon,
-): Promise<void> {
+): Promise<{ success: boolean; error?: string }> {
   const mapTechnicalServiceData = (data: LeadForIubizon) => ({
     // Core Fields
     client_id: "gYn8QUB8g35wEAZcZz7D",
@@ -99,8 +99,7 @@ export async function sendTechnicalServiceEmail(
       );
       throw new Error(`Error ${response.status}: ${responseText}`);
     }
-
-    console.log("Technical Service email sent successfully:", responseText);
+    return { success: true };
   } catch (error) {
     console.error("Error sending Technical Service email: ", error);
     throw error;

@@ -2,9 +2,9 @@
 
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
-export async function sendProductRequestEmail(
-  formProductRequest: LeadForIubizon,
-): Promise<void> {
+export async function sendLead(
+  lead: LeadForIubizon,
+): Promise<{ success: boolean; error?: string }> {
   const mapProductRequestData = (data: LeadForIubizon) => ({
     // Core Fields
     client_id: "gYn8QUB8g35wEAZcZz7D" /* Iubizon Client ID for Web Leads */,
@@ -103,7 +103,7 @@ export async function sendProductRequestEmail(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(mapProductRequestData(formProductRequest)),
+      body: JSON.stringify(mapProductRequestData(lead)),
     });
 
     const responseText = await response.text();
@@ -115,7 +115,7 @@ export async function sendProductRequestEmail(
       throw new Error(`Error ${response.status}: ${responseText}`);
     }
 
-    console.log("Product request email sent successfully:", responseText);
+    return { success: true };
   } catch (error) {
     console.error("Error sending product request email: ", error);
     throw error;

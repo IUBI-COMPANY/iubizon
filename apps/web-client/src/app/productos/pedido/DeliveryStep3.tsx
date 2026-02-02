@@ -13,7 +13,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { sendProductRequestEmail } from "./actions";
+import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
 import { AnOrderStep3 } from "@/app/productos/pedido/StepsGroup";
@@ -331,9 +331,7 @@ export const DeliveryStep3 = ({
 
     // 5. Enviar al servidor
     try {
-      console.log("Sending lead data: ", leadData);
-      await sendProductRequestEmail(leadData as LeadForIubizon);
-      console.log("Sending lead data: ", leadData);
+      await sendLead(leadData as LeadForIubizon);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);

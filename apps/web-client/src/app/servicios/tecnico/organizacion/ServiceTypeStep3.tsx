@@ -13,7 +13,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { sendTechnicalServiceEmail } from "./actions";
+import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
 import { ServiceForOrgStep3 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
@@ -267,8 +267,7 @@ export const ServiceTypeStep3 = ({
     };
 
     try {
-      console.log("Sending lead data: ", leadData);
-      await sendTechnicalServiceEmail(leadData as LeadForIubizon);
+      await sendLead(leadData as LeadForIubizon);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);

@@ -122,7 +122,7 @@ export const StepsGroup = () => {
             localStorage.removeItem(STORAGE_KEYS.currentStep);
             localStorage.removeItem(STORAGE_KEYS.formData);
             setTimeout(() => {
-              window.location.href = "/productos/organizaciones";
+              window.location.href = "/productos/pedido";
             }, 100);
             return 0;
           }
