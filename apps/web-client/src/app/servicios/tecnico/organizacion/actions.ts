@@ -7,7 +7,6 @@ export async function sendLead(
 ): Promise<{ success: boolean; error?: string }> {
   const mapTechnicalServiceData = (data: LeadForIubizon) => ({
     // Core Fields
-    client_id: "gYn8QUB8g35wEAZcZz7D",
     lead_type: data.lead_type,
     client_type: data.client_type,
     status: data.status,
