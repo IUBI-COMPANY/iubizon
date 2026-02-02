@@ -80,7 +80,7 @@ export async function sendLead(
       : undefined,
 
     // Communication
-    hostname: data.hostname,
+    hostname: "iubizon.com",
     terms_and_conditions: data.terms_and_conditions,
 
     // Tracking
