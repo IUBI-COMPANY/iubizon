@@ -7,7 +7,6 @@ export async function sendLead(
 ): Promise<{ success: boolean; error?: string }> {
   const mapProductRequestData = (data: LeadForIubizon) => ({
     // Core Fields
-    client_id: "gYn8QUB8g35wEAZcZz7D" /* Iubizon Client ID for Web Leads */,
     lead_type: data.lead_type, // "sale"
     client_type: data.client_type, // "individual" | "organization"
     status: data.status, // "new"
@@ -83,11 +82,8 @@ export async function sendLead(
         }
       : undefined,
 
-    // Quote Only (Step 3)
-    quote_only: data.quote_only,
-
     // Communication
-    hostname: data.hostname,
+    hostname: "iubizon.com",
     terms_and_conditions: data.terms_and_conditions,
 
     // Tracking

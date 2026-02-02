@@ -7,11 +7,10 @@ export async function sendLead(
 ): Promise<{ success: boolean; error?: string }> {
   const mapTechnicalServiceData = (data: LeadForIubizon) => ({
     // Core Fields
-    client_id: "gYn8QUB8g35wEAZcZz7D",
-    lead_type: data.lead_type,
-    client_type: data.client_type,
-    status: data.status,
-    archived: data.archived,
+    lead_type: data.lead_type, // "sale"
+    client_type: data.client_type, // "individual" | "organization"
+    status: data.status, // "new"
+    archived: data.archived, // false
 
     // Contact Information
     contact: {
@@ -71,7 +70,7 @@ export async function sendLead(
       : undefined,
 
     // Communication
-    hostname: data.hostname,
+    hostname: "iubizon.com",
     terms_and_conditions: data.terms_and_conditions,
 
     // Tracking
@@ -90,7 +89,6 @@ export async function sendLead(
       body: JSON.stringify(mapTechnicalServiceData(formTechnicalService)),
     });
 
-    // Primero obtenemos el texto de la respuesta
     const responseText = await response.text();
 
     if (!response.ok) {

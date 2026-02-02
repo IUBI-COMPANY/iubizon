@@ -95,8 +95,26 @@ export const ContactPersonInfoStep2 = ({
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = (formData: FormData) => {
-    setRepairsFormData({ ...repairsFormData, ...formData });
-    addLocalStorageData(formData);
+    const completeFormData: Partial<ServiceForPersonStep2> = {
+      contact: {
+        first_name: formData.first_name || "",
+        last_name: formData.last_name || "",
+        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        email: formData.email,
+        phone: {
+          prefix: formData.phone_prefix,
+          number: formData.phone_number,
+        },
+      },
+      document: {
+        type: formData.document_type as DocumentInfo["type"],
+        number: formData.document_number,
+      },
+      client_type: "individual",
+    };
+
+    setRepairsFormData({ ...repairsFormData, ...completeFormData });
+    addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
 

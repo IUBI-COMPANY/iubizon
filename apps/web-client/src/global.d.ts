@@ -270,9 +270,6 @@ interface LeadForIubizon extends Partial<DefaultFirestoreProps> {
   delivery?: DeliveryInfo;
   attendance_type?: AttendanceType;
 
-  // Solo cotización (sin compra inmediata)
-  quote_only?: boolean; // Si true, el cliente solo quiere cotización
-
   // ========================================
   // 🔧 DETALLES DE SERVICIO TÉCNICO
   // ========================================
