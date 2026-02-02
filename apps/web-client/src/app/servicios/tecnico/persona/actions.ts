@@ -1,5 +1,7 @@
 "use server";
 
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
+
 export async function sendTechnicalServiceEmail(
   formTechnicalService: LeadForIubizon,
 ): Promise<void> {
@@ -80,16 +82,13 @@ export async function sendTechnicalServiceEmail(
   });
 
   try {
-    const response = await fetch(
-      `https://api-iubisales.web.app/iubizon/leads`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(mapTechnicalServiceData(formTechnicalService)),
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.LEADS), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(mapTechnicalServiceData(formTechnicalService)),
+    });
 
     // Primero obtenemos el texto de la respuesta
     const responseText = await response.text();

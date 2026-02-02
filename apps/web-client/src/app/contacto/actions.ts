@@ -1,5 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
+import { buildApiUrl, API_ENDPOINTS } from "@/config/api";
 
 export async function sendContactEmail(
   formContact: Omit<Contact, "hostname">,
@@ -20,16 +21,13 @@ export async function sendContactEmail(
   });
 
   try {
-    const response = await fetch(
-      `https://api-iubisales.web.app/emails/contact`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(mapFormContact(formContact)),
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.CONTACT), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(mapFormContact(formContact)),
+    });
 
     if (!response.ok) {
       console.error(`HTTP error! status: ${response.status}`);

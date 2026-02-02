@@ -1,5 +1,7 @@
 "use server";
 
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
+
 export async function sendProductRequestEmail(
   formProductRequest: LeadForIubizon,
 ): Promise<void> {
@@ -96,16 +98,13 @@ export async function sendProductRequestEmail(
   });
 
   try {
-    const response = await fetch(
-      `https://api-iubisales.web.app/iubizon/leads`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(mapProductRequestData(formProductRequest)),
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.LEADS), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(mapProductRequestData(formProductRequest)),
+    });
 
     const responseText = await response.text();
 

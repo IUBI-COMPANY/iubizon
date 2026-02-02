@@ -1,12 +1,12 @@
 "use server";
 
-const API_URL = "https://api-iubisales.web.app/iubizon/claims";
+import { buildApiUrl, API_ENDPOINTS } from "@/config/api";
 
 export async function sendReclamation(
   formClaim: ClaimForIubizon,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.CLAIMS), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
