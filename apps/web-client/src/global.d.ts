@@ -403,21 +403,19 @@ interface LeadHistoryEntry {
   details?: Record<string, unknown>;
 }
 
-interface ClaimForIubizon {
-  full_name: string;
-  document_type: string;
-  document_id: string;
-  address: string;
-  phone_prefix: string;
-  phone_number: string;
-  email: string;
-  incident_date: string;
-  incident_time?: string;
-  purchase_date: string;
-  invoice_number: string;
-  claim_motive: string;
-  product_service_description?: string;
-  problem_description: string;
-  claimed_amount?: string;
-  requested_solution: string;
+interface ClaimForIubizon extends Partial<DefaultFirestoreProps> {
+  client_id: string;
+  contact: ContactInfo;
+  document?: DocumentInfo;
+  details: {
+    incident_date: string;
+    incident_time: string;
+    purchase_date: string;
+    invoice_number: string;
+    claim_motive: string;
+    product_service_description: string;
+    problem_description: string;
+    claimed_amount: string;
+    requested_solution: string;
+  };
 }

@@ -18,7 +18,27 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { sendReclamation } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 
-const schema: ObjectSchema<ClaimForIubizon> = yup.object({
+// Tipo para el formulario (estructura plana)
+type ClaimFormData = {
+  full_name: string;
+  document_type: string;
+  document_id: string;
+  address: string;
+  phone_prefix: string;
+  phone_number: string;
+  email: string;
+  incident_date: string;
+  incident_time?: string;
+  purchase_date: string;
+  invoice_number: string;
+  claim_motive: string;
+  product_service_description?: string;
+  problem_description: string;
+  claimed_amount?: string;
+  requested_solution: string;
+};
+
+const schema: ObjectSchema<ClaimFormData> = yup.object({
   full_name: yup
     .string()
     .required("El nombre completo es requerido")
@@ -58,7 +78,7 @@ const schema: ObjectSchema<ClaimForIubizon> = yup.object({
     .min(10, "La descripción debe tener al menos 10 caracteres"),
   claimed_amount: yup.string().optional(),
   requested_solution: yup.string().required("Selecciona una solución"),
-}) as ObjectSchema<ClaimForIubizon>;
+}) as ObjectSchema<ClaimFormData>;
 
 export default function ClaimClientPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -71,7 +91,7 @@ export default function ClaimClientPage() {
     formState: { errors },
     watch,
     reset,
-  } = useForm<ClaimForIubizon>({
+  } = useForm<ClaimFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       full_name: "",
@@ -96,11 +116,48 @@ export default function ClaimClientPage() {
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
   const claimMotive = watch("claim_motive");
 
-  const onSubmit = async (data: ClaimForIubizon) => {
+  // Función para transformar los datos del formulario a la estructura ClaimForIubizon
+  const transformFormData = (data: ClaimFormData): ClaimForIubizon => {
+    const nameParts = data.full_name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    return {
+      client_id: "gYn8QUB8g35wEAZcZz7D",
+      contact: {
+        first_name: firstName,
+        last_name: lastName,
+        full_name: data.full_name,
+        email: data.email,
+        phone: {
+          prefix: data.phone_prefix,
+          number: data.phone_number,
+        },
+      },
+      document: {
+        type: data.document_type as DocumentInfo["type"],
+        number: data.document_id,
+      },
+      details: {
+        incident_date: data.incident_date,
+        incident_time: data.incident_time || "",
+        purchase_date: data.purchase_date,
+        invoice_number: data.invoice_number,
+        claim_motive: data.claim_motive,
+        product_service_description: data.product_service_description || "",
+        problem_description: data.problem_description,
+        claimed_amount: data.claimed_amount || "",
+        requested_solution: data.requested_solution,
+      },
+    };
+  };
+
+  const onSubmit = async (data: ClaimFormData) => {
     setErrorMsg(null);
     setLoading(true);
     try {
-      const result = await sendReclamation(data);
+      const claimData = transformFormData(data);
+      const result = await sendReclamation(claimData);
       setLoading(false);
       if (result.success) {
         setSubmitted(true);
