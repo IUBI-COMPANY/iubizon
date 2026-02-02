@@ -250,7 +250,7 @@ export const ServiceTypeStep3 = ({
 
       // Communication
       terms_and_conditions: completeFormData.terms_and_conditions,
-      hostname: window.location.hostname,
+      hostname: "iubizon.com",
 
       // Tracking
       tracking: {
