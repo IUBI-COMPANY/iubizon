@@ -11,11 +11,11 @@
  * Si no está definida, usa la URL de desarrollo por defecto
  */
 export const getApiUrl = (): string => {
-  const apiUrl = process.env.IUBICRM_APIURL;
+  const apiUrl = process.env.NEXT_PUBLIC_IUBICRM_APIURL;
 
   if (!apiUrl) {
     console.warn(
-      "IUBICRM_APIURL no está definida en las variables de entorno. Usando URL de desarrollo por defecto.",
+      "NEXT_PUBLIC_IUBICRM_APIURL no está definida en las variables de entorno. Usando URL de desarrollo por defecto.",
     );
     return "https://api-iubicrm-dev.web.app";
   }
