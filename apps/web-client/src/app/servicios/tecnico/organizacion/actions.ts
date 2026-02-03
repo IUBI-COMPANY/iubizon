@@ -78,6 +78,9 @@ export async function sendLead(
         }
       : undefined,
 
+    // Attendance Type (REQUIRED)
+    attendance_type: data.attendance_type,
+
     // Communication
     hostname: "iubizon.com",
     terms_and_conditions: data.terms_and_conditions,

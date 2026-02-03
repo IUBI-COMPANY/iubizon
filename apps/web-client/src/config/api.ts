@@ -27,8 +27,8 @@ export const getApiUrl = (): string => {
  * URLs de endpoints específicos
  */
 export const API_ENDPOINTS = {
-  LEADS: "/iubizon/leads",
-  CLAIMS: "/iubizon/claims",
+  LEADS: "/leads",
+  CLAIMS: "/claims",
   CONTACT: "/emails/contact",
 } as const;
 

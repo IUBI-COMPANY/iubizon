@@ -255,6 +255,9 @@ export const ServiceTypeStep3 = ({
       visit_schedule: completeFormData.visit_schedule,
       address: completeFormData.address,
 
+      // Attendance Type (REQUIRED)
+      attendance_type: fullData.attendance_type as AttendanceType,
+
       // Communication
       terms_and_conditions: completeFormData.terms_and_conditions,
       hostname: "iubizon.com",

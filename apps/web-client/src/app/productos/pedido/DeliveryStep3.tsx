@@ -182,7 +182,7 @@ export const DeliveryStep3 = ({
 
     // 1. Transformar datos del formulario a la nueva estructura
     const completeFormData: AnOrderStep3 = {
-      ...(formData.is_quotation && { attendance_type: "quotation" }),
+      attendance_type: formData.is_quotation ? "quotation" : "sale",
       terms_and_conditions: formData.terms_and_conditions,
     };
 
@@ -313,10 +313,9 @@ export const DeliveryStep3 = ({
 
       // Delivery (nueva estructura)
       delivery: completeFormData.delivery,
-      // Attendance Type (OPTIONAL)
-      ...(completeFormData?.attendance_type && {
-        attendance_type: completeFormData?.attendance_type,
-      }),
+
+      // Attendance Type (REQUIRED)
+      attendance_type: completeFormData.attendance_type,
 
       // Communication
       terms_and_conditions: completeFormData.terms_and_conditions,
