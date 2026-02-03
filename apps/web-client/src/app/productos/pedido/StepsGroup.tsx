@@ -55,7 +55,6 @@ export const StepsGroup = () => {
     if (stepsData !== null) {
       setCurrentStepToLocalStorage(stepsData);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ export const StepsGroup = () => {
     );
     setProductFormData(data);
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalStep]);
 
   const addLocalStorageData = (data: object) => {
@@ -132,7 +130,6 @@ export const StepsGroup = () => {
 
       return () => clearInterval(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [globalStep, router]);
 
   return loading ? (
