@@ -22,4 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Markdown files (except .github documentation)
 *.md
+!.github/**/*.md
+!README.md
