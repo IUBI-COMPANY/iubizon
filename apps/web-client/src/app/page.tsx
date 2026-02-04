@@ -627,10 +627,10 @@ export default function Home() {
                     </span>
                     <div>
                       <p className="font-semibold text-secondary">
-                        Mantenimiento preventivo
+                        Contratos de mantenimiento preventivo
                       </p>
                       <p className="text-sm text-secondary/70">
-                        Contratos personalizados
+                        Planes personalizados para tu organización
                       </p>
                     </div>
                   </li>
@@ -640,10 +640,10 @@ export default function Home() {
                     </span>
                     <div>
                       <p className="font-semibold text-secondary">
-                        Atención prioritaria
+                        Atención prioritaria y soporte técnico
                       </p>
                       <p className="text-sm text-secondary/70">
-                        Soporte técnico dedicado 24/7
+                        Respuesta rápida a tus requerimientos
                       </p>
                     </div>
                   </li>
@@ -653,10 +653,10 @@ export default function Home() {
                     </span>
                     <div>
                       <p className="font-semibold text-secondary">
-                        Facturación electrónica
+                        Facturación electrónica disponible
                       </p>
                       <p className="text-sm text-secondary/70">
-                        Descuentos por volumen
+                        Cumplimiento normativo garantizado
                       </p>
                     </div>
                   </li>
@@ -666,10 +666,10 @@ export default function Home() {
                     </span>
                     <div>
                       <p className="font-semibold text-secondary">
-                        Servicio en sitio
+                        Descuentos por volumen y contratos
                       </p>
                       <p className="text-sm text-secondary/70">
-                        Técnicos en tu organización
+                        Mejores precios en servicios regulares
                       </p>
                     </div>
                   </li>
