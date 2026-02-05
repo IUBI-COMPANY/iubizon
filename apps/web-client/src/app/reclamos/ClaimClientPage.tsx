@@ -44,13 +44,76 @@ const schema: ObjectSchema<ClaimFormData> = yup.object({
     .required("El nombre completo es requerido")
     .min(3, "El nombre debe tener al menos 3 caracteres"),
   documentType: yup.string().required("Selecciona un tipo de documento"),
-  documentNumber: yup.string().required("El número de documento es requerido"),
+  documentNumber: yup
+    .string()
+    .required("El número de documento es requerido")
+    .when("documentType", {
+      is: "DNI",
+      then: (schema) =>
+        schema
+          .matches(/^\d{8}$/, "El DNI debe tener exactamente 8 dígitos")
+          .length(8, "El DNI debe tener exactamente 8 dígitos"),
+      otherwise: (schema) => schema,
+    })
+    .when("documentType", {
+      is: "NIE",
+      then: (schema) =>
+        schema
+          .matches(
+            /^[XYZ]\d{7}[A-Z]$/i,
+            "El NIE debe tener el formato X1234567A",
+          )
+          .length(9, "El NIE debe tener 9 caracteres"),
+      otherwise: (schema) => schema,
+    })
+    .when("documentType", {
+      is: "Pasaporte",
+      then: (schema) =>
+        schema
+          .matches(
+            /^[A-Z0-9]{6,9}$/i,
+            "El pasaporte debe tener entre 6 y 9 caracteres alfanuméricos",
+          )
+          .min(6, "El pasaporte debe tener al menos 6 caracteres")
+          .max(9, "El pasaporte debe tener máximo 9 caracteres"),
+      otherwise: (schema) => schema,
+    })
+    .when("documentType", {
+      is: "CE",
+      then: (schema) =>
+        schema
+          .matches(/^\d{9}$/, "La Cédula de Extranjería debe tener 9 dígitos")
+          .length(9, "La Cédula de Extranjería debe tener 9 dígitos"),
+      otherwise: (schema) => schema,
+    }),
   address: yup
     .string()
     .required("La dirección es requerida")
     .min(5, "La dirección debe tener al menos 5 caracteres"),
   phonePrefix: yup.string().required("Selecciona un prefijo"),
-  phoneNumber: yup.string().required("El teléfono es requerido"),
+  phoneNumber: yup
+    .string()
+    .required("El teléfono es requerido")
+    .test("phone-validation", function (value) {
+      const { phonePrefix } = this.parent;
+      if (!value) return true;
+
+      const country = countriesISO.find((c) => c.phonePrefix === phonePrefix);
+      if (!country || !country.regex) {
+        return this.createError({
+          message: "El número de teléfono no es válido",
+        });
+      }
+
+      const regex = new RegExp(country.regex);
+      if (!regex.test(value)) {
+        return this.createError({
+          message: `El número no cumple con el formato válido para ${country.name}`,
+        });
+      }
+
+      return true;
+    }),
   email: yup
     .string()
     .email("Ingresa un correo válido")
