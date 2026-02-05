@@ -7,7 +7,7 @@ type ContactFormData = {
   lastName: string;
   email: string;
   phone: Phone;
-  message: string;
+  message?: string;
   termsAndConditions: boolean;
 };
 
@@ -29,7 +29,7 @@ export async function sendContactEmail(
       },
     },
     contactDetails: {
-      message: formContact.message,
+      message: formContact?.message || "",
     },
   });
 
