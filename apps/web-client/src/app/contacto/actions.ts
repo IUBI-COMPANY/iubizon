@@ -2,26 +2,39 @@
 import { redirect } from "next/navigation";
 import { buildApiUrl, API_ENDPOINTS } from "@/config/api";
 
+type ContactFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: Phone;
+  message: string;
+  termsAndConditions: boolean;
+};
+
 export async function sendContactEmail(
-  formContact: Omit<Contact, "hostname">,
+  formContact: ContactFormData,
 ): Promise<{ success: boolean; error?: string }> {
-  const mapFormContact = (formContact: Omit<Contact, "hostname">) => ({
-    contact: {
-      firstName: formContact?.firstName,
-      lastName: formContact?.lastName,
+  const mapFormContact = (formContact: ContactFormData): Partial<Email> => ({
+    hostname: "iubizon.com",
+    type: "contact",
+    termsAndConditions: formContact.termsAndConditions,
+    contactInfo: {
+      firstName: formContact.firstName,
+      lastName: formContact.lastName,
+      fullName: `${formContact.firstName} ${formContact.lastName}`.trim(),
       email: formContact.email,
       phone: {
-        number: formContact.phone?.number,
-        countryCode: formContact.phone?.prefix,
+        prefix: formContact.phone.prefix,
+        number: formContact.phone.number,
       },
-      message: formContact?.message,
-      termsAndConditions: formContact.termsAndConditions,
-      hostname: "iubizon.com",
+    },
+    contactDetails: {
+      message: formContact.message,
     },
   });
 
   try {
-    const response = await fetch(buildApiUrl(API_ENDPOINTS.CONTACT), {
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.EMAILS), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

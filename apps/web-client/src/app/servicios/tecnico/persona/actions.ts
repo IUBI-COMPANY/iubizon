@@ -3,9 +3,9 @@
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
 export async function sendLead(
-  formTechnicalService: LeadForIubizon,
+  formTechnicalService: Lead,
 ): Promise<{ success: boolean; error?: string }> {
-  const mapTechnicalServiceData = (data: LeadForIubizon) => ({
+  const mapTechnicalServiceData = (data: Lead) => ({
     // Core Fields
     lead_type: data.lead_type, // "sale"
     client_type: data.client_type, // "individual" | "organization"

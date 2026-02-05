@@ -14,9 +14,18 @@ import { useTransition, useState } from "react";
 import { SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+type ContactFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: Phone;
+  message: string;
+  termsAndConditions: boolean;
+};
+
 interface ContactFormProps {
   serverActionSendContactEmail: (
-    formData: Omit<Contact, "hostname">,
+    formData: ContactFormData,
   ) => Promise<{ success: boolean; error?: string }>;
 }
 

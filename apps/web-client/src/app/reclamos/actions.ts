@@ -2,16 +2,16 @@
 
 import { buildApiUrl, API_ENDPOINTS } from "@/config/api";
 
-export async function sendReclamation(
-  formClaim: ClaimForIubizon,
+export async function sendClaimEmail(
+  formEmail: Partial<Email>,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const response = await fetch(buildApiUrl(API_ENDPOINTS.CLAIMS), {
+    const response = await fetch(buildApiUrl(API_ENDPOINTS.EMAILS), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(formClaim),
+      body: JSON.stringify(formEmail),
     });
 
     if (!response.ok) {

@@ -228,7 +228,7 @@ export const ServiceTypeStep3 = ({
     }
 
     // Construir LeadForIubizon completo
-    const leadData: Partial<LeadForIubizon> = {
+    const leadData: Partial<Lead> = {
       // Core Fields
       client_id: "gYn8QUB8g35wEAZcZz7D",
       lead_type: "technical_service",
@@ -242,7 +242,7 @@ export const ServiceTypeStep3 = ({
 
       // Organization Info
       organization_info:
-        fullData.organization_info as LeadForIubizon["organization_info"],
+        fullData.organization_info as Lead["organization_info"],
 
       // Products (equipment) - ya incluye service_type
       products: fullData.products as ProductItem[],
@@ -270,7 +270,7 @@ export const ServiceTypeStep3 = ({
     };
 
     try {
-      await sendLead(leadData as LeadForIubizon);
+      await sendLead(leadData as Lead);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);

@@ -15,56 +15,56 @@ import * as yup from "yup";
 import type { ObjectSchema } from "yup";
 import { SendIcon } from "lucide-react";
 import countriesISO from "@/data-list/countriesISO.json";
-import { sendReclamation } from "./actions";
+import { sendClaimEmail } from "./actions";
 import { Alert } from "@/components/ui/Alert";
 
 // Tipo para el formulario (estructura plana)
 type ClaimFormData = {
-  full_name: string;
-  document_type: string;
-  document_id: string;
+  fullName: string;
+  documentType: string;
+  documentNumber: string;
   address: string;
-  phone_prefix: string;
-  phone_number: string;
+  phonePrefix: string;
+  phoneNumber: string;
   email: string;
-  incident_date: string;
-  incident_time?: string;
-  purchase_date: string;
-  invoice_number: string;
-  claim_motive: string;
-  product_service_description?: string;
-  problem_description: string;
-  claimed_amount?: string;
-  requested_solution: string;
+  incidentDate: string;
+  incidentTime?: string;
+  purchaseDate: string;
+  invoiceNumber: string;
+  claimMotive: string;
+  productServiceDescription?: string;
+  problemDescription: string;
+  claimedAmount?: string;
+  requestedSolution: string;
 };
 
 const schema: ObjectSchema<ClaimFormData> = yup.object({
-  full_name: yup
+  fullName: yup
     .string()
     .required("El nombre completo es requerido")
     .min(3, "El nombre debe tener al menos 3 caracteres"),
-  document_type: yup.string().required("Selecciona un tipo de documento"),
-  document_id: yup.string().required("El número de documento es requerido"),
+  documentType: yup.string().required("Selecciona un tipo de documento"),
+  documentNumber: yup.string().required("El número de documento es requerido"),
   address: yup
     .string()
     .required("La dirección es requerida")
     .min(5, "La dirección debe tener al menos 5 caracteres"),
-  phone_prefix: yup.string().required("Selecciona un prefijo"),
-  phone_number: yup.string().required("El teléfono es requerido"),
+  phonePrefix: yup.string().required("Selecciona un prefijo"),
+  phoneNumber: yup.string().required("El teléfono es requerido"),
   email: yup
     .string()
     .email("Ingresa un correo válido")
     .required("El correo electrónico es requerido"),
-  incident_date: yup.string().required("La fecha del incidente es requerida"),
-  incident_time: yup.string().optional(),
-  purchase_date: yup
+  incidentDate: yup.string().required("La fecha del incidente es requerida"),
+  incidentTime: yup.string().optional(),
+  purchaseDate: yup
     .string()
     .required("La fecha de compra/contratación es requerida"),
-  invoice_number: yup
+  invoiceNumber: yup
     .string()
     .required("El número de factura/ticket es requerido"),
-  claim_motive: yup.string().required("Selecciona un motivo"),
-  product_service_description: yup.string().when("claim_motive", {
+  claimMotive: yup.string().required("Selecciona un motivo"),
+  productServiceDescription: yup.string().when("claimMotive", {
     is: "producto",
     then: (schema) =>
       schema
@@ -72,12 +72,12 @@ const schema: ObjectSchema<ClaimFormData> = yup.object({
         .min(3, "Proporciona más detalles"),
     otherwise: (schema) => schema.optional(),
   }),
-  problem_description: yup
+  problemDescription: yup
     .string()
     .required("Describe el problema")
     .min(10, "La descripción debe tener al menos 10 caracteres"),
-  claimed_amount: yup.string().optional(),
-  requested_solution: yup.string().required("Selecciona una solución"),
+  claimedAmount: yup.string().optional(),
+  requestedSolution: yup.string().required("Selecciona una solución"),
 }) as ObjectSchema<ClaimFormData>;
 
 export default function ClaimClientPage() {
@@ -94,60 +94,63 @@ export default function ClaimClientPage() {
   } = useForm<ClaimFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      full_name: "",
-      document_type: "DNI",
-      document_id: "",
+      fullName: "",
+      documentType: "DNI",
+      documentNumber: "",
       address: "",
       email: "",
-      incident_date: "",
-      incident_time: "",
-      purchase_date: "",
-      invoice_number: "",
-      claim_motive: "producto",
-      product_service_description: "",
-      problem_description: "",
-      claimed_amount: "",
-      requested_solution: "",
-      phone_prefix: "+51",
-      phone_number: "",
+      incidentDate: "",
+      incidentTime: "",
+      purchaseDate: "",
+      invoiceNumber: "",
+      claimMotive: "producto",
+      productServiceDescription: "",
+      problemDescription: "",
+      claimedAmount: "",
+      requestedSolution: "",
+      phonePrefix: "+51",
+      phoneNumber: "",
     },
   });
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
-  const claimMotive = watch("claim_motive");
+  const claimMotive = watch("claimMotive");
 
-  // Función para transformar los datos del formulario a la estructura ClaimForIubizon
-  const transformFormData = (data: ClaimFormData): ClaimForIubizon => {
-    const nameParts = data.full_name.trim().split(" ");
+  // Función para transformar los datos del formulario a la estructura ContactViaEmail
+  const transformFormData = (data: ClaimFormData): Partial<Email> => {
+    const nameParts = data.fullName.trim().split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
     return {
-      client_id: "gYn8QUB8g35wEAZcZz7D",
-      contact: {
-        first_name: firstName,
-        last_name: lastName,
-        full_name: data.full_name,
+      hostname: "iubizon.com",
+      termsAndConditions: true,
+      type: "claim",
+      contactInfo: {
+        firstName: firstName,
+        lastName: lastName,
+        fullName: data.fullName,
         email: data.email,
         phone: {
-          prefix: data.phone_prefix,
-          number: data.phone_number,
+          prefix: data.phonePrefix,
+          number: data.phoneNumber,
         },
+        document: {
+          type: data.documentType as DocumentInfo["type"],
+          number: data.documentNumber,
+        },
+        address: data.address,
       },
-      document: {
-        type: data.document_type as DocumentInfo["type"],
-        number: data.document_id,
-      },
-      details: {
-        incident_date: data.incident_date,
-        incident_time: data.incident_time || "",
-        purchase_date: data.purchase_date,
-        invoice_number: data.invoice_number,
-        claim_motive: data.claim_motive,
-        product_service_description: data.product_service_description || "",
-        problem_description: data.problem_description,
-        claimed_amount: data.claimed_amount || "",
-        requested_solution: data.requested_solution,
+      claimDetails: {
+        incidentDate: data.incidentDate,
+        incidentTime: data.incidentTime || "",
+        purchaseDate: data.purchaseDate,
+        invoiceNumber: data.invoiceNumber,
+        claimMotive: data.claimMotive,
+        productServiceDescription: data.productServiceDescription || "",
+        problemDescription: data.problemDescription,
+        claimedAmount: data.claimedAmount || "",
+        requestedSolution: data.requestedSolution,
       },
     };
   };
@@ -157,7 +160,7 @@ export default function ClaimClientPage() {
     setLoading(true);
     try {
       const claimData = transformFormData(data);
-      const result = await sendReclamation(claimData);
+      const result = await sendClaimEmail(claimData);
       setLoading(false);
       if (result.success) {
         setSubmitted(true);
@@ -263,7 +266,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="full_name"
+                  name="fullName"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -283,7 +286,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="document_type"
+                  name="documentType"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -305,15 +308,14 @@ export default function ClaimClientPage() {
                   )}
                 />
               </div>
-
               <div className="md:col-span-2">
                 <Controller
-                  name="document_id"
+                  name="documentNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="Número de Documento"
-                      placeholder="Ej: 12345678"
+                      placeholder="Ej: 75XXXXXX"
                       name={name}
                       value={value}
                       error={error(name)}
@@ -327,7 +329,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-1">
                 <Controller
-                  name="phone_prefix"
+                  name="phonePrefix"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -350,7 +352,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-1">
                 <Controller
-                  name="phone_number"
+                  name="phoneNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -418,7 +420,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="incident_date"
+                  name="incidentDate"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <DatePicker
@@ -436,7 +438,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="incident_time"
+                  name="incidentTime"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <TimePicker
@@ -454,7 +456,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="purchase_date"
+                  name="purchaseDate"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <DatePicker
@@ -472,7 +474,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="invoice_number"
+                  name="invoiceNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -491,7 +493,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="claim_motive"
+                  name="claimMotive"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -514,7 +516,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-2">
                 <Controller
-                  name="requested_solution"
+                  name="requestedSolution"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -541,7 +543,7 @@ export default function ClaimClientPage() {
               {claimMotive === "producto" && (
                 <div className="md:col-span-4">
                   <Controller
-                    name="product_service_description"
+                    name="productServiceDescription"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Input
@@ -561,7 +563,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-4">
                 <Controller
-                  name="problem_description"
+                  name="problemDescription"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <TextArea
@@ -581,7 +583,7 @@ export default function ClaimClientPage() {
 
               <div className="md:col-span-4">
                 <Controller
-                  name="claimed_amount"
+                  name="claimedAmount"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input

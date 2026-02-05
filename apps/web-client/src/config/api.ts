@@ -28,8 +28,7 @@ export const getApiUrl = (): string => {
  */
 export const API_ENDPOINTS = {
   LEADS: "/leads",
-  CLAIMS: "/claims",
-  CONTACT: "/emails/contact",
+  EMAILS: "/emails",
 } as const;
 
 /**

@@ -1,17 +1,56 @@
+// ==================== GENERIC INTERFACES ==================== //
 interface Phone {
   number: string; // Cambiado a string para soportar números internacionales
   prefix: string;
 }
 
-interface Contact {
-  fullName?: string;
+// ==================== CONTACT VIA EMAILS INTERFACES ==================== //
+
+interface ContactInfo_ {
   firstName?: string;
   lastName?: string;
+  fullName?: string; // Computed field: first_name + last_name
+  socialReason?: string; // Para organizaciones (razón social)
   email: string;
   phone: Phone;
-  message?: string;
-  termsAndConditions: boolean;
+  document?: DocumentInfo;
+  alternatePhone?: {
+    prefix: string;
+    number: string;
+  };
+  position?: string; // Cargo en la organización
+  address?: string;
+}
+
+interface Email extends DefaultFirestoreProps {
+  // id: string;
+  // clientId: string;
   hostname: string;
+  contactInfo: ContactInfo_;
+  termsAndConditions: boolean;
+  message?: string;
+  type: "contact" | "claim";
+  contactDetails?: Contact;
+  claimDetails?: Claim;
+  // status?: string;
+  // archived?: boolean;
+  // searchData: string[];
+}
+
+interface Contact {
+  message?: string;
+}
+
+interface Claim {
+  incidentDate: string;
+  incidentTime: string;
+  purchaseDate: string;
+  invoiceNumber: string;
+  claimMotive: string;
+  productServiceDescription: string;
+  problemDescription: string;
+  claimedAmount: string;
+  requestedSolution: string;
 }
 
 // ==================== ENUMS Y TIPOS AUXILIARES ====================
@@ -81,10 +120,7 @@ interface ContactInfo {
   full_name?: string; // Computed field: first_name + last_name
   social_reason?: string; // Para organizaciones (razón social)
   email: string;
-  phone: {
-    prefix: string; // Ej: "+51"
-    number: string; // Cambiado a string
-  };
+  phone: Phone;
   alternate_phone?: {
     prefix: string;
     number: string;
@@ -226,7 +262,7 @@ interface SalesMetrics {
 
 // ==================== INTERFAZ PRINCIPAL ====================
 
-interface LeadForIubizon extends Partial<DefaultFirestoreProps> {
+interface Lead extends Partial<DefaultFirestoreProps> {
   // ========================================
   // 📋 INFORMACIÓN BÁSICA DEL LEAD
   // ========================================
@@ -398,21 +434,4 @@ interface LeadHistoryEntry {
   old_value?: unknown;
   new_value?: unknown;
   details?: Record<string, unknown>;
-}
-
-interface ClaimForIubizon extends Partial<DefaultFirestoreProps> {
-  client_id: string;
-  contact: ContactInfo;
-  document?: DocumentInfo;
-  details: {
-    incident_date: string;
-    incident_time: string;
-    purchase_date: string;
-    invoice_number: string;
-    claim_motive: string;
-    product_service_description: string;
-    problem_description: string;
-    claimed_amount: string;
-    requested_solution: string;
-  };
 }

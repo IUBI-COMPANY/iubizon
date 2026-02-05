@@ -39,9 +39,7 @@ export type AnOrderStep3 = {
 
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
-  const [productFormData, setProductFormData] = useState<
-    Partial<LeadForIubizon>
-  >({});
+  const [productFormData, setProductFormData] = useState<Partial<Lead>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(8);

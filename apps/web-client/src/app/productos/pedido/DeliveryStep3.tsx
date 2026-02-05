@@ -287,7 +287,7 @@ export const DeliveryStep3 = ({
     }
 
     // 4. Construir LeadForIubizon completo
-    const leadData: Partial<LeadForIubizon> = {
+    const leadData: Partial<Lead> = {
       // Core Fields
       client_id: "gYn8QUB8g35wEAZcZz7D",
       lead_type: "sale",
@@ -303,7 +303,7 @@ export const DeliveryStep3 = ({
 
       // Organization Info
       organization_info:
-        fullData.organization_info as LeadForIubizon["organization_info"],
+        fullData.organization_info as Lead["organization_info"],
 
       // Products
       products: fullData.products as ProductItem[],
@@ -330,7 +330,7 @@ export const DeliveryStep3 = ({
 
     // 5. Enviar al servidor
     try {
-      await sendLead(leadData as LeadForIubizon);
+      await sendLead(leadData as Lead);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);
