@@ -19,7 +19,7 @@ type ContactFormData = {
   lastName: string;
   email: string;
   phone: Phone;
-  message: string;
+  message?: string;
   termsAndConditions: boolean;
 };
 
@@ -34,7 +34,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: Phone;
-  message: string;
+  message?: string;
   termsAndConditions: boolean;
 }
 
@@ -52,7 +52,7 @@ export const ContactForm = ({
       prefix: yup.string().required(),
       number: yup.string().required(),
     }),
-    message: yup.string().required(),
+    message: yup.string(),
     termsAndConditions: yup
       .boolean()
       .required()
