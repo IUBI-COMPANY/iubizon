@@ -17,29 +17,34 @@ const STORAGE_KEYS = {
 
 export type AnOrderStep1 = {
   products: ProductItem[];
-  description_more_details?: string;
+  additionalInformation?: string;
 };
 
 export type AnOrderStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: ClientType;
-  organization_info?: {
-    company_name?: string;
-    tax_id?: string;
+  clientType: ClientType;
+  organizationInfo?: {
+    companyName?: string;
+    taxId?: string;
   };
 };
 
 export type AnOrderStep3 = {
   delivery?: DeliveryInfo;
-  attendance_type?: AttendanceType;
-  quote_only?: boolean;
-  terms_and_conditions: boolean;
+  attendanceType?: AttendanceType;
+  isQuoteRequest?: boolean;
+  termsAndConditions: boolean;
 };
+
+// Tipo unificado para el formulario completo
+export type AnOrderFormData = Partial<AnOrderStep1> &
+  Partial<AnOrderStep2> &
+  Partial<AnOrderStep3>;
 
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
-  const [productFormData, setProductFormData] = useState<Partial<Lead>>({});
+  const [productFormData, setProductFormData] = useState<AnOrderFormData>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(8);

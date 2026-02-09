@@ -16,24 +16,22 @@ const STORAGE_KEYS = {
 
 export type ServiceForOrgStep1 = {
   products: ProductItem[];
-  description_more_details?: string;
+  additionalInformation?: string;
 };
 
 export type ServiceForOrgStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: ClientType;
-  organization_info?: {
-    company_name?: string;
-    tax_id?: string;
+  clientType: ClientType;
+  organizationInfo?: {
+    legalName?: string;
+    taxId?: string;
   };
 };
 
 export type ServiceForOrgStep3 = {
-  service_details?: ServiceDetails;
-  visit_schedule?: VisitSchedule;
-  address?: AddressInfo;
-  terms_and_conditions: boolean;
+  serviceDetails?: ServiceLeadDetails;
+  termsAndConditions: boolean;
 };
 
 export const StepsGroup = () => {

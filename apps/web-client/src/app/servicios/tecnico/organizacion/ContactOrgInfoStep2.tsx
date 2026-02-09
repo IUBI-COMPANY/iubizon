@@ -26,8 +26,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<ServiceForOrgStep2>;
-  setRepairsFormData: (data: Partial<ServiceForOrgStep2>) => void;
+  repairsFormData: Partial<Lead>;
+  setRepairsFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
@@ -94,9 +94,9 @@ export const ContactOrgInfoStep2 = ({
     defaultValues: {
       document_type: repairsFormData?.document?.type || undefined,
       document_number: repairsFormData?.document?.number || "",
-      company_name: repairsFormData?.organization_info?.company_name || "",
-      first_name: repairsFormData?.contact?.first_name || "",
-      last_name: repairsFormData?.contact?.last_name || "",
+      company_name: repairsFormData?.organizationInfo?.legalName || "",
+      first_name: repairsFormData?.contact?.firstName || "",
+      last_name: repairsFormData?.contact?.lastName || "",
       email: repairsFormData?.contact?.email || "",
       phone_prefix: repairsFormData?.contact?.phone?.prefix || "+51",
       phone_number: repairsFormData?.contact?.phone?.number || "",
@@ -141,10 +141,10 @@ export const ContactOrgInfoStep2 = ({
       contact: {
         ...(formData.document_type === "DNI"
           ? {
-              first_name: formData.first_name || "",
-              last_name: formData.last_name || "",
+              firstName: formData.first_name || "",
+              lastName: formData.last_name || "",
             }
-          : { social_reason: formData.company_name }),
+          : { socialReason: formData.company_name }),
         email: formData.email,
         phone: {
           prefix: formData.phone_prefix,
@@ -155,19 +155,19 @@ export const ContactOrgInfoStep2 = ({
         type: formData.document_type as DocumentInfo["type"],
         number: formData.document_number,
       },
-      client_type:
+      clientType:
         formData.document_type === "RUC" ? "organization" : "individual",
     };
 
     // Si es RUC, agregar información de organización
     if (formData.document_type === "RUC") {
-      completeFormData.organization_info = {
-        company_name: formData.company_name,
-        tax_id: formData.document_number,
+      completeFormData.organizationInfo = {
+        legalName: formData.company_name,
+        taxId: formData.document_number,
       };
-      completeFormData.contact.social_reason = formData.company_name;
+      completeFormData.contact.socialReason = formData.company_name;
     } else {
-      completeFormData.contact.full_name =
+      completeFormData.contact.fullName =
         `${formData.first_name} ${formData.last_name}`.trim();
     }
 

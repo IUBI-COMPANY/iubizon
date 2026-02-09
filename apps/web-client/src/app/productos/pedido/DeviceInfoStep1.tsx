@@ -6,7 +6,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { AnOrderStep1 } from "@/app/productos/pedido/StepsGroup";
+import {
+  AnOrderStep1,
+  AnOrderFormData,
+} from "@/app/productos/pedido/StepsGroup";
 import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { useNotification } from "@/components/ui/Notification";
@@ -15,8 +18,8 @@ import { ProductItemList, ServiceType } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<AnOrderStep1>;
-  setProductFormData: (data: Partial<AnOrderStep1>) => void;
+  productFormData: Partial<AnOrderFormData>;
+  setProductFormData: (data: Partial<AnOrderFormData>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
@@ -31,15 +34,15 @@ export const DeviceInfoStep1 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<Pick<AnOrderStep1, "description_more_details">>;
+    additionalInformation: yup.string().notRequired(),
+  }) as ObjectSchema<Pick<AnOrderStep1, "additionalInformation">>;
 
   // Inicializar productos para el formulario
-  const initializeProducts = (): ProductItemList[] => {
+  const initializeProducts: ProductItemList[] = (() => {
     if (productFormData?.products && productFormData.products.length > 0) {
       return productFormData.products.map((p) => ({
         ...p,
-        service_type: "maintenance" as ServiceType,
+        serviceType: "maintenance" as ServiceType,
       }));
     }
     return [
@@ -48,30 +51,28 @@ export const DeviceInfoStep1 = ({
         quantity: 1,
         brand: "",
         model: "",
-        service_type: "maintenance",
+        serviceType: "maintenance",
       },
     ];
-  };
+  })();
 
   const [products, setProducts] =
-    useState<ProductItemList[]>(initializeProducts());
+    useState<ProductItemList[]>(initializeProducts);
 
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<AnOrderStep1, "description_more_details">>({
+  } = useForm<Pick<AnOrderStep1, "additionalInformation">>({
     resolver: yupResolver(schema),
     defaultValues: {
-      description_more_details: productFormData?.description_more_details || "",
+      additionalInformation: productFormData?.additionalInformation || "",
     },
   });
 
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
-  const onSubmit = (
-    formData: Pick<AnOrderStep1, "description_more_details">,
-  ) => {
+  const onSubmit = (formData: Pick<AnOrderStep1, "additionalInformation">) => {
     // Validar productos (marca, modelo, cantidad)
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
@@ -91,7 +92,7 @@ export const DeviceInfoStep1 = ({
         brand: p.brand,
         model: p.model,
       })),
-      description_more_details: formData.description_more_details,
+      additionalInformation: formData.additionalInformation,
     };
 
     setProductFormData({ ...productFormData, ...completeFormData });
@@ -117,7 +118,7 @@ export const DeviceInfoStep1 = ({
                 hideServiceTypeField={true}
               />
               <Controller
-                name="description_more_details"
+                name="additionalInformation"
                 control={control}
                 render={({ field: { onChange, value, name } }) => (
                   <TextArea
@@ -129,10 +130,9 @@ export const DeviceInfoStep1 = ({
                       errorMessage(name) ||
                       "Puedes agregar detalles sobre el uso, plazos, presupuesto u otra información relevante"
                     }
-                    required={false}
+                    rows={3}
                     onChange={onChange}
-                    placeholder="Información adicional sobre tu solicitud..."
-                    rows={4}
+                    placeholder="Describa más detalles sobre los productos que necesitas"
                   />
                 )}
               />

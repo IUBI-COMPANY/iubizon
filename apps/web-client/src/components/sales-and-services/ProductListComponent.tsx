@@ -126,13 +126,13 @@ const ProductItem = ({
           <div className="w-full sm:w-1/3">
             <Select
               label={index === 0 ? "Tipo de Servicio" : ""}
-              name={`products.${index}.service_type`}
-              value={product.service_type}
+              name={`products.${index}.serviceType`}
+              value={product.serviceType}
               onChange={(value) =>
-                updateProduct(product.id, "service_type", value)
+                updateProduct(product.id, "serviceType", value)
               }
-              error={!!errors[`products.${index}.service_type`]}
-              helperText={errors[`products.${index}.service_type`]}
+              error={!!errors[`products.${index}.serviceType`]}
+              helperText={errors[`products.${index}.serviceType`]}
               placeholder="Seleccionar"
               options={SERVICE_TYPE_OPTIONS}
               required
@@ -182,7 +182,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
           !product.model.trim() ||
           !product.quantity ||
           product.quantity < 1 ||
-          (!hideServiceTypeField && !product.service_type), // Solo valida service_type si no está oculto
+          (!hideServiceTypeField && !product.serviceType), // Solo valida serviceType si no está oculto
       );
       const hasErrors = incompleteProducts.length > 0;
       if (hasErrors) {
@@ -213,7 +213,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
         quantity: 1,
         brand: "",
         model: "",
-        service_type: "maintenance",
+        serviceType: "maintenance",
       };
       onChange([...products, newProduct]);
     };

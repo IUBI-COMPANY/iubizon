@@ -17,20 +17,18 @@ const STORAGE_KEYS = {
 
 export type ServiceForPersonStep1 = {
   products?: ProductItem[];
-  description_more_details?: string;
+  additionalInformation?: string;
 };
 
 export type ServiceForPersonStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: ClientType;
+  clientType: ClientType;
 };
 
 export type ServiceForPersonStep3 = {
-  service_details?: ServiceDetails;
-  visit_schedule?: VisitSchedule;
-  address?: AddressInfo;
-  terms_and_conditions: boolean;
+  serviceDetails?: ServiceLeadDetails;
+  termsAndConditions: boolean;
 };
 
 export const StepsGroup = () => {
@@ -141,8 +139,10 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            repairsFormData={repairsFormData as Partial<Lead>}
+            setRepairsFormData={
+              setRepairsFormData as (data: Partial<Lead>) => void
+            }
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />

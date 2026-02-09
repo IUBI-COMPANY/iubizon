@@ -16,7 +16,11 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { AnOrderStep3 } from "@/app/productos/pedido/StepsGroup";
+import {
+  AnOrderStep3,
+  AnOrderStep2,
+  AnOrderFormData,
+} from "@/app/productos/pedido/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
@@ -24,21 +28,21 @@ import {
 } from "@/utils/validateDatetimeToSupportInformation";
 
 interface FormData {
-  delivery_option?: DeliveryType;
-  is_quotation?: boolean;
-  visit_date?: string;
-  visit_time?: string;
+  deliveryOption?: DeliveryType;
+  isQuotation?: boolean;
+  visitDate?: string;
+  visitTime?: string;
   department?: string;
   province?: string;
   district?: string;
   address?: string;
-  terms_and_conditions: boolean;
+  termsAndConditions: boolean;
 }
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<AnOrderStep3>;
-  setProductFormData: (data: Partial<AnOrderStep3>) => void;
+  productFormData: Partial<AnOrderFormData>;
+  setProductFormData: (data: Partial<AnOrderFormData>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -57,10 +61,10 @@ export const DeliveryStep3 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    delivery_option: yup.string().required("Debes seleccionar una opción"),
-    is_quotation: yup.boolean().notRequired(),
-    visit_date: yup.string().when("delivery_option", {
-      is: "home_delivery",
+    deliveryOption: yup.string().required("Debes seleccionar una opción"),
+    isQuotation: yup.boolean().notRequired(),
+    visitDate: yup.string().when("deliveryOption", {
+      is: "local_delivery",
       then: (schema) =>
         schema
           .required("La fecha de visita es requerida")
@@ -74,8 +78,8 @@ export const DeliveryStep3 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    visit_time: yup.string().when("delivery_option", {
-      is: "home_delivery",
+    visitTime: yup.string().when("deliveryOption", {
+      is: "local_delivery",
       then: (schema) =>
         schema
           .required("La hora de visita es requerida")
@@ -93,58 +97,59 @@ export const DeliveryStep3 = ({
             "La hora seleccionada ya pasó. Elige una hora futura",
             function (value) {
               if (!value) return false;
-              const visitDate = this.parent.visit_date;
+              const visitDate = this.parent.visitDate;
               return isValidVisitTime(value, visitDate);
             },
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    district: yup.string().when("delivery_option", {
+    district: yup.string().when("deliveryOption", {
       is: (value: string) =>
-        value === "home_delivery" || value === "province_shipping",
+        value === "local_delivery" || value === "regional_delivery",
       then: (schema) => schema.required("El distrito es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    address: yup.string().when("delivery_option", {
+    address: yup.string().when("deliveryOption", {
       is: (value: string) =>
-        value === "home_delivery" || value === "province_shipping",
+        value === "local_delivery" || value === "regional_delivery",
       then: (schema) => schema.required("La dirección es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    department: yup.string().when("delivery_option", {
-      is: "province_shipping",
+    department: yup.string().when("deliveryOption", {
+      is: "regional_delivery",
       then: (schema) => schema.required("El departamento es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    province: yup.string().when("delivery_option", {
-      is: "province_shipping",
+    province: yup.string().when("deliveryOption", {
+      is: "regional_delivery",
       then: (schema) => schema.required("La provincia es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    terms_and_conditions: yup
+    termsAndConditions: yup
       .boolean()
       .oneOf([true], "Debes aceptar los términos y condiciones")
       .required(),
   });
 
-  const getInitialValues = () => {
+  const getInitialValues = (): FormData => {
     const delivery = productFormData?.delivery;
 
     return {
-      delivery_option: productFormData?.delivery?.type || "store_pickup",
-      visit_date: delivery?.home_delivery?.preferred_date || "",
-      visit_time: delivery?.home_delivery?.preferred_time || "",
-      department: delivery?.province_shipping?.address.department || "",
-      province: delivery?.province_shipping?.address.province || "",
+      deliveryOption: (delivery?.type as DeliveryType) || "pickup",
+      visitDate: delivery?.localDelivery?.preferredDate || "",
+      visitTime: delivery?.localDelivery?.preferredTime || "",
+      department: delivery?.regionalDelivery?.address?.state || "",
+      province: delivery?.regionalDelivery?.address?.city || "",
       district:
-        delivery?.home_delivery?.address.district ||
-        delivery?.province_shipping?.address.district ||
+        delivery?.localDelivery?.address?.area ||
+        delivery?.regionalDelivery?.address?.area ||
         "",
       address:
-        delivery?.home_delivery?.address.street ||
-        delivery?.province_shipping?.address.street ||
+        delivery?.localDelivery?.address?.street ||
+        delivery?.regionalDelivery?.address?.street ||
         "",
-      terms_and_conditions: productFormData?.terms_and_conditions || false,
+      termsAndConditions: productFormData?.termsAndConditions || false,
+      isQuotation: productFormData?.isQuoteRequest || false,
     };
   };
 
@@ -160,11 +165,11 @@ export const DeliveryStep3 = ({
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const deliveryOption = watch("delivery_option");
-  const isPickup = deliveryOption === "store_pickup";
-  const isDelivery = deliveryOption === "home_delivery";
-  const isShipping = deliveryOption === "province_shipping";
-  const isQuoteOnly = watch("is_quotation");
+  const deliveryOption = watch("deliveryOption");
+  const isPickup = deliveryOption === "pickup";
+  const isDelivery = deliveryOption === "local_delivery";
+  const isShipping = deliveryOption === "regional_delivery";
+  const isQuoteOnly = watch("isQuotation");
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -182,23 +187,23 @@ export const DeliveryStep3 = ({
 
     // 1. Transformar datos del formulario a la nueva estructura
     const completeFormData: AnOrderStep3 = {
-      attendance_type: formData.is_quotation ? "quotation" : "sale",
-      terms_and_conditions: formData.terms_and_conditions,
+      isQuoteRequest: formData.isQuotation,
+      termsAndConditions: formData.termsAndConditions,
     };
 
     // Si NO es solo cotización, construir el objeto delivery
-    if (!formData.is_quotation) {
-      switch (formData.delivery_option) {
-        case "store_pickup":
+    if (!formData.isQuotation) {
+      switch (formData.deliveryOption) {
+        case "pickup":
           completeFormData.delivery = {
-            type: "store_pickup",
+            type: "pickup",
           };
           break;
 
-        case "home_delivery":
+        case "local_delivery":
           if (
-            !formData.visit_date ||
-            !formData.visit_time ||
+            !formData.visitDate ||
+            !formData.visitTime ||
             !formData.district ||
             !formData.address
           ) {
@@ -211,19 +216,19 @@ export const DeliveryStep3 = ({
             return;
           }
           completeFormData.delivery = {
-            type: "home_delivery",
-            home_delivery: {
-              preferred_date: formData.visit_date,
-              preferred_time: formData.visit_time,
+            type: "local_delivery",
+            localDelivery: {
+              preferredDate: formData.visitDate,
+              preferredTime: formData.visitTime,
               address: {
-                district: formData.district,
+                area: formData.district,
                 street: formData.address,
               },
             },
           };
           break;
 
-        case "province_shipping":
+        case "regional_delivery":
           if (
             !formData.department ||
             !formData.province ||
@@ -239,15 +244,15 @@ export const DeliveryStep3 = ({
             return;
           }
           completeFormData.delivery = {
-            type: "province_shipping",
-            province_shipping: {
+            type: "regional_delivery",
+            regionalDelivery: {
               address: {
-                department: formData.department,
-                province: formData.province,
-                district: formData.district,
+                state: formData.department,
+                city: formData.province,
+                area: formData.district,
                 street: formData.address,
               },
-              estimated_delivery_days: 5,
+              estimatedDeliveryDays: 5,
             },
           };
           break;
@@ -286,45 +291,55 @@ export const DeliveryStep3 = ({
       return;
     }
 
-    // 4. Construir LeadForIubizon completo
+    // 4. Construir Lead completo - usando camelCase (Lead interface)
     const leadData: Partial<Lead> = {
       // Core Fields
-      client_id: "gYn8QUB8g35wEAZcZz7D",
-      lead_type: "sale",
-      client_type:
-        (fullData.client_type as "individual" | "organization") ||
+      leadType: "sale",
+      clientType:
+        (fullData.clientType as "individual" | "organization") ||
         "organization",
       status: "new",
       archived: false,
 
       // Contact Information
-      contact: fullData.contact as ContactInfo,
+      contact: (fullData.contact as ContactInfo) || {
+        firstName: "",
+        lastName: "",
+        fullName: "",
+        email: "",
+        phone: { prefix: "+51", number: "" },
+      },
       document: fullData.document as DocumentInfo | undefined,
 
       // Organization Info
-      organization_info:
-        fullData.organization_info as Lead["organization_info"],
+      organizationInfo: fullData.organizationInfo
+        ? {
+            legalName: (
+              fullData.organizationInfo as AnOrderStep2["organizationInfo"]
+            )?.companyName,
+            taxId: (
+              fullData.organizationInfo as AnOrderStep2["organizationInfo"]
+            )?.taxId,
+          }
+        : undefined,
 
-      // Products
-      products: fullData.products as ProductItem[],
-      description_more_details: fullData.description_more_details as
-        | string
-        | undefined,
-
-      // Delivery (nueva estructura)
-      delivery: completeFormData.delivery,
-
-      // Attendance Type (REQUIRED)
-      attendance_type: completeFormData.attendance_type,
+      // Product Sale Details
+      productSaleDetails: {
+        products: (fullData.products as ProductItem[]) || [],
+        delivery: completeFormData.delivery,
+        additionalInformation:
+          (fullData.additionalInformation as string) || undefined,
+      },
 
       // Communication
-      terms_and_conditions: completeFormData.terms_and_conditions,
+      termsAndConditions: completeFormData.termsAndConditions,
+      isQuoteRequest: completeFormData.isQuoteRequest,
       hostname: "iubizon.com",
 
       // Tracking
       tracking: {
         source: "website",
-        landing_page: window.location.href,
+        landingPage: window.location.href,
       },
     };
 
@@ -358,7 +373,7 @@ export const DeliveryStep3 = ({
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Controller
-                  name="is_quotation"
+                  name="isQuotation"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Checkbox
@@ -385,13 +400,13 @@ export const DeliveryStep3 = ({
                 {!isQuoteOnly && (
                   <>
                     <Controller
-                      name="delivery_option"
+                      name="deliveryOption"
                       control={control}
                       render={({ field: { onChange, value, name } }) => (
                         <RadioGroup
                           label="¿Cómo deseas recibir los productos?"
                           name={name}
-                          value={value}
+                          value={value as string}
                           error={error(name)}
                           helperText={errorMessage(name)}
                           required={required(name)}
@@ -400,16 +415,16 @@ export const DeliveryStep3 = ({
                           options={[
                             {
                               label: "Recojo en tienda",
-                              value: "store_pickup",
+                              value: "pickup",
                             },
                             {
                               label: "Entrega a domicilio",
-                              value: "home_delivery",
+                              value: "local_delivery",
                               message: "Para Lima Metropolitana",
                             },
                             {
                               label: "Envío a provincias",
-                              value: "province_shipping",
+                              value: "regional_delivery",
                               message: "Envío por courier",
                             },
                           ]}
@@ -423,13 +438,13 @@ export const DeliveryStep3 = ({
                       <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
                         <div className="sm:col-span-1">
                           <Controller
-                            name="visit_date"
+                            name="visitDate"
                             control={control}
                             render={({ field: { onChange, value, name } }) => (
                               <DatePicker
                                 label="Fecha preferida de entrega"
                                 name={name}
-                                value={value}
+                                value={value as string}
                                 error={error(name)}
                                 helperText={errorMessage(name)}
                                 required={required(name)}
@@ -440,13 +455,13 @@ export const DeliveryStep3 = ({
                         </div>
                         <div className="sm:col-span-1">
                           <Controller
-                            name="visit_time"
+                            name="visitTime"
                             control={control}
                             render={({ field: { onChange, value, name } }) => (
                               <TimePicker
                                 label="Horario preferido"
                                 name={name}
-                                value={value}
+                                value={value as string}
                                 error={error(name)}
                                 helperText={errorMessage(name)}
                                 required={required(name)}
@@ -615,12 +630,12 @@ export const DeliveryStep3 = ({
                 )}
                 <div className="sm:col-span-2 mt-4">
                   <Controller
-                    name="terms_and_conditions"
+                    name="termsAndConditions"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox
                         name={name}
-                        value={value}
+                        value={value as boolean}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}

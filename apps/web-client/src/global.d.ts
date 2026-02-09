@@ -53,7 +53,7 @@ interface Claim {
   requestedSolution: string;
 }
 
-// ==================== ENUMS Y TIPOS AUXILIARES ====================
+// ==================== ENUMS Y TIPOS AUXILIARES ==================== //
 
 type LeadStatus =
   | "new" // Nuevo lead
@@ -64,7 +64,8 @@ type LeadStatus =
   | "won" // Ganado
   | "lost" // Perdido
   | "follow_up" // Seguimiento
-  | "cancelled"; // Cancelado
+  | "cancelled" // Cancelado
+  | "in_service"; // En servicio (para service leads)
 
 type LeadSource =
   | "website"
@@ -80,26 +81,43 @@ type LeadSource =
   | "walk_in" // Cliente llega directamente
   | "other";
 
+/**
+ * Tipo de Atención - Genérico para cualquier empresa
+ *
+ * Define cómo se realizará el servicio o entrega:
+ * - on_site: En las instalaciones de la empresa (tienda, oficina, etc.)
+ * - at_customer: En el domicilio/ubicación del cliente
+ * - remote: A distancia (online, telefónico, etc.)
+ * - pickup: Cliente recoge el producto/resultado
+ * - shipping: Envío al cliente
+ * - quote_only: Solo cotización, sin servicio inmediato
+ */
 type AttendanceType =
-  | "go_to_store" // Cliente va a la tienda
-  | "home_visit" // Visita a domicilio
-  | "send_to_store" // Enviar equipo a tienda
-  | "quotation" // Solo cotización
-  | "sale"
-  | "other";
+  | "on_site" // En las instalaciones de la empresa
+  | "at_customer" // En el domicilio/ubicación del cliente
+  | "remote" // A distancia/remoto
+  | "pickup" // Cliente recoge
+  | "shipping" // Envío al cliente
+  | "quote_only" // Solo cotización
+  | "other"; // Otro tipo de atención
 
 type Priority = "low" | "medium" | "high" | "urgent";
 
 type ServiceType =
-  | "maintenance" // Mantenimiento
+  | "maintenance" // Mantenimiento preventivo/correctivo
   | "repair" // Reparación
-  | "installation" // Instalación
-  | "calibration" // Calibración
-  | "cleaning" // Limpieza
-  | "diagnosis" // Diagnóstico
-  | "warranty" // Garantía
-  | "training" // Capacitación
-  | "other";
+  | "installation" // Instalación/implementación
+  | "calibration" // Calibración/ajuste
+  | "cleaning" // Limpieza/sanitización
+  | "diagnosis" // Diagnóstico/evaluación
+  | "warranty" // Servicio de garantía
+  | "training" // Capacitación/entrenamiento
+  | "consulting" // Consultoría/asesoría
+  | "customization" // Personalización/configuración
+  | "support" // Soporte técnico/atención
+  | "inspection" // Inspección/auditoría
+  | "delivery" // Entrega/envío
+  | "other"; // Otro tipo de servicio
 
 type LostReason =
   | "price_too_high" // Precio muy alto
@@ -112,16 +130,20 @@ type LostReason =
 
 type ClientType = "individual" | "organization";
 
-// ==================== INTERFACES AUXILIARES ====================
+type LeadType =
+  | "sale" // Venta de productos/bienes
+  | "service"; // Prestación de servicios
+
+// ==================== INTERFACES AUXILIARES ==================== //
 
 interface ContactInfo {
-  first_name?: string;
-  last_name?: string;
-  full_name?: string; // Computed field: first_name + last_name
-  social_reason?: string; // Para organizaciones (razón social)
+  firstName?: string;
+  lastName?: string;
+  fullName?: string; // Computed field: firstName + lastName
+  socialReason?: string; // Para organizaciones (razón social)
   email: string;
   phone: Phone;
-  alternate_phone?: {
+  alternatePhone?: {
     prefix: string;
     number: string;
   };
@@ -130,10 +152,11 @@ interface ContactInfo {
 
 interface AddressInfo {
   street?: string;
-  department?: string; // Región/Departamento
-  province?: string;
-  district?: string;
-  postal_code?: string;
+  state?: string; // Estado/Región/Departamento
+  city?: string; // Ciudad/Provincia
+  area?: string; // Zona/Distrito/Barrio
+  postalCode?: string;
+  country?: string; // País
   reference?: string;
   coordinates?: {
     lat: number;
@@ -153,140 +176,268 @@ interface ProductItem {
   quantity: number;
   brand: string;
   model: string;
-  serial_number?: string;
+  serialNumber?: string;
   condition?: "new" | "reconditioned" | "used"; // Estado del producto
-  service_type?: ServiceType;
-  unit_price?: number;
-  total_price?: number;
+  serviceType?: ServiceType;
+  unitPrice?: number;
+  totalPrice?: number;
   discount?: number; // Descuento en porcentaje
   tax?: number; // Impuesto aplicado
   notes?: string; // Notas específicas del producto
 }
 
-interface ServiceDetails {
-  service_type?: ServiceType;
-  description?: string;
-  problem_description?: string; // Descripción del problema
-  estimated_cost?: number;
-  final_cost?: number; // Costo final después de servicio
-  warranty_included?: boolean;
-  warranty_months?: number; // Meses de garantía
-  parts_needed?: string[];
-  labor_hours?: number; // Horas de mano de obra
-  urgency_level?: "normal" | "express" | "emergency";
-}
-
-// Tipos específicos de entrega
+// Tipos específicos de entrega - Genérico para cualquier ubicación
 type DeliveryType =
-  | "store_pickup" // Recojo en tienda
-  | "home_delivery" // Entrega a domicilio (Lima)
-  | "province_shipping"; // Envío a provincias
+  | "pickup" // Recojo en punto de venta/oficina
+  | "local_delivery" // Entrega local (misma ciudad)
+  | "regional_delivery" // Entrega regional/nacional
+  | "international"; // Envío internacional
 
 interface DeliveryInfo {
   type: DeliveryType;
 
-  // Para home_delivery - Entrega a domicilio
-  home_delivery?: {
-    preferred_date?: string; // ISO 8601
-    preferred_time?: string;
+  // Para local_delivery - Entrega local
+  localDelivery?: {
+    preferredDate?: string; // ISO 8601
+    preferredTime?: string;
     address: {
-      district: string; // Distrito de Lima
+      area: string; // Zona/distrito/barrio
       street: string; // Dirección completa
+      postalCode?: string;
     };
   };
 
-  // Para province_shipping - Envío a provincias
-  province_shipping?: {
+  // Para regional_delivery - Envío regional/nacional
+  regionalDelivery?: {
     address: {
-      department: string; // Departamento
-      province: string; // Provincia
-      district: string; // Distrito
+      state?: string; // Estado/Región/Departamento
+      city?: string; // Ciudad/Provincia
+      area?: string; // Zona/Distrito
       street: string; // Dirección completa
+      postalCode?: string;
     };
-    estimated_delivery_days?: number; // 3-5 días
-    courier_service?: string; // Nombre del courier
+    estimatedDeliveryDays?: number; // Días estimados
+    courierService?: string; // Nombre del courier
   };
 
-  // Para store_pickup - No requiere campos adicionales
-  // Solo se muestra la información del local
+  // Para international - Envío internacional
+  internationalDelivery?: {
+    address: {
+      country: string;
+      state?: string;
+      city?: string;
+      street: string;
+      postalCode: string;
+    };
+    estimatedDeliveryDays?: number;
+    courierService?: string;
+    customsInfo?: string;
+  };
+
+  // Para pickup - No requiere campos adicionales
+  // Solo se muestra la información del punto de recojo
 }
 
 interface VisitSchedule {
-  preferred_date?: string; // ISO 8601
-  preferred_time?: string;
-  confirmed_date?: string; // ISO 8601
-  confirmed_time?: string;
-  completed_date?: string; // ISO 8601 - Fecha real de completación
-  duration_minutes?: number;
-  technician_assigned?: string; // ID del técnico
-  visit_status?:
+  preferredDate?: string; // ISO 8601
+  preferredTime?: string;
+  confirmedDate?: string; // ISO 8601
+  confirmedTime?: string;
+  completedDate?: string; // ISO 8601 - Fecha real de completación
+  durationMinutes?: number;
+  technicianAssigned?: string; // ID del técnico
+  visitStatus?:
     | "scheduled"
     | "in_progress"
     | "completed"
     | "cancelled"
     | "rescheduled";
-  cancellation_reason?: string;
+  cancellationReason?: string;
 }
 
 interface LeadTracking {
   source: LeadSource;
-  utm_source?: string;
-  utm_medium?: string;
-  utm_campaign?: string;
-  utm_content?: string;
-  utm_term?: string;
-  referrer_url?: string;
-  landing_page?: string;
-  ip_address?: string;
-  user_agent?: string;
-  device_type?: "desktop" | "mobile" | "tablet";
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  utmTerm?: string;
+  referrerUrl?: string;
+  landingPage?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  deviceType?: "desktop" | "mobile" | "tablet";
 }
 
 interface LeadTimestamps {
-  created_at: string; // ISO 8601
-  updated_at: string; // ISO 8601
-  last_contact_at?: string; // ISO 8601
-  converted_at?: string; // ISO 8601 - Cuando se convierte en cliente
-  closed_at?: string; // ISO 8601 - Cuando se cierra (won o lost)
-  first_response_at?: string; // ISO 8601 - Primera respuesta del equipo
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
+  lastContactAt?: string; // ISO 8601
+  convertedAt?: string; // ISO 8601 - Cuando se convierte en cliente
+  closedAt?: string; // ISO 8601 - Cuando se cierra (won o lost)
+  firstResponseAt?: string; // ISO 8601 - Primera respuesta del equipo
 }
 
 interface SalesMetrics {
   // Métricas específicas de ventas
-  opportunity_value?: number; // Valor de la oportunidad
+  opportunityValue?: number; // Valor de la oportunidad
   probability?: number; // Probabilidad de cierre (0-100)
-  forecast_category?: "pipeline" | "best_case" | "commit" | "closed";
-  sales_cycle_days?: number; // Días en el ciclo de ventas
+  forecastCategory?: "pipeline" | "best_case" | "commit" | "closed";
+  salesCycleDays?: number; // Días en el ciclo de ventas
   touchpoints?: number; // Número de interacciones
 }
 
-// ==================== INTERFAZ PRINCIPAL ====================
+// ==================== INTERFACES AGRUPADAS POR CONTEXTO ====================
 
-interface Lead extends Partial<DefaultFirestoreProps> {
+// Detalles específicos para leads de tipo PRODUCTO/VENTA
+interface ProductSaleDetails {
+  products: ProductItem[];
+  additionalInformation?: string;
+  estimatedValue?: number;
+  currency?: string; // ISO 4217: USD, EUR, PEN, MXN, etc.
+  delivery?: DeliveryInfo;
+
+  // Cotización
+  quoteSent?: boolean;
+  quoteNumber?: string;
+  quoteAmount?: number;
+  quoteValidUntil?: string; // ISO 8601
+  discountPercentage?: number;
+  discountAmount?: number;
+
+  // Información financiera
+  financial?: {
+    subtotal?: number;
+    taxAmount?: number;
+    totalAmount?: number;
+    paidAmount?: number;
+    balance?: number;
+    invoiceNumber?: string;
+    invoiceDate?: string; // ISO 8601
+    paymentStatus?: "pending" | "partial" | "paid" | "overdue";
+  };
+
+  paymentTerms?: string;
+  paymentMethod?: "cash" | "card" | "bank_transfer" | "installments" | "other";
+}
+
+// Detalles específicos para leads de tipo SERVICIO
+interface ServiceLeadDetails {
+  serviceType?: ServiceType;
+  additionalInformation?: string;
+
+  // Equipo relacionado
+  equipmentBrand?: string;
+  equipmentModel?: string;
+  equipmentSerial?: string;
+  failureDescription?: string;
+  warrantyStatus?: "in_warranty" | "out_of_warranty" | "unknown";
+
+  // Costos y garantía
+  estimatedCost?: number;
+  finalCost?: number;
+  warrantyIncluded?: boolean;
+  warrantyMonths?: number;
+  partsNeeded?: string[];
+  laborHours?: number;
+  urgencyLevel?: "normal" | "express" | "emergency";
+
+  // Estado del servicio
+  serviceCompleted?: boolean;
+  serviceCompletionDate?: string; // ISO 8601
+
+  // Tipo de atención
+  attendanceType?: AttendanceType;
+
+  // Agenda de visita
+  visitSchedule?: VisitSchedule;
+}
+
+// Detalles específicos para cotizaciones
+interface QuotationDetails {
+  quoteSent: boolean;
+  quoteNumber?: string;
+  quoteAmount?: number;
+  quoteValidUntil?: string; // ISO 8601
+  discountPercentage?: number;
+  discountAmount?: number;
+  currency?: string; // ISO 4217: USD, EUR, PEN, MXN, etc.
+  paymentTerms?: string;
+  items?: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }>;
+  notes?: string;
+}
+
+// Detalles de comunicación con el cliente
+interface CommunicationDetails {
+  preference?: "email" | "phone" | "whatsapp";
+  preferredContactTime?: string;
+  language?: "es" | "en";
+
+  // Estado de emails enviados
+  emailSentToUser?: boolean;
+  emailSentToAdvisor?: boolean;
+  lastEmailSentAt?: string; // ISO 8601
+}
+
+// Detalles de seguimiento del lead
+interface FollowUpDetails {
+  nextFollowUpDate?: string; // ISO 8601
+  followUpCount?: number; // Número de seguimientos realizados
+
+  // Recordatorios
+  reminderSet?: boolean;
+  reminderDate?: string; // ISO 8601
+}
+
+// Detalles de cierre del lead
+interface ClosureDetails {
+  // Fechas de cierre
+  expectedCloseDate?: string; // ISO 8601
+  actualCloseDate?: string; // ISO 8601
+
+  // Razones de ganancia
+  wonReason?: string;
+
+  // Razones de pérdida
+  lostReason?: LostReason;
+  lostDetails?: string;
+  competitorName?: string;
+}
+
+// ==================== INTERFAZ PRINCIPAL ====================
+interface Lead extends DefaultFirestoreProps {
   // ========================================
   // 📋 INFORMACIÓN BÁSICA DEL LEAD
   // ========================================
-  client_id?: string; // ID del cliente (iubizon) en sistema
-  lead_type: "sale" | "technical_service";
-  client_type: ClientType;
+  id: string;
+  clientId?: string;
+  leadType: LeadType;
+  clientType: ClientType;
   status: LeadStatus;
   priority?: Priority;
   archived: boolean;
+  hostname?: string;
+  isQuoteRequest?: boolean; // true = solo solicita cotización, false = busca comprar/contratar
 
   // ========================================
   // 👤 INFORMACIÓN DE CONTACTO
   // ========================================
   contact: ContactInfo;
   document?: DocumentInfo;
-  organization_info?: {
-    ruc?: string;
-    company_name?: string;
-    tax_id?: string; // RUC
+  organizationInfo?: {
+    taxId?: string; // ID fiscal (RUC, EIN, VAT, etc.)
+    legalName?: string; // Razón social / Legal name
+    tradeName?: string; // Nombre comercial
     industry?: string;
-    employee_count?: string;
+    employeeCount?: string;
     website?: string;
-    contact_person?: string;
-    contact_position?: string;
+    contactPerson?: string;
+    contactPosition?: string;
   };
 
   // ========================================
@@ -295,67 +446,51 @@ interface Lead extends Partial<DefaultFirestoreProps> {
   address?: AddressInfo;
 
   // ========================================
-  // 🛍️ PRODUCTOS Y SERVICIOS
+  // 🛍️ DETALLES AGRUPADOS POR TIPO DE LEAD
   // ========================================
-  products?: ProductItem[];
-  description_more_details?: string;
-  estimated_value?: number;
-  currency?: "PEN" | "USD";
-
-  // Entrega de productos
-  delivery?: DeliveryInfo;
-  attendance_type?: AttendanceType;
+  // Solo uno de estos debe estar presente según leadType
+  productSaleDetails?: ProductSaleDetails; // Para leadType: "sale"
+  serviceDetails?: ServiceLeadDetails; // Para leadType: "service"
+  quotationDetails?: QuotationDetails; // Para cotizaciones independientes
 
   // ========================================
-  // 🔧 DETALLES DE SERVICIO TÉCNICO
+  // 📞 COMUNICACIÓN CON EL CLIENTE
   // ========================================
-  service_details?: ServiceDetails;
-  equipment_brand?: string;
-  equipment_model?: string;
-  equipment_serial?: string;
-  failure_description?: string;
-  warranty_status?: "in_warranty" | "out_of_warranty" | "unknown";
-  service_completed?: boolean;
-  service_completion_date?: string; // ISO 8601
+  communication?: CommunicationDetails;
+  termsAndConditions: boolean;
+  privacyPolicyAccepted?: boolean;
 
   // ========================================
-  // 📅 AGENDA Y VISITAS
+  // 📅 SEGUIMIENTO DEL LEAD
   // ========================================
-  visit_schedule?: VisitSchedule;
+  followUp?: FollowUpDetails;
 
   // ========================================
-  // 💰 INFORMACIÓN FINANCIERA Y VENTAS
+  // 🎯 CIERRE DEL LEAD
   // ========================================
-  financial?: {
-    subtotal?: number;
-    tax_amount?: number;
-    total_amount?: number;
-    paid_amount?: number;
-    balance?: number;
-    invoice_number?: string;
-    invoice_date?: string; // ISO 8601
-    payment_status?: "pending" | "partial" | "paid" | "overdue";
-  };
+  closure?: ClosureDetails;
 
-  // Cotizaciones y propuestas
-  quote_sent?: boolean;
-  quote_number?: string;
-  quote_amount?: number;
-  quote_valid_until?: string; // ISO 8601
-  discount_percentage?: number;
-  discount_amount?: number;
-  payment_terms?: string;
-  payment_method?: "cash" | "card" | "bank_transfer" | "installments" | "other";
+  // ========================================
+  // 👥 ASIGNACIÓN Y GESTIÓN
+  // ========================================
+  assignedTo?: string; // ID del asesor/vendedor
+  createdBy?: string;
+  teamId?: string;
+  department?: "sales" | "service" | "customer_service";
 
-  // Fechas de cierre
-  expected_close_date?: string; // ISO 8601
-  actual_close_date?: string; // ISO 8601
+  // ========================================
+  // 📝 NOTAS E HISTORIAL
+  // ========================================
+  notes?: string;
+  internalComments?: string;
+  history?: LeadHistoryEntry[];
 
-  // Razones de ganancia/pérdida
-  won_reason?: string;
-  lost_reason?: LostReason;
-  lost_details?: string;
-  competitor_name?: string;
+  // ========================================
+  // ⭐ FEEDBACK Y SATISFACCIÓN
+  // ========================================
+  customerRating?: number; // 1-5 estrellas
+  customerFeedback?: string;
+  npsScore?: number; // 0-10
 
   // ========================================
   // 📊 MÉTRICAS Y ANALYTICS
@@ -363,52 +498,9 @@ interface Lead extends Partial<DefaultFirestoreProps> {
   metrics?: SalesMetrics;
 
   // ========================================
-  // 📞 COMUNICACIÓN Y SEGUIMIENTO
-  // ========================================
-  communication_preference?: "email" | "phone" | "whatsapp";
-  preferred_contact_time?: string;
-  language?: "es" | "en";
-  terms_and_conditions: boolean;
-  privacy_policy_accepted?: boolean;
-
-  // Estado de emails
-  email_sent_to_user?: boolean;
-  email_sent_to_advisor?: boolean;
-  last_email_sent_at?: string; // ISO 8601
-
-  // Seguimiento
-  next_follow_up_date?: string; // ISO 8601
-  follow_up_count?: number;
-  reminder_set?: boolean;
-  reminder_date?: string; // ISO 8601
-
-  // ========================================
-  // 👥 ASIGNACIÓN Y GESTIÓN
-  // ========================================
-  assigned_to?: string; // ID del asesor/vendedor
-  created_by?: string;
-  team_id?: string;
-  department?: "sales" | "technical_service" | "customer_service";
-
-  // ========================================
-  // 📝 NOTAS E HISTORIAL
-  // ========================================
-  notes?: string;
-  internal_comments?: string;
-  history?: LeadHistoryEntry[];
-
-  // ========================================
-  // ⭐ FEEDBACK Y SATISFACCIÓN
-  // ========================================
-  customer_rating?: number; // 1-5 estrellas
-  customer_feedback?: string;
-  nps_score?: number; // 0-10
-
-  // ========================================
   // 🔍 TRACKING Y ATRIBUCIÓN
   // ========================================
   tracking: LeadTracking;
-  hostname?: string;
 
   // ========================================
   // 📎 ARCHIVOS Y ETIQUETAS
@@ -420,7 +512,7 @@ interface Lead extends Partial<DefaultFirestoreProps> {
     url: string;
     type: string;
     size: number;
-    uploaded_at: string; // ISO 8601
+    uploadedAt: string; // ISO 8601
   }[];
 }
 
@@ -428,10 +520,10 @@ interface Lead extends Partial<DefaultFirestoreProps> {
 
 interface LeadHistoryEntry {
   action: string; // Ej: "status_changed", "contacted", "quote_sent"
-  user_id: string;
-  user_name?: string;
+  userId: string;
+  userName?: string;
   timestamp: string; // ISO 8601
-  old_value?: unknown;
-  new_value?: unknown;
+  oldValue?: unknown;
+  newValue?: unknown;
   details?: Record<string, unknown>;
 }

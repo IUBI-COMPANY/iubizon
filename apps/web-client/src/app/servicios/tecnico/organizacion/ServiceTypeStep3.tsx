@@ -37,8 +37,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<ServiceForOrgStep3>;
-  setRepairsFormData: (data: Partial<ServiceForOrgStep3>) => void;
+  repairsFormData: Partial<Lead>;
+  setRepairsFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -132,14 +132,16 @@ export const ServiceTypeStep3 = ({
 
     return {
       attendance_type:
-        (parsedData?.attendance_type as AttendanceType) || "go_to_store",
-      visit_date: repairsFormData?.visit_schedule?.preferred_date || "",
-      visit_time: repairsFormData?.visit_schedule?.preferred_time || "",
-      department: repairsFormData?.address?.department || "",
-      province: repairsFormData?.address?.province || "",
-      district: repairsFormData?.address?.district || "",
+        (parsedData?.attendanceType as AttendanceType) || "on_site",
+      visit_date:
+        repairsFormData?.serviceDetails?.visitSchedule?.preferredDate || "",
+      visit_time:
+        repairsFormData?.serviceDetails?.visitSchedule?.preferredTime || "",
+      department: repairsFormData?.address?.state || "",
+      province: repairsFormData?.address?.city || "",
+      district: repairsFormData?.address?.area || "",
       address: repairsFormData?.address?.street || "",
-      terms_and_conditions: repairsFormData?.terms_and_conditions || false,
+      terms_and_conditions: repairsFormData?.termsAndConditions || false,
     };
   };
 
@@ -155,9 +157,9 @@ export const ServiceTypeStep3 = ({
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const isLocalVisit = watch("attendance_type") === "go_to_store";
-  const isHouseVisit = watch("attendance_type") === "home_visit";
-  const isShipping = watch("attendance_type") === "send_to_store";
+  const isLocalVisit = watch("attendance_type") === "on_site";
+  const isHouseVisit = watch("attendance_type") === "at_customer";
+  const isShipping = watch("attendance_type") === "shipping";
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -173,39 +175,39 @@ export const ServiceTypeStep3 = ({
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
 
-    // Transformar FormData a OrganizationRepairStep3
-    const completeFormData: ServiceForOrgStep3 = {
-      service_details: {
-        // ServiceDetails no incluye attendance_type, solo service_type
-        // que ya viene del Step 1
+    // Transformar FormData para actualizar Lead
+    const completeFormData: Partial<Lead> = {
+      serviceDetails: {
+        ...repairsFormData.serviceDetails,
+        visitSchedule:
+          formData.attendance_type === "at_customer" &&
+          formData.visit_date &&
+          formData.visit_time
+            ? {
+                preferredDate: formData.visit_date,
+                preferredTime: formData.visit_time,
+              }
+            : undefined,
+        attendanceType: formData.attendance_type,
       },
-      visit_schedule:
-        formData.attendance_type === "home_visit" &&
-        formData.visit_date &&
-        formData.visit_time
-          ? {
-              preferred_date: formData.visit_date,
-              preferred_time: formData.visit_time,
-            }
-          : undefined,
       address:
-        (formData.attendance_type === "home_visit" ||
-          formData.attendance_type === "send_to_store") &&
+        (formData.attendance_type === "at_customer" ||
+          formData.attendance_type === "shipping") &&
         formData.address
           ? {
               street: formData.address,
-              department: formData.department,
-              province: formData.province,
-              district: formData.district,
+              state: formData.department,
+              city: formData.province,
+              area: formData.district,
             }
           : undefined,
-      terms_and_conditions: formData.terms_and_conditions,
+      termsAndConditions: formData.terms_and_conditions,
     };
 
     setRepairsFormData({ ...repairsFormData, ...completeFormData });
     addLocalStorageData({
       ...completeFormData,
-      attendance_type: formData.attendance_type,
+      attendanceType: formData.attendance_type,
     });
 
     // Obtener todos los datos del localStorage
@@ -216,23 +218,22 @@ export const ServiceTypeStep3 = ({
       fullData = {
         ...fullData,
         ...completeFormData,
-        attendance_type: formData.attendance_type,
+        attendanceType: formData.attendance_type,
       };
     } catch (error) {
       console.error("Error parsing stored data: ", error);
       fullData = {
         ...repairsFormData,
         ...completeFormData,
-        attendance_type: formData.attendance_type,
+        attendanceType: formData.attendance_type,
       };
     }
 
-    // Construir LeadForIubizon completo
+    // Construir Lead completo
     const leadData: Partial<Lead> = {
       // Core Fields
-      client_id: "gYn8QUB8g35wEAZcZz7D",
-      lead_type: "technical_service",
-      client_type: "organization",
+      leadType: "service",
+      clientType: fullData.clientType as ClientType,
       status: "new",
       archived: false,
 
@@ -241,31 +242,29 @@ export const ServiceTypeStep3 = ({
       document: fullData.document as DocumentInfo | undefined,
 
       // Organization Info
-      organization_info:
-        fullData.organization_info as Lead["organization_info"],
+      organizationInfo: fullData.organizationInfo as Lead["organizationInfo"],
 
-      // Products (equipment) - ya incluye service_type
-      products: fullData.products as ProductItem[],
-      description_more_details: fullData.description_more_details as
-        | string
-        | undefined,
-
-      // Service Details - sin attendance_type
-      service_details: completeFormData.service_details,
-      visit_schedule: completeFormData.visit_schedule,
+      // Address (at Lead level)
       address: completeFormData.address,
 
-      // Attendance Type (REQUIRED)
-      attendance_type: fullData.attendance_type as AttendanceType,
+      // Service Details
+      serviceDetails: {
+        additionalInformation: fullData.additionalInformation as
+          | string
+          | undefined,
+        serviceType: fullData.serviceType as ServiceType | undefined,
+        visitSchedule: completeFormData.serviceDetails?.visitSchedule,
+        attendanceType: formData.attendance_type as AttendanceType,
+      },
 
       // Communication
-      terms_and_conditions: completeFormData.terms_and_conditions,
+      termsAndConditions: completeFormData.termsAndConditions,
       hostname: "iubizon.com",
 
       // Tracking
       tracking: {
         source: "website",
-        landing_page: window.location.href,
+        landingPage: window.location.href,
       },
     };
 

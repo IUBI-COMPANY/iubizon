@@ -4,7 +4,7 @@ import React from "react";
 import { Input } from "@/components/ui/Input";
 import * as yup from "yup";
 import { Form } from "@/components/ui/Form";
-import { Controller, Resolver, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Select } from "@/components/ui/Select";
@@ -14,13 +14,13 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ServiceForPersonStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
 
 interface FormData {
-  document_type: string;
-  document_number: string;
-  first_name?: string;
-  last_name?: string;
+  documentType: string;
+  documentNumber: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone_prefix: string;
-  phone_number: string;
+  phonePrefix: string;
+  phoneNumber: string;
 }
 
 interface Props {
@@ -40,38 +40,38 @@ export const ContactPersonInfoStep2 = ({
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
-  const regexPhoneByCountries = (phone_prefix: string) => {
+  const regexPhoneByCountries = (phonePrefix: string) => {
     const country = countriesISO.find(
-      (country) => country.phonePrefix === phone_prefix,
+      (country) => country.phonePrefix === phonePrefix,
     );
     const regex = country?.regex || "^\\d{4,}$";
     return new RegExp(regex);
   };
 
   const schema = yup.object({
-    document_type: yup.string().required(),
-    document_number: yup
+    documentType: yup.string().required(),
+    documentNumber: yup
       .string()
       .required()
       .test("is-valid-doc", "Número de documento inválido", function (value) {
-        const { document_type } = this.parent;
-        if (document_type === "DNI") {
+        const { documentType } = this.parent;
+        if (documentType === "DNI") {
           return /^\d{8}$/.test(value);
-        } else if (document_type === "RUC") {
+        } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
         }
         return true;
       }),
-    first_name: yup.string().required("Nombres requeridos"),
-    last_name: yup.string().required("Apellidos requeridos"),
+    firstName: yup.string().required("Nombres requeridos"),
+    lastName: yup.string().required("Apellidos requeridos"),
     email: yup.string().email("Email inválido").required("Email requerido"),
-    phone_prefix: yup.string().required("Prefijo requerido"),
-    phone_number: yup
+    phonePrefix: yup.string().required("Prefijo requerido"),
+    phoneNumber: yup
       .string()
       .required("Teléfono requerido")
       .test("is-valid-phone", "Número de teléfono inválido", function (value) {
-        const { phone_prefix } = this.parent;
-        return regexPhoneByCountries(phone_prefix).test(value);
+        const { phonePrefix } = this.parent;
+        return regexPhoneByCountries(phonePrefix).test(value);
       }),
   });
 
@@ -80,37 +80,37 @@ export const ContactPersonInfoStep2 = ({
     control,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(schema) as Resolver<FormData>,
+    resolver: yupResolver(schema),
     defaultValues: {
-      document_type: repairsFormData?.document?.type || undefined,
-      document_number: repairsFormData?.document?.number || "",
-      first_name: repairsFormData?.contact?.first_name || "",
-      last_name: repairsFormData?.contact?.last_name || "",
+      documentType: repairsFormData?.document?.type || undefined,
+      documentNumber: repairsFormData?.document?.number || "",
+      firstName: repairsFormData?.contact?.firstName || "",
+      lastName: repairsFormData?.contact?.lastName || "",
       email: repairsFormData?.contact?.email || "",
-      phone_prefix: repairsFormData?.contact?.phone?.prefix || "+51",
-      phone_number: repairsFormData?.contact?.phone?.number || "",
+      phonePrefix: repairsFormData?.contact?.phone?.prefix || "+51",
+      phoneNumber: repairsFormData?.contact?.phone?.number || "",
     },
   });
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = (formData: FormData) => {
-    const completeFormData: Partial<ServiceForPersonStep2> = {
+    const completeFormData: ServiceForPersonStep2 = {
       contact: {
-        first_name: formData.first_name || "",
-        last_name: formData.last_name || "",
-        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: {
-          prefix: formData.phone_prefix,
-          number: formData.phone_number,
+          prefix: formData.phonePrefix,
+          number: formData.phoneNumber,
         },
       },
       document: {
-        type: formData.document_type as DocumentInfo["type"],
-        number: formData.document_number,
+        type: formData.documentType as DocumentInfo["type"],
+        number: formData.documentNumber,
       },
-      client_type: "individual",
+      clientType: "individual",
     };
 
     setRepairsFormData({ ...repairsFormData, ...completeFormData });
@@ -129,7 +129,7 @@ export const ContactPersonInfoStep2 = ({
             <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_type"
+                  name="documentType"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -154,7 +154,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_number"
+                  name="documentNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -173,7 +173,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="first_name"
+                  name="firstName"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -191,7 +191,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="last_name"
+                  name="lastName"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -228,7 +228,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-1">
                 <Controller
-                  name="phone_prefix"
+                  name="phonePrefix"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -250,7 +250,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-3">
                 <Controller
-                  name="phone_number"
+                  name="phoneNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input

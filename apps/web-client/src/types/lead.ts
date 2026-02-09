@@ -15,6 +15,6 @@ export interface ProductItemList {
   quantity: number;
   brand: string;
   model: string;
-  service_type: ServiceType;
+  serviceType: ServiceType;
   type?: "sale" | "technical_service";
 }
