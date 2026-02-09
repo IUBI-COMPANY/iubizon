@@ -51,7 +51,7 @@ export const SlidersComponent = () => {
       type: "image",
       src: "/images/san-valentin/san-valentin-desktop.png",
       srcMb: "/images/san-valentin/san-valentin-mb.png",
-      alt: "Promoción de San Valentín - Proyector HY350 con descuento especial en Lima, Perú",
+      alt: "Promoción de San Valentín - Proyector HY350 con descuento especial en Lima",
       ctaLink:
         "/productos/Proyector-Led-Portatil-HY350-Magcubic-Full-Hd-1080p-Android",
     },
