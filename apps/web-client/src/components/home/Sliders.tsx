@@ -47,6 +47,15 @@ export const SlidersComponent = () => {
 
   const slides: Slide[] = [
     {
+      id: 1,
+      type: "image",
+      src: "/images/san-valentin/san-valentin-desktop.png",
+      srcMb: "/images/san-valentin/san-valentin-mb.png",
+      alt: "Promoción de San Valentín - Proyector HY350 con descuento especial en Lima, Perú",
+      ctaLink:
+        "/productos/Proyector-Led-Portatil-HY350-Magcubic-Full-Hd-1080p-Android",
+    },
+    {
       id: 2,
       type: "content",
       content: (
@@ -181,13 +190,13 @@ export const SlidersComponent = () => {
                 slide.content
               ) : (
                 <Link href={slide.ctaLink!} className="cursor-pointer">
-                  <div className="relative w-full h-auto">
+                  <div className="relative w-full h-full">
                     <Image
                       src={isMounted && isMobile ? slide.srcMb! : slide.src!}
                       alt={slide.alt!}
-                      width={1920}
-                      height={1080}
-                      className="w-full h-auto object-contain"
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-fill"
                       priority={slide?.id === 2}
                       sizes="100vw"
                     />
