@@ -17,24 +17,24 @@ const STORAGE_KEYS = {
 
 export type AnOrderStep1 = {
   products: ProductItem[];
-  description_more_details?: string;
+  additionalInformation?: string;
 };
 
 export type AnOrderStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: ClientType;
-  organization_info?: {
-    company_name?: string;
-    tax_id?: string;
+  clientType: ClientType;
+  organizationInfo?: {
+    taxId?: string;
+    legalName?: string;
+    tradeName?: string;
   };
 };
 
 export type AnOrderStep3 = {
   delivery?: DeliveryInfo;
-  attendance_type?: AttendanceType;
-  quote_only?: boolean;
-  terms_and_conditions: boolean;
+  isQuoteRequest?: boolean;
+  termsAndConditions: boolean;
 };
 
 export const StepsGroup = () => {

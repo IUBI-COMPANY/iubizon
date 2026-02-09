@@ -15,8 +15,8 @@ import { ProductItemList, ServiceType } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<AnOrderStep1>;
-  setProductFormData: (data: Partial<AnOrderStep1>) => void;
+  productFormData: Partial<Lead>;
+  setProductFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
@@ -31,13 +31,16 @@ export const DeviceInfoStep1 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    description_more_details: yup.string().notRequired(),
-  }) as ObjectSchema<Pick<AnOrderStep1, "description_more_details">>;
+    additionalInformation: yup.string().notRequired(),
+  }) as ObjectSchema<Pick<AnOrderStep1, "additionalInformation">>;
 
   // Inicializar productos para el formulario
   const initializeProducts = (): ProductItemList[] => {
-    if (productFormData?.products && productFormData.products.length > 0) {
-      return productFormData.products.map((p) => ({
+    if (
+      productFormData?.productSaleDetails?.products &&
+      productFormData.productSaleDetails.products.length > 0
+    ) {
+      return productFormData.productSaleDetails.products.map((p) => ({
         ...p,
         service_type: "maintenance" as ServiceType,
       }));
@@ -60,18 +63,17 @@ export const DeviceInfoStep1 = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Pick<AnOrderStep1, "description_more_details">>({
+  } = useForm<Pick<AnOrderStep1, "additionalInformation">>({
     resolver: yupResolver(schema),
     defaultValues: {
-      description_more_details: productFormData?.description_more_details || "",
+      additionalInformation:
+        productFormData?.productSaleDetails?.additionalInformation || "",
     },
   });
 
   const { error, errorMessage } = useFormUtils({ errors, schema });
 
-  const onSubmit = (
-    formData: Pick<AnOrderStep1, "description_more_details">,
-  ) => {
+  const onSubmit = (formData: Pick<AnOrderStep1, "additionalInformation">) => {
     // Validar productos (marca, modelo, cantidad)
     const hasEmptyProduct = products.some(
       (p) => !p.brand.trim() || !p.model.trim() || p.quantity < 1,
@@ -84,18 +86,35 @@ export const DeviceInfoStep1 = ({
       );
       return;
     }
-    const completeFormData: AnOrderStep1 = {
+
+    // Guardar en formato Lead con productSaleDetails
+    const leadData: Partial<Lead> = {
+      ...productFormData,
+      productSaleDetails: {
+        ...productFormData.productSaleDetails,
+        products: products.map((p) => ({
+          id: p.id,
+          quantity: p.quantity,
+          brand: p.brand,
+          model: p.model,
+        })),
+        additionalInformation: formData.additionalInformation,
+      },
+    };
+
+    // También guardamos datos planos para compatibilidad con AnOrderStep1
+    const flatData = {
       products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,
         brand: p.brand,
         model: p.model,
       })),
-      description_more_details: formData.description_more_details,
+      additionalInformation: formData.additionalInformation,
     };
 
-    setProductFormData({ ...productFormData, ...completeFormData });
-    addLocalStorageData(completeFormData);
+    setProductFormData(leadData);
+    addLocalStorageData(flatData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
 
@@ -117,7 +136,7 @@ export const DeviceInfoStep1 = ({
                 hideServiceTypeField={true}
               />
               <Controller
-                name="description_more_details"
+                name="additionalInformation"
                 control={control}
                 render={({ field: { onChange, value, name } }) => (
                   <TextArea

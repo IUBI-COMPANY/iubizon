@@ -7,17 +7,17 @@ export async function sendLead(
 ): Promise<{ success: boolean; error?: string }> {
   const mapProductRequestData = (data: Lead) => ({
     // Core Fields
-    lead_type: data.lead_type, // "sale"
-    client_type: data.client_type, // "individual" | "organization"
-    status: data.status, // "new"
-    archived: data.archived, // false
+    leadType: data.leadType,
+    clientType: data.clientType,
+    status: data.status,
+    archived: data.archived,
 
     // Contact Information (Step 2)
     contact: {
-      first_name: data.contact.first_name,
-      last_name: data.contact.last_name,
-      full_name: data.contact.full_name,
-      social_reason: data.contact.social_reason,
+      firstName: data.contact.firstName,
+      lastName: data.contact.lastName,
+      fullName: data.contact.fullName,
+      socialReason: data.contact.socialReason,
       email: data.contact.email,
       phone: {
         prefix: data.contact.phone.prefix,
@@ -34,65 +34,79 @@ export async function sendLead(
       : undefined,
 
     // Organization Info (Step 2 - only if RUC)
-    organization_info: data.organization_info
+    organizationInfo: data.organizationInfo
       ? {
-          company_name: data.organization_info.company_name,
-          tax_id: data.organization_info.tax_id,
+          legalName: data.organizationInfo.legalName,
+          taxId: data.organizationInfo.taxId,
         }
       : undefined,
 
-    // Products (Step 1)
-    products: data.products?.map((product) => ({
-      id: product.id,
-      quantity: product.quantity,
-      brand: product.brand,
-      model: product.model,
-    })),
-
-    // Additional product details (Step 1)
-    description_more_details: data.description_more_details,
-
-    // Delivery Information (Step 3 - NUEVA ESTRUCTURA)
-    delivery: data.delivery
+    // Product Sale Details (Step 1 + Step 3)
+    productSaleDetails: data.productSaleDetails
       ? {
-          type: data.delivery.type,
-          home_delivery: data.delivery.home_delivery
+          products: data.productSaleDetails.products?.map((product) => ({
+            id: product.id,
+            quantity: product.quantity,
+            brand: product.brand,
+            model: product.model,
+          })),
+          delivery: data.productSaleDetails.delivery
             ? {
-                preferred_date: data.delivery.home_delivery.preferred_date,
-                preferred_time: data.delivery.home_delivery.preferred_time,
-                address: {
-                  district: data.delivery.home_delivery.address.district,
-                  street: data.delivery.home_delivery.address.street,
-                },
+                type: data.productSaleDetails.delivery.type,
+                localDelivery: data.productSaleDetails.delivery.localDelivery
+                  ? {
+                      preferredDate:
+                        data.productSaleDetails.delivery.localDelivery
+                          .preferredDate,
+                      preferredTime:
+                        data.productSaleDetails.delivery.localDelivery
+                          .preferredTime,
+                      address: {
+                        area: data.productSaleDetails.delivery.localDelivery
+                          .address.area,
+                        street:
+                          data.productSaleDetails.delivery.localDelivery.address
+                            .street,
+                      },
+                    }
+                  : undefined,
+                regionalDelivery: data.productSaleDetails.delivery
+                  .regionalDelivery
+                  ? {
+                      address: {
+                        state:
+                          data.productSaleDetails.delivery.regionalDelivery
+                            .address.state,
+                        city: data.productSaleDetails.delivery.regionalDelivery
+                          .address.city,
+                        area: data.productSaleDetails.delivery.regionalDelivery
+                          .address.area,
+                        street:
+                          data.productSaleDetails.delivery.regionalDelivery
+                            .address.street,
+                      },
+                      estimatedDeliveryDays:
+                        data.productSaleDetails.delivery.regionalDelivery
+                          .estimatedDeliveryDays,
+                    }
+                  : undefined,
               }
             : undefined,
-          province_shipping: data.delivery.province_shipping
-            ? {
-                address: {
-                  department:
-                    data.delivery.province_shipping.address.department,
-                  province: data.delivery.province_shipping.address.province,
-                  district: data.delivery.province_shipping.address.district,
-                  street: data.delivery.province_shipping.address.street,
-                },
-                estimated_delivery_days:
-                  data.delivery.province_shipping.estimated_delivery_days,
-              }
-            : undefined,
+          additionalInformation: data.productSaleDetails.additionalInformation,
         }
       : undefined,
 
-    // Attendance Type (REQUIRED)
-    attendance_type: data.attendance_type,
+    // Quote request flag
+    isQuoteRequest: data.isQuoteRequest,
 
     // Communication
     hostname: "iubizon.com",
-    terms_and_conditions: data.terms_and_conditions,
+    termsAndConditions: data.termsAndConditions,
 
     // Tracking
     tracking: {
       source: data.tracking.source,
-      landing_page: data.tracking.landing_page,
+      landingPage: data.tracking.landingPage,
     },
   });
 
