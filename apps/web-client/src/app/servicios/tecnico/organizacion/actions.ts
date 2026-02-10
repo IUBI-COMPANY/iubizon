@@ -3,9 +3,9 @@
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
 export async function sendLead(
-  formTechnicalService: Lead,
+  leadService: Lead,
 ): Promise<{ success: boolean; error?: string }> {
-  const mapTechnicalServiceData = (data: Lead) => ({
+  const mapLeadServiceData = (data: Lead) => ({
     // Core Fields
     leadType: data.leadType,
     clientType: data.clientType,
@@ -54,6 +54,7 @@ export async function sendLead(
     // Service Details
     serviceDetails: data.serviceDetails
       ? {
+          products: data?.serviceDetails?.products || [],
           serviceType: data.serviceDetails.serviceType,
           additionalInformation: data.serviceDetails.additionalInformation,
           attendanceType: data.serviceDetails.attendanceType,
@@ -83,7 +84,7 @@ export async function sendLead(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(mapTechnicalServiceData(formTechnicalService)),
+      body: JSON.stringify(mapLeadServiceData(leadService)),
     });
 
     // Primero obtenemos el texto de la respuesta

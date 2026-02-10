@@ -79,11 +79,11 @@ export const ServiceTypeStep3 = ({
           .required("La hora de visita es requerida")
           .test(
             "is-valid-time",
-            "El horario de atención es de 08:00 AM a 05:00 PM",
+            "El horario de atención es de 09:00 AM a 05:00 PM",
             (value) => {
               if (!value) return false;
               const [hours] = value.split(":").map(Number);
-              return hours >= 8 && hours < 17;
+              return hours >= 9 && hours < 17;
             },
           )
           .test(
@@ -229,10 +229,8 @@ export const ServiceTypeStep3 = ({
       };
     }
 
-    console.log("fullData: ", fullData);
-
     // Construir Lead completo
-    const leadData: Partial<Lead> = {
+    const leadData: Lead = {
       // Core Fields
       leadType: "service",
       clientType: fullData.clientType as ClientType,
@@ -261,7 +259,7 @@ export const ServiceTypeStep3 = ({
       },
 
       // Communication
-      termsAndConditions: completeFormData.termsAndConditions,
+      termsAndConditions: completeFormData?.termsAndConditions || false,
       hostname: "iubizon.com",
 
       // Tracking
@@ -272,7 +270,7 @@ export const ServiceTypeStep3 = ({
     };
 
     try {
-      await sendLead(leadData as Lead);
+      await sendLead(leadData);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);

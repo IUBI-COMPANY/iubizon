@@ -412,11 +412,11 @@ interface ClosureDetails {
 }
 
 // ==================== INTERFAZ PRINCIPAL ====================
-interface Lead extends DefaultFirestoreProps {
+interface Lead extends Partial<DefaultFirestoreProps> {
   // ========================================
   // 📋 INFORMACIÓN BÁSICA DEL LEAD
   // ========================================
-  id: string;
+  id?: string;
   clientId?: string;
   leadType: LeadType;
   clientType: ClientType;
