@@ -413,7 +413,7 @@ export const ServiceTypeStep3 = ({
                 )}
                 {(isHouseVisit || isShipping) && (
                   <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6 my-6">
-                    <div className="sm: col-span-2">
+                    <div className="sm:col-span-2">
                       <Controller
                         name="district"
                         control={control}
@@ -441,7 +441,7 @@ export const ServiceTypeStep3 = ({
                         )}
                       />
                     </div>
-                    <div className="sm: col-span-4">
+                    <div className="sm:col-span-4">
                       <Controller
                         name="address"
                         control={control}
