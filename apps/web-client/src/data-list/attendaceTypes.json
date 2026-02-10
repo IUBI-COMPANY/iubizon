@@ -1,0 +1,47 @@
+[
+  {
+    "label": "En las instalaciones de la empresa",
+    "value": "on_site",
+    "icon": "🏪",
+    "description": "El cliente visita el local"
+  },
+  {
+    "label": "En el domicilio/ubicación del cliente",
+    "value": "at_customer",
+    "icon": "🏠",
+    "description": "Visita técnica al domicilio del cliente (Solo para Lima)"
+  },
+  {
+    "label": "A distancia/remoto",
+    "value": "remote",
+    "icon": "👨🏻‍💻",
+    "description": "A distancia por remoto",
+    "hidden": true
+  },
+  {
+    "label": "Cliente recoge",
+    "value": "pickup",
+    "icon": "📦",
+    "description": "Cliente recoge el producto",
+    "hidden": true
+  },
+  {
+    "label": "Envío al cliente",
+    "value": "shipping",
+    "icon": "📦",
+    "description": "Envío del producto al cliente",
+    "hidden": true
+  },
+  {
+    "label": "Enviar equipo a tienda",
+    "value": "send_to_store",
+    "icon": "📦",
+    "description": "Cliente envía el equipo al local"
+  },
+  {
+    "label": "Otro",
+    "value": "other",
+    "icon": "📋",
+    "description": "Otro tipo de atención"
+  }
+]
