@@ -98,6 +98,7 @@ type AttendanceType =
   | "remote" // A distancia/remoto
   | "pickup" // Cliente recoge
   | "shipping" // Envío al cliente
+  | "send_to_store" // Cliente envia al local
   | "quote_only" // Solo cotización
   | "other"; // Otro tipo de atención
 
@@ -323,6 +324,7 @@ interface ProductSaleDetails {
 
 // Detalles específicos para leads de tipo SERVICIO
 interface ServiceLeadDetails {
+  products: ProductItem[];
   serviceType?: ServiceType;
   additionalInformation?: string;
 
