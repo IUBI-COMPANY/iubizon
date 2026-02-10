@@ -26,8 +26,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<Lead>;
-  setRepairsFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
@@ -36,8 +36,8 @@ interface Props {
 
 export const ContactOrgInfoStep2 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -92,14 +92,14 @@ export const ContactOrgInfoStep2 = ({
   } = useForm<FormData>({
     resolver: yupResolver(schema) as Resolver<FormData>,
     defaultValues: {
-      document_type: repairsFormData?.document?.type || undefined,
-      document_number: repairsFormData?.document?.number || "",
-      company_name: repairsFormData?.organizationInfo?.legalName || "",
-      first_name: repairsFormData?.contact?.firstName || "",
-      last_name: repairsFormData?.contact?.lastName || "",
-      email: repairsFormData?.contact?.email || "",
-      phone_prefix: repairsFormData?.contact?.phone?.prefix || "+51",
-      phone_number: repairsFormData?.contact?.phone?.number || "",
+      document_type: leadFormData?.document?.type || undefined,
+      document_number: leadFormData?.document?.number || "",
+      company_name: leadFormData?.organizationInfo?.legalName || "",
+      first_name: leadFormData?.contact?.firstName || "",
+      last_name: leadFormData?.contact?.lastName || "",
+      email: leadFormData?.contact?.email || "",
+      phone_prefix: leadFormData?.contact?.phone?.prefix || "+51",
+      phone_number: leadFormData?.contact?.phone?.number || "",
     },
   });
 
@@ -155,8 +155,7 @@ export const ContactOrgInfoStep2 = ({
         type: formData.document_type as DocumentInfo["type"],
         number: formData.document_number,
       },
-      clientType:
-        formData.document_type === "RUC" ? "organization" : "individual",
+      clientType: "organization",
     };
 
     // Si es RUC, agregar información de organización
@@ -171,7 +170,7 @@ export const ContactOrgInfoStep2 = ({
         `${formData.first_name} ${formData.last_name}`.trim();
     }
 
-    setRepairsFormData({ ...repairsFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };

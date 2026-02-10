@@ -1,6 +1,6 @@
 import React from "react";
 import * as yup from "yup";
-import { Controller, useForm, Resolver } from "react-hook-form";
+import { Controller, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Form } from "@/components/ui/Form";
@@ -16,29 +16,28 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { ServiceForOrgStep3 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
-import { attendanceTypes } from "@/data-list/attendaceTypes";
+import attendanceTypes from "@/data-list/attendaceTypes.json";
 
 interface FormData {
-  attendance_type: AttendanceType;
-  visit_date?: string;
-  visit_time?: string;
+  attendanceType: AttendanceType;
+  visitDate?: string;
+  visitTime?: string;
   department?: string;
   province?: string;
   district?: string;
   address?: string;
-  terms_and_conditions: boolean;
+  termsAndConditions: boolean;
 }
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<Lead>;
-  setRepairsFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -47,8 +46,8 @@ interface Props {
 
 export const ServiceTypeStep3 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
   loading,
@@ -57,9 +56,9 @@ export const ServiceTypeStep3 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    attendance_type: yup.string().required("Debes seleccionar una opción"),
-    visit_date: yup.string().when("attendance_type", {
-      is: "home_visit",
+    attendanceType: yup.string().required("Debes seleccionar una opción"),
+    visitDate: yup.string().when("attendanceType", {
+      is: "at_customer",
       then: (schema) =>
         schema
           .required("La fecha de visita es requerida")
@@ -73,8 +72,8 @@ export const ServiceTypeStep3 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    visit_time: yup.string().when("attendance_type", {
-      is: "home_visit",
+    visitTime: yup.string().when("attendanceType", {
+      is: "at_customer",
       then: (schema) =>
         schema
           .required("La hora de visita es requerida")
@@ -92,35 +91,35 @@ export const ServiceTypeStep3 = ({
             "La hora seleccionada ya pasó. Elige una hora futura",
             function (value) {
               if (!value) return false;
-              const visitDate = this.parent.visit_date;
+              const visitDate = this.parent.visitDate;
               return isValidVisitTime(value, visitDate);
             },
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    district: yup.string().when("attendance_type", {
+    district: yup.string().when("attendanceType", {
       is: (value: string) =>
-        value === "home_visit" || value === "send_to_store",
+        value === "at_customer" || value === "send_to_store",
       then: (schema) => schema.required("El distrito es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    address: yup.string().when("attendance_type", {
+    address: yup.string().when("attendanceType", {
       is: (value: string) =>
-        value === "home_visit" || value === "send_to_store",
+        value === "at_customer" || value === "send_to_store",
       then: (schema) => schema.required("La dirección es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    department: yup.string().when("attendance_type", {
+    department: yup.string().when("attendanceType", {
       is: "send_to_store",
       then: (schema) => schema.required("El departamento es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    province: yup.string().when("attendance_type", {
+    province: yup.string().when("attendanceType", {
       is: "send_to_store",
       then: (schema) => schema.required("La provincia es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    terms_and_conditions: yup
+    termsAndConditions: yup
       .boolean()
       .oneOf([true], "Debes aceptar los términos y condiciones")
       .required(),
@@ -131,17 +130,17 @@ export const ServiceTypeStep3 = ({
     const parsedData = storedData ? JSON.parse(storedData) : {};
 
     return {
-      attendance_type:
+      attendanceType:
         (parsedData?.attendanceType as AttendanceType) || "on_site",
-      visit_date:
-        repairsFormData?.serviceDetails?.visitSchedule?.preferredDate || "",
-      visit_time:
-        repairsFormData?.serviceDetails?.visitSchedule?.preferredTime || "",
-      department: repairsFormData?.address?.state || "",
-      province: repairsFormData?.address?.city || "",
-      district: repairsFormData?.address?.area || "",
-      address: repairsFormData?.address?.street || "",
-      terms_and_conditions: repairsFormData?.termsAndConditions || false,
+      visitDate:
+        leadFormData?.serviceDetails?.visitSchedule?.preferredDate || "",
+      visitTime:
+        leadFormData?.serviceDetails?.visitSchedule?.preferredTime || "",
+      department: leadFormData?.address?.state || "",
+      province: leadFormData?.address?.city || "",
+      district: leadFormData?.address?.area || "",
+      address: leadFormData?.address?.street || "",
+      termsAndConditions: leadFormData?.termsAndConditions || false,
     };
   };
 
@@ -157,9 +156,9 @@ export const ServiceTypeStep3 = ({
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const isLocalVisit = watch("attendance_type") === "on_site";
-  const isHouseVisit = watch("attendance_type") === "at_customer";
-  const isShipping = watch("attendance_type") === "shipping";
+  const isLocalVisit = watch("attendanceType") === "on_site";
+  const isHouseVisit = watch("attendanceType") === "at_customer";
+  const isShipping = watch("attendanceType") === "send_to_store";
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -178,21 +177,22 @@ export const ServiceTypeStep3 = ({
     // Transformar FormData para actualizar Lead
     const completeFormData: Partial<Lead> = {
       serviceDetails: {
-        ...repairsFormData.serviceDetails,
+        ...leadFormData.serviceDetails,
+        products: leadFormData?.serviceDetails?.products || [],
         visitSchedule:
-          formData.attendance_type === "at_customer" &&
-          formData.visit_date &&
-          formData.visit_time
+          formData.attendanceType === "at_customer" &&
+          formData.visitDate &&
+          formData.visitTime
             ? {
-                preferredDate: formData.visit_date,
-                preferredTime: formData.visit_time,
+                preferredDate: formData.visitDate,
+                preferredTime: formData.visitTime,
               }
             : undefined,
-        attendanceType: formData.attendance_type,
+        attendanceType: formData.attendanceType,
       },
       address:
-        (formData.attendance_type === "at_customer" ||
-          formData.attendance_type === "shipping") &&
+        (formData.attendanceType === "at_customer" ||
+          formData.attendanceType === "send_to_store") &&
         formData.address
           ? {
               street: formData.address,
@@ -201,13 +201,13 @@ export const ServiceTypeStep3 = ({
               area: formData.district,
             }
           : undefined,
-      termsAndConditions: formData.terms_and_conditions,
+      termsAndConditions: formData.termsAndConditions,
     };
 
-    setRepairsFormData({ ...repairsFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData({
       ...completeFormData,
-      attendanceType: formData.attendance_type,
+      attendanceType: formData.attendanceType,
     });
 
     // Obtener todos los datos del localStorage
@@ -218,16 +218,18 @@ export const ServiceTypeStep3 = ({
       fullData = {
         ...fullData,
         ...completeFormData,
-        attendanceType: formData.attendance_type,
+        attendanceType: formData.attendanceType,
       };
     } catch (error) {
       console.error("Error parsing stored data: ", error);
       fullData = {
-        ...repairsFormData,
+        ...leadFormData,
         ...completeFormData,
-        attendanceType: formData.attendance_type,
+        attendanceType: formData.attendanceType,
       };
     }
+
+    console.log("fullData: ", fullData);
 
     // Construir Lead completo
     const leadData: Partial<Lead> = {
@@ -249,12 +251,13 @@ export const ServiceTypeStep3 = ({
 
       // Service Details
       serviceDetails: {
+        products: (fullData?.products || []) as ProductItem[],
         additionalInformation: fullData.additionalInformation as
           | string
           | undefined,
         serviceType: fullData.serviceType as ServiceType | undefined,
         visitSchedule: completeFormData.serviceDetails?.visitSchedule,
-        attendanceType: formData.attendance_type as AttendanceType,
+        attendanceType: formData.attendanceType as AttendanceType,
       },
 
       // Communication
@@ -297,7 +300,7 @@ export const ServiceTypeStep3 = ({
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Controller
-                  name="attendance_type"
+                  name="attendanceType"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <RadioGroup
@@ -317,7 +320,7 @@ export const ServiceTypeStep3 = ({
                   <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
                     <div className="sm:col-span-1">
                       <Controller
-                        name="visit_date"
+                        name="visitDate"
                         control={control}
                         render={({ field: { onChange, value, name } }) => (
                           <DatePicker
@@ -334,7 +337,7 @@ export const ServiceTypeStep3 = ({
                     </div>
                     <div className="sm:col-span-1">
                       <Controller
-                        name="visit_time"
+                        name="visitTime"
                         control={control}
                         render={({ field: { onChange, value, name } }) => (
                           <TimePicker
@@ -460,7 +463,7 @@ export const ServiceTypeStep3 = ({
                 )}
                 <div className="sm:col-span-2 my-6">
                   <Controller
-                    name="terms_and_conditions"
+                    name="termsAndConditions"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox
