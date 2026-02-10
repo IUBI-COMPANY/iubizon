@@ -6,18 +6,18 @@ export async function sendLead(
   lead: Lead,
 ): Promise<{ success: boolean; error?: string }> {
   const mapProductRequestData = (data: Lead) => ({
-    // Core Fields
-    lead_type: data.lead_type, // "sale"
-    client_type: data.client_type, // "individual" | "organization"
+    // Core Fields - Transform camelCase to snake_case for API
+    lead_type: data.leadType, // "sale"
+    client_type: data.clientType, // "individual" | "organization"
     status: data.status, // "new"
     archived: data.archived, // false
 
     // Contact Information (Step 2)
     contact: {
-      first_name: data.contact.first_name,
-      last_name: data.contact.last_name,
-      full_name: data.contact.full_name,
-      social_reason: data.contact.social_reason,
+      first_name: data.contact.firstName,
+      last_name: data.contact.lastName,
+      full_name: data.contact.fullName,
+      social_reason: data.contact.socialReason,
       email: data.contact.email,
       phone: {
         prefix: data.contact.phone.prefix,
@@ -34,15 +34,15 @@ export async function sendLead(
       : undefined,
 
     // Organization Info (Step 2 - only if RUC)
-    organization_info: data.organization_info
+    organization_info: data.organizationInfo
       ? {
-          company_name: data.organization_info.company_name,
-          tax_id: data.organization_info.tax_id,
+          legal_name: data.organizationInfo.legalName,
+          tax_id: data.organizationInfo.taxId,
         }
       : undefined,
 
-    // Products (Step 1)
-    products: data.products?.map((product) => ({
+    // Products (Step 1) - From productSaleDetails
+    products: data.productSaleDetails?.products?.map((product) => ({
       id: product.id,
       quantity: product.quantity,
       brand: product.brand,
@@ -50,49 +50,58 @@ export async function sendLead(
     })),
 
     // Additional product details (Step 1)
-    description_more_details: data.description_more_details,
+    description_more_details: data.productSaleDetails?.additionalInformation,
 
-    // Delivery Information (Step 3 - NUEVA ESTRUCTURA)
-    delivery: data.delivery
+    // Delivery Information (Step 3)
+    delivery: data.productSaleDetails?.delivery
       ? {
-          type: data.delivery.type,
-          home_delivery: data.delivery.home_delivery
+          type: data.productSaleDetails.delivery.type,
+          local_delivery: data.productSaleDetails.delivery.localDelivery
             ? {
-                preferred_date: data.delivery.home_delivery.preferred_date,
-                preferred_time: data.delivery.home_delivery.preferred_time,
+                preferred_date:
+                  data.productSaleDetails.delivery.localDelivery.preferredDate,
+                preferred_time:
+                  data.productSaleDetails.delivery.localDelivery.preferredTime,
                 address: {
-                  district: data.delivery.home_delivery.address.district,
-                  street: data.delivery.home_delivery.address.street,
+                  area: data.productSaleDetails.delivery.localDelivery.address
+                    .area,
+                  street:
+                    data.productSaleDetails.delivery.localDelivery.address
+                      .street,
                 },
               }
             : undefined,
-          province_shipping: data.delivery.province_shipping
+          regional_delivery: data.productSaleDetails.delivery.regionalDelivery
             ? {
                 address: {
-                  department:
-                    data.delivery.province_shipping.address.department,
-                  province: data.delivery.province_shipping.address.province,
-                  district: data.delivery.province_shipping.address.district,
-                  street: data.delivery.province_shipping.address.street,
+                  state:
+                    data.productSaleDetails.delivery.regionalDelivery.address
+                      .state,
+                  city: data.productSaleDetails.delivery.regionalDelivery
+                    .address.city,
+                  area: data.productSaleDetails.delivery.regionalDelivery
+                    .address.area,
+                  street:
+                    data.productSaleDetails.delivery.regionalDelivery.address
+                      .street,
                 },
                 estimated_delivery_days:
-                  data.delivery.province_shipping.estimated_delivery_days,
+                  data.productSaleDetails.delivery.regionalDelivery
+                    .estimatedDeliveryDays,
               }
             : undefined,
         }
       : undefined,
 
-    // Attendance Type (REQUIRED)
-    attendance_type: data.attendance_type,
-
     // Communication
     hostname: "iubizon.com",
-    terms_and_conditions: data.terms_and_conditions,
+    terms_and_conditions: data.termsAndConditions,
+    is_quote_request: data.isQuoteRequest,
 
     // Tracking
     tracking: {
       source: data.tracking.source,
-      landing_page: data.tracking.landing_page,
+      landing_page: data.tracking.landingPage,
     },
   });
 
