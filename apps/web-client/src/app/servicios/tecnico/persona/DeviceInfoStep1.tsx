@@ -15,16 +15,16 @@ import { ServiceForPersonStep1 } from "@/app/servicios/tecnico/persona/StepsGrou
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<Lead>;
-  setRepairsFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
 export const DeviceInfoStep1 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -35,7 +35,7 @@ export const DeviceInfoStep1 = ({
   }) as ObjectSchema<Pick<ServiceForPersonStep1, "additionalInformation">>;
 
   const initialProducts: ProductItemList[] = (() => {
-    const data = repairsFormData as Partial<Lead> & {
+    const data = leadFormData as Partial<Lead> & {
       products?: ProductItemList[];
     };
     if (data?.products && data.products.length > 0) {
@@ -68,7 +68,7 @@ export const DeviceInfoStep1 = ({
     resolver: yupResolver(schema),
     defaultValues: {
       additionalInformation:
-        repairsFormData?.serviceDetails?.additionalInformation || "",
+        leadFormData?.serviceDetails?.additionalInformation || "",
     },
   });
 
@@ -91,7 +91,7 @@ export const DeviceInfoStep1 = ({
     }
 
     const completeFormData: Partial<Lead> & { products?: ProductItemList[] } = {
-      ...(repairsFormData as Partial<Lead>),
+      ...(leadFormData as Partial<Lead>),
       // Guardar productos temporalmente (fuera de la estructura oficial)
       products: products.map((p) => ({
         id: p.id,
@@ -102,12 +102,12 @@ export const DeviceInfoStep1 = ({
       })),
       // Guardar additionalInformation en serviceDetails
       serviceDetails: {
-        ...(repairsFormData as Partial<Lead>).serviceDetails,
+        ...(leadFormData as Partial<Lead>).serviceDetails,
         additionalInformation: formData.additionalInformation,
       },
     };
 
-    setRepairsFormData(completeFormData);
+    setLeadFormData(completeFormData);
     addLocalStorageData({
       products: products.map((p) => ({
         id: p.id,

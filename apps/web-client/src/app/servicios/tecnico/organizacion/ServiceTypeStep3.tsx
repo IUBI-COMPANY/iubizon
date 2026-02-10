@@ -233,7 +233,7 @@ export const ServiceTypeStep3 = ({
     const leadData: Lead = {
       // Core Fields
       leadType: "service",
-      clientType: fullData.clientType as ClientType,
+      clientType: "organization",
       status: "new",
       archived: false,
 

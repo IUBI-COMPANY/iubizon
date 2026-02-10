@@ -45,6 +45,7 @@ export async function sendLead(
     // Service Details
     serviceDetails: data.serviceDetails
       ? {
+          products: data?.serviceDetails?.products || [],
           serviceType: data.serviceDetails.serviceType,
           additionalInformation: data.serviceDetails.additionalInformation,
           attendanceType: data.serviceDetails.attendanceType,

@@ -324,7 +324,7 @@ interface ProductSaleDetails {
 
 // Detalles específicos para leads de tipo SERVICIO
 interface ServiceLeadDetails {
-  products: ProductItem[];
+  products?: ProductItem[];
   serviceType?: ServiceType;
   additionalInformation?: string;
 

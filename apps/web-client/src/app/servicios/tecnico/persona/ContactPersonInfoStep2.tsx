@@ -25,8 +25,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<ServiceForPersonStep2>;
-  setRepairsFormData: (data: Partial<ServiceForPersonStep2>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
@@ -35,8 +35,8 @@ interface Props {
 
 export const ContactPersonInfoStep2 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -82,13 +82,13 @@ export const ContactPersonInfoStep2 = ({
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      documentType: repairsFormData?.document?.type || undefined,
-      documentNumber: repairsFormData?.document?.number || "",
-      firstName: repairsFormData?.contact?.firstName || "",
-      lastName: repairsFormData?.contact?.lastName || "",
-      email: repairsFormData?.contact?.email || "",
-      phonePrefix: repairsFormData?.contact?.phone?.prefix || "+51",
-      phoneNumber: repairsFormData?.contact?.phone?.number || "",
+      documentType: leadFormData?.document?.type || undefined,
+      documentNumber: leadFormData?.document?.number || "",
+      firstName: leadFormData?.contact?.firstName || "",
+      lastName: leadFormData?.contact?.lastName || "",
+      email: leadFormData?.contact?.email || "",
+      phonePrefix: leadFormData?.contact?.phone?.prefix || "+51",
+      phoneNumber: leadFormData?.contact?.phone?.number || "",
     },
   });
 
@@ -113,7 +113,7 @@ export const ContactPersonInfoStep2 = ({
       clientType: "individual",
     };
 
-    setRepairsFormData({ ...repairsFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };

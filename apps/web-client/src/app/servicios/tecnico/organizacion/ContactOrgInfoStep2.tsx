@@ -14,14 +14,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ServiceForOrgStep2 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 
 interface FormData {
-  document_type: string;
-  document_number: string;
-  company_name?: string;
-  first_name?: string;
-  last_name?: string;
+  documentType: string;
+  documentNumber: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  phone_prefix: string;
-  phone_number: string;
+  phonePrefix: string;
+  phoneNumber: string;
 }
 
 interface Props {
@@ -44,42 +44,42 @@ export const ContactOrgInfoStep2 = ({
   const previousDocType = useRef<string | undefined>("");
 
   const schema = yup.object({
-    document_type: yup.string().required(),
-    document_number: yup
+    documentType: yup.string().required(),
+    documentNumber: yup
       .string()
       .required()
       .test("is-valid-doc", "Número de documento inválido", function (value) {
-        const { document_type } = this.parent;
-        if (document_type === "DNI") {
+        const { documentType } = this.parent;
+        if (documentType === "DNI") {
           return /^\d{8}$/.test(value);
-        } else if (document_type === "RUC") {
+        } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
         }
         return true;
       }),
-    company_name: yup.string().when("document_type", {
+    companyName: yup.string().when("documentType", {
       is: "RUC",
       then: (schema) => schema.required("La razón social es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
-    first_name: yup.string().when("document_type", {
+    firstName: yup.string().when("documentType", {
       is: "RUC",
       then: (schema) => schema.notRequired(),
       otherwise: (schema) => schema.required("El nombre es requerido"),
     }),
-    last_name: yup.string().when("document_type", {
+    lastName: yup.string().when("documentType", {
       is: "RUC",
       then: (schema) => schema.notRequired(),
       otherwise: (schema) => schema.required("El apellido es requerido"),
     }),
     email: yup.string().email().required(),
-    phone_prefix: yup.string().required(),
-    phone_number: yup
+    phonePrefix: yup.string().required(),
+    phoneNumber: yup
       .string()
       .required()
       .test("is-valid-phone", "Número de teléfono inválido", function (value) {
-        const { phone_prefix } = this.parent;
-        return regexPhoneByCountries(phone_prefix).test(value);
+        const { phonePrefix } = this.parent;
+        return regexPhoneByCountries(phonePrefix).test(value);
       }),
   });
 
@@ -92,35 +92,35 @@ export const ContactOrgInfoStep2 = ({
   } = useForm<FormData>({
     resolver: yupResolver(schema) as Resolver<FormData>,
     defaultValues: {
-      document_type: leadFormData?.document?.type || undefined,
-      document_number: leadFormData?.document?.number || "",
-      company_name: leadFormData?.organizationInfo?.legalName || "",
-      first_name: leadFormData?.contact?.firstName || "",
-      last_name: leadFormData?.contact?.lastName || "",
+      documentType: leadFormData?.document?.type || undefined,
+      documentNumber: leadFormData?.document?.number || "",
+      companyName: leadFormData?.organizationInfo?.legalName || "",
+      firstName: leadFormData?.contact?.firstName || "",
+      lastName: leadFormData?.contact?.lastName || "",
       email: leadFormData?.contact?.email || "",
-      phone_prefix: leadFormData?.contact?.phone?.prefix || "+51",
-      phone_number: leadFormData?.contact?.phone?.number || "",
+      phonePrefix: leadFormData?.contact?.phone?.prefix || "+51",
+      phoneNumber: leadFormData?.contact?.phone?.number || "",
     },
   });
 
-  const docType = watch("document_type");
+  const docType = watch("documentType");
   const isRuc = docType === "RUC";
   const isDni = docType === "DNI";
 
   // Limpiar campos cuando cambia el tipo de documento
   useEffect(() => {
     if (previousDocType.current && previousDocType.current !== docType) {
-      setValue("document_number", "");
+      setValue("documentNumber", "");
 
       if (docType === "RUC") {
-        setValue("first_name", "");
-        setValue("last_name", "");
+        setValue("firstName", "");
+        setValue("lastName", "");
       } else if (docType === "DNI") {
-        setValue("company_name", "");
+        setValue("companyName", "");
       } else {
-        setValue("first_name", "");
-        setValue("last_name", "");
-        setValue("company_name", "");
+        setValue("firstName", "");
+        setValue("lastName", "");
+        setValue("companyName", "");
       }
     }
     previousDocType.current = docType;
@@ -128,9 +128,9 @@ export const ContactOrgInfoStep2 = ({
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const regexPhoneByCountries = (phone_prefix: string) => {
+  const regexPhoneByCountries = (phonePrefix: string) => {
     const country = countriesISO.find(
-      (country) => country.phonePrefix === phone_prefix,
+      (country) => country.phonePrefix === phonePrefix,
     );
     const regex = country?.regex || "^\\d{4,}$";
     return new RegExp(regex);
@@ -139,35 +139,35 @@ export const ContactOrgInfoStep2 = ({
   const onSubmit = (formData: FormData) => {
     const completeFormData: ServiceForOrgStep2 = {
       contact: {
-        ...(formData.document_type === "DNI"
+        ...(formData.documentType === "DNI"
           ? {
-              firstName: formData.first_name || "",
-              lastName: formData.last_name || "",
+              firstName: formData.firstName || "",
+              lastName: formData.lastName || "",
             }
-          : { socialReason: formData.company_name }),
+          : { socialReason: formData.companyName }),
         email: formData.email,
         phone: {
-          prefix: formData.phone_prefix,
-          number: formData.phone_number,
+          prefix: formData.phonePrefix,
+          number: formData.phoneNumber,
         },
       },
       document: {
-        type: formData.document_type as DocumentInfo["type"],
-        number: formData.document_number,
+        type: formData.documentType as DocumentInfo["type"],
+        number: formData.documentNumber,
       },
       clientType: "organization",
     };
 
     // Si es RUC, agregar información de organización
-    if (formData.document_type === "RUC") {
+    if (formData.documentType === "RUC") {
       completeFormData.organizationInfo = {
-        legalName: formData.company_name,
-        taxId: formData.document_number,
+        legalName: formData.companyName,
+        taxId: formData.documentNumber,
       };
-      completeFormData.contact.socialReason = formData.company_name;
+      completeFormData.contact.socialReason = formData.companyName;
     } else {
       completeFormData.contact.fullName =
-        `${formData.first_name} ${formData.last_name}`.trim();
+        `${formData.firstName} ${formData.lastName}`.trim();
     }
 
     setLeadFormData({ ...leadFormData, ...completeFormData });
@@ -186,7 +186,7 @@ export const ContactOrgInfoStep2 = ({
             <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_type"
+                  name="documentType"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -211,7 +211,7 @@ export const ContactOrgInfoStep2 = ({
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_number"
+                  name="documentNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -237,7 +237,7 @@ export const ContactOrgInfoStep2 = ({
               {isRuc ? (
                 <div className="sm:col-span-4">
                   <Controller
-                    name="company_name"
+                    name="companyName"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Input
@@ -257,7 +257,7 @@ export const ContactOrgInfoStep2 = ({
                 <>
                   <div className="sm:col-span-2">
                     <Controller
-                      name="first_name"
+                      name="firstName"
                       control={control}
                       render={({ field: { onChange, value, name } }) => (
                         <Input
@@ -275,7 +275,7 @@ export const ContactOrgInfoStep2 = ({
                   </div>
                   <div className="sm:col-span-2">
                     <Controller
-                      name="last_name"
+                      name="lastName"
                       control={control}
                       render={({ field: { onChange, value, name } }) => (
                         <Input
@@ -314,7 +314,7 @@ export const ContactOrgInfoStep2 = ({
               </div>
               <div className="sm:col-span-1">
                 <Controller
-                  name="phone_prefix"
+                  name="phonePrefix"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -336,7 +336,7 @@ export const ContactOrgInfoStep2 = ({
               </div>
               <div className="sm:col-span-3">
                 <Controller
-                  name="phone_number"
+                  name="phoneNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input

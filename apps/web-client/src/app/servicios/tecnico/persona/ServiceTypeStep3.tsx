@@ -21,6 +21,7 @@ import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
+import attendanceTypes from "@/data-list/attendaceTypes.json";
 
 interface FormData {
   attendanceType: string;
@@ -97,22 +98,24 @@ export const ServiceTypeStep3 = ({
       otherwise: (schema) => schema.notRequired(),
     }),
     district: yup.string().when("attendanceType", {
-      is: (value: string) => value === "at_customer" || value === "shipping",
+      is: (value: string) =>
+        value === "at_customer" || value === "send_to_store",
       then: (schema) => schema.required("El distrito es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
     address: yup.string().when("attendanceType", {
-      is: (value: string) => value === "at_customer" || value === "shipping",
+      is: (value: string) =>
+        value === "at_customer" || value === "send_to_store",
       then: (schema) => schema.required("La dirección es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
     department: yup.string().when("attendanceType", {
-      is: "shipping",
+      is: "send_to_store",
       then: (schema) => schema.required("El departamento es requerido"),
       otherwise: (schema) => schema.notRequired(),
     }),
     province: yup.string().when("attendanceType", {
-      is: "shipping",
+      is: "send_to_store",
       then: (schema) => schema.required("La provincia es requerida"),
       otherwise: (schema) => schema.notRequired(),
     }),
@@ -154,7 +157,7 @@ export const ServiceTypeStep3 = ({
 
   const isLocalVisit = watch("attendanceType") === "on_site";
   const isHouseVisit = watch("attendanceType") === "at_customer";
-  const isShipping = watch("attendanceType") === "shipping";
+  const isShipping = watch("attendanceType") === "send_to_store";
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -187,7 +190,7 @@ export const ServiceTypeStep3 = ({
       },
       address:
         (formData.attendanceType === "at_customer" ||
-          formData.attendanceType === "shipping") &&
+          formData.attendanceType === "send_to_store") &&
         formData.address
           ? {
               street: formData.address,
@@ -241,6 +244,7 @@ export const ServiceTypeStep3 = ({
 
       // Service Details
       serviceDetails: {
+        products: (fullData?.products || []) as ProductItem[],
         additionalInformation: fullData.additionalInformation as
           | string
           | undefined,
@@ -306,30 +310,7 @@ export const ServiceTypeStep3 = ({
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      options={[
-                        {
-                          label: "Quiero ir al local",
-                          value: "on_site",
-                        },
-                        {
-                          label: "Quiero una visita técnica a mi domicilio",
-                          value: "at_customer",
-                          message: "Solo para Lima",
-                        },
-                        {
-                          label: "Quiero enviar mi producto al local",
-                          value: "shipping",
-                          message: "Solo para provincias",
-                        },
-                        {
-                          label: "Quiero una cotización",
-                          value: "quote_only",
-                        },
-                        {
-                          label: "Otro",
-                          value: "other",
-                        },
-                      ]}
+                      options={attendanceTypes}
                     />
                   )}
                 />

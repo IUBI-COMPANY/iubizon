@@ -26,14 +26,9 @@ export type ServiceForPersonStep2 = {
   clientType: ClientType;
 };
 
-export type ServiceForPersonStep3 = {
-  serviceDetails?: ServiceLeadDetails;
-  termsAndConditions: boolean;
-};
-
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
-  const [repairsFormData, setRepairsFormData] = useState<Partial<Lead>>({});
+  const [leadFormData, setLeadFormData] = useState<Partial<Lead>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(8);
@@ -53,7 +48,7 @@ export const StepsGroup = () => {
     const data = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.formData) || "{}",
     );
-    setRepairsFormData(data);
+    setLeadFormData(data);
     setLoading(false);
   }, [globalStep]);
 
@@ -139,10 +134,8 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            repairsFormData={repairsFormData as Partial<Lead>}
-            setRepairsFormData={
-              setRepairsFormData as (data: Partial<Lead>) => void
-            }
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -150,8 +143,8 @@ export const StepsGroup = () => {
         {globalStep === 1 && (
           <ContactPersonInfoStep2
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -161,8 +154,8 @@ export const StepsGroup = () => {
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            repairsFormData={leadFormData}
+            setRepairsFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
