@@ -312,13 +312,6 @@ interface ServiceLeadDetails {
   serviceType?: ServiceType;
   additionalInformation?: string;
 
-  // Equipo relacionado
-  equipmentBrand?: string;
-  equipmentModel?: string;
-  equipmentSerial?: string;
-  failureDescription?: string;
-  warrantyStatus?: "in_warranty" | "out_of_warranty" | "unknown";
-
   // Costos y garantía
   estimatedCost?: number;
   finalCost?: number;
