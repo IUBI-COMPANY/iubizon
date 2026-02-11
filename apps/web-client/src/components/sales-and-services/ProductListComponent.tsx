@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle, GripVertical, Plus, X } from "lucide-react";
-import { ProductItemList } from "@/types/lead";
+import serviceTypes from "@/data-list/serviceTypes.json";
 
 interface Props {
-  products: ProductItemList[];
-  onChange: (products: ProductItemList[]) => void;
+  products: ProductItem[];
+  onChange: (products: ProductItem[]) => void;
   errors?: {
     [key: string]: string | undefined;
   };
@@ -20,24 +20,13 @@ export interface ProductListComponentRef {
   validate: () => boolean;
 }
 
-const SERVICE_TYPE_OPTIONS = [
-  { label: "Mantenimiento", value: "maintenance" },
-  { label: "Reparación", value: "repair" },
-  { label: "Instalación", value: "installation" },
-  { label: "Calibración", value: "calibration" },
-  { label: "Limpieza", value: "cleaning" },
-  { label: "Diagnóstico", value: "diagnosis" },
-  { label: "Capacitación", value: "training" },
-  { label: "Otro", value: "other" },
-];
-
 // Componente para cada producto con drag and drop nativo
 interface ProductItemProps {
-  product: ProductItemList;
+  product: ProductItem;
   index: number;
   updateProduct: (
     id: string,
-    field: keyof ProductItemList,
+    field: keyof ProductItem,
     value: string | number,
   ) => void;
   removeProduct: (id: string) => void;
@@ -126,15 +115,15 @@ const ProductItem = ({
           <div className="w-full sm:w-1/3">
             <Select
               label={index === 0 ? "Tipo de Servicio" : ""}
-              name={`products.${index}.service_type`}
-              value={product.service_type}
+              name={`products.${index}.serviceType`}
+              value={product.serviceType}
               onChange={(value) =>
-                updateProduct(product.id, "service_type", value)
+                updateProduct(product.id, "serviceType", value)
               }
-              error={!!errors[`products.${index}.service_type`]}
-              helperText={errors[`products.${index}.service_type`]}
+              error={!!errors[`products.${index}.serviceType`]}
+              helperText={errors[`products.${index}.serviceType`]}
               placeholder="Seleccionar"
-              options={SERVICE_TYPE_OPTIONS}
+              options={serviceTypes}
               required
             />
           </div>
@@ -182,7 +171,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
           !product.model.trim() ||
           !product.quantity ||
           product.quantity < 1 ||
-          (!hideServiceTypeField && !product.service_type), // Solo valida service_type si no está oculto
+          (!hideServiceTypeField && !product.serviceType), // Solo valida serviceType si no está oculto
       );
       const hasErrors = incompleteProducts.length > 0;
       if (hasErrors) {
@@ -208,12 +197,12 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
     }));
 
     const addProduct = () => {
-      const newProduct: ProductItemList = {
+      const newProduct: ProductItem = {
         id: crypto.randomUUID(),
         quantity: 1,
         brand: "",
         model: "",
-        service_type: "maintenance",
+        serviceType: "maintenance",
       };
       onChange([...products, newProduct]);
     };
@@ -226,7 +215,7 @@ export const ProductListComponent = forwardRef<ProductListComponentRef, Props>(
 
     const updateProduct = (
       id: string,
-      field: keyof ProductItemList,
+      field: keyof ProductItem,
       value: string | number,
     ) => {
       onChange(

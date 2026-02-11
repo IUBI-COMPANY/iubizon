@@ -5,11 +5,28 @@ interface Phone {
 }
 
 // ==================== CONTACT VIA EMAILS INTERFACES ==================== //
+
+interface ContactInfo_ {
+  firstName?: string;
+  lastName?: string;
+  fullName?: string; // Computed field: first_name + last_name
+  socialReason?: string; // Para organizaciones (razón social)
+  email: string;
+  phone: Phone;
+  document?: DocumentInfo;
+  alternatePhone?: {
+    prefix: string;
+    number: string;
+  };
+  position?: string; // Cargo en la organización
+  address?: string;
+}
+
 interface Email extends DefaultFirestoreProps {
   // id: string;
   // clientId: string;
   hostname: string;
-  contactInfo: ContactInfo;
+  contactInfo: ContactInfo_;
   termsAndConditions: boolean;
   message?: string;
   type: "contact" | "claim";
@@ -81,6 +98,7 @@ type AttendanceType =
   | "remote" // A distancia/remoto
   | "pickup" // Cliente recoge
   | "shipping" // Envío al cliente
+  | "send_to_store" // Cliente envia al local
   | "quote_only" // Solo cotización
   | "other"; // Otro tipo de atención
 
@@ -183,35 +201,19 @@ interface DeliveryInfo {
   localDelivery?: {
     preferredDate?: string; // ISO 8601
     preferredTime?: string;
-    address: {
-      area: string; // Zona/distrito/barrio
-      street: string; // Dirección completa
-      postalCode?: string;
-    };
+    address: AddressInfo;
   };
 
   // Para regional_delivery - Envío regional/nacional
   regionalDelivery?: {
-    address: {
-      state?: string; // Estado/Región/Departamento
-      city?: string; // Ciudad/Provincia
-      area?: string; // Zona/Distrito
-      street: string; // Dirección completa
-      postalCode?: string;
-    };
+    address: AddressInfo;
     estimatedDeliveryDays?: number; // Días estimados
     courierService?: string; // Nombre del courier
   };
 
   // Para international - Envío internacional
   internationalDelivery?: {
-    address: {
-      country: string;
-      state?: string;
-      city?: string;
-      street: string;
-      postalCode: string;
-    };
+    address: AddressInfo;
     estimatedDeliveryDays?: number;
     courierService?: string;
     customsInfo?: string;
@@ -274,7 +276,7 @@ interface SalesMetrics {
 
 // Detalles específicos para leads de tipo PRODUCTO/VENTA
 interface ProductSaleDetails {
-  products: ProductItem[];
+  products?: ProductItem[];
   additionalInformation?: string;
   estimatedValue?: number;
   currency?: string; // ISO 4217: USD, EUR, PEN, MXN, etc.
@@ -306,15 +308,9 @@ interface ProductSaleDetails {
 
 // Detalles específicos para leads de tipo SERVICIO
 interface ServiceLeadDetails {
+  products?: ProductItem[];
   serviceType?: ServiceType;
   additionalInformation?: string;
-
-  // Equipo relacionado
-  equipmentBrand?: string;
-  equipmentModel?: string;
-  equipmentSerial?: string;
-  failureDescription?: string;
-  warrantyStatus?: "in_warranty" | "out_of_warranty" | "unknown";
 
   // Costos y garantía
   estimatedCost?: number;
@@ -331,6 +327,7 @@ interface ServiceLeadDetails {
 
   // Tipo de atención
   attendanceType?: AttendanceType;
+  address?: AddressInfo;
 
   // Agenda de visita
   visitSchedule?: VisitSchedule;
@@ -393,11 +390,11 @@ interface ClosureDetails {
 }
 
 // ==================== INTERFAZ PRINCIPAL ====================
-interface Lead extends DefaultFirestoreProps {
+interface Lead extends Partial<DefaultFirestoreProps> {
   // ========================================
   // 📋 INFORMACIÓN BÁSICA DEL LEAD
   // ========================================
-  id: string;
+  id?: string;
   clientId?: string;
   leadType: LeadType;
   clientType: ClientType;
@@ -424,17 +421,11 @@ interface Lead extends DefaultFirestoreProps {
   };
 
   // ========================================
-  // 📍 DIRECCIÓN Y UBICACIÓN
-  // ========================================
-  address?: AddressInfo;
-
-  // ========================================
   // 🛍️ DETALLES AGRUPADOS POR TIPO DE LEAD
   // ========================================
   // Solo uno de estos debe estar presente según leadType
   productSaleDetails?: ProductSaleDetails; // Para leadType: "sale"
   serviceDetails?: ServiceLeadDetails; // Para leadType: "service"
-
   quotationDetails?: QuotationDetails; // Para cotizaciones independientes
 
   // ========================================
@@ -485,6 +476,11 @@ interface Lead extends DefaultFirestoreProps {
   // 🔍 TRACKING Y ATRIBUCIÓN
   // ========================================
   tracking: LeadTracking;
+
+  // ========================================
+  // 📅 TIMESTAMPS
+  // ========================================
+  timestamps?: LeadTimestamps;
 
   // ========================================
   // 📎 ARCHIVOS Y ETIQUETAS

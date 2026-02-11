@@ -12,6 +12,7 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { AnOrderStep2 } from "@/app/productos/pedido/StepsGroup";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
   documentType: string;
@@ -26,16 +27,16 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<Lead>;
-  setProductFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
 export const ContactInfoStep2 = ({
   globalStep,
-  productFormData,
-  setProductFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -90,14 +91,14 @@ export const ContactInfoStep2 = ({
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      documentType: productFormData?.document?.type || undefined,
-      documentNumber: productFormData?.document?.number || "",
-      companyName: productFormData?.organizationInfo?.legalName || "",
-      firstName: productFormData?.contact?.firstName || "",
-      lastName: productFormData?.contact?.lastName || "",
-      email: productFormData?.contact?.email || "",
-      phonePrefix: productFormData?.contact?.phone?.prefix || "+51",
-      phoneNumber: productFormData?.contact?.phone?.number || "",
+      documentType: leadFormData?.document?.type || undefined,
+      documentNumber: leadFormData?.document?.number || "",
+      companyName: leadFormData?.organizationInfo?.legalName || "",
+      firstName: leadFormData?.contact?.firstName || "",
+      lastName: leadFormData?.contact?.lastName || "",
+      email: leadFormData?.contact?.email || "",
+      phonePrefix: leadFormData?.contact?.phone?.prefix || "+51",
+      phoneNumber: leadFormData?.contact?.phone?.number || "",
     },
   });
 
@@ -139,6 +140,7 @@ export const ContactInfoStep2 = ({
       contact: {
         firstName: formData.firstName || "",
         lastName: formData.lastName || "",
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: {
           prefix: formData.phonePrefix,
@@ -156,16 +158,13 @@ export const ContactInfoStep2 = ({
     // Si es RUC, agregar información de organización
     if (formData.documentType === "RUC") {
       completeFormData.organizationInfo = {
-        legalName: formData.companyName,
+        companyName: formData.companyName,
         taxId: formData.documentNumber,
       };
       completeFormData.contact.socialReason = formData.companyName;
-    } else {
-      completeFormData.contact.fullName =
-        `${formData.firstName} ${formData.lastName}`.trim();
     }
 
-    setProductFormData({ ...productFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
@@ -173,7 +172,7 @@ export const ContactInfoStep2 = ({
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
-        Datos de contacto
+        Datos de contacto de la {isRuc ? "empresa" : "persona"}
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -193,13 +192,7 @@ export const ContactInfoStep2 = ({
                       required={required(name)}
                       onChange={onChange}
                       placeholder="Seleccionar"
-                      options={[
-                        { label: "RUC", value: "RUC" },
-                        { label: "DNI", value: "DNI" },
-                        { label: "CE (Carnet de Extranjería)", value: "CE" },
-                        { label: "Pasaporte", value: "PASSPORT" },
-                        { label: "Otro", value: "OTHER" },
-                      ]}
+                      options={documentsTypes}
                     />
                   )}
                 />
@@ -220,7 +213,7 @@ export const ContactInfoStep2 = ({
                       onChange={onChange}
                       placeholder={
                         isRuc
-                          ? "10XXXXXXXX"
+                          ? "20XXXXXXXX"
                           : isDni
                             ? "71XXXXX"
                             : "Ingresa el número"

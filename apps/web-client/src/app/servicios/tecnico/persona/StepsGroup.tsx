@@ -17,25 +17,18 @@ const STORAGE_KEYS = {
 
 export type ServiceForPersonStep1 = {
   products?: ProductItem[];
-  description_more_details?: string;
+  additionalInformation?: string;
 };
 
 export type ServiceForPersonStep2 = {
   contact: ContactInfo;
   document?: DocumentInfo;
-  client_type: ClientType;
-};
-
-export type ServiceForPersonStep3 = {
-  service_details?: ServiceDetails;
-  visit_schedule?: VisitSchedule;
-  address?: AddressInfo;
-  terms_and_conditions: boolean;
+  clientType: ClientType;
 };
 
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
-  const [repairsFormData, setRepairsFormData] = useState<Partial<Lead>>({});
+  const [leadFormData, setLeadFormData] = useState<Partial<Lead>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(8);
@@ -55,7 +48,7 @@ export const StepsGroup = () => {
     const data = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.formData) || "{}",
     );
-    setRepairsFormData(data);
+    setLeadFormData(data);
     setLoading(false);
   }, [globalStep]);
 
@@ -141,8 +134,8 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -150,8 +143,8 @@ export const StepsGroup = () => {
         {globalStep === 1 && (
           <ContactPersonInfoStep2
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -161,8 +154,8 @@ export const StepsGroup = () => {
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}
-            repairsFormData={repairsFormData}
-            setRepairsFormData={setRepairsFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />

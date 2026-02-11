@@ -25,21 +25,14 @@ export type AnOrderStep2 = {
   document?: DocumentInfo;
   clientType: ClientType;
   organizationInfo?: {
+    companyName?: string;
     taxId?: string;
-    legalName?: string;
-    tradeName?: string;
   };
-};
-
-export type AnOrderStep3 = {
-  delivery?: DeliveryInfo;
-  isQuoteRequest?: boolean;
-  termsAndConditions: boolean;
 };
 
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
-  const [productFormData, setProductFormData] = useState<Partial<Lead>>({});
+  const [leadFormData, setLeadFormData] = useState<Partial<Lead>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(8);
@@ -59,7 +52,7 @@ export const StepsGroup = () => {
     const data = JSON.parse(
       localStorage.getItem(STORAGE_KEYS.formData) || "{}",
     );
-    setProductFormData(data);
+    setLeadFormData(data);
     setLoading(false);
   }, [globalStep]);
 
@@ -148,8 +141,8 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            productFormData={productFormData}
-            setProductFormData={setProductFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -157,8 +150,8 @@ export const StepsGroup = () => {
         {globalStep === 1 && (
           <ContactInfoStep2
             globalStep={globalStep}
-            productFormData={productFormData}
-            setProductFormData={setProductFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />
@@ -168,8 +161,8 @@ export const StepsGroup = () => {
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}
-            productFormData={productFormData}
-            setProductFormData={setProductFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />

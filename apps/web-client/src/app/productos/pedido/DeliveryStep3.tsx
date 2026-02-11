@@ -13,15 +13,15 @@ import { Alert } from "@/components/ui/Alert";
 import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { AnOrderStep3 } from "@/app/productos/pedido/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
+import deliveryTypes from "@/data-list/deliveryTypes.json";
+import { sendLead } from "@/app/productos/pedido/actions";
 
 interface FormData {
   deliveryOption?: DeliveryType;
@@ -37,8 +37,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<Lead>;
-  setProductFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -47,8 +47,8 @@ interface Props {
 
 export const DeliveryStep3 = ({
   globalStep,
-  productFormData,
-  setProductFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
   loading,
@@ -99,53 +99,85 @@ export const DeliveryStep3 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    district: yup.string().when("deliveryOption", {
-      is: (value: string) =>
-        value === "local_delivery" || value === "regional_delivery",
-      then: (schema) => schema.required("El distrito es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    address: yup.string().when("deliveryOption", {
-      is: (value: string) =>
-        value === "local_delivery" || value === "regional_delivery",
-      then: (schema) => schema.required("La dirección es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    department: yup.string().when("deliveryOption", {
-      is: "regional_delivery",
-      then: (schema) => schema.required("El departamento es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    province: yup.string().when("deliveryOption", {
-      is: "regional_delivery",
-      then: (schema) => schema.required("La provincia es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    district: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["local_delivery", "regional_delivery"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    address: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["local_delivery", "regional_delivery"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    department: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["regional_delivery"].includes(deliveryOption)) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    province: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["regional_delivery"].includes(deliveryOption)) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
     termsAndConditions: yup
       .boolean()
       .oneOf([true], "Debes aceptar los términos y condiciones")
       .required(),
   });
 
-  const getInitialValues = () => {
-    const delivery = productFormData?.delivery;
+  const getInitialValues = (): FormData => {
+    const delivery = leadFormData?.productSaleDetails?.delivery;
 
     return {
-      deliveryOption: productFormData?.delivery?.type || "pickup",
+      deliveryOption: (delivery?.type as DeliveryType) || "pickup",
       visitDate: delivery?.localDelivery?.preferredDate || "",
       visitTime: delivery?.localDelivery?.preferredTime || "",
-      department: delivery?.regionalDelivery?.address.state || "",
-      province: delivery?.regionalDelivery?.address.city || "",
+      department: delivery?.regionalDelivery?.address?.state || "",
+      province: delivery?.regionalDelivery?.address?.city || "",
       district:
-        delivery?.localDelivery?.address.area ||
-        delivery?.regionalDelivery?.address.area ||
+        delivery?.localDelivery?.address?.area ||
+        delivery?.regionalDelivery?.address?.area ||
         "",
       address:
-        delivery?.localDelivery?.address.street ||
-        delivery?.regionalDelivery?.address.street ||
+        delivery?.localDelivery?.address?.street ||
+        delivery?.regionalDelivery?.address?.street ||
         "",
-      termsAndConditions: productFormData?.termsAndConditions || false,
-      isQuotation: productFormData?.isQuoteRequest || false,
+      termsAndConditions: leadFormData?.termsAndConditions || false,
+      isQuotation: leadFormData?.isQuoteRequest || false,
     };
   };
 
@@ -178,84 +210,65 @@ export const DeliveryStep3 = ({
 
   const districtsByLimaProvince = peruUbigeo[13].provinces[0].districts;
 
-  const onSubmit = async (formData: FormData) => {
-    setLoading(true);
-
-    // 1. Transformar datos del formulario a la nueva estructura
-    const completeFormData: AnOrderStep3 = {
-      isQuoteRequest: formData.isQuotation,
-      termsAndConditions: formData.termsAndConditions,
-    };
-
+  const deliveryFields = (
+    formData: FormData,
+  ): ProductSaleDetails["delivery"] => {
     // Si NO es solo cotización, construir el objeto delivery
     if (!formData.isQuotation) {
       switch (formData.deliveryOption) {
         case "pickup":
-          completeFormData.delivery = {
+          return {
             type: "pickup",
           };
-          break;
 
         case "local_delivery":
-          if (
-            !formData.visitDate ||
-            !formData.visitTime ||
-            !formData.district ||
-            !formData.address
-          ) {
-            showNotification(
-              "error",
-              "Por favor completa todos los campos requeridos para entrega a domicilio",
-              "Campos incompletos",
-            );
-            setLoading(false);
-            return;
-          }
-          completeFormData.delivery = {
+          return {
             type: "local_delivery",
             localDelivery: {
               preferredDate: formData.visitDate,
               preferredTime: formData.visitTime,
               address: {
-                area: formData.district,
-                street: formData.address,
+                area: formData?.district || "",
+                street: formData?.address || "",
               },
             },
           };
-          break;
 
         case "regional_delivery":
-          if (
-            !formData.department ||
-            !formData.province ||
-            !formData.district ||
-            !formData.address
-          ) {
-            showNotification(
-              "error",
-              "Por favor completa todos los campos requeridos para envío a provincias",
-              "Campos incompletos",
-            );
-            setLoading(false);
-            return;
-          }
-          completeFormData.delivery = {
+          return {
             type: "regional_delivery",
             regionalDelivery: {
               address: {
-                state: formData.department,
-                city: formData.province,
-                area: formData.district,
-                street: formData.address,
+                state: formData?.department || "",
+                city: formData?.province || "",
+                area: formData?.district || "",
+                street: formData?.address || "",
               },
               estimatedDeliveryDays: 5,
             },
           };
-          break;
+
+        default:
+          return undefined;
       }
     }
+  };
 
-    setProductFormData({ ...productFormData, ...completeFormData });
+  const onSubmit = async (formData: FormData) => {
+    setLoading(true);
+
+    // 1. Transformar datos del formulario a la nueva estructura
+    const completeFormData: Partial<Lead> = {
+      isQuoteRequest: formData.isQuotation,
+      productSaleDetails: {
+        ...leadFormData.productSaleDetails,
+        products: leadFormData?.productSaleDetails?.products || [],
+        delivery: deliveryFields(formData) || undefined,
+      },
+      termsAndConditions: formData.termsAndConditions,
+    };
+
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
 
     // 2. Obtener todos los datos del localStorage
@@ -270,7 +283,7 @@ export const DeliveryStep3 = ({
         error,
       );
       fullData = {
-        ...productFormData,
+        ...leadFormData,
         ...completeFormData,
       };
     }
@@ -287,38 +300,28 @@ export const DeliveryStep3 = ({
       return;
     }
 
-    // 4. Construir Lead completo
-    const leadData: Partial<Lead> = {
+    const leadData: Lead = {
       // Core Fields
-      clientId: "gYn8QUB8g35wEAZcZz7D",
       leadType: "sale",
       clientType:
         (fullData.clientType as "individual" | "organization") ||
         "organization",
       status: "new",
       archived: false,
-
       // Contact Information
       contact: fullData.contact as ContactInfo,
       document: fullData.document as DocumentInfo | undefined,
-
       // Organization Info
-      organizationInfo: fullData.organizationInfo as Lead["organizationInfo"],
-
+      organizationInfo: fullData?.organizationInfo || undefined,
       // Product Sale Details
       productSaleDetails: {
-        products: fullData.products as ProductItem[],
-        delivery: completeFormData.delivery,
-        additionalInformation: fullData.additionalInformation as
-          | string
-          | undefined,
+        ...(fullData?.productSaleDetails || {}),
+        products: (fullData.products as ProductItem[]) || [],
       },
-
       // Communication
-      termsAndConditions: completeFormData.termsAndConditions,
+      termsAndConditions: completeFormData?.termsAndConditions || false,
       isQuoteRequest: completeFormData.isQuoteRequest,
       hostname: "iubizon.com",
-
       // Tracking
       tracking: {
         source: "website",
@@ -328,7 +331,7 @@ export const DeliveryStep3 = ({
 
     // 5. Enviar al servidor
     try {
-      await sendLead(leadData as Lead);
+      await sendLead(leadData);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);
@@ -344,6 +347,10 @@ export const DeliveryStep3 = ({
       );
     }
   };
+
+  const deliveryTypes_ = deliveryTypes.filter((a) =>
+    ["pickup", "local_delivery", "regional_delivery"].includes(a.value),
+  );
 
   return (
     <div className="w-full">
@@ -374,7 +381,7 @@ export const DeliveryStep3 = ({
                 {isQuoteOnly && (
                   <Alert
                     type="success"
-                    message="✓ Te contactaremos lo pronto posible con tu cotización personalizada"
+                    message="✓ Te contactaremos lo más pronto posible con tu cotización personalizada."
                   />
                 )}
               </div>
@@ -389,28 +396,13 @@ export const DeliveryStep3 = ({
                         <RadioGroup
                           label="¿Cómo deseas recibir los productos?"
                           name={name}
-                          value={value}
+                          value={value as string}
                           error={error(name)}
                           helperText={errorMessage(name)}
                           required={required(name)}
                           onChange={onChange}
                           hidden={isQuoteOnly}
-                          options={[
-                            {
-                              label: "Recojo en tienda",
-                              value: "pickup",
-                            },
-                            {
-                              label: "Entrega a domicilio",
-                              value: "local_delivery",
-                              message: "Para Lima Metropolitana",
-                            },
-                            {
-                              label: "Envío a provincias",
-                              value: "regional_delivery",
-                              message: "Envío por courier",
-                            },
-                          ]}
+                          options={deliveryTypes_}
                         />
                       )}
                     />
@@ -427,7 +419,7 @@ export const DeliveryStep3 = ({
                               <DatePicker
                                 label="Fecha preferida de entrega"
                                 name={name}
-                                value={value}
+                                value={value as string}
                                 error={error(name)}
                                 helperText={errorMessage(name)}
                                 required={required(name)}
@@ -444,7 +436,7 @@ export const DeliveryStep3 = ({
                               <TimePicker
                                 label="Horario preferido"
                                 name={name}
-                                value={value}
+                                value={value as string}
                                 error={error(name)}
                                 helperText={errorMessage(name)}
                                 required={required(name)}
@@ -618,7 +610,7 @@ export const DeliveryStep3 = ({
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox
                         name={name}
-                        value={value}
+                        value={value as boolean}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}

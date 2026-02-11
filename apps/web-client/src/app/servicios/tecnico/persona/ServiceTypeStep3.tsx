@@ -14,7 +14,6 @@ import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { sendLead } from "./actions";
-import { ServiceForPersonStep3 } from "@/app/servicios/tecnico/persona/StepsGroup";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
 import { useNotification } from "@/components/ui/Notification";
@@ -22,22 +21,24 @@ import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
+import attendanceTypes from "@/data-list/attendanceTypes.json";
 
 interface FormData {
-  attendance_type: string;
-  visit_date?: string;
-  visit_time?: string;
+  attendanceType: string;
+  isQuotation?: boolean;
+  visitDate?: string;
+  visitTime?: string;
   department?: string;
   province?: string;
   district?: string;
   address?: string;
-  terms_and_conditions: boolean;
+  termsAndConditions: boolean;
 }
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<ServiceForPersonStep3>;
-  setRepairsFormData: (data: Partial<ServiceForPersonStep3>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -46,8 +47,8 @@ interface Props {
 
 export const ServiceTypeStep3 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
   loading,
@@ -56,9 +57,10 @@ export const ServiceTypeStep3 = ({
   const { showNotification, NotificationComponent } = useNotification();
 
   const schema = yup.object({
-    attendance_type: yup.string().required("Debes seleccionar una opción"),
-    visit_date: yup.string().when("attendance_type", {
-      is: "home_visit",
+    attendanceType: yup.string().required("Debes seleccionar una opción"),
+    isQuotation: yup.boolean().notRequired(),
+    visitDate: yup.string().when("attendanceType", {
+      is: "at_customer",
       then: (schema) =>
         schema
           .required("La fecha de visita es requerida")
@@ -72,8 +74,8 @@ export const ServiceTypeStep3 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    visit_time: yup.string().when("attendance_type", {
-      is: "home_visit",
+    visitTime: yup.string().when("attendanceType", {
+      is: "at_customer",
       then: (schema) =>
         schema
           .required("La hora de visita es requerida")
@@ -91,35 +93,67 @@ export const ServiceTypeStep3 = ({
             "La hora seleccionada ya pasó. Elige una hora futura",
             function (value) {
               if (!value) return false;
-              const visitDate = this.parent.visit_date;
+              const visitDate = this.parent.visitDate;
               return isValidVisitTime(value, visitDate);
             },
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    district: yup.string().when("attendance_type", {
-      is: (value: string) =>
-        value === "home_visit" || value === "send_to_store",
-      then: (schema) => schema.required("El distrito es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    address: yup.string().when("attendance_type", {
-      is: (value: string) =>
-        value === "home_visit" || value === "send_to_store",
-      then: (schema) => schema.required("La dirección es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    department: yup.string().when("attendance_type", {
-      is: "send_to_store",
-      then: (schema) => schema.required("El departamento es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    province: yup.string().when("attendance_type", {
-      is: "send_to_store",
-      then: (schema) => schema.required("La provincia es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    terms_and_conditions: yup
+    district: yup
+      .string()
+      .when(
+        ["attendanceType", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["at_customer", "send_to_store"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    address: yup
+      .string()
+      .when(
+        ["attendanceType", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["at_customer", "send_to_store"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    department: yup
+      .string()
+      .when(
+        ["attendanceType", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["send_to_store"].includes(deliveryOption)) {
+            return schema.required("El departamento es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    province: yup
+      .string()
+      .when(
+        ["attendanceType", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["send_to_store"].includes(deliveryOption)) {
+            return schema.required("La provincia es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    termsAndConditions: yup
       .boolean()
       .oneOf([true], "Debes aceptar los términos y condiciones")
       .required(),
@@ -130,14 +164,17 @@ export const ServiceTypeStep3 = ({
     const parsedData = storedData ? JSON.parse(storedData) : {};
 
     return {
-      attendance_type: (parsedData.attendance_type as string) || "go_to_store",
-      visit_date: repairsFormData?.visit_schedule?.preferred_date || "",
-      visit_time: repairsFormData?.visit_schedule?.preferred_time || "",
-      department: repairsFormData?.address?.department || "",
-      province: repairsFormData?.address?.province || "",
-      district: repairsFormData?.address?.district || "",
-      address: repairsFormData?.address?.street || "",
-      terms_and_conditions: repairsFormData?.terms_and_conditions || false,
+      attendanceType:
+        (parsedData?.attendanceType as AttendanceType) || "on_site",
+      visitDate:
+        leadFormData?.serviceDetails?.visitSchedule?.preferredDate || "",
+      visitTime:
+        leadFormData?.serviceDetails?.visitSchedule?.preferredTime || "",
+      department: leadFormData?.serviceDetails?.address?.state || "",
+      province: leadFormData?.serviceDetails?.address?.city || "",
+      district: leadFormData?.serviceDetails?.address?.area || "",
+      address: leadFormData?.serviceDetails?.address?.street || "",
+      termsAndConditions: leadFormData?.termsAndConditions || false,
     };
   };
 
@@ -147,15 +184,16 @@ export const ServiceTypeStep3 = ({
     formState: { errors },
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(schema) as Resolver<FormData>,
+    resolver: yupResolver(schema) as unknown as Resolver<FormData>,
     defaultValues: getInitialValues(),
   });
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
-  const isLocalVisit = watch("attendance_type") === "go_to_store";
-  const isHouseVisit = watch("attendance_type") === "home_visit";
-  const isShipping = watch("attendance_type") === "send_to_store";
+  const isLocalVisit = watch("attendanceType") === "on_site";
+  const isHouseVisit = watch("attendanceType") === "at_customer";
+  const isShipping = watch("attendanceType") === "send_to_store";
+  const isQuoteOnly = watch("isQuotation");
 
   const departmentSelected = watch("department");
   const _departmentSelected = peruUbigeo.find(
@@ -171,99 +209,82 @@ export const ServiceTypeStep3 = ({
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
 
-    // Transformar FormData a RepairStep3
-    const completeFormData: ServiceForPersonStep3 = {
-      service_details: {
-        // ServiceDetails no incluye attendance_type
+    // Transformar FormData a Lead structure
+    const completeFormData: Partial<Lead> = {
+      isQuoteRequest: formData.isQuotation,
+      serviceDetails: {
+        ...leadFormData.serviceDetails,
+        products: leadFormData?.serviceDetails?.products || [],
+        visitSchedule:
+          formData.attendanceType === "at_customer" &&
+          formData.visitDate &&
+          formData.visitTime
+            ? {
+                preferredDate: formData.visitDate,
+                preferredTime: formData.visitTime,
+              }
+            : undefined,
+        attendanceType: formData.attendanceType as AttendanceType,
+        address:
+          (formData.attendanceType === "at_customer" ||
+            formData.attendanceType === "send_to_store") &&
+          formData.address &&
+          !isQuoteOnly
+            ? {
+                state: formData.department,
+                city: formData.province,
+                area: formData.district,
+                street: formData.address,
+              }
+            : undefined,
       },
-      visit_schedule:
-        formData.attendance_type === "home_visit" &&
-        formData.visit_date &&
-        formData.visit_time
-          ? {
-              preferred_date: formData.visit_date,
-              preferred_time: formData.visit_time,
-            }
-          : undefined,
-      address:
-        (formData.attendance_type === "home_visit" ||
-          formData.attendance_type === "send_to_store") &&
-        formData.address
-          ? {
-              street: formData.address,
-              department: formData.department,
-              province: formData.province,
-              district: formData.district,
-            }
-          : undefined,
-      terms_and_conditions: formData.terms_and_conditions,
+      termsAndConditions: formData.termsAndConditions,
     };
 
-    setRepairsFormData({ ...repairsFormData, ...completeFormData });
-    addLocalStorageData({
-      ...completeFormData,
-      attendance_type: formData.attendance_type,
-    });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
+    addLocalStorageData(completeFormData);
 
     // Obtener todos los datos del localStorage
     let fullData: Record<string, unknown>;
     try {
       const storedData = localStorage.getItem("retail_formData");
       fullData = storedData ? JSON.parse(storedData) : {};
-      fullData = {
-        ...fullData,
-        ...completeFormData,
-        attendance_type: formData.attendance_type,
-      };
+      fullData = { ...fullData, ...completeFormData };
     } catch (error) {
       console.error("Error parsing stored data: ", error);
       fullData = {
-        ...repairsFormData,
+        ...leadFormData,
         ...completeFormData,
-        attendance_type: formData.attendance_type,
       };
     }
 
-    // Construir LeadForIubizon completo
-    const leadData: Partial<Lead> = {
+    // Construir Lead completo
+    const leadData: Lead = {
       // Core Fields
-      client_id: "gYn8QUB8g35wEAZcZz7D",
-      lead_type: "technical_service",
-      client_type: "individual",
+      leadType: "service",
+      clientType: "individual",
       status: "new",
       archived: false,
-
       // Contact Information
       contact: fullData.contact as ContactInfo,
       document: fullData.document as DocumentInfo | undefined,
-
-      // Products (equipment) - ya incluye service_type
-      products: fullData.products as ProductItem[],
-      description_more_details: fullData.description_more_details as
-        | string
-        | undefined,
-
       // Service Details
-      service_details: completeFormData.service_details,
-      visit_schedule: completeFormData.visit_schedule,
-      address: completeFormData.address,
-
-      // Attendance Type (REQUIRED)
-      attendance_type: fullData.attendance_type as AttendanceType,
-
+      serviceDetails: {
+        ...(fullData?.serviceDetails || {}),
+        products: (fullData?.products || []) as ProductItem[],
+      },
       // Communication
-      terms_and_conditions: completeFormData.terms_and_conditions,
+      termsAndConditions: completeFormData?.termsAndConditions || false,
       hostname: "iubizon.com",
-
       // Tracking
       tracking: {
         source: "website",
-        landing_page: window.location.href,
+        landingPage: window.location.href,
       },
     };
 
     try {
-      await sendLead(leadData as Lead);
+      await sendLead(leadData);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);
@@ -280,6 +301,10 @@ export const ServiceTypeStep3 = ({
     }
   };
 
+  const attendanceTypes_ = attendanceTypes.filter((a) =>
+    ["on_site", "at_customer", "send_to_store", "other"].includes(a.value),
+  );
+
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
@@ -291,194 +316,204 @@ export const ServiceTypeStep3 = ({
             <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Controller
-                  name="attendance_type"
+                  name="isQuotation"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
-                    <RadioGroup
-                      label="¿Qué tipo de servicio deseas?"
+                    <Checkbox
                       name={name}
                       value={value}
                       error={error(name)}
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      options={[
-                        {
-                          label: "Quiero ir al local",
-                          value: "go_to_store",
-                        },
-                        {
-                          label: "Quiero una visita técnica a mi domicilio",
-                          value: "home_visit",
-                          message: "Solo para Lima",
-                        },
-                        {
-                          label: "Quiero enviar mi producto al local",
-                          value: "send_to_store",
-                          message: "Solo para provincias",
-                        },
-                        {
-                          label: "Quiero una cotización",
-                          value: "quotation",
-                        },
-                        {
-                          label: "Otro",
-                          value: "other",
-                        },
-                      ]}
-                    />
+                    >
+                      Solo quiero una cotización por el momento
+                    </Checkbox>
                   )}
                 />
-
-                {isLocalVisit && <BusinessAddress />}
-                {isHouseVisit && (
-                  <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="visit_date"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <DatePicker
-                            label="Dinos qué día podemos visitarte"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="sm:col-span-1">
-                      <Controller
-                        name="visit_time"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <TimePicker
-                            label="Dinos a qué hora podemos visitarte"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
+                {isQuoteOnly && (
+                  <Alert
+                    type="success"
+                    message="✓ Te contactaremos lo más pronto posible con tu cotización personalizada."
+                  />
                 )}
-                {isShipping && (
+              </div>
+              <div className="sm:col-span-2">
+                {!isQuoteOnly && (
                   <>
-                    <BusinessAddress />
-                    <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 my-6">
-                      <Alert
-                        type="info"
-                        message="Necesitamos tu dirección para poder reenviarte tu equipo una vez hagamos culminado con el servicio."
-                      />
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="department"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Select
-                              label="Departamento"
-                              placeholder="Ej. Lima"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                              options={peruUbigeo.map((dep) => ({
-                                value: dep.name,
-                                label: dep.name,
-                              }))}
-                            />
-                          )}
+                    <Controller
+                      name="attendanceType"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <RadioGroup
+                          label="¿Qué tipo de servicio deseas?"
+                          name={name}
+                          value={value as string}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          options={attendanceTypes_}
                         />
+                      )}
+                    />
+                    {isLocalVisit && <BusinessAddress />}
+                    {isHouseVisit && (
+                      <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 my-6">
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="visitDate"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <DatePicker
+                                label="Dinos qué día podemos visitarte"
+                                name={name}
+                                value={value as string}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <Controller
+                            name="visitTime"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <TimePicker
+                                label="Dinos a qué hora podemos visitarte"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
                       </div>
-                      <div className="sm:col-span-1">
-                        <Controller
-                          name="province"
-                          control={control}
-                          render={({ field: { onChange, value, name } }) => (
-                            <Select
-                              label="Provincia"
-                              placeholder="Ej. Lima"
-                              name={name}
-                              value={value}
-                              error={error(name)}
-                              helperText={errorMessage(name)}
-                              required={required(name)}
-                              onChange={onChange}
-                              options={
-                                _departmentSelected?.provinces.map((prov) => ({
-                                  value: prov.name,
-                                  label: prov.name,
-                                })) || []
-                              }
+                    )}
+                    {isShipping && (
+                      <>
+                        <BusinessAddress />
+                        <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2 my-6">
+                          <Alert
+                            type="info"
+                            message="Necesitamos tu dirección para poder reenviarte tu equipo una vez hagamos culminado con el servicio."
+                          />
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="department"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Select
+                                  label="Departamento"
+                                  placeholder="Ej. Lima"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                  options={peruUbigeo.map((dep) => ({
+                                    value: dep.name,
+                                    label: dep.name,
+                                  }))}
+                                />
+                              )}
                             />
-                          )}
-                        />
+                          </div>
+                          <div className="sm:col-span-1">
+                            <Controller
+                              name="province"
+                              control={control}
+                              render={({
+                                field: { onChange, value, name },
+                              }) => (
+                                <Select
+                                  label="Provincia"
+                                  placeholder="Ej. Lima"
+                                  name={name}
+                                  value={value}
+                                  error={error(name)}
+                                  helperText={errorMessage(name)}
+                                  required={required(name)}
+                                  onChange={onChange}
+                                  options={
+                                    _departmentSelected?.provinces.map(
+                                      (prov) => ({
+                                        value: prov.name,
+                                        label: prov.name,
+                                      }),
+                                    ) || []
+                                  }
+                                />
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    {(isHouseVisit || isShipping) && (
+                      <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6 my-6">
+                        <div className="sm:col-span-2">
+                          <Controller
+                            name="district"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <Select
+                                label="Distrito"
+                                placeholder="Ej. Chorrillos"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                                options={
+                                  _provinceSelected?.districts.map((dist) => ({
+                                    value: dist.name,
+                                    label: dist.name,
+                                  })) ||
+                                  districtsByLimaProvince.map((dist) => ({
+                                    value: dist.name,
+                                    label: dist.name,
+                                  }))
+                                }
+                              />
+                            )}
+                          />
+                        </div>
+                        <div className="sm:col-span-4">
+                          <Controller
+                            name="address"
+                            control={control}
+                            render={({ field: { onChange, value, name } }) => (
+                              <Input
+                                label="Dirección"
+                                placeholder="Av. Huaylas 123"
+                                name={name}
+                                value={value}
+                                error={error(name)}
+                                helperText={errorMessage(name)}
+                                required={required(name)}
+                                onChange={onChange}
+                              />
+                            )}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </>
                 )}
-                {(isHouseVisit || isShipping) && (
-                  <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6 my-6">
-                    <div className="sm: col-span-2">
-                      <Controller
-                        name="district"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Select
-                            label="Distrito"
-                            placeholder="Ej. Chorrillos"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                            options={
-                              _provinceSelected?.districts.map((dist) => ({
-                                value: dist.name,
-                                label: dist.name,
-                              })) ||
-                              districtsByLimaProvince.map((dist) => ({
-                                value: dist.name,
-                                label: dist.name,
-                              }))
-                            }
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="sm: col-span-4">
-                      <Controller
-                        name="address"
-                        control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Input
-                            label="Dirección"
-                            placeholder="Av. Huaylas 123"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="sm: col-span-2 py-6">
+                <div className="sm:col-span-2">
                   <Controller
-                    name="terms_and_conditions"
+                    name="termsAndConditions"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Checkbox

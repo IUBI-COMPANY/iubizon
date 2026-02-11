@@ -1048,6 +1048,102 @@ Resolución WXGA y Inalábrico`,
     `,
   },
   {
+    id: "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson",
+    model: "FH02",
+    name: "Proyector Portátil EpiqVision FH02 con Android TV Epson",
+    stock: 5,
+    oldStock: 10,
+    condition: "new",
+    description: "Proyector portátil inteligente con Android TV",
+    price: 1959.0,
+    oldPrice: 2399.0,
+    badge: "Nuevo",
+    mainImage: "/productos/FH02/1.jpg",
+    media: [
+      { type: "image", src: "/productos/FH02/1.jpg" },
+      { type: "image", src: "/productos/FH02/2.jpg" },
+      { type: "image", src: "/productos/FH02/3.jpg" },
+      { type: "image", src: "/productos/FH02/4.jpg" },
+      { type: "image", src: "/productos/FH02/control.jpg" },
+      { type: "image", src: "/productos/FH02/cast.jpg" },
+      { type: "video", src: "/videos/epiqvision-fh02.webm" },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 3000,
+    brand: "Epson",
+    type: "Proyector",
+    connectivity: "HDMI, WiFi, Bluetooth, USB, Chromecast integrado",
+    features:
+      "Android TV, Google Assistant, Parlantes de alta calidad, Corrección de color adaptativa",
+    nativeResolution: "Full HD 1080p",
+    aspectRatio: "16:9",
+    throwRatio: "Proyección media",
+    category: [
+      "Electrónica",
+      "TV, Video y Audio para el Hogar",
+      "TV y Video",
+      "Proyectores para Home Theater",
+    ],
+    classification: "premium",
+    gama: "alta",
+    note: `
+        Proyector Portátil Inteligente Epson EpiqVision FH02 con Android TV
+        
+        Tu experiencia streaming al máximo. EpiqVision es smart!
+        
+        Disfruta de una proyección versátil para el trabajo remoto, el entretenimiento en el hogar y mucho más con el proyector portátil de transmisión inteligente Epson EpiqVision™ FH02. Diseñado para brindarle más facilidad y comodidad a su jornada laboral, el Epson EpiqVision FH02 ofrece una imagen Full HD 1080p de hasta 300", que es cuatro veces más grande que una pantalla plana de 75", para reuniones colaborativas en línea y presentaciones detalladas.
+        
+        Este proyector de 3000 lúmenes, perfecto para el aprendizaje en el hogar, la visualización de películas inmersivas y más, ofrece el mejor brillo de color de su clase para brindar imágenes nítidas y coloridas en prácticamente cualquier entorno de iluminación, incluso durante el día. Elegante y compacto, este proyector portátil se puede transportar fácilmente en bolsos y mochilas para una fácil visualización prácticamente en cualquier lugar. Cuenta con un potente sistema de altavoces de alta calidad para una experiencia de visualización realmente sorprendente. Y, con Android TV incluido, puede sintonizar todos sus canales de transmisión favoritos, incluidos Netflix, Apple TV+, Amazon Prime, Hulu, Disney+, HBO Max™, YouTube™ y más.
+        
+        Características Destacadas:
+        
+        - Proyecta imágenes impresionantes de hasta 300"
+        - Diseño elegante y portátil (2.6 kg)
+        - 3.000 lúmenes de brillo en color y blanco
+        - Brillo de color líder en su clase (tecnología 3LCD)
+        - Transmite Netflix, Amazon Prime, YouTube y más
+        - Android TV integrado con Google Assistant
+        - Chromecast incluido para transmisión inalámbrica
+        - Conectividad HDMI totalmente digital
+        - Corrección de color adaptativa avanzada
+        - Parlantes bass-reflex de alta calidad con Bluetooth
+        - Garantía extendida de hasta 2 años (registrando el producto)
+        
+        Contenido de la Caja:
+        - 1 Proyector Epson EpiqVision FH02
+        - 1 Cable de alimentación de energía
+        - 1 Control remoto
+        - 1 Control remoto para SMP
+        - 4 Pilas AAA
+        - 1 Cable HDMI
+        - Epson Smart Dongle
+        - Guía de Instalación Rápida
+        - Hoja de garantía
+        
+        Especificaciones Técnicas:
+        - Dimensiones: 32 x 21.1 x 8.2 cm
+        - Peso: 2.6 kg
+        - Tecnología de visualización: 3LCD avanzada
+        - Resolución nativa: Full HD 1080p (1920x1080)
+        - Brillo: 3000 lúmenes (color y blanco)
+        - Tamaño de pantalla: Hasta 300"
+        - Sistema operativo: Android TV
+        - Conectividad: HDMI, WiFi, Bluetooth, USB
+        - Temperatura de operación: 5°C a 40°C (hasta 2.286 m de altitud)
+        - Humedad de operación: 20% a 80%
+        
+        Ideal para:
+        - Entretenimiento en el hogar
+        - Trabajo remoto y presentaciones
+        - Aprendizaje en el hogar
+        - Reuniones virtuales (Zoom, Microsoft Teams)
+        - Gaming en pantalla grande
+        - Eventos y fiestas
+        
+        El proyector Epson EpiqVision FH02 es la solución perfecta para quienes buscan calidad de imagen superior, portabilidad y todas las ventajas del streaming inteligente en un solo dispositivo.
+    `,
+  },
+  {
     id: "proyector-laser-powerlite-l520w-wxga-de-largo-alcance",
     model: "V11HA31020",
     name: "Proyector Láser PowerLite L520W WXGA de Largo Alcance",

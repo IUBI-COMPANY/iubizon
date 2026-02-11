@@ -72,12 +72,12 @@ export const Radio = ({
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           )}
         >
-          <span className="flex flex-col gap-1 items-start">
+          <span className="flex flex-col gap-0 items-start">
             {children}
             {message && (
-              <span className="text-xs text-primary font-bold">
-                {`(${message})`}
-              </span>
+              <small className="text-xs text-primary font-medium">
+                {`${message}`}
+              </small>
             )}
             {required && <span className="text-red-500 text-base">*</span>}
           </span>

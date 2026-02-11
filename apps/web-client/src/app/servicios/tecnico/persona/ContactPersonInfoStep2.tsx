@@ -4,7 +4,7 @@ import React from "react";
 import { Input } from "@/components/ui/Input";
 import * as yup from "yup";
 import { Form } from "@/components/ui/Form";
-import { Controller, Resolver, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Select } from "@/components/ui/Select";
@@ -12,21 +12,22 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ServiceForPersonStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
-  document_type: string;
-  document_number: string;
-  first_name?: string;
-  last_name?: string;
+  documentType: string;
+  documentNumber: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone_prefix: string;
-  phone_number: string;
+  phonePrefix: string;
+  phoneNumber: string;
 }
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<ServiceForPersonStep2>;
-  setRepairsFormData: (data: Partial<ServiceForPersonStep2>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   current?: number;
@@ -35,85 +36,90 @@ interface Props {
 
 export const ContactPersonInfoStep2 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
-  const regexPhoneByCountries = (phone_prefix: string) => {
+  const regexPhoneByCountries = (phonePrefix: string) => {
     const country = countriesISO.find(
-      (country) => country.phonePrefix === phone_prefix,
+      (country) => country.phonePrefix === phonePrefix,
     );
     const regex = country?.regex || "^\\d{4,}$";
     return new RegExp(regex);
   };
 
   const schema = yup.object({
-    document_type: yup.string().required(),
-    document_number: yup
+    documentType: yup.string().required(),
+    documentNumber: yup
       .string()
       .required()
       .test("is-valid-doc", "Número de documento inválido", function (value) {
-        const { document_type } = this.parent;
-        if (document_type === "DNI") {
+        const { documentType } = this.parent;
+        if (documentType === "DNI") {
           return /^\d{8}$/.test(value);
-        } else if (document_type === "RUC") {
+        } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
         }
         return true;
       }),
-    first_name: yup.string().required("Nombres requeridos"),
-    last_name: yup.string().required("Apellidos requeridos"),
+    firstName: yup.string().required("Nombres requeridos"),
+    lastName: yup.string().required("Apellidos requeridos"),
     email: yup.string().email("Email inválido").required("Email requerido"),
-    phone_prefix: yup.string().required("Prefijo requerido"),
-    phone_number: yup
+    phonePrefix: yup.string().required("Prefijo requerido"),
+    phoneNumber: yup
       .string()
       .required("Teléfono requerido")
       .test("is-valid-phone", "Número de teléfono inválido", function (value) {
-        const { phone_prefix } = this.parent;
-        return regexPhoneByCountries(phone_prefix).test(value);
+        const { phonePrefix } = this.parent;
+        return regexPhoneByCountries(phonePrefix).test(value);
       }),
   });
 
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(schema) as Resolver<FormData>,
+    resolver: yupResolver(schema),
     defaultValues: {
-      document_type: repairsFormData?.document?.type || undefined,
-      document_number: repairsFormData?.document?.number || "",
-      first_name: repairsFormData?.contact?.first_name || "",
-      last_name: repairsFormData?.contact?.last_name || "",
-      email: repairsFormData?.contact?.email || "",
-      phone_prefix: repairsFormData?.contact?.phone?.prefix || "+51",
-      phone_number: repairsFormData?.contact?.phone?.number || "",
+      documentType: leadFormData?.document?.type || undefined,
+      documentNumber: leadFormData?.document?.number || "",
+      firstName: leadFormData?.contact?.firstName || "",
+      lastName: leadFormData?.contact?.lastName || "",
+      email: leadFormData?.contact?.email || "",
+      phonePrefix: leadFormData?.contact?.phone?.prefix || "+51",
+      phoneNumber: leadFormData?.contact?.phone?.number || "",
     },
   });
+
+  const docType = watch("documentType");
+  const isRuc = docType === "RUC";
+  const isDni = docType === "DNI";
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
   const onSubmit = (formData: FormData) => {
-    const completeFormData: Partial<ServiceForPersonStep2> = {
+    const completeFormData: ServiceForPersonStep2 = {
       contact: {
-        first_name: formData.first_name || "",
-        last_name: formData.last_name || "",
-        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: {
-          prefix: formData.phone_prefix,
-          number: formData.phone_number,
+          prefix: formData.phonePrefix,
+          number: formData.phoneNumber,
         },
       },
       document: {
-        type: formData.document_type as DocumentInfo["type"],
-        number: formData.document_number,
+        type: formData.documentType as DocumentInfo["type"],
+        number: formData.documentNumber,
       },
-      client_type: "individual",
+      clientType: "individual",
     };
 
-    setRepairsFormData({ ...repairsFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
@@ -121,7 +127,7 @@ export const ContactPersonInfoStep2 = ({
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
-        Datos de contacto
+        Datos de contacto de la persona
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -129,7 +135,7 @@ export const ContactPersonInfoStep2 = ({
             <div className="grid grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-4">
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_type"
+                  name="documentType"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -141,20 +147,14 @@ export const ContactPersonInfoStep2 = ({
                       required={required(name)}
                       onChange={onChange}
                       placeholder="Seleccionar"
-                      options={[
-                        { label: "DNI", value: "DNI" },
-                        { label: "RUC", value: "RUC" },
-                        { label: "CE (Carnet de Extranjería)", value: "CE" },
-                        { label: "Pasaporte", value: "PASSPORT" },
-                        { label: "Otro", value: "OTHER" },
-                      ]}
+                      options={documentsTypes}
                     />
                   )}
                 />
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="document_number"
+                  name="documentNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -166,14 +166,20 @@ export const ContactPersonInfoStep2 = ({
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      placeholder="71XXXXX"
+                      placeholder={
+                        isRuc
+                          ? "10XXXXXXXX"
+                          : isDni
+                            ? "71XXXXX"
+                            : "Ingresa el número"
+                      }
                     />
                   )}
                 />
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="first_name"
+                  name="firstName"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -191,7 +197,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-2">
                 <Controller
-                  name="last_name"
+                  name="lastName"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
@@ -228,7 +234,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-1">
                 <Controller
-                  name="phone_prefix"
+                  name="phonePrefix"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Select
@@ -250,7 +256,7 @@ export const ContactPersonInfoStep2 = ({
               </div>
               <div className="sm:col-span-3">
                 <Controller
-                  name="phone_number"
+                  name="phoneNumber"
                   control={control}
                   render={({ field: { onChange, value, name } }) => (
                     <Input
