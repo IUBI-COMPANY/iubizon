@@ -29,7 +29,7 @@ interface GaEventArgs {
 interface DefaultFirestoreProps {
   createdAt: firebase.firestore.Timestamp;
   updatedAt: firebase.firestore.Timestamp;
-  updatedBy: string;
+  updatedBy?: string;
   isDeleted: boolean;
   createdBy?: string;
 }
