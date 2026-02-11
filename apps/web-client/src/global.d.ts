@@ -485,6 +485,11 @@ interface Lead extends Partial<DefaultFirestoreProps> {
   tracking: LeadTracking;
 
   // ========================================
+  // 📅 TIMESTAMPS
+  // ========================================
+  timestamps?: LeadTimestamps;
+
+  // ========================================
   // 📎 ARCHIVOS Y ETIQUETAS
   // ========================================
   tags?: string[];
