@@ -1,0 +1,26 @@
+[
+  {
+    "value": "pickup",
+    "label": "Recojo en oficina",
+    "icon": "🏢",
+    "description": "Recojo en punto de venta/oficina"
+  },
+  {
+    "value": "local_delivery",
+    "label": "Entrega a domicilio (Lima)",
+    "icon": "🚚",
+    "description": "Entrega directa (Lima)"
+  },
+  {
+    "value": "regional_delivery",
+    "label": "Envío regional (Provincias)",
+    "icon": "📦",
+    "description": "Envío por courier (Provincias)"
+  },
+  {
+    "value": "international",
+    "label": "Envío internacional",
+    "icon": "✈️",
+    "description": "Envío internacional"
+  }
+]

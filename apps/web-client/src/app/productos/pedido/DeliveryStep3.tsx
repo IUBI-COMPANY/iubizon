@@ -13,16 +13,15 @@ import { Alert } from "@/components/ui/Alert";
 import { Select } from "@/components/ui/Select";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import { AnOrderStep2 } from "@/app/productos/pedido/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
 import deliveryTypes from "@/data-list/deliveryTypes.json";
+import { sendLead } from "@/app/productos/pedido/actions";
 
 interface FormData {
   deliveryOption?: DeliveryType;
@@ -211,6 +210,50 @@ export const DeliveryStep3 = ({
 
   const districtsByLimaProvince = peruUbigeo[13].provinces[0].districts;
 
+  const deliveryFields = (
+    formData: FormData,
+  ): ProductSaleDetails["delivery"] => {
+    // Si NO es solo cotización, construir el objeto delivery
+    if (!formData.isQuotation) {
+      switch (formData.deliveryOption) {
+        case "pickup":
+          return {
+            type: "pickup",
+          };
+
+        case "local_delivery":
+          return {
+            type: "local_delivery",
+            localDelivery: {
+              preferredDate: formData.visitDate,
+              preferredTime: formData.visitTime,
+              address: {
+                area: formData?.district || "",
+                street: formData?.address || "",
+              },
+            },
+          };
+
+        case "regional_delivery":
+          return {
+            type: "regional_delivery",
+            regionalDelivery: {
+              address: {
+                state: formData?.department || "",
+                city: formData?.province || "",
+                area: formData?.district || "",
+                street: formData?.address || "",
+              },
+              estimatedDeliveryDays: 5,
+            },
+          };
+
+        default:
+          return undefined;
+      }
+    }
+  };
+
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
 
@@ -219,18 +262,8 @@ export const DeliveryStep3 = ({
       productSaleDetails: {
         ...leadFormData.productSaleDetails,
         products: leadFormData?.productSaleDetails?.products || [],
+        delivery: deliveryFields(formData) || undefined,
       },
-      address:
-        (formData.deliveryOption === "local_delivery" ||
-          formData.deliveryOption === "regional_delivery") &&
-        formData.address
-          ? {
-              street: formData.address,
-              state: formData.department,
-              city: formData.province,
-              area: formData.district,
-            }
-          : undefined,
       isQuoteRequest: formData.isQuotation,
       termsAndConditions: formData.termsAndConditions,
     };
@@ -275,37 +308,20 @@ export const DeliveryStep3 = ({
         "organization",
       status: "new",
       archived: false,
-
       // Contact Information
       contact: fullData.contact as ContactInfo,
       document: fullData.document as DocumentInfo | undefined,
-
       // Organization Info
-      organizationInfo: fullData.organizationInfo
-        ? {
-            legalName: (
-              fullData.organizationInfo as AnOrderStep2["organizationInfo"]
-            )?.companyName,
-            taxId: (
-              fullData.organizationInfo as AnOrderStep2["organizationInfo"]
-            )?.taxId,
-          }
-        : undefined,
-
+      organizationInfo: fullData?.organizationInfo || undefined,
       // Product Sale Details
       productSaleDetails: {
+        ...(fullData?.productSaleDetails || {}),
         products: (fullData.products as ProductItem[]) || [],
-        delivery: completeFormData.productSaleDetails?.delivery || undefined,
-        additionalInformation:
-          completeFormData?.productSaleDetails?.additionalInformation ||
-          undefined,
       },
-
       // Communication
       termsAndConditions: completeFormData?.termsAndConditions || false,
       isQuoteRequest: completeFormData.isQuoteRequest,
       hostname: "iubizon.com",
-
       // Tracking
       tracking: {
         source: "website",
@@ -315,7 +331,7 @@ export const DeliveryStep3 = ({
 
     // 5. Enviar al servidor
     try {
-      await sendLead(leadData as Lead);
+      await sendLead(leadData);
       setLoading(false);
       setTimeout(() => {
         setCurrentStepToLocalStorage(globalStep + 1);

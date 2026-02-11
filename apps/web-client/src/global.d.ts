@@ -201,35 +201,19 @@ interface DeliveryInfo {
   localDelivery?: {
     preferredDate?: string; // ISO 8601
     preferredTime?: string;
-    address: {
-      area: string; // Zona/distrito/barrio
-      street: string; // Dirección completa
-      postalCode?: string;
-    };
+    address: AddressInfo;
   };
 
   // Para regional_delivery - Envío regional/nacional
   regionalDelivery?: {
-    address: {
-      state?: string; // Estado/Región/Departamento
-      city?: string; // Ciudad/Provincia
-      area?: string; // Zona/Distrito
-      street: string; // Dirección completa
-      postalCode?: string;
-    };
+    address: AddressInfo;
     estimatedDeliveryDays?: number; // Días estimados
     courierService?: string; // Nombre del courier
   };
 
   // Para international - Envío internacional
   internationalDelivery?: {
-    address: {
-      country: string;
-      state?: string;
-      city?: string;
-      street: string;
-      postalCode: string;
-    };
+    address: AddressInfo;
     estimatedDeliveryDays?: number;
     courierService?: string;
     customsInfo?: string;
@@ -292,7 +276,7 @@ interface SalesMetrics {
 
 // Detalles específicos para leads de tipo PRODUCTO/VENTA
 interface ProductSaleDetails {
-  products: ProductItem[];
+  products?: ProductItem[];
   additionalInformation?: string;
   estimatedValue?: number;
   currency?: string; // ISO 4217: USD, EUR, PEN, MXN, etc.
@@ -350,6 +334,7 @@ interface ServiceLeadDetails {
 
   // Tipo de atención
   attendanceType?: AttendanceType;
+  address?: AddressInfo;
 
   // Agenda de visita
   visitSchedule?: VisitSchedule;
@@ -441,11 +426,6 @@ interface Lead extends Partial<DefaultFirestoreProps> {
     contactPerson?: string;
     contactPosition?: string;
   };
-
-  // ========================================
-  // 📍 DIRECCIÓN Y UBICACIÓN
-  // ========================================
-  address?: AddressInfo;
 
   // ========================================
   // 🛍️ DETALLES AGRUPADOS POR TIPO DE LEAD
