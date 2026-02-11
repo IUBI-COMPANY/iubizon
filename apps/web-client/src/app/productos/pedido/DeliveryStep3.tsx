@@ -16,16 +16,13 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { sendLead } from "./actions";
 import { ArrowLeft, SendIcon } from "lucide-react";
 import { BusinessAddress } from "@/components/ui/BusinessAddress";
-import {
-  AnOrderStep3,
-  AnOrderStep2,
-  AnOrderFormData,
-} from "@/app/productos/pedido/StepsGroup";
+import { AnOrderStep2 } from "@/app/productos/pedido/StepsGroup";
 import { useNotification } from "@/components/ui/Notification";
 import {
   isValidVisitDate,
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
+import deliveryTypes from "@/data-list/deliveryTypes.json";
 
 interface FormData {
   deliveryOption?: DeliveryType;
@@ -41,8 +38,8 @@ interface FormData {
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<AnOrderFormData>;
-  setProductFormData: (data: Partial<AnOrderFormData>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
   loading: boolean;
@@ -51,8 +48,8 @@ interface Props {
 
 export const DeliveryStep3 = ({
   globalStep,
-  productFormData,
-  setProductFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
   loading,
@@ -103,28 +100,60 @@ export const DeliveryStep3 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
-    district: yup.string().when("deliveryOption", {
-      is: (value: string) =>
-        value === "local_delivery" || value === "regional_delivery",
-      then: (schema) => schema.required("El distrito es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    address: yup.string().when("deliveryOption", {
-      is: (value: string) =>
-        value === "local_delivery" || value === "regional_delivery",
-      then: (schema) => schema.required("La dirección es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    department: yup.string().when("deliveryOption", {
-      is: "regional_delivery",
-      then: (schema) => schema.required("El departamento es requerido"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    province: yup.string().when("deliveryOption", {
-      is: "regional_delivery",
-      then: (schema) => schema.required("La provincia es requerida"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    district: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["local_delivery", "regional_delivery"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    address: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (
+            !isQuotation &&
+            ["local_delivery", "regional_delivery"].includes(deliveryOption)
+          ) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    department: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["regional_delivery"].includes(deliveryOption)) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
+    province: yup
+      .string()
+      .when(
+        ["deliveryOption", "isQuotation"],
+        ([deliveryOption, isQuotation], schema) => {
+          if (!isQuotation && ["regional_delivery"].includes(deliveryOption)) {
+            return schema.required("La dirección es requerida");
+          }
+
+          return schema.notRequired();
+        },
+      ),
     termsAndConditions: yup
       .boolean()
       .oneOf([true], "Debes aceptar los términos y condiciones")
@@ -132,7 +161,7 @@ export const DeliveryStep3 = ({
   });
 
   const getInitialValues = (): FormData => {
-    const delivery = productFormData?.delivery;
+    const delivery = leadFormData?.productSaleDetails?.delivery;
 
     return {
       deliveryOption: (delivery?.type as DeliveryType) || "pickup",
@@ -148,8 +177,8 @@ export const DeliveryStep3 = ({
         delivery?.localDelivery?.address?.street ||
         delivery?.regionalDelivery?.address?.street ||
         "",
-      termsAndConditions: productFormData?.termsAndConditions || false,
-      isQuotation: productFormData?.isQuoteRequest || false,
+      termsAndConditions: leadFormData?.termsAndConditions || false,
+      isQuotation: leadFormData?.isQuoteRequest || false,
     };
   };
 
@@ -186,80 +215,27 @@ export const DeliveryStep3 = ({
     setLoading(true);
 
     // 1. Transformar datos del formulario a la nueva estructura
-    const completeFormData: AnOrderStep3 = {
+    const completeFormData: Partial<Lead> = {
+      productSaleDetails: {
+        ...leadFormData.productSaleDetails,
+        products: leadFormData?.productSaleDetails?.products || [],
+      },
+      address:
+        (formData.deliveryOption === "local_delivery" ||
+          formData.deliveryOption === "regional_delivery") &&
+        formData.address
+          ? {
+              street: formData.address,
+              state: formData.department,
+              city: formData.province,
+              area: formData.district,
+            }
+          : undefined,
       isQuoteRequest: formData.isQuotation,
       termsAndConditions: formData.termsAndConditions,
     };
 
-    // Si NO es solo cotización, construir el objeto delivery
-    if (!formData.isQuotation) {
-      switch (formData.deliveryOption) {
-        case "pickup":
-          completeFormData.delivery = {
-            type: "pickup",
-          };
-          break;
-
-        case "local_delivery":
-          if (
-            !formData.visitDate ||
-            !formData.visitTime ||
-            !formData.district ||
-            !formData.address
-          ) {
-            showNotification(
-              "error",
-              "Por favor completa todos los campos requeridos para entrega a domicilio",
-              "Campos incompletos",
-            );
-            setLoading(false);
-            return;
-          }
-          completeFormData.delivery = {
-            type: "local_delivery",
-            localDelivery: {
-              preferredDate: formData.visitDate,
-              preferredTime: formData.visitTime,
-              address: {
-                area: formData.district,
-                street: formData.address,
-              },
-            },
-          };
-          break;
-
-        case "regional_delivery":
-          if (
-            !formData.department ||
-            !formData.province ||
-            !formData.district ||
-            !formData.address
-          ) {
-            showNotification(
-              "error",
-              "Por favor completa todos los campos requeridos para envío a provincias",
-              "Campos incompletos",
-            );
-            setLoading(false);
-            return;
-          }
-          completeFormData.delivery = {
-            type: "regional_delivery",
-            regionalDelivery: {
-              address: {
-                state: formData.department,
-                city: formData.province,
-                area: formData.district,
-                street: formData.address,
-              },
-              estimatedDeliveryDays: 5,
-            },
-          };
-          break;
-      }
-    }
-
-    setProductFormData({ ...productFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
 
     // 2. Obtener todos los datos del localStorage
@@ -274,7 +250,7 @@ export const DeliveryStep3 = ({
         error,
       );
       fullData = {
-        ...productFormData,
+        ...leadFormData,
         ...completeFormData,
       };
     }
@@ -291,8 +267,7 @@ export const DeliveryStep3 = ({
       return;
     }
 
-    // 4. Construir Lead completo - usando camelCase (Lead interface)
-    const leadData: Partial<Lead> = {
+    const leadData: Lead = {
       // Core Fields
       leadType: "sale",
       clientType:
@@ -302,13 +277,7 @@ export const DeliveryStep3 = ({
       archived: false,
 
       // Contact Information
-      contact: (fullData.contact as ContactInfo) || {
-        firstName: "",
-        lastName: "",
-        fullName: "",
-        email: "",
-        phone: { prefix: "+51", number: "" },
-      },
+      contact: fullData.contact as ContactInfo,
       document: fullData.document as DocumentInfo | undefined,
 
       // Organization Info
@@ -326,13 +295,14 @@ export const DeliveryStep3 = ({
       // Product Sale Details
       productSaleDetails: {
         products: (fullData.products as ProductItem[]) || [],
-        delivery: completeFormData.delivery,
+        delivery: completeFormData.productSaleDetails?.delivery || undefined,
         additionalInformation:
-          (fullData.additionalInformation as string) || undefined,
+          completeFormData?.productSaleDetails?.additionalInformation ||
+          undefined,
       },
 
       // Communication
-      termsAndConditions: completeFormData.termsAndConditions,
+      termsAndConditions: completeFormData?.termsAndConditions || false,
       isQuoteRequest: completeFormData.isQuoteRequest,
       hostname: "iubizon.com",
 
@@ -361,6 +331,10 @@ export const DeliveryStep3 = ({
       );
     }
   };
+
+  const deliveryTypes_ = deliveryTypes.filter((a) =>
+    ["pickup", "local_delivery", "regional_delivery"].includes(a.value),
+  );
 
   return (
     <div className="w-full">
@@ -412,22 +386,7 @@ export const DeliveryStep3 = ({
                           required={required(name)}
                           onChange={onChange}
                           hidden={isQuoteOnly}
-                          options={[
-                            {
-                              label: "Recojo en tienda",
-                              value: "pickup",
-                            },
-                            {
-                              label: "Entrega a domicilio",
-                              value: "local_delivery",
-                              message: "Para Lima Metropolitana",
-                            },
-                            {
-                              label: "Envío a provincias",
-                              value: "regional_delivery",
-                              message: "Envío por courier",
-                            },
-                          ]}
+                          options={deliveryTypes_}
                         />
                       )}
                     />

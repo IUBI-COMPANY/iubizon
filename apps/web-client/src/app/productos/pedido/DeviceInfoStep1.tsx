@@ -6,28 +6,24 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import {
-  AnOrderStep1,
-  AnOrderFormData,
-} from "@/app/productos/pedido/StepsGroup";
+import { AnOrderStep1 } from "@/app/productos/pedido/StepsGroup";
 import { ArrowRight } from "lucide-react";
 import { TextArea } from "@/components/ui/TextArea";
 import { useNotification } from "@/components/ui/Notification";
 import { ProductListComponent } from "@/components/sales-and-services/ProductListComponent";
-import { ProductItemList, ServiceType } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  productFormData: Partial<AnOrderFormData>;
-  setProductFormData: (data: Partial<AnOrderFormData>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
 export const DeviceInfoStep1 = ({
   globalStep,
-  productFormData,
-  setProductFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -38,11 +34,16 @@ export const DeviceInfoStep1 = ({
   }) as ObjectSchema<Pick<AnOrderStep1, "additionalInformation">>;
 
   // Inicializar productos para el formulario
-  const initializeProducts: ProductItemList[] = (() => {
-    if (productFormData?.products && productFormData.products.length > 0) {
-      return productFormData.products.map((p) => ({
-        ...p,
-        serviceType: "maintenance" as ServiceType,
+  const initializeProducts: ProductItem[] = (() => {
+    const data = leadFormData as Partial<Lead> & {
+      products?: ProductItem[];
+    };
+    if (data?.products && data.products.length > 0) {
+      return data.products.map((p) => ({
+        id: p.id || crypto.randomUUID(),
+        quantity: p.quantity || 1,
+        brand: p.brand || "",
+        model: p.model || "",
       }));
     }
     return [
@@ -51,13 +52,11 @@ export const DeviceInfoStep1 = ({
         quantity: 1,
         brand: "",
         model: "",
-        serviceType: "maintenance",
       },
     ];
   })();
 
-  const [products, setProducts] =
-    useState<ProductItemList[]>(initializeProducts);
+  const [products, setProducts] = useState<ProductItem[]>(initializeProducts);
 
   const {
     handleSubmit,
@@ -66,7 +65,8 @@ export const DeviceInfoStep1 = ({
   } = useForm<Pick<AnOrderStep1, "additionalInformation">>({
     resolver: yupResolver(schema),
     defaultValues: {
-      additionalInformation: productFormData?.additionalInformation || "",
+      additionalInformation:
+        leadFormData?.productSaleDetails?.additionalInformation || "",
     },
   });
 
@@ -85,17 +85,23 @@ export const DeviceInfoStep1 = ({
       );
       return;
     }
-    const completeFormData: AnOrderStep1 = {
+    const completeFormData: Partial<Lead> & { products?: ProductItem[] } = {
+      ...leadFormData,
+      // Guardar productos temporalmente (fuera de la estructura oficial)
       products: products.map((p) => ({
         id: p.id,
         quantity: p.quantity,
         brand: p.brand,
         model: p.model,
       })),
-      additionalInformation: formData.additionalInformation,
+      // Guardar additionalInformation en productSaleDetails
+      productSaleDetails: {
+        ...leadFormData.productSaleDetails,
+        additionalInformation: formData.additionalInformation,
+      },
     };
 
-    setProductFormData({ ...productFormData, ...completeFormData });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
     addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
@@ -114,7 +120,7 @@ export const DeviceInfoStep1 = ({
             <div className="grid grid-cols-1 gap-x-8 gap-y-6">
               <ProductListComponent
                 products={products}
-                onChange={(prods: ProductItemList[]) => setProducts(prods)}
+                onChange={(prods: ProductItem[]) => setProducts(prods)}
                 hideServiceTypeField={true}
               />
               <Controller
