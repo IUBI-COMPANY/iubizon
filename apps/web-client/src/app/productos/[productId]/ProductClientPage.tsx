@@ -9,6 +9,7 @@ import { InformationAndPriceCard } from "@/components/ui/InformationAndPriceCard
 import React, { useEffect, useState } from "react";
 import { productsCondition } from "@/data-list/productsCondition";
 import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
+import { EPSONFH02 } from "./EPSON-FH02";
 import { SummerBanner } from "@/components/ui/SummerBanner";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 
 const SPECIAL_PRODUCT_ID =
   "Proyector-Led-Portatil-Hy350-Magcubic-Full-Hd-1080p-Android";
+const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 export default function ProductDetailPage({ product }: Props) {
   const [showModal, setShowModal] = useState(false);
@@ -34,6 +36,10 @@ export default function ProductDetailPage({ product }: Props) {
 
   if (product.id.toUpperCase() === SPECIAL_PRODUCT_ID.toUpperCase()) {
     return <MAGCUBICHY350 product={product} />;
+  }
+
+  if (product.id.toUpperCase() === EPSON_FH02_ID.toUpperCase()) {
+    return <EPSONFH02 product={product} />;
   }
 
   return (
