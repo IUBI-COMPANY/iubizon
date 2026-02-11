@@ -15,22 +15,19 @@
     "label": "A distancia/remoto",
     "value": "remote",
     "icon": "👨🏻‍💻",
-    "description": "A distancia por remoto",
-    "hidden": true
+    "description": "A distancia por remoto"
   },
   {
     "label": "Cliente recoge",
     "value": "pickup",
     "icon": "📦",
-    "description": "Cliente recoge el producto",
-    "hidden": true
+    "description": "Cliente recoge el producto"
   },
   {
     "label": "Envío al cliente",
     "value": "shipping",
     "icon": "📦",
-    "description": "Envío del producto al cliente",
-    "hidden": true
+    "description": "Envío del producto al cliente"
   },
   {
     "label": "Enviar equipo a tienda",

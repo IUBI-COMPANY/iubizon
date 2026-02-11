@@ -12,6 +12,7 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ServiceForPersonStep2 } from "@/app/servicios/tecnico/persona/StepsGroup";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
   documentType: string;
@@ -78,6 +79,7 @@ export const ContactPersonInfoStep2 = ({
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -91,6 +93,10 @@ export const ContactPersonInfoStep2 = ({
       phoneNumber: leadFormData?.contact?.phone?.number || "",
     },
   });
+
+  const docType = watch("documentType");
+  const isRuc = docType === "RUC";
+  const isDni = docType === "DNI";
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
@@ -121,7 +127,7 @@ export const ContactPersonInfoStep2 = ({
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
-        Datos de contacto
+        Datos de contacto de la persona
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -141,13 +147,7 @@ export const ContactPersonInfoStep2 = ({
                       required={required(name)}
                       onChange={onChange}
                       placeholder="Seleccionar"
-                      options={[
-                        { label: "DNI", value: "DNI" },
-                        { label: "RUC", value: "RUC" },
-                        { label: "CE (Carnet de Extranjería)", value: "CE" },
-                        { label: "Pasaporte", value: "PASSPORT" },
-                        { label: "Otro", value: "OTHER" },
-                      ]}
+                      options={documentsTypes}
                     />
                   )}
                 />
@@ -166,7 +166,13 @@ export const ContactPersonInfoStep2 = ({
                       helperText={errorMessage(name)}
                       required={required(name)}
                       onChange={onChange}
-                      placeholder="71XXXXX"
+                      placeholder={
+                        isRuc
+                          ? "10XXXXXXXX"
+                          : isDni
+                            ? "71XXXXX"
+                            : "Ingresa el número"
+                      }
                     />
                   )}
                 />

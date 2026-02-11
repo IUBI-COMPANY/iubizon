@@ -1,0 +1,7 @@
+[
+  { "label": "RUC", "value": "RUC" },
+  { "label": "DNI", "value": "DNI" },
+  { "label": "CE (Carnet de Extranjería)", "value": "CE" },
+  { "label": "Pasaporte", "value": "PASSPORT" },
+  { "label": "Otro", "value": "OTHER" }
+]

@@ -17,6 +17,7 @@ export async function sendLead(
     document: data?.document || undefined,
     // Organization Info (Step 2 - only if RUC)
     organizationInfo: data?.organizationInfo || undefined,
+    // productSaleDetails
     productSaleDetails: data?.productSaleDetails || undefined,
     // Communication
     hostname: "iubizon.com",

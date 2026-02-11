@@ -3,7 +3,7 @@
 import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
 export async function sendLead(
-  formTechnicalService: Lead,
+  leadService: Lead,
 ): Promise<{ success: boolean; error?: string }> {
   const mapTechnicalServiceData = (data: Lead) => ({
     // Core Fields
@@ -11,57 +11,16 @@ export async function sendLead(
     clientType: data.clientType,
     status: data.status,
     archived: data.archived,
-
     // Contact Information
-    contact: {
-      firstName: data.contact.firstName,
-      lastName: data.contact.lastName,
-      fullName: data.contact.fullName,
-      email: data.contact.email,
-      phone: {
-        prefix: data.contact.phone.prefix,
-        number: data.contact.phone.number,
-      },
-    },
-
+    contact: data?.contact || undefined,
     // Document Information
-    document: data.document
-      ? {
-          type: data.document.type,
-          number: data.document.number,
-        }
-      : undefined,
-
-    // Address (at Lead level)
-    address: data.address
-      ? {
-          street: data.address.street,
-          state: data.address.state,
-          city: data.address.city,
-          area: data.address.area,
-        }
-      : undefined,
-
+    document: data?.document || undefined,
     // Service Details
-    serviceDetails: data.serviceDetails
-      ? {
-          products: data?.serviceDetails?.products || [],
-          serviceType: data.serviceDetails.serviceType,
-          additionalInformation: data.serviceDetails.additionalInformation,
-          attendanceType: data.serviceDetails.attendanceType,
-          visitSchedule: data.serviceDetails.visitSchedule
-            ? {
-                preferredDate: data.serviceDetails.visitSchedule.preferredDate,
-                preferredTime: data.serviceDetails.visitSchedule.preferredTime,
-              }
-            : undefined,
-        }
-      : undefined,
-
+    serviceDetails: data?.serviceDetails || undefined,
     // Communication
     hostname: "iubizon.com",
     termsAndConditions: data.termsAndConditions,
-
+    isQuoteRequest: data.isQuoteRequest,
     // Tracking
     tracking: {
       source: data.tracking.source,
@@ -75,7 +34,7 @@ export async function sendLead(
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(mapTechnicalServiceData(formTechnicalService)),
+      body: JSON.stringify(mapTechnicalServiceData(leadService)),
     });
 
     const responseText = await response.text();

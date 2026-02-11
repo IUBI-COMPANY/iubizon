@@ -259,12 +259,12 @@ export const DeliveryStep3 = ({
 
     // 1. Transformar datos del formulario a la nueva estructura
     const completeFormData: Partial<Lead> = {
+      isQuoteRequest: formData.isQuotation,
       productSaleDetails: {
         ...leadFormData.productSaleDetails,
         products: leadFormData?.productSaleDetails?.products || [],
         delivery: deliveryFields(formData) || undefined,
       },
-      isQuoteRequest: formData.isQuotation,
       termsAndConditions: formData.termsAndConditions,
     };
 
@@ -381,7 +381,7 @@ export const DeliveryStep3 = ({
                 {isQuoteOnly && (
                   <Alert
                     type="success"
-                    message="✓ Te contactaremos lo pronto posible con tu cotización personalizada"
+                    message="✓ Te contactaremos lo más pronto posible con tu cotización personalizada."
                   />
                 )}
               </div>

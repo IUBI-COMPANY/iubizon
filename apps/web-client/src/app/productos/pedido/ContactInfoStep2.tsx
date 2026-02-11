@@ -12,6 +12,7 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { AnOrderStep2 } from "@/app/productos/pedido/StepsGroup";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
   documentType: string;
@@ -191,13 +192,7 @@ export const ContactInfoStep2 = ({
                       required={required(name)}
                       onChange={onChange}
                       placeholder="Seleccionar"
-                      options={[
-                        { label: "RUC", value: "RUC" },
-                        { label: "DNI", value: "DNI" },
-                        { label: "CE (Carnet de Extranjería)", value: "CE" },
-                        { label: "Pasaporte", value: "PASSPORT" },
-                        { label: "Otro", value: "OTHER" },
-                      ]}
+                      options={documentsTypes}
                     />
                   )}
                 />

@@ -137,8 +137,8 @@ export const StepsGroup = () => {
         {globalStep === 0 && (
           <DeviceInfoStep1
             globalStep={globalStep}
-            repairsFormData={leadFormData}
-            setRepairsFormData={setLeadFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />

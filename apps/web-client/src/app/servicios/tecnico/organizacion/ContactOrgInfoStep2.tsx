@@ -12,6 +12,7 @@ import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ServiceForOrgStep2 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
   documentType: string;
@@ -178,7 +179,7 @@ export const ContactOrgInfoStep2 = ({
   return (
     <div className="w-full">
       <div className="text-2xl text-center text-secondary font-semibold">
-        Datos de contacto
+        Datos de contacto de la organización
       </div>
       <div className="mt-5">
         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -198,13 +199,7 @@ export const ContactOrgInfoStep2 = ({
                       required={required(name)}
                       onChange={onChange}
                       placeholder="Seleccionar"
-                      options={[
-                        { label: "RUC", value: "RUC" },
-                        { label: "DNI", value: "DNI" },
-                        { label: "CE (Carnet de Extranjería)", value: "CE" },
-                        { label: "Pasaporte", value: "PASSPORT" },
-                        { label: "Otro", value: "OTHER" },
-                      ]}
+                      options={documentsTypes}
                     />
                   )}
                 />

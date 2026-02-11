@@ -154,8 +154,8 @@ export const StepsGroup = () => {
             loading={submitting}
             setLoading={setSubmitting}
             globalStep={globalStep}
-            repairsFormData={leadFormData}
-            setRepairsFormData={setLeadFormData}
+            leadFormData={leadFormData}
+            setLeadFormData={setLeadFormData}
             addLocalStorageData={addLocalStorageData}
             setCurrentStepToLocalStorage={setCurrentStepToLocalStorage}
           />

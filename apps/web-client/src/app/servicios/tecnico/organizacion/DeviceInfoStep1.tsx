@@ -11,20 +11,19 @@ import { ProductListComponent } from "@/components/sales-and-services/ProductLis
 import { useNotification } from "@/components/ui/Notification";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { ServiceForOrgStep1 } from "@/app/servicios/tecnico/organizacion/StepsGroup";
-import { ProductItemList } from "@/types/lead";
 
 interface Props {
   globalStep: number;
-  repairsFormData: Partial<Lead>;
-  setRepairsFormData: (data: Partial<Lead>) => void;
+  leadFormData: Partial<Lead>;
+  setLeadFormData: (data: Partial<Lead>) => void;
   addLocalStorageData: (data: object) => void;
   setCurrentStepToLocalStorage: (step: number) => void;
 }
 
 export const DeviceInfoStep1 = ({
   globalStep,
-  repairsFormData,
-  setRepairsFormData,
+  leadFormData,
+  setLeadFormData,
   addLocalStorageData,
   setCurrentStepToLocalStorage,
 }: Props) => {
@@ -35,9 +34,9 @@ export const DeviceInfoStep1 = ({
   }) as ObjectSchema<Pick<ServiceForOrgStep1, "additionalInformation">>;
 
   // Inicializar productos desde repairsFormData o crear uno por defecto
-  const initializeProducts: ProductItemList[] = (() => {
-    const data = repairsFormData as Partial<Lead> & {
-      products?: ProductItemList[];
+  const initializeProducts: ProductItem[] = (() => {
+    const data = leadFormData as Partial<Lead> & {
+      products?: ProductItem[];
     };
     if (data?.products && data.products.length > 0) {
       return data.products.map((p) => ({
@@ -59,8 +58,7 @@ export const DeviceInfoStep1 = ({
     ];
   })();
 
-  const [products, setProducts] =
-    useState<ProductItemList[]>(initializeProducts);
+  const [products, setProducts] = useState<ProductItem[]>(initializeProducts);
 
   const {
     handleSubmit,
@@ -70,7 +68,7 @@ export const DeviceInfoStep1 = ({
     resolver: yupResolver(schema),
     defaultValues: {
       additionalInformation:
-        repairsFormData?.serviceDetails?.additionalInformation || "",
+        leadFormData?.serviceDetails?.additionalInformation || "",
     },
   });
 
@@ -92,8 +90,8 @@ export const DeviceInfoStep1 = ({
       return;
     }
 
-    const completeFormData: Partial<Lead> & { products?: ProductItemList[] } = {
-      ...repairsFormData,
+    const completeFormData: Partial<Lead> & { products?: ProductItem[] } = {
+      ...leadFormData,
       // Guardar productos temporalmente (fuera de la estructura oficial)
       products: products.map((p) => ({
         id: p.id,
@@ -104,22 +102,13 @@ export const DeviceInfoStep1 = ({
       })),
       // Guardar additionalInformation en serviceDetails
       serviceDetails: {
-        ...repairsFormData.serviceDetails,
+        ...leadFormData.serviceDetails,
         additionalInformation: formData.additionalInformation,
       },
     };
 
-    setRepairsFormData(completeFormData);
-    addLocalStorageData({
-      products: products.map((p) => ({
-        id: p.id,
-        quantity: p.quantity,
-        brand: p.brand,
-        model: p.model,
-        serviceType: p.serviceType,
-      })),
-      additionalInformation: formData.additionalInformation,
-    });
+    setLeadFormData({ ...leadFormData, ...completeFormData });
+    addLocalStorageData(completeFormData);
     setCurrentStepToLocalStorage(globalStep + 1);
   };
 
@@ -135,7 +124,7 @@ export const DeviceInfoStep1 = ({
               <div className="grid grid-cols-1 gap-x-8 gap-y-6">
                 <ProductListComponent
                   products={products}
-                  onChange={(prods: ProductItemList[]) => setProducts(prods)}
+                  onChange={(prods: ProductItem[]) => setProducts(prods)}
                   hideServiceTypeField={false}
                 />
                 <Controller
