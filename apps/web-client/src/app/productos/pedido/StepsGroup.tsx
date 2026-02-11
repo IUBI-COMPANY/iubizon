@@ -30,18 +30,6 @@ export type AnOrderStep2 = {
   };
 };
 
-export type AnOrderStep3 = {
-  delivery?: DeliveryInfo;
-  attendanceType?: AttendanceType;
-  isQuoteRequest?: boolean;
-  termsAndConditions: boolean;
-};
-
-// Tipo unificado para el formulario completo
-export type AnOrderFormData = Partial<AnOrderStep1> &
-  Partial<AnOrderStep2> &
-  Partial<AnOrderStep3>;
-
 export const StepsGroup = () => {
   const [globalStep, setGlobalStep] = useState(0);
   const [leadFormData, setLeadFormData] = useState<Partial<Lead>>({});
