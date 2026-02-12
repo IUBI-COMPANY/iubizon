@@ -220,11 +220,17 @@ export default function TechnicalServicePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqData) }}
       />
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#102239] via-[#1a3654] to-[#102239] text-white py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[url('/images/proyectores-reparaciones.webp')] bg-cover bg-center" />
+      <section className="relative text-white py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/servicio-tecnico-retail-y-organizaciones.png"
+            alt="Servicio técnico para empresas y retail"
+            fill
+            className="object-cover opacity-50"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/70"></div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#102239]/80 to-transparent" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
