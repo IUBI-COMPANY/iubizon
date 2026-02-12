@@ -102,22 +102,22 @@ export default function PageAnOrder() {
         />
       </Head>
       <header
-        className="relative h-[33rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
+        className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
         role="banner"
       >
         <div className="absolute inset-0">
           <Image
-            src="/images/education-projectors.jpg"
+            src="/images/Realiza el pedido de tus proyectores en iubizon.png"
             alt="Productos para organizaciones, empresas e instituciones"
             fill
             className="object-cover opacity-50"
             priority
           />
-          <div className="absolute inset-0 bg-blue-900/50"></div>
+          <div className="absolute inset-0 bg-secondary/40"></div>
         </div>
       </header>
       <section
-        className="relative -mt-[33rem] sm:-mt-[32rem] z-20 px-4"
+        className="relative -mt-[39rem] sm:-mt-[40rem] z-20 px-4"
         id="contact-form"
         aria-label="Formulario de solicitud de productos para organizaciones"
       >

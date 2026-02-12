@@ -157,22 +157,22 @@ export default function PageTechnicalService() {
       </Head>
       <main>
         <header
-          className="relative h-[33rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
+          className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
           role="banner"
         >
           <div className="absolute inset-0">
             <Image
-              src="/images/organizacion-reparacion.jpg"
+              src="/images/Servicio tecnico para empresass.png"
               alt="Servicio técnico de proyectores Epson, BenQ, Sony en Lima"
               fill
               className="object-cover opacity-50"
               priority
             />
-            <div className="absolute inset-0 bg-blue-500/20"></div>
+            <div className="absolute inset-0 bg-black/60"></div>
           </div>
         </header>
         <section
-          className="relative -mt-[33rem] sm:-mt-[32rem] z-20 px-4"
+          className="relative -mt-[39rem] sm:-mt-[40rem] z-20 px-4"
           id="contact-form"
           aria-label="Formulario de contacto para reparación de proyectores"
         >
