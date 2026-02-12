@@ -223,7 +223,7 @@ export default function TechnicalServicePage() {
       <section className="relative text-white py-20 overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/images/servicio-tecnico-retail-y-organizaciones.png"
+            src="/images/servicio tecnico retail y organizaciones.png"
             alt="Servicio técnico para empresas y retail"
             fill
             className="object-cover opacity-50"
