@@ -6,6 +6,7 @@ import {
   SpecsSection,
   TutorialSection,
   PriceSection,
+  SeparateProductsSection,
 } from "./sections";
 import { PROJECTORS, BASE_BUNDLE_PRICE } from "@/data-list/bundleProjectors";
 export default function BundleInteractivoPage() {
@@ -30,6 +31,7 @@ export default function BundleInteractivoPage() {
         />
         <SpecsSection />
         <PriceSection totalPrice={totalPrice} />
+        <SeparateProductsSection />
       </main>
     </div>
   );
