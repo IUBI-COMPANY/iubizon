@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Cable,
   MousePointerClick,
@@ -12,7 +12,7 @@ import {
   Settings,
   Wifi,
   type LucideIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
 // Mapeo de iconos de Material Symbols a Lucide React
 const iconMap: Record<string, LucideIcon> = {
@@ -35,7 +35,7 @@ interface IconProps {
   size?: number;
 }
 
-export const Icon: React.FC<IconProps> = ({ name, className = '', size }) => {
+export const Icon: React.FC<IconProps> = ({ name, className = "", size }) => {
   const IconComponent = iconMap[name];
 
   if (!IconComponent) {

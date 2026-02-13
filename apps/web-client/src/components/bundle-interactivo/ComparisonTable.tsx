@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import React, { useState } from "react";
+import { Check, X } from "lucide-react";
 
 interface ComparisonItem {
   feature: string;
@@ -18,11 +18,15 @@ interface ComparisonTableProps {
   };
 }
 
-export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, plans }) => {
+export const ComparisonTable: React.FC<ComparisonTableProps> = ({
+  title,
+  items,
+  plans,
+}) => {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
 
   const renderValue = (value: boolean | string) => {
-    if (typeof value === 'boolean') {
+    if (typeof value === "boolean") {
       return value ? (
         <Check className="w-6 h-6 text-primary mx-auto" />
       ) : (
@@ -39,7 +43,9 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {title && (
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">{title}</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">
+              {title}
+            </h2>
             <div className="h-1.5 w-24 bg-primary mx-auto rounded-full shadow-[0_0_15px_rgba(242,95,12,0.5)]" />
           </div>
         )}
@@ -61,16 +67,22 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, 
                       <th
                         key={key}
                         className={`px-6 py-8 text-center transition-all duration-300 ${
-                          hoveredPlan === key ? 'bg-primary/10' : ''
+                          hoveredPlan === key ? "bg-primary/10" : ""
                         }`}
                         onMouseEnter={() => setHoveredPlan(key)}
                         onMouseLeave={() => setHoveredPlan(null)}
                       >
                         <div className="space-y-2">
-                          <p className="text-white font-display font-bold text-xl">{plan.name}</p>
-                          <p className="text-gray-400 text-xs">{plan.description}</p>
+                          <p className="text-white font-display font-bold text-xl">
+                            {plan.name}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {plan.description}
+                          </p>
                           <div className="flex items-center justify-center gap-1 mt-3">
-                            <span className="text-primary text-3xl font-bold">S/.</span>
+                            <span className="text-primary text-3xl font-bold">
+                              S/.
+                            </span>
                             <span className="text-white text-4xl font-display font-black">
                               {plan.price.toLocaleString()}
                             </span>
@@ -84,27 +96,30 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, 
                 {/* Body */}
                 <tbody className="divide-y divide-white/10">
                   {items.map((item, index) => (
-                    <tr key={index} className="hover:bg-white/5 transition-colors duration-200">
+                    <tr
+                      key={index}
+                      className="hover:bg-white/5 transition-colors duration-200"
+                    >
                       <td className="px-6 py-5 text-sm text-gray-300 font-medium">
                         {item.feature}
                       </td>
                       <td
                         className={`px-6 py-5 text-center transition-all duration-300 ${
-                          hoveredPlan === 'basic' ? 'bg-primary/10' : ''
+                          hoveredPlan === "basic" ? "bg-primary/10" : ""
                         }`}
                       >
                         {renderValue(item.basic)}
                       </td>
                       <td
                         className={`px-6 py-5 text-center transition-all duration-300 ${
-                          hoveredPlan === 'premium' ? 'bg-primary/10' : ''
+                          hoveredPlan === "premium" ? "bg-primary/10" : ""
                         }`}
                       >
                         {renderValue(item.premium)}
                       </td>
                       <td
                         className={`px-6 py-5 text-center transition-all duration-300 ${
-                          hoveredPlan === 'enterprise' ? 'bg-primary/10' : ''
+                          hoveredPlan === "enterprise" ? "bg-primary/10" : ""
                         }`}
                       >
                         {renderValue(item.enterprise)}
@@ -125,7 +140,9 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, 
               className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6"
             >
               <div className="text-center mb-6 pb-6 border-b border-white/10">
-                <h3 className="text-white font-display font-bold text-2xl mb-2">{plan.name}</h3>
+                <h3 className="text-white font-display font-bold text-2xl mb-2">
+                  {plan.name}
+                </h3>
                 <p className="text-gray-400 text-sm mb-4">{plan.description}</p>
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-primary text-2xl font-bold">S/.</span>
@@ -137,8 +154,13 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = ({ title, items, 
 
               <div className="space-y-4">
                 {items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-gray-300 text-sm">{item.feature}</span>
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-gray-300 text-sm">
+                      {item.feature}
+                    </span>
                     <div>{renderValue(item[key as keyof typeof item])}</div>
                   </div>
                 ))}

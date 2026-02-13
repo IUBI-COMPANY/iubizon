@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
@@ -10,14 +10,14 @@ interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
 export const Link: React.FC<LinkProps> = ({
   href,
   children,
-  className = '',
+  className = "",
   external = false,
   ...props
 }) => {
   const externalProps = external
     ? {
-        target: '_blank',
-        rel: 'noopener noreferrer',
+        target: "_blank",
+        rel: "noopener noreferrer",
       }
     : {};
 
