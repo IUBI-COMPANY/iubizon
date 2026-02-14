@@ -92,10 +92,10 @@ export const ContactForm = ({
     <div className="w-full min-h-auto isolate flex flex-col justify-center py-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto w-full">
         <div className="text-center mb-10">
-          <h1 className="text-[2.3em] sm:text-[2.5em] font-semibold tracking-tight text-balance text-secondary leading-13">
+          <h1 className="text-[2.3em] sm:text-[2.5em] font-semibold tracking-tight text-balance text-white leading-13 font-sfpro">
             Envíanos un Mensaje
           </h1>
-          <p className="text-base text-foreground">
+          <p className="text-base text-gray-400 font-sfpro">
             Completa el formulario y nos pondremos en contacto contigo lo antes
             posible
           </p>

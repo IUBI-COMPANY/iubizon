@@ -187,162 +187,255 @@ export default function AboutUsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />
 
-      <main className="min-h-screen bg-white">
-        {/* Hero Section */}
-        <header className="relative bg-gradient-to-br from-secondary via-secondary/95 to-secondary overflow-hidden">
-          <div className="absolute inset-0">
-            <Image
-              src="/images/education-projectors.jpg"
-              alt="Oficinas de Iubizon - Especialistas en proyectores"
-              fill
-              sizes="100vw"
-              className="object-cover opacity-20"
-              priority
-            />
-            <div className="absolute inset-0 bg-color-secondary/70" />
-          </div>
+      <main className="min-h-screen bg-[#060e1e] font-sfpro">
+        {/* Hero Section - Estilo Landing */}
+        <header className="relative py-32 overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
-          <div className="relative z-10 max-w-6xl mx-auto px-4 py-24">
+          {/* Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary via-[#0a1628] to-primary"></div>
+
+          {/* Decorative circles */}
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/30 rounded-full blur-3xl"></div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                ¿Quiénes Somos?
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                <span className="text-sm font-semibold text-white uppercase tracking-wide">
+                  Sobre Nosotros
+                </span>
+              </div>
+
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                ¿Quiénes <span className="text-primary">Somos</span>?
               </h1>
-              <p className="text-xl md:text-2xl text-gray-100 max-w-3xl mx-auto mb-8">
-                Somos Iubizon, especialistas en proyectores y tecnología
-                educativa en el Perú desde 2020, con un equipo de expertos
-                comprometidos con brindar soluciones innovadoras.
+
+              <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto mb-8 leading-relaxed">
+                Especialistas en tecnología de proyección y soluciones
+                interactivas, transformando espacios educativos y corporativos
+                desde 2020.
               </p>
+
+              {/* Decorative line */}
               <div className="flex justify-center">
-                <Image
-                  src="/images/logo.png"
-                  alt="Logo Iubizon"
-                  width={120}
-                  height={60}
-                  className="brightness-0 invert"
-                />
+                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full"></div>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Our Story & Values Combined Section */}
-        <section
-          className="py-20 bg-white"
-          itemScope
-          itemType="https://schema.org/AboutPage"
-        >
-          <div className="max-w-6xl mx-auto px-4">
-            {/* Story */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-              <div>
+        {/* Nuestra Historia - Estilo moderno */}
+        <section className="relative py-24 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#060e1e] via-[#0a1628] to-[#060e1e]"></div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              {/* Imagen */}
+              <div className="relative order-2 lg:order-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent rounded-3xl blur-2xl"></div>
+                <div className="relative bg-gradient-to-br from-white/5 to-white/10 p-2 rounded-3xl border border-white/10">
+                  <Image
+                    src="/images/iubiz-with-land.png"
+                    alt="Historia de Iubizon"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-2xl"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+              </div>
+
+              {/* Contenido */}
+              <div
+                className="order-1 lg:order-2"
+                itemScope
+                itemType="https://schema.org/AboutPage"
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6 border border-primary/20">
+                  <span className="text-sm font-semibold text-primary uppercase tracking-wide">
+                    Nuestra Historia
+                  </span>
+                </div>
+
                 <h2
-                  className="text-3xl md:text-4xl font-bold text-color-secondary mb-6"
+                  className="text-4xl md:text-5xl font-bold text-white mb-6"
                   itemProp="name"
                 >
-                  Nuestra Historia
+                  Innovación y experiencia en cada proyecto
                 </h2>
+
                 <div
-                  className="space-y-4 text-gray-700 text-lg leading-relaxed"
+                  className="space-y-6 text-lg text-gray-300 leading-relaxed"
                   itemProp="description"
                 >
                   <p>
-                    Desde <strong>2020</strong>, Iubizon nació con una visión
-                    clara: reunir a los mejores{" "}
-                    <strong>especialistas en proyectores</strong> para ofrecer
-                    soluciones tecnológicas de alto nivel. Contamos con un
-                    equipo que suma más de{" "}
-                    <strong>5 años de experiencia en el mercado</strong>,
-                    brindando asesoría, implementación y soporte especializado
-                    en cada proyecto.
+                    Desde{" "}
+                    <strong className="text-primary font-bold">2020</strong>,
+                    hemos revolucionado la forma en que las organizaciones
+                    implementan tecnología de proyección. Con más de{" "}
+                    <strong className="text-white font-semibold">
+                      5 años de experiencia
+                    </strong>{" "}
+                    en el mercado peruano, nos especializamos en soluciones
+                    integrales que combinan hardware de última generación con
+                    soporte técnico especializado.
                   </p>
                   <p>
-                    Nos hemos consolidado como{" "}
-                    <strong>distribuidores de Epson</strong> y otras marcas
-                    reconocidas del sector. Actuamos como{" "}
-                    <strong>consultores especializados</strong>, entendiendo las
-                    necesidades reales de cada cliente para ofrecer soluciones
-                    personalizadas, con <strong>garantía</strong> y
-                    acompañamiento técnico continuo.
+                    Como{" "}
+                    <strong className="text-white font-semibold">
+                      distribuidores autorizados de Epson
+                    </strong>{" "}
+                    y partners de las marcas más reconocidas del sector,
+                    garantizamos productos originales respaldados por{" "}
+                    <strong className="text-white font-semibold">
+                      garantía extendida
+                    </strong>{" "}
+                    y servicio técnico profesional.
+                  </p>
+
+                  {/* Features list */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      </div>
+                      <span className="text-gray-300">
+                        Asesoría especializada
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      </div>
+                      <span className="text-gray-300">
+                        Instalación profesional
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      </div>
+                      <span className="text-gray-300">Soporte continuo</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-1 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      </div>
+                      <span className="text-gray-300">Garantía extendida</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Estadísticas */}
+        <section className="relative py-16">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628] to-[#060e1e]"></div>
+          <div className="relative z-10">
+            <StatsGrid stats={stats} className="" />
+          </div>
+        </section>
+
+        {/* Marcas */}
+        <section className="relative py-16">
+          <div className="absolute inset-0 bg-[#060e1e]"></div>
+          <div className="relative z-10">
+            <Brands className="" />
+          </div>
+        </section>
+
+        {/* Por Qué Elegirnos */}
+        <section className="relative py-24 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#060e1e] via-[#0a1628] to-[#060e1e]"></div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6 border border-primary/20">
+                <span className="text-sm font-semibold text-primary uppercase tracking-wide">
+                  Nuestro Valor
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                ¿Por Qué Elegirnos?
+              </h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Más que proveedores, somos tu socio estratégico en tecnología
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Card 1 */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                <div className="relative bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 rounded-3xl border border-white/10 hover:border-primary/30 transition-all duration-300 backdrop-blur-sm h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-6 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+                    <Shield className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    Garantía y Confianza
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    Productos 100% originales con garantía extendida y soporte
+                    técnico especializado.
                   </p>
                 </div>
               </div>
-              <div>
-                <Image
-                  src="/images/iubiz-with-land.png"
-                  alt="Historia de Iubizon - Empresa de proyectores en Lima"
-                  width={600}
-                  height={400}
-                  className="w-full h-auto"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 600px"
-                />
-              </div>
-            </div>
 
-            {/* Estadísticas de la Empresa */}
-            <StatsGrid stats={stats} className="my-16" />
-
-            {/* Marcas Asociadas */}
-            <Brands className="my-16" />
-
-            {/*/!* Timeline/Hitos *!/*/}
-            {/*<Timeline items={timelineItems} className="my-16" />*/}
-
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-color-secondary mb-4">
-                ¿Por Qué Elegirnos?
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="text-center">
-                <div className="bg-[#1a237e]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-8 h-8 text-[#1a237e]" />
+              {/* Card 2 */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                <div className="relative bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 rounded-3xl border border-white/10 hover:border-primary/30 transition-all duration-300 backdrop-blur-sm h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-6 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+                    <MonitorSmartphone className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    Tecnología de Punta
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    Soluciones audiovisuales de última generación adaptadas a
+                    tus necesidades.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-color-secondary mb-2">
-                  Garantía y Confianza
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Productos originales, garantía real y soporte técnico
-                  confiable.
-                </p>
               </div>
 
-              <div className="text-center">
-                <div className="bg-[#009688]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MonitorSmartphone className="w-8 h-8 text-[#009688]" />
+              {/* Card 3 */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                <div className="relative bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 rounded-3xl border border-white/10 hover:border-primary/30 transition-all duration-300 backdrop-blur-sm h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-6 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+                    <Headphones className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    Soporte Especializado
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    Equipo técnico certificado disponible para asesoría
+                    personalizada.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-color-secondary mb-2">
-                  Tecnología de Punta
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Soluciones audiovisuales modernas y eficientes para tu
-                  organización.
-                </p>
               </div>
 
-              <div className="text-center">
-                <div className="bg-[#ff9800]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Headphones className="w-8 h-8 text-[#ff9800]" />
+              {/* Card 4 */}
+              <div className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
+                <div className="relative bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-8 rounded-3xl border border-white/10 hover:border-primary/30 transition-all duration-300 backdrop-blur-sm h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-6 border border-primary/20 group-hover:scale-110 transition-transform duration-300">
+                    <Handshake className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    Compromiso Total
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    Acompañamiento completo desde la cotización hasta el
+                    postventa.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-color-secondary mb-2">
-                  Soporte Especializado
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Atención personalizada y asesoría técnica por expertos.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="bg-[#374151]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Handshake className="w-8 h-8 text-[#374151]" />
-                </div>
-                <h3 className="text-lg font-bold text-color-secondary mb-2">
-                  Compromiso y Cercanía
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Nos adaptamos a tus necesidades y acompañamos tu proyecto de
-                  inicio a fin.
-                </p>
               </div>
             </div>
           </div>
