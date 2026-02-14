@@ -1239,6 +1239,129 @@ Herramientas de control y gestión remota: para una instalación y un funcionami
     gama: "alta",
     note: `Promueva la participación en el aula con el versátil proyector láser sin lámpara PowerLite® L210W. Con 4.500 lúmenes de brillo1, el L210W ofrece imágenes vibrantes a todos en el aula a un valor excepcional. Diseñado para su comodidad, esta solución flexible cuenta con resolución WXGA, produce una imagen hasta 16 veces más grande que una pantalla plana de 75" e incluye una fuente de luz láser de 20.000 horas prácticamente libre de mantenimiento, para un rendimiento simple y confiable. Perfecto para el aprendizaje colaborativo, brinda conectividad inalámbrica con capacidad de transmisión para compartir contenido convenientemente desde computadoras portátiles y dispositivos móviles.`,
   },
+  // ============================================
+  // Bundle Interactivo y Productos Individuales
+  // ============================================
+  {
+    id: "bundle-interactivo",
+    model: "Bundle Complete 2025",
+    name: "Bundle Interactivo Completo",
+    stock: 10,
+    condition: "new",
+    description:
+      "Transforma cualquier proyector en una experiencia interactiva profesional",
+    price: 2150,
+    badge: "Bundle",
+    mainImage: "/productos/bundle/upside109W.png",
+    media: [
+      { type: "image", src: "/productos/bundle/upside109W.png" },
+      { type: "image", src: "/productos/bundle/touch.png" },
+      { type: "image", src: "/productos/bundle/miracast.png" },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 4000,
+    brand: "iubizon",
+    type: "Bundle",
+    connectivity: "HDMI, VGA, USB, WiFi",
+    features:
+      "Touch interactivo 10 puntos, Proyección hasta 120 pulgadas, Conectividad inalámbrica, Android integrado",
+    nativeResolution: "WXGA (1280x800)",
+    aspectRatio: "16:10",
+    category: ["Tecnología", "Proyección", "Interactividad"],
+    gama: "alta",
+    note: `El Bundle Interactivo Completo incluye todo lo necesario para convertir tu espacio en un ambiente de trabajo moderno y colaborativo:
+
+• Proyector Epson PowerLite 109W (4000 lúmenes)
+• Touch Interactivo (10 puntos táctiles)
+• Adaptador Inalámbrico MiraCast (Android integrado)
+• Instalación y configuración incluida
+• Garantía extendida de 1 año
+• Soporte técnico especializado
+
+Ideal para:
+- Salas de reuniones corporativas
+- Aulas educativas interactivas
+- Espacios de capacitación
+- Presentaciones profesionales
+
+Más que un kit interactivo, es una solución completa de productividad que moderniza tus espacios de trabajo y garantiza sesiones fluidas y profesionales.`,
+  },
+  {
+    id: "touch",
+    model: "Touch Hub Pro",
+    name: "Touch Interactivo",
+    stock: 15,
+    condition: "new",
+    description:
+      "Convierte cualquier superficie proyectada en una pantalla táctil interactiva",
+    price: 200,
+    badge: "Accesorio",
+    mainImage: "/productos/bundle/touch.png",
+    media: [{ type: "image", src: "/productos/bundle/touch.png" }],
+    brand: "iubizon",
+    type: "Accesorio",
+    connectivity: "USB",
+    features:
+      "10 puntos táctiles, Multi-usuario simultáneo, Tecnología infrarroja, Compatible con múltiples sistemas operativos",
+    category: ["Tecnología", "Interactividad", "Accesorios"],
+    gama: "media",
+    note: `El Touch Interactivo es la solución perfecta para transformar tu proyector existente en una experiencia interactiva completa.
+
+Características principales:
+• 10 puntos táctiles simultáneos
+• Tecnología infrarroja de alta precisión
+• Compatible con Windows, Mac, Android y Linux
+• Multi-usuario: Varias personas pueden interactuar al mismo tiempo
+• Instalación rápida y sencilla (Plug & Play)
+• No requiere calibración constante
+• Respuesta táctil de baja latencia
+
+Aplicaciones:
+- Presentaciones interactivas en oficinas
+- Clases dinámicas en aulas
+- Sesiones de brainstorming colaborativo
+- Capacitaciones empresariales
+
+El hub interactivo perfecto para llevar tus presentaciones al siguiente nivel.`,
+  },
+  {
+    id: "adaptador",
+    model: "MiraCast Pro Android",
+    name: "Adaptador Inalámbrico MiraCast",
+    stock: 20,
+    condition: "new",
+    description:
+      "Transmite contenido de forma inalámbrica desde cualquier dispositivo",
+    price: 150,
+    badge: "Accesorio",
+    mainImage: "/productos/bundle/miracast.png",
+    media: [{ type: "image", src: "/productos/bundle/miracast.png" }],
+    brand: "iubizon",
+    type: "Accesorio",
+    connectivity: "WiFi, HDMI",
+    features:
+      "WiFi integrado, Android OS, Google Play Store, Streaming inalámbrico, Compatible con múltiples dispositivos",
+    category: ["Tecnología", "Conectividad", "Accesorios"],
+    gama: "media",
+    note: `El Adaptador Inalámbrico MiraCast te permite compartir contenido sin cables de manera rápida y sencilla.
+
+Características principales:
+• Android integrado con acceso a Google Play Store
+• Transmisión nativa compatible con Android
+• Conectividad WiFi de alta velocidad
+• Streaming de video en alta calidad
+• Acceso a aplicaciones educativas y empresariales
+• Configuración simple y rápida
+• Compatible con la mayoría de proyectores
+
+Ventajas:
+- Elimina el uso de cables y adaptadores
+- Comparte desde smartphones, tablets y laptops
+- Ideal para presentaciones dinámicas
+- Actualizable vía OTA (Over The Air)
+
+Perfecto para modernizar cualquier proyector y hacerlo inalámbrico en minutos.`,
+  },
 ];
 
 export const DISCOUNT_PERCENTAGE_SUMMER_TO_NEWS = 0.17; // 17% DISCOUNT
