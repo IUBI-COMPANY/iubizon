@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface PriceSectionProps {
   totalPrice: number;
@@ -55,14 +56,12 @@ export const PriceSection: React.FC<PriceSectionProps> = ({ totalPrice }) => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a
-              href="https://wa.me/51972300301?text=Hola%20iubizon,%20quiero%20el%20bundle%20interactivo"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/productos/bundle-interactivo"
               className="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-sfpro font-bold rounded-full transition-all shadow-[0_0_20px_rgba(242,95,12,0.4)] hover:shadow-[0_0_30px_rgba(242,95,12,0.6)] hover:scale-105 cursor-pointer text-center"
             >
               Consíguelo ahora
-            </a>
+            </Link>
             <a
               href="/documents/ficha-tecnica.pdf"
               target="_blank"

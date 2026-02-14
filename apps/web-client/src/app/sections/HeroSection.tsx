@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { useScrollAnimation, fadeIn } from "@/hooks/useScrollAnimation";
 import { ChevronDown } from "lucide-react";
 import BundleTitle from "@/components/bundle-interactivo/BundleTitle";
@@ -30,18 +31,16 @@ export const HeroSection: React.FC = () => {
 
           {/* CTA Button */}
           <div className="mt-8 flex justify-center">
-            <Button
-              variant="primary"
-              size="lg"
-              styleVariant="solid"
-              className="group relative overflow-hidden bg-primary hover:bg-primary-hover text-white font-sfpro font-bold text-lg px-8 py-4 rounded-full shadow-[0_0_40px_rgba(242,95,12,0.5)] hover:shadow-[0_0_60px_rgba(242,95,12,0.7)] transition-all duration-300 hover:scale-105"
-              onClick={() => {
-                const priceSection = document.getElementById("price-section");
-                priceSection?.scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              Realizar mi pedido
-            </Button>
+            <Link href="/productos/bundle-interactivo">
+              <Button
+                variant="primary"
+                size="lg"
+                styleVariant="solid"
+                className="group relative overflow-hidden bg-primary hover:bg-primary-hover text-white font-sfpro font-bold text-lg px-8 py-4 rounded-full shadow-[0_0_40px_rgba(242,95,12,0.5)] hover:shadow-[0_0_60px_rgba(242,95,12,0.7)] transition-all duration-300 hover:scale-105"
+              >
+                Realizar mi pedido
+              </Button>
+            </Link>
           </div>
         </div>
 

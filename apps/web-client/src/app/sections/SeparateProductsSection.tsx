@@ -96,9 +96,7 @@ export const SeparateProductsSection: React.FC = () => {
                     </p>
                   </div>
                   <a
-                    href={`https://wa.me/51972300301?text=Hola%20iubizon,%20quiero%20el%20${encodeURIComponent(product.name)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/productos/${product.id}`}
                     className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-sfpro font-semibold rounded-full transition-all hover:scale-105 shadow-[0_0_20px_rgba(242,95,12,0.3)]"
                   >
                     Pedir
