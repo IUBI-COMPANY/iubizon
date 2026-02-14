@@ -4,7 +4,7 @@ import Image from "next/image";
 import MediaCarousel from "../../../components/ui/MediaCarousel";
 import OtherProductsCarousel from "../../../components/ui/OtherProductsCarousel";
 import { Product } from "@/data-list/products";
-import { ChevronRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { NoFoundComponent } from "@/components/ui/NoFoundComponent";
 import { InformationAndPriceCard } from "@/components/ui/InformationAndPriceCard";
 import React, { useEffect, useState } from "react";
