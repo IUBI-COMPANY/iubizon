@@ -60,7 +60,8 @@ export const InformationAndPriceCard = ({
             </div>
             {product.stock <= 0 ? (
               <p className="text-xs text-red-400 font-medium">
-                ⚠️ Sin stock • <span className="font-semibold">Compra a pedido</span>
+                ⚠️ Sin stock •{" "}
+                <span className="font-semibold">Compra a pedido</span>
               </p>
             ) : (
               <p className="text-xs text-emerald-400 font-medium">
@@ -73,7 +74,9 @@ export const InformationAndPriceCard = ({
           {product?.condition && (
             <div className="mb-5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-400 font-sfpro">Condición:</span>
+                <span className="text-sm text-gray-400 font-sfpro">
+                  Condición:
+                </span>
                 <button
                   className="inline-flex items-center gap-1 px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-xs font-semibold rounded-full hover:bg-primary/30 transition-colors backdrop-blur-sm"
                   onClick={() => setShowModal(true)}
@@ -118,7 +121,9 @@ export const InformationAndPriceCard = ({
             <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
               <div className="space-y-3">
                 <div className="flex justify-between text-sm items-center">
-                  <span className="text-gray-400 font-sfpro">Precio Lista:</span>
+                  <span className="text-gray-400 font-sfpro">
+                    Precio Lista:
+                  </span>
                   <span className="font-medium text-gray-300 line-through font-sfpro">
                     S/ {product.oldPrice.toFixed(2)}
                   </span>
