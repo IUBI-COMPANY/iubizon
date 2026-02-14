@@ -39,10 +39,10 @@ export const Input = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-secondary mb-1.5"
+          className="block text-sm/6 font-semibold text-white mb-1.5 font-sfpro"
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
 

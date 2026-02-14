@@ -26,11 +26,6 @@ const navigation: HeaderNavigation[] = [
   { name: "Inicio", href: "/" },
   { name: "¿Quienes somos?", href: "/quienes-somos" },
   {
-    name: "Productos",
-    href: "/productos",
-    options: [{ name: "Solicítalo a pedido", href: "/productos/pedido" }],
-  },
-  {
     name: "Servicio Técnico",
     href: "/servicios/tecnico",
     options: [

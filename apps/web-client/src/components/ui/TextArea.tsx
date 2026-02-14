@@ -48,10 +48,10 @@ export const TextArea = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-secondary mb-1.5"
+          className="block text-sm/6 font-semibold text-white mb-1.5 font-sfpro"
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
 
@@ -66,7 +66,7 @@ export const TextArea = ({
         className={twMerge(
           "block w-full rounded-md bg-white px-3.5 py-2 text-base placeholder:text-gray-400 transition-colors duration-200",
           "outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2",
-          "min-h-[2.5rem]", // Minimum height to match input height
+          "min-h-10",
           resizeClasses[resize],
           error
             ? "outline-red-500 border-red-500 focus:outline-red-500"

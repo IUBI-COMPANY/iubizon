@@ -26,55 +26,44 @@ export const InformationAndPriceCard = ({
 
   return (
     <>
-      <style jsx>{`
-        @keyframes elegantShine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(200%);
-          }
-        }
-      `}</style>
       <section className="w-full">
-        <div className="product-price-card bg-white/40 rounded-3xl p-0 md:p-5 border-0 md:border-1 md:border-secondary shadow-none md:shadow-md">
+        <div className="product-price-card bg-gradient-to-br from-[#0a1628] via-[#0f1f3a] to-[#1a2942] rounded-3xl p-6 md:p-8 border-2 border-primary/20 shadow-[0_0_40px_rgba(242,95,12,0.15)]">
           {/* 1. TÍTULO DEL PRODUCTO */}
-          <h1 className="text-2xl md:text-3xl font-bold text-left mb-3 text-secondary leading-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-left mb-4 text-white leading-tight font-sfpro">
             {product.name || product.model}
           </h1>
 
-          <div className="tags flex flex-wrap gap-1">
-            {/* 2. BADGE DE OFERTA ESPECIAL (sin tema navideño) */}
+          <div className="tags flex flex-wrap gap-2 mb-4">
+            {/* 2. BADGE DE OFERTA ESPECIAL */}
             {showChristmasCampaign && product?.oldPrice && (
-              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary text-white text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-primary/80 text-white text-xs font-bold shadow-lg shadow-primary/30">
                 <span>-{discountPercentage}% OFF</span>
               </div>
             )}
 
             {product.classification === "clearance" && (
-              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-green-600 text-white text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-green-600 text-white text-xs font-bold shadow-lg">
                 <span>Precio de remate</span>
               </div>
             )}
           </div>
 
-          {/* 3. STOCK Y DISPONIBILIDAD (compacto) */}
-          <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-white border border-gray-200">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-700">
+          {/* 3. STOCK Y DISPONIBILIDAD */}
+          <div className="mb-5 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-gray-300 font-sfpro">
                 Stock:
               </span>
-              <span className="text-sm font-bold text-secondary">
+              <span className="text-lg font-bold text-primary font-sfpro">
                 {product.stock} {product.stock === 1 ? "unidad" : "unidades"}
               </span>
             </div>
             {product.stock <= 0 ? (
-              <p className="text-xs text-red-600 mt-2">
-                ⚠️ Sin stock •{" "}
-                <span className="font-semibold">Compra a pedido</span>
+              <p className="text-xs text-red-400 font-medium">
+                ⚠️ Sin stock • <span className="font-semibold">Compra a pedido</span>
               </p>
             ) : (
-              <p className="text-xs text-green-700 font-medium mt-2">
+              <p className="text-xs text-emerald-400 font-medium">
                 ✓ Disponible para compra inmediata
               </p>
             )}
@@ -82,11 +71,11 @@ export const InformationAndPriceCard = ({
 
           {/* 4. CONDICIÓN DEL PRODUCTO */}
           {product?.condition && (
-            <div className="mb-4">
+            <div className="mb-5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-gray-600">Condición:</span>
+                <span className="text-sm text-gray-400 font-sfpro">Condición:</span>
                 <button
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-secondary text-white text-xs font-semibold rounded-full hover:bg-secondary/90 transition-colors"
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-xs font-semibold rounded-full hover:bg-primary/30 transition-colors backdrop-blur-sm"
                   onClick={() => setShowModal(true)}
                 >
                   {condition.name}
@@ -96,23 +85,27 @@ export const InformationAndPriceCard = ({
 
               {/* Modal de información */}
               <div
-                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
                   showModal ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
                 onClick={() => setShowModal(false)}
               >
                 <div
-                  className="relative z-40 bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4 transform transition-transform duration-300"
+                  className="bg-gradient-to-br from-[#0a1628] to-[#1a2942] rounded-3xl p-8 max-w-lg w-full mx-4 border-2 border-primary/30 shadow-2xl shadow-primary/20"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <XCircle
-                    className="absolute right-3 top-3 cursor-pointer text-gray-500 hover:text-gray-700"
-                    onClick={() => setShowModal(false)}
-                  />
-                  <h2 className="text-xl font-bold mb-4 text-secondary">
-                    {condition.name}
-                  </h2>
-                  <p className="text-base text-foreground leading-relaxed">
+                  <div className="flex justify-between items-start mb-6">
+                    <h3 className="text-2xl font-bold text-white font-sfpro">
+                      {condition.name}
+                    </h3>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      <XCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <p className="text-gray-300 leading-relaxed whitespace-pre-line font-sfpro">
                     {condition.description}
                   </p>
                 </div>
@@ -120,86 +113,45 @@ export const InformationAndPriceCard = ({
             </div>
           )}
 
-          {/* 5. PRECIOS (sutil y elegante) */}
-          {product?.price && (
-            <div className="mb-4">
-              {/* Comparación de precios sutil */}
-              {product?.oldPrice ? (
-                <div className="mb-3">
-                  {/* Precio anterior y ahorro en una línea */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Antes:</span>
-                      <span className="text-base text-gray-400 line-through">
-                        S/ {product.oldPrice.toFixed(2)}
-                      </span>
-                    </div>
-                    <span className="text-xs font-semibold text-green-600">
-                      Ahorras S/ {(product.oldPrice - product.price).toFixed(2)}
-                    </span>
-                  </div>
-
-                  {/* Precio actual destacado */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Ahora:</span>
-                      {product?.badge && (
-                        <span className="px-2 py-0.5 bg-amber-400 text-white text-xs font-bold rounded-full">
-                          {product.badge}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-3xl font-bold text-primary">
-                      S/ {product.price.toFixed(2)}
-                    </span>
-                  </div>
+          {/* 5. DESGLOSE DE PRECIOS */}
+          {product?.oldPrice && (
+            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-gray-400 font-sfpro">Precio Lista:</span>
+                  <span className="font-medium text-gray-300 line-through font-sfpro">
+                    S/ {product.oldPrice.toFixed(2)}
+                  </span>
                 </div>
-              ) : (
-                /* Precio sin descuento */
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Precio</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-secondary">
-                      S/ {product.price.toFixed(2)}
-                    </span>
-                    {product?.badge && (
-                      <span className="px-2 py-0.5 bg-amber-400 text-white text-xs font-bold rounded-full">
-                        {product.badge}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Desglose de precios */}
-              <div className="space-y-1.5 p-3 bg-gray-50 rounded-lg mb-3">
                 {product?.discount && (
-                  <div className="flex justify-between text-xs items-center">
-                    <span className="text-gray-600">Descuento</span>
-                    <span className="font-semibold text-green-600">
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-primary font-semibold font-sfpro">
+                      Descuento ({discountPercentage}%):
+                    </span>
+                    <span className="font-bold text-primary font-sfpro">
                       - S/ {product.discount.toFixed(2)}
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-xs items-center">
-                  <span className="text-gray-600">SubTotal</span>
-                  <span className="font-medium text-gray-800">
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-gray-400 font-sfpro">SubTotal</span>
+                  <span className="font-medium text-gray-300 font-sfpro">
                     S/ {product.subTotal?.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between text-xs items-center pb-2 border-b border-gray-300">
-                  <span className="text-gray-600">IGV (18%)</span>
-                  <span className="font-medium text-gray-800">
+                <div className="flex justify-between text-sm items-center pb-3 border-b border-white/10">
+                  <span className="text-gray-400 font-sfpro">IGV (18%)</span>
+                  <span className="font-medium text-gray-300 font-sfpro">
                     S/ {product.IGV?.toFixed(2)}
                   </span>
                 </div>
 
                 {/* Total destacado */}
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-sm font-bold text-gray-900">
+                <div className="flex justify-between items-center pt-3">
+                  <span className="text-base font-bold text-white font-sfpro">
                     Total a Pagar:
                   </span>
-                  <span className="text-xl font-black text-primary">
+                  <span className="text-3xl font-black text-primary font-sfpro drop-shadow-lg">
                     S/ {product.totalPayment?.toFixed(2)}
                   </span>
                 </div>
@@ -209,7 +161,7 @@ export const InformationAndPriceCard = ({
 
           {/* 6. REGALOS Y BENEFICIOS */}
           {product?.type === "Proyector" && (
-            <div className="mb-4">
+            <div className="mb-5">
               {product?.condition === "new" && <GiftCardNews />}
               {product?.condition === "reconditioned" && (
                 <GiftCardReaconditioned />
@@ -221,7 +173,7 @@ export const InformationAndPriceCard = ({
           <a
             href={`https://wa.me/51972300301?text=${getWhatsAppMessage(product)}`}
             target="_blank"
-            className="block w-full rounded-full px-6 py-3 text-sm md:text-base font-bold text-center shadow-lg transition bg-primary text-white hover:bg-primary/90 hover:scale-105 duration-300"
+            className="block w-full rounded-full px-6 py-4 text-base font-bold text-center shadow-[0_0_30px_rgba(242,95,12,0.4)] transition-all bg-primary text-white hover:bg-primary/90 hover:scale-105 hover:shadow-[0_0_50px_rgba(242,95,12,0.6)] duration-300 font-sfpro"
           >
             {product.stock <= 0 ? "Comprar a pedido" : "Comprar ahora"}
           </a>

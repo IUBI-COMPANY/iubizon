@@ -34,7 +34,7 @@ export const Checkbox = ({
   return (
     <div className={twMerge("", hidden && "hidden")}>
       <div className="flex items-start gap-3">
-        <div className="relative flex-shrink-0">
+        <div className="relative shrink-0">
           <input
             id={name}
             name={name}
@@ -67,13 +67,13 @@ export const Checkbox = ({
         <label
           htmlFor={name}
           className={twMerge(
-            "text-sm leading-5 flex-1 font-medium",
+            "text-sm leading-5 flex-1 font-medium text-gray-300 font-sfpro",
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           )}
         >
           <span className="flex gap-1 items-start">
             {children}
-            {required && <span className="text-red-500 text-base">*</span>}
+            {required && <span className="text-red-400 text-base">*</span>}
           </span>
         </label>
       </div>
