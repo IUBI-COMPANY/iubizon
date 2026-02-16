@@ -15,7 +15,7 @@ export const SeparateProductsSection: React.FC = () => {
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 py-2 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm text-primary font-semibold">
-              Ya tienes proyector
+              ¿Ya tienes proyector?
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-sfpro font-bold text-white mb-4 tracking-tight">
