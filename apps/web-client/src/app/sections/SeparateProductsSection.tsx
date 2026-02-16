@@ -113,7 +113,7 @@ export const SeparateProductsSection: React.FC = () => {
               </div>
 
               <Link
-                href="/productos/adaptador"
+                href="/productos/accesorios-duo"
                 className="flex items-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-sfpro font-bold rounded-full transition-all hover:scale-105 shadow-[0_0_30px_rgba(242,95,12,0.4)]"
               >
                 Conseguir dúo
