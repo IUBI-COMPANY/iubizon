@@ -13,15 +13,18 @@ export async function sendDemoLead(
     archived: data.archived,
     // Contact Information
     contact: data?.contact || undefined,
+    // Document Information
+    document: data?.document || undefined,
     // Service Details
     serviceDetails: {
+      ...data?.serviceDetails,
       products: [
         {
-          id: "demo-product",
-          name: "Demo Bundle",
+          id: "bundle-interactivo",
+          name: "Bundle Interactivo Completo",
           quantity: 1,
-          brand: "Iubizon",
-          model: "Demo Bundle",
+          brand: "iubizon",
+          model: "Bundle Complete 2025",
         },
       ],
     },
