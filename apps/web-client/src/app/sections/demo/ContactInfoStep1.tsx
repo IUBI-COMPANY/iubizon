@@ -55,7 +55,11 @@ export const ContactInfoStep1 = ({
       .required("El email es requerido"),
     phonePrefix: yup.string().required("El prefijo es requerido"),
     phoneNumber: yup.string().required("El teléfono es requerido"),
-    company: yup.string().required("La empresa es requerida"),
+    company: yup.string().when("documentType", {
+      is: "RUC",
+      then: (schema) => schema.required("La razón social es requerida"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   });
 
   const getInitialValues = () => {
@@ -101,12 +105,14 @@ export const ContactInfoStep1 = ({
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
+    const isRuc = formData.documentType === "RUC";
+
     const contactData: Partial<Lead> = {
       contact: {
         firstName,
         lastName,
         fullName: formData.fullName,
-        socialReason: formData.company,
+        socialReason: isRuc ? formData.company : undefined,
         email: formData.email,
         phone: {
           prefix: formData.phonePrefix,
@@ -117,6 +123,7 @@ export const ContactInfoStep1 = ({
         type: formData.documentType as DocumentInfo["type"],
         number: formData.documentNumber,
       },
+      clientType: isRuc ? "organization" : "individual",
     };
 
     setLeadFormData({ ...leadFormData, ...contactData });
@@ -256,24 +263,26 @@ export const ContactInfoStep1 = ({
           </div>
         </div>
 
-        <div>
-          <Controller
-            name="company"
-            control={control}
-            render={({ field: { onChange, value, name } }) => (
-              <Input
-                label="Empresa / Institución"
-                placeholder="Mi Empresa S.A.C."
-                name={name}
-                value={value}
-                error={error(name)}
-                helperText={errorMessage(name)}
-                required={required(name)}
-                onChange={onChange}
-              />
-            )}
-          />
-        </div>
+        {isRuc && (
+          <div>
+            <Controller
+              name="company"
+              control={control}
+              render={({ field: { onChange, value, name } }) => (
+                <Input
+                  label="Razón Social / Empresa"
+                  placeholder="Mi Empresa S.A.C."
+                  name={name}
+                  value={value}
+                  error={error(name)}
+                  helperText={errorMessage(name)}
+                  required={required(name)}
+                  onChange={onChange}
+                />
+              )}
+            />
+          </div>
+        )}
 
         <button
           type="submit"

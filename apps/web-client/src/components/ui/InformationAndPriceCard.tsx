@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Info, XCircle } from "lucide-react";
 import { Product } from "@/data-list/products";
 import { GiftCardReaconditioned } from "./GiftCardReaconditioned";
 import { GiftCardNews } from "./GiftCardNews";
 import { DetailProductCondition } from "@/data-list/productsCondition";
-import { getWhatsAppMessage } from "@/utils/whatsapp";
+import { PurchaseModal } from "./PurchaseModal";
 
 interface Props {
   product: Product;
@@ -21,6 +21,8 @@ export const InformationAndPriceCard = ({
   condition,
   showChristmasCampaign = false,
 }: Props) => {
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+
   // Calculate discount percentage: 17% for new, 42% for reconditioned
   const discountPercentage = product.condition === "new" ? 17 : 42;
 
@@ -175,15 +177,21 @@ export const InformationAndPriceCard = ({
           )}
 
           {/* 7. BOTÓN DE ACCIÓN (CTA) */}
-          <a
-            href={`https://wa.me/51972300301?text=${getWhatsAppMessage(product)}`}
-            target="_blank"
+          <button
+            onClick={() => setShowPurchaseModal(true)}
             className="block w-full rounded-full px-6 py-4 text-base font-bold text-center shadow-[0_0_30px_rgba(242,95,12,0.4)] transition-all bg-primary text-white hover:bg-primary/90 hover:scale-105 hover:shadow-[0_0_50px_rgba(242,95,12,0.6)] duration-300 font-sfpro"
           >
             {product.stock <= 0 ? "Comprar a pedido" : "Comprar ahora"}
-          </a>
+          </button>
         </div>
       </section>
+
+      {/* Purchase Modal */}
+      <PurchaseModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+        product={product}
+      />
     </>
   );
 };
