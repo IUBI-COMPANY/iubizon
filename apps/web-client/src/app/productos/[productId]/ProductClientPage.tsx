@@ -22,7 +22,7 @@ const SPECIAL_PRODUCT_ID =
 const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 // IDs de productos del bundle
-const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "touch", "adaptador"];
+const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "accesorios-duo"];
 
 export default function ProductDetailPage({ product }: Props) {
   const [showModal, setShowModal] = useState(false);
@@ -34,12 +34,16 @@ export default function ProductDetailPage({ product }: Props) {
   // Verificar si es un producto del bundle
   const isBundleProduct = BUNDLE_PRODUCT_IDS.includes(product.id);
   const isBundleComplete = product.id === "bundle-interactivo";
+  const isAccesoriosDuo = product.id === "accesorios-duo";
   const isTouchOrAdapter = product.id === "touch" || product.id === "adaptador";
 
   // Títulos y descripciones personalizadas para productos del bundle
   const getBundleTitle = () => {
     if (isBundleComplete) {
       return "Estás a un paso de conseguir tu bundle educativo";
+    }
+    if (isAccesoriosDuo) {
+      return "Estás a un paso de conseguir tu dúo de accesorios";
     }
     if (isTouchOrAdapter) {
       return "Estás a un paso de mejorar tu tecnología";
@@ -50,6 +54,9 @@ export default function ProductDetailPage({ product }: Props) {
   const getBundleDescription = () => {
     if (isBundleComplete) {
       return "Solución interactiva completa que integra proyección, interactividad táctil y conectividad inalámbrica. Moderniza tus aulas con tecnología profesional y fácil de usar.";
+    }
+    if (isAccesoriosDuo) {
+      return "Transforma tu proyector actual en una solución moderna e interactiva. Combina Touch Interactivo y Adaptador Inalámbrico para mejorar colaboración y eliminar cables en tus presentaciones.";
     }
     if (isTouchOrAdapter) {
       return "Potencia tu equipo actual con tecnología avanzada. Mejora la experiencia de presentación y colaboración con instalación simple y resultados profesionales.";
@@ -162,6 +169,33 @@ export default function ProductDetailPage({ product }: Props) {
                             width={220}
                             height={220}
                             className="w-[140px] sm:w-[170px] lg:w-[200px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : isAccesoriosDuo ? (
+                    // Accesorios Dúo: Mostrar Touch + MiraCast juntos
+                    <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
+                      <div className="flex items-center justify-center gap-8 lg:gap-16 min-h-[350px] lg:min-h-[450px]">
+                        {/* Touch Interactivo */}
+                        <div className="relative z-10">
+                          <Image
+                            src="/productos/bundle/touch.png"
+                            alt="Touch Interactivo"
+                            width={400}
+                            height={400}
+                            className="w-[280px] sm:w-[350px] lg:w-[400px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+
+                        {/* MiraCast */}
+                        <div className="relative z-10">
+                          <Image
+                            src="/productos/bundle/miracast.png"
+                            alt="Adaptador MiraCast"
+                            width={350}
+                            height={350}
+                            className="w-[240px] sm:w-[300px] lg:w-[350px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                       </div>

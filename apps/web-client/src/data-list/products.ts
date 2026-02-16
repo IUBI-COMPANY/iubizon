@@ -100,6 +100,59 @@ Ideal para:
 Más que un kit interactivo, es una solución completa de productividad que moderniza tus espacios de trabajo y garantiza sesiones fluidas y profesionales.`,
   },
   {
+    id: "accesorios-duo",
+    model: "Touch + MiraCast Bundle",
+    name: "Touch + Adaptador Inalámbrico",
+    stock: 15,
+    condition: "new",
+    description:
+      "Touch Interactivo + Adaptador Inalámbrico MiraCast en un solo paquete",
+    price: 350,
+    badge: "Dúo",
+    mainImage: "/productos/bundle/touch.png",
+    media: [
+      { type: "image", src: "/productos/bundle/touch.png" },
+      { type: "image", src: "/productos/bundle/miracast.png" },
+    ],
+    brand: "iubizon",
+    type: "Accesorios",
+    connectivity: "USB, WiFi, HDMI",
+    features:
+      "10 puntos táctiles, WiFi integrado, Android OS, Multi-usuario, Streaming inalámbrico",
+    category: ["Tecnología", "Interactividad", "Conectividad", "Accesorios"],
+    gama: "media",
+    note: `El Dúo de Accesorios Interactivos es la combinación perfecta para transformar tu proyector existente en una solución moderna e inalámbrica.
+
+📦 **Incluye:**
+
+**1. Touch Interactivo**
+• 10 puntos táctiles simultáneos
+• Tecnología infrarroja de alta precisión
+• Multi-usuario: Varias personas pueden interactuar al mismo tiempo
+• Compatible con Windows, Mac, Android y Linux
+• Instalación Plug & Play
+
+**2. Adaptador Inalámbrico MiraCast**
+• Android integrado con Google Play Store
+• Conectividad WiFi de alta velocidad
+• Streaming inalámbrico desde cualquier dispositivo
+• Elimina el uso de cables
+
+💡 **Ventajas del Dúo:**
+- Ahorra S/ 50 comprando el paquete completo
+- Compatibilidad garantizada entre ambos dispositivos
+- Configuración optimizada para trabajar juntos
+- Ideal para modernizar proyectores existentes
+
+🎯 **Perfecto para:**
+- Oficinas que buscan eliminar cables y mejorar colaboración
+- Instituciones educativas con proyectores instalados
+- Salas de capacitación que necesitan interactividad
+- Espacios de trabajo híbridos
+
+Convierte tu proyector tradicional en una solución interactiva e inalámbrica completa.`,
+  },
+  {
     id: "touch",
     model: "Touch Hub Pro",
     name: "Touch Interactivo",

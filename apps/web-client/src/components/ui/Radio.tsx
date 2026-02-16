@@ -13,6 +13,7 @@ interface Props {
   disabled?: boolean;
   message?: string;
   children: React.ReactNode;
+  theme?: "light" | "dark";
 }
 
 export const Radio = ({
@@ -26,6 +27,7 @@ export const Radio = ({
   disabled = false,
   message,
   children,
+  theme = "light",
 }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!disabled) {
@@ -68,14 +70,20 @@ export const Radio = ({
         <label
           htmlFor={name}
           className={twMerge(
-            "text-[.9em] text-secondary leading-5 flex-1",
+            "text-[.9em] leading-5 flex-1",
+            theme === "dark" ? "text-white" : "text-secondary",
             disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
           )}
         >
           <span className="flex flex-col gap-0 items-start">
             {children}
             {message && (
-              <small className="text-xs text-primary font-medium">
+              <small
+                className={twMerge(
+                  "text-xs font-medium",
+                  theme === "dark" ? "text-gray-300" : "text-primary",
+                )}
+              >
                 {`${message}`}
               </small>
             )}

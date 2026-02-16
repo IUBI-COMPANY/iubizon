@@ -14,6 +14,7 @@ interface Props {
   className?: string;
   placeholder?: string;
   autoComplete?: string;
+  textColor?: "white" | "secondary";
 }
 
 export const Input = ({
@@ -29,6 +30,7 @@ export const Input = ({
   className,
   placeholder,
   autoComplete,
+  textColor = "white",
 }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.target.value);
@@ -39,7 +41,10 @@ export const Input = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-white mb-1.5 font-sfpro"
+          className={twMerge(
+            "block text-sm/6 font-semibold mb-1.5 font-sfpro",
+            textColor === "white" ? "text-white" : "text-secondary",
+          )}
         >
           {label}
           {required && <span className="text-red-400 ml-1">*</span>}

@@ -7,6 +7,8 @@ import {
   TutorialSection,
   PriceSection,
   SeparateProductsSection,
+  ComparisonSection,
+  DemoSection,
 } from "./sections";
 import { PROJECTORS, BASE_BUNDLE_PRICE } from "@/data-list/bundleProjectors";
 export default function BundleInteractivoPage() {
@@ -30,8 +32,10 @@ export default function BundleInteractivoPage() {
           setAudienceType={setAudienceType}
         />
         <SpecsSection />
+        <ComparisonSection />
         <PriceSection totalPrice={totalPrice} />
         <SeparateProductsSection />
+        <DemoSection />
       </main>
     </div>
   );
