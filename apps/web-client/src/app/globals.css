@@ -180,8 +180,9 @@ body {
   display: block;
   font-size: clamp(60px, 12vw, 180px);
   font-weight: 900;
-  color: #8b8b8d;
-  letter-spacing: -0.02em;
+  color: #ffffff;
+  letter-spacing: 2px;
+  opacity: 0.85;
   text-transform: none;
   position: relative;
   z-index: 1;
@@ -190,17 +191,17 @@ body {
 
 .interactivo-text {
   position: absolute;
-  top: 50%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: clamp(35px, 6.5vw, 95px);
-  font-weight: 800;
-  color: #f25f0c;
-  letter-spacing: -0.01em;
+  font-weight: 900;
+  color: #f25c05;
+  text-shadow: 0 4px 32px #ff660088;
+  letter-spacing: -2px;
   text-transform: none;
   z-index: 2;
   white-space: nowrap;
-  text-shadow: 0 2px 15px rgba(242, 95, 12, 0.3);
 }
 
 /* Responsive adjustments */
