@@ -17,6 +17,7 @@ interface Props {
   max?: string;
   step?: number;
   autoComplete?: string;
+  textColor?: "white" | "secondary";
 }
 
 export const TimePicker = ({
@@ -34,6 +35,7 @@ export const TimePicker = ({
   max,
   step,
   autoComplete,
+  textColor = "white",
 }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.target.value);
@@ -44,10 +46,13 @@ export const TimePicker = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-secondary mb-1.5"
+          className={twMerge(
+            "block text-sm/6 font-semibold mb-1.5",
+            textColor === "white" ? "text-white" : "text-secondary",
+          )}
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
 

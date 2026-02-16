@@ -16,6 +16,7 @@ interface Props {
   min?: string;
   max?: string;
   autoComplete?: string;
+  textColor?: "white" | "secondary";
 }
 
 export const DatePicker = ({
@@ -32,6 +33,7 @@ export const DatePicker = ({
   min,
   max,
   autoComplete,
+  textColor = "white",
 }: Props) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.target.value);
@@ -42,10 +44,13 @@ export const DatePicker = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-secondary mb-1.5"
+          className={twMerge(
+            "block text-sm/6 font-semibold mb-1.5",
+            textColor === "white" ? "text-white" : "text-secondary",
+          )}
         >
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-red-400 ml-1">*</span>}
         </label>
       )}
 

@@ -26,6 +26,7 @@ interface Props {
   disabled?: boolean;
   optionType?: "radio" | "button";
   buttonStyle?: "solid" | "outline";
+  theme?: "light" | "dark";
 }
 
 export const RadioGroup = ({
@@ -44,6 +45,7 @@ export const RadioGroup = ({
   disabled = false,
   optionType = "radio",
   buttonStyle = "outline",
+  theme = "light",
 }: Props) => {
   const handleCheckboxChange = (optionValue: string, checked: boolean) => {
     if (!onChange) return;
@@ -120,7 +122,12 @@ export const RadioGroup = ({
       <div className={twMerge("", hidden && "hidden", className)}>
         {label && (
           <div className="mb-3">
-            <label className="block text-md font-semibold text-secondary">
+            <label
+              className={twMerge(
+                "block text-md font-semibold",
+                theme === "dark" ? "text-white" : "text-secondary",
+              )}
+            >
               {label}
               {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -178,7 +185,12 @@ export const RadioGroup = ({
     <div className={twMerge("", hidden && "hidden", className)}>
       {label && (
         <div className="mb-3">
-          <label className="block text-md font-semibold text-secondary">
+          <label
+            className={twMerge(
+              "block text-md font-semibold",
+              theme === "dark" ? "text-white" : "text-secondary",
+            )}
+          >
             {label}
             {required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -201,6 +213,7 @@ export const RadioGroup = ({
             disabled={disabled || option.disabled}
             message={option?.description}
             hidden={option?.hidden}
+            theme={theme}
           >
             {option.label}
           </Radio>
