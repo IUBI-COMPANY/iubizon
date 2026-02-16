@@ -11,7 +11,7 @@ export const COMPARISON_DATA: ComparisonRow[] = [
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Incluye Paperflix !",
+    caracteristica: "Incluye Software Educativo!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
