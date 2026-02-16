@@ -178,7 +178,7 @@ body {
 
 .bundle-text {
   display: block;
-  font-size: clamp(60px, 12vw, 180px);
+  font-size: clamp(70px, 25vw, 190px);
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 2px;
@@ -207,11 +207,11 @@ body {
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .bundle-text {
-    font-size: clamp(50px, 15vw, 100px);
+    font-size: clamp(70px, 21vw, 120px);
   }
 
   .interactivo-text {
-    font-size: clamp(28px, 8vw, 55px);
+    font-size: clamp(36px, 12vw, 70px);
   }
 }
 
