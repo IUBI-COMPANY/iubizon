@@ -14,7 +14,17 @@ export async function sendDemoLead(
     // Contact Information
     contact: data?.contact || undefined,
     // Service Details
-    serviceDetails: data?.serviceDetails || undefined,
+    serviceDetails: {
+      products: [
+        {
+          id: "demo-product",
+          name: "Demo Bundle",
+          quantity: 1,
+          brand: "Iubizon",
+          model: "Demo Bundle",
+        },
+      ],
+    },
     // Communication
     hostname: "iubizon.com",
     termsAndConditions: data.termsAndConditions || true,
