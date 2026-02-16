@@ -23,7 +23,7 @@ export const DemoSection: React.FC = () => {
             Prueba el Bundle Interactivo
           </h2>
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-            Agenda una demostración personalizada y descubre cómo transformar
+            Registra una demostración con nosotros y descubre cómo transformar
             tus presentaciones
           </p>
         </div>

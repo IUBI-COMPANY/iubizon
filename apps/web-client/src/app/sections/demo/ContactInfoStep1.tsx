@@ -4,10 +4,14 @@ import { Controller, useForm, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
+import documentsTypes from "@/data-list/documentsTypes.json";
 
 interface FormData {
+  documentType: string;
+  documentNumber: string;
   fullName: string;
   email: string;
   phonePrefix: string;
@@ -31,6 +35,19 @@ export const ContactInfoStep1 = ({
   setCurrentStepToLocalStorage,
 }: Props) => {
   const schema = yup.object({
+    documentType: yup.string().required("El tipo de documento es requerido"),
+    documentNumber: yup
+      .string()
+      .required("El número de documento es requerido")
+      .test("is-valid-doc", "Número de documento inválido", function (value) {
+        const { documentType } = this.parent;
+        if (documentType === "DNI") {
+          return /^\d{8}$/.test(value);
+        } else if (documentType === "RUC") {
+          return /^(10|20)\d{9}$/.test(value);
+        }
+        return true;
+      }),
     fullName: yup.string().required("El nombre es requerido"),
     email: yup
       .string()
@@ -46,6 +63,10 @@ export const ContactInfoStep1 = ({
     const parsedData = storedData ? JSON.parse(storedData) : {};
 
     return {
+      documentType:
+        leadFormData?.document?.type || parsedData?.documentType || "",
+      documentNumber:
+        leadFormData?.document?.number || parsedData?.documentNumber || "",
       fullName: leadFormData?.contact?.fullName || parsedData?.fullName || "",
       email: leadFormData?.contact?.email || parsedData?.email || "",
       phonePrefix:
@@ -61,11 +82,16 @@ export const ContactInfoStep1 = ({
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema) as unknown as Resolver<FormData>,
     defaultValues: getInitialValues(),
   });
+
+  const documentType = watch("documentType");
+  const isRuc = documentType === "RUC";
+  const isDni = documentType === "DNI";
 
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
@@ -87,6 +113,10 @@ export const ContactInfoStep1 = ({
           number: formData.phoneNumber,
         },
       },
+      document: {
+        type: formData.documentType as DocumentInfo["type"],
+        number: formData.documentNumber,
+      },
     };
 
     setLeadFormData({ ...leadFormData, ...contactData });
@@ -100,6 +130,49 @@ export const ContactInfoStep1 = ({
         Información de Contacto
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Controller
+            name="documentType"
+            control={control}
+            render={({ field: { onChange, value, name } }) => (
+              <Select
+                label="Tipo de Documento"
+                name={name}
+                value={value}
+                error={error(name)}
+                helperText={errorMessage(name)}
+                required={required(name)}
+                onChange={onChange}
+                placeholder="Seleccionar"
+                options={documentsTypes}
+              />
+            )}
+          />
+          <Controller
+            name="documentNumber"
+            control={control}
+            render={({ field: { onChange, value, name } }) => (
+              <Input
+                label="N° de Documento"
+                type="text"
+                name={name}
+                value={value}
+                error={error(name)}
+                helperText={errorMessage(name)}
+                required={required(name)}
+                onChange={onChange}
+                placeholder={
+                  isRuc
+                    ? "10XXXXXXXXX o 20XXXXXXXXX"
+                    : isDni
+                      ? "71XXXXXX"
+                      : "Ingresa el número"
+                }
+              />
+            )}
+          />
+        </div>
+
         <div className="grid md:grid-cols-2 gap-6">
           <Controller
             name="fullName"

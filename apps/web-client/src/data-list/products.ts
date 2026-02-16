@@ -102,7 +102,7 @@ Más que un kit interactivo, es una solución completa de productividad que mode
   {
     id: "accesorios-duo",
     model: "Touch + MiraCast Bundle",
-    name: "Dúo de Accesorios Interactivos",
+    name: "Touch + Adaptador Inalámbrico",
     stock: 15,
     condition: "new",
     description:

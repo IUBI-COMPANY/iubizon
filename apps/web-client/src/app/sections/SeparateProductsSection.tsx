@@ -19,11 +19,8 @@ export const SeparateProductsSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-sfpro font-bold text-white mb-4 tracking-tight">
-            Consigue tus accesorios aparte
+            Consigue el Dúo de Touch Interactivo con Adaptador Inalámbrico
           </h2>
-          <p className="text-xl md:text-2xl text-gray-400 font-sfpro font-light max-w-3xl mx-auto">
-            Touch + Adaptador Inalámbrico en dúo perfecto
-          </p>
         </div>
 
         {/* Card de accesorios en dúo */}
@@ -109,7 +106,6 @@ export const SeparateProductsSection: React.FC = () => {
                 <p className="text-4xl md:text-5xl font-sfpro font-black text-white">
                   S/ 2000
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Touch + Adaptador</p>
               </div>
 
               <Link

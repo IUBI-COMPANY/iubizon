@@ -149,8 +149,7 @@ export const DemoStepsGroup = () => {
                   ¡Solicitud enviada!
                 </h2>
                 <p className="text-gray-300">
-                  Nuestro equipo te contactará pronto para coordinar la
-                  demostración.
+                  Nuestro equipo te contactará pronto para coordinar la demo.
                 </p>
                 <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-400 rounded-r-lg p-3">
                   <p className="text-sm text-blue-900 flex items-center gap-2">
