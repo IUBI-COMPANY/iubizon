@@ -264,7 +264,7 @@ export default function PageTechnicalService() {
                     style={{ aspectRatio: "3/4", minHeight: "600px" }}
                   >
                     <Image
-                      src="/images/foto-proyectores.jpeg"
+                      src="/images/contactClient.png"
                       alt="Servicio técnico de proyectores profesional"
                       fill
                       className="object-cover rounded-3xl"

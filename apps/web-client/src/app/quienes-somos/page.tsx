@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Handshake, Headphones, MonitorSmartphone, Shield } from "lucide-react";
-import Brands from "@/components/ui/Brands";
 import CTASection from "@/components/ui/CTASection";
 import StatsGrid from "@/components/ui/StatsGrid";
 
