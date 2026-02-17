@@ -71,7 +71,7 @@ export const HeroSection: React.FC = () => {
                 alt="Proyector Epson 109W"
                 width={550}
                 height={400}
-                className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[480px] xl:max-w-[550px] h-auto object-contain drop-shadow-2xl"
+                className=" w-[32em] max-w-[280px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[480px] xl:max-w-[550px] h-auto object-contain drop-shadow-2xl"
                 priority
               />
             </div>
