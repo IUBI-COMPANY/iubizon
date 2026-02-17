@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useScrollAnimation, fadeIn } from "@/hooks/useScrollAnimation";
 import { ChevronDown } from "lucide-react";
 import BundleTitle from "@/components/bundle-interactivo/BundleTitle";
@@ -53,31 +54,37 @@ export const HeroSection: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-6 sm:gap-8 md:gap-3 lg:gap-4 max-w-6xl mx-auto px-2 sm:px-4">
             {/* Touch Interactivo */}
             <div className="flex items-center justify-center w-full md:w-auto mb-0 md:mb-8 lg:mb-12">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/productos/bundle/touch.png"
                 alt="Touch Interactivo"
+                width={200}
+                height={200}
                 className="w-full max-w-[160px] sm:max-w-[180px] md:max-w-[150px] lg:max-w-[180px] xl:max-w-[200px] h-auto object-contain drop-shadow-2xl"
+                priority
               />
             </div>
 
             {/* Proyector - Más grande */}
             <div className="flex items-center justify-center w-full md:w-auto">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/productos/bundle/upside109W.png"
                 alt="Proyector Epson 109W"
-                className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[480px] xl:max-w-[550px] h-auto object-contain drop-shadow-2xl"
+                width={550}
+                height={400}
+                className=" w-[32em] max-w-[280px] sm:max-w-[350px] md:max-w-[380px] lg:max-w-[480px] xl:max-w-[550px] h-auto object-contain drop-shadow-2xl"
+                priority
               />
             </div>
 
             {/* MiraCast - Más pequeño */}
             <div className="flex items-center justify-center w-full md:w-auto mb-0 md:mb-8 lg:mb-12">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/productos/bundle/miracast.png"
                 alt="MiraCast Dongle"
+                width={150}
+                height={150}
                 className="w-full max-w-[110px] sm:max-w-[130px] md:max-w-[110px] lg:max-w-[130px] xl:max-w-[150px] h-auto object-contain drop-shadow-2xl"
+                priority
               />
             </div>
           </div>

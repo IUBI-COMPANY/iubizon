@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 interface PriceSectionProps {
   totalPrice: number;
@@ -55,21 +56,17 @@ export const PriceSection: React.FC<PriceSectionProps> = ({ totalPrice }) => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/productos/bundle-interactivo"
-              className="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-sfpro font-bold rounded-full transition-all shadow-[0_0_20px_rgba(242,95,12,0.4)] hover:shadow-[0_0_30px_rgba(242,95,12,0.6)] hover:scale-105 cursor-pointer text-center"
-            >
-              Consíguelo ahora
+          <div className="flex justify-center">
+            <Link href="/productos/bundle-interactivo">
+              <Button
+                variant="primary"
+                size="lg"
+                styleVariant="solid"
+                className="font-sfpro font-bold shadow-[0_0_20px_rgba(242,95,12,0.4)] hover:shadow-[0_0_30px_rgba(242,95,12,0.6)]"
+              >
+                Consíguelo ahora
+              </Button>
             </Link>
-            <a
-              href="/documents/ficha-tecnica.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-sfpro font-semibold rounded-full border-2 border-white/20 hover:border-primary/40 transition-all cursor-pointer text-center"
-            >
-              Ver ficha técnica
-            </a>
           </div>
         </div>
       </div>

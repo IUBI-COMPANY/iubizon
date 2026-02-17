@@ -196,7 +196,9 @@ export const Button = ({
         />
       )}
 
-      <span className={loading ? "opacity-75" : ""}>{children}</span>
+      <span className={twMerge("contents", loading && "opacity-75")}>
+        {children}
+      </span>
     </button>
   );
 };

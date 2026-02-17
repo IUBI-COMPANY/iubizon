@@ -1,11 +1,13 @@
 import React from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   Projector,
   Hand,
   Wifi,
   Lightbulb,
   Zap,
-  Maximize2,
+  Clock,
   Cable,
   Target,
   Radio,
@@ -15,18 +17,15 @@ import {
   Bot,
   type LucideIcon,
 } from "lucide-react";
-import {
-  PROJECTOR_SPECS,
-  TOUCH_SPECS,
-  MIRACAST_SPECS,
-} from "@/data-list/bundleSpecs";
+import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
 import { useScrollAnimation, fadeIn } from "@/hooks/useScrollAnimation";
+import { Button } from "@/components/ui/Button";
 
 // Mapeo de nombres de iconos a componentes
 const iconMap: Record<string, LucideIcon> = {
   Lightbulb,
   Zap,
-  Maximize2,
+  Clock,
   Cable,
   Target,
   Hand,
@@ -36,39 +35,8 @@ const iconMap: Record<string, LucideIcon> = {
   Smartphone,
   Globe,
   Bot,
+  Projector,
 };
-
-interface ProductOption {
-  id: string;
-  name: string;
-  image: string;
-  specs: typeof PROJECTOR_SPECS;
-  Icon: React.ComponentType<{ className?: string }>;
-}
-
-const PRODUCTS: ProductOption[] = [
-  {
-    id: "projector",
-    name: "Proyector Epson 109W",
-    image: "/productos/bundle/upside109W.png",
-    specs: PROJECTOR_SPECS,
-    Icon: Projector,
-  },
-  {
-    id: "touch",
-    name: "Touch Interactivo",
-    image: "/productos/bundle/touch1.png",
-    specs: TOUCH_SPECS,
-    Icon: Hand,
-  },
-  {
-    id: "miracast",
-    name: "Adaptador Inalámbrico",
-    image: "/productos/bundle/miracast1.png",
-    specs: MIRACAST_SPECS,
-    Icon: Wifi,
-  },
-];
 
 export const SpecsSection: React.FC = () => {
   const { ref: titleRef, isVisible: titleVisible } = useScrollAnimation();
@@ -102,8 +70,7 @@ export const SpecsSection: React.FC = () => {
           style={fadeIn(contentVisible)}
           className="space-y-8"
         >
-          {PRODUCTS.map((product, index) => {
-            const IconComponent = product.Icon;
+          {BUNDLE_PRODUCTS_SPECS.map((product, index) => {
             return (
               <div
                 key={product.id}
@@ -122,10 +89,7 @@ export const SpecsSection: React.FC = () => {
                     {/* Left Side - Especificaciones (50%) */}
                     <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
                       {/* Header */}
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/10 text-gray-400">
-                          <IconComponent className="w-7 h-7" />
-                        </div>
+                      <div className="mb-8">
                         <h3 className="text-2xl lg:text-3xl font-sfpro font-bold text-white">
                           {product.name}
                         </h3>
@@ -169,11 +133,13 @@ export const SpecsSection: React.FC = () => {
 
                       {/* Product Image */}
                       <div className="relative z-10 h-full flex items-center justify-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={product.image}
                           alt={product.name}
+                          width={600}
+                          height={450}
                           className="w-full h-full max-h-[450px] object-contain drop-shadow-[0_0_40px_rgba(242,95,12,0.3)]"
+                          priority={index === 0}
                         />
                       </div>
                     </div>
@@ -182,6 +148,20 @@ export const SpecsSection: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Botón Ver Ficha Técnica */}
+        <div className="flex justify-center mt-12">
+          <Link href="/fichas-tecnicas">
+            <Button
+              variant="secondary"
+              size="lg"
+              styleVariant="solid"
+              className="font-sfpro font-semibold"
+            >
+              Ver ficha técnica
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

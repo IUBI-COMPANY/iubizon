@@ -8,7 +8,6 @@ import Link from "next/link";
 import { StepsGroup } from "@/app/servicios/tecnico/organizacion/StepsGroup";
 import FAQAccordion from "@/components/ui/layout/FAQAccordion";
 import AnimateCards from "@/components/ui/AnimateCards";
-import Brands from "@/components/ui/Brands";
 import { OrganizationGallery } from "@/components/ui/OrganizationGallery";
 import { Button } from "@/components/ui/Button";
 import WorksGallery from "@/components/ui/WorksGallery";
@@ -206,27 +205,6 @@ export default function PageTechnicalService() {
         <AnimateCards />
         <OrganizationGallery />
 
-        <section
-          className="py-12 sm:py-16 lg:py-20 bg-white"
-          aria-label="Marcas con las que trabajamos"
-        >
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Brands
-              title="Marcas con las que trabajamos"
-              description="Reparación, mantenimiento y repuestos originales para las principales marcas profesionales de proyectores del mercado"
-            />
-
-            {/* Línea decorativa opcional + texto de confianza */}
-            <div className="mt-12 sm:mt-16 text-center">
-              <div className="inline-block w-24 h-1 bg-gradient-to-r from-orange-600 to-orange-400 rounded-full mb-4" />
-              <p className="text-sm text-gray-500">
-                Repuestos originales • Diagnóstico avanzado • Garantía en todos
-                los servicios
-              </p>
-            </div>
-          </div>
-        </section>
-
         <FAQAccordion />
         <section
           className="py-16 relative bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
@@ -249,8 +227,8 @@ export default function PageTechnicalService() {
                 ¿Tu Proyector Necesita Reparación?
               </h2>
               <p className="text-lg text-white/90 mb-6 max-w-xl mx-auto">
-                Técnicos especializados listos para devolver tu proyector Epson,
-                BenQ, Sony y más a su máximo rendimiento.
+                No arriesgues tu equipo con aficionados. Hacemos que tu
+                proyector vuelva a brillar como el primer día.
               </p>
               <div className="flex flex-wrap justify-center gap-6 mb-8 text-white/95">
                 <div className="flex items-center gap-2">

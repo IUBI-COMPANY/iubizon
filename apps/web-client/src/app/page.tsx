@@ -9,6 +9,7 @@ import {
   SeparateProductsSection,
   ComparisonSection,
   DemoSection,
+  FAQSection,
 } from "./sections";
 import { PROJECTORS, BASE_BUNDLE_PRICE } from "@/data-list/bundleProjectors";
 export default function BundleInteractivoPage() {
@@ -17,7 +18,7 @@ export default function BundleInteractivoPage() {
   );
   // Proyector seleccionado (por defecto el primero)
   const selectedProjector = PROJECTORS[0];
-  // Calcular precio total del bundle din�micamente
+  // Calcular precio total del bundle dinámicamente
   const totalPrice = useMemo(
     () => selectedProjector.price + BASE_BUNDLE_PRICE,
     [selectedProjector],
@@ -25,7 +26,7 @@ export default function BundleInteractivoPage() {
   return (
     <div className="min-h-screen flex flex-col selection:bg-primary selection:text-white bg-[#060e1e] font-sfpro">
       <ScrollProgressBar />
-      <main className="flex-grow">
+      <main className="grow">
         <HeroSection />
         <TutorialSection
           audienceType={audienceType}
@@ -36,6 +37,7 @@ export default function BundleInteractivoPage() {
         <PriceSection totalPrice={totalPrice} />
         <SeparateProductsSection />
         <DemoSection />
+        <FAQSection />
       </main>
     </div>
   );
