@@ -1,20 +1,27 @@
 import { TechnicalSpec } from "@/types/bundleTypes";
 
+export interface ProductSpecs {
+  id: string;
+  name: string;
+  image: string;
+  specs: TechnicalSpec[];
+}
+
 export const PROJECTOR_SPECS: TechnicalSpec[] = [
   {
     iconName: "Lightbulb",
     label: "Alta Luminosidad",
-    value: "Desde 4000 hasta 7000 lúmenes según modelo",
+    value: "4000 Lúmenes ANSI para un gran brillo de proyección",
   },
   {
     iconName: "Zap",
     label: "Tecnología Avanzada",
-    value: "Proyección láser de larga duración",
+    value: "Proyección 3LCD de larga duración",
   },
   {
-    iconName: "Maximize2",
-    label: "Área de Proyección",
-    value: 'Hasta 120" de superficie dinámica',
+    iconName: "Clock",
+    label: "Gran duración",
+    value: "Hasta 12000 horas de uso",
   },
   {
     iconName: "Cable",
@@ -32,7 +39,7 @@ export const TOUCH_SPECS: TechnicalSpec[] = [
   {
     iconName: "Hand",
     label: "Multi-Touch",
-    value: "10 puntos táctiles + Multi-usuario simultáneo",
+    value: "Múltiples puntos touch para colaboración simultánea",
   },
   {
     iconName: "Radio",
@@ -42,7 +49,7 @@ export const TOUCH_SPECS: TechnicalSpec[] = [
   {
     iconName: "Laptop",
     label: "Compatibilidad",
-    value: "Windows, Mac, Android y Linux",
+    value: "Windows y Mac",
   },
 ];
 
@@ -50,7 +57,7 @@ export const MIRACAST_SPECS: TechnicalSpec[] = [
   {
     iconName: "Wifi",
     label: "Streaming Inalámbrico",
-    value: "Transmisión nativa compatible con Android",
+    value: "Transmisión nativa compatible con cualquier dispositivo",
   },
   {
     iconName: "Smartphone",
@@ -64,8 +71,31 @@ export const MIRACAST_SPECS: TechnicalSpec[] = [
   },
   {
     iconName: "Bot",
-    label: "Sistema Operativo",
-    value: "Android integrado para máxima versatilidad",
+    label: "Velocidad Premium",
+    value:
+      "Transmisión rápida y sin interrupciones para presentaciones profesionales",
+  },
+];
+
+// Exportar productos con sus especificaciones completas
+export const BUNDLE_PRODUCTS_SPECS: ProductSpecs[] = [
+  {
+    id: "proyector",
+    name: "Proyector Epson 109W",
+    image: "/productos/bundle/upside109W.png",
+    specs: PROJECTOR_SPECS,
+  },
+  {
+    id: "touch",
+    name: "Touch Interactivo Hub 2",
+    image: "/productos/bundle/touch1.png",
+    specs: TOUCH_SPECS,
+  },
+  {
+    id: "miracast",
+    name: "Adaptador Inalámbrico MiraCast",
+    image: "/productos/bundle/miracast1.png",
+    specs: MIRACAST_SPECS,
   },
 ];
 

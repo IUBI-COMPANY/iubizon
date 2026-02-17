@@ -5,6 +5,7 @@ import { GiftCardReaconditioned } from "./GiftCardReaconditioned";
 import { GiftCardNews } from "./GiftCardNews";
 import { DetailProductCondition } from "@/data-list/productsCondition";
 import { PurchaseModal } from "./PurchaseModal";
+import { QuantitySelector } from "./QuantitySelector";
 
 interface Props {
   product: Product;
@@ -25,6 +26,17 @@ export const InformationAndPriceCard = ({
 
   // Calculate discount percentage: 17% for new, 42% for reconditioned
   const discountPercentage = product.condition === "new" ? 17 : 42;
+
+  const handlePurchaseClick = () => {
+    // Guardar la cantidad actual en localStorage antes de abrir el modal
+    const currentQuantity = localStorage.getItem(`quantity_${product.id}`);
+    if (currentQuantity) {
+      localStorage.setItem(`purchase_quantity_${product.id}`, currentQuantity);
+    } else {
+      localStorage.setItem(`purchase_quantity_${product.id}`, "1");
+    }
+    setShowPurchaseModal(true);
+  };
 
   return (
     <>
@@ -176,9 +188,14 @@ export const InformationAndPriceCard = ({
             </div>
           )}
 
-          {/* 7. BOTÓN DE ACCIÓN (CTA) */}
+          {/* SELECTOR DE CANTIDAD */}
+          <div className="mb-6 flex justify-center">
+            <QuantitySelector productId={product.id} />
+          </div>
+
+          {/* BOTÓN DE ACCIÓN (CTA) */}
           <button
-            onClick={() => setShowPurchaseModal(true)}
+            onClick={handlePurchaseClick}
             className="block w-full rounded-full px-6 py-4 text-base font-bold text-center shadow-[0_0_30px_rgba(242,95,12,0.4)] transition-all bg-primary text-white hover:bg-primary/90 hover:scale-105 hover:shadow-[0_0_50px_rgba(242,95,12,0.6)] duration-300 font-sfpro"
           >
             {product.stock <= 0 ? "Comprar a pedido" : "Comprar ahora"}

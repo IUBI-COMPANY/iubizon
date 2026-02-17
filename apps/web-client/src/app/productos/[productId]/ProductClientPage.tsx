@@ -12,6 +12,7 @@ import { productsCondition } from "@/data-list/productsCondition";
 import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
 import { EPSONFH02 } from "./EPSON-FH02";
 import { SummerBanner } from "@/components/ui/SummerBanner";
+import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
 
 interface Props {
   product: Product;
@@ -35,31 +36,24 @@ export default function ProductDetailPage({ product }: Props) {
   const isBundleProduct = BUNDLE_PRODUCT_IDS.includes(product.id);
   const isBundleComplete = product.id === "bundle-interactivo";
   const isAccesoriosDuo = product.id === "accesorios-duo";
-  const isTouchOrAdapter = product.id === "touch" || product.id === "adaptador";
 
   // Títulos y descripciones personalizadas para productos del bundle
   const getBundleTitle = () => {
     if (isBundleComplete) {
-      return "Estás a un paso de conseguir tu bundle educativo";
+      return "Estás a un paso de modernizar tus presentaciones";
     }
     if (isAccesoriosDuo) {
       return "Estás a un paso de conseguir tu dúo de accesorios";
-    }
-    if (isTouchOrAdapter) {
-      return "Estás a un paso de mejorar tu tecnología";
     }
     return null;
   };
 
   const getBundleDescription = () => {
     if (isBundleComplete) {
-      return "Solución interactiva completa que integra proyección, interactividad táctil y conectividad inalámbrica. Moderniza tus aulas con tecnología profesional y fácil de usar.";
+      return "Mejora tu espacio educativo o sala de presentaciones con tecnología interactiva.";
     }
     if (isAccesoriosDuo) {
-      return "Transforma tu proyector actual en una solución moderna e interactiva. Combina Touch Interactivo y Adaptador Inalámbrico para mejorar colaboración y eliminar cables en tus presentaciones.";
-    }
-    if (isTouchOrAdapter) {
-      return "Potencia tu equipo actual con tecnología avanzada. Mejora la experiencia de presentación y colaboración con instalación simple y resultados profesionales.";
+      return "Transforma tu proyector actual en una solución moderna e interactiva.";
     }
     return null;
   };
@@ -224,75 +218,116 @@ export default function ProductDetailPage({ product }: Props) {
                       <div className="w-1 h-8 bg-primary rounded-full"></div>
                       Especificaciones Técnicas
                     </h2>
-                    <div className="grid grid-cols-1 gap-4">
-                      {condition && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Condición:</span>
-                          <strong
-                            className="inline-flex items-center gap-1 cursor-pointer text-primary hover:text-primary/80 transition-colors"
-                            onClick={() => setShowModal(true)}
+
+                    {/* Si es Bundle o Dúo, mostrar especificaciones segmentadas */}
+                    {isBundleProduct ? (
+                      <div className="space-y-6">
+                        {(isBundleComplete
+                          ? BUNDLE_PRODUCTS_SPECS
+                          : BUNDLE_PRODUCTS_SPECS.filter(
+                              (p) => p.id === "touch" || p.id === "miracast",
+                            )
+                        ).map((productSpec) => (
+                          <div
+                            key={productSpec.id}
+                            className="pb-6 border-b border-white/10 last:border-b-0 last:pb-0"
                           >
-                            {condition.name} <Info className="w-4" />
-                          </strong>
-                        </div>
-                      )}
-                      {product?.displayTechnology && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Tecnología:</span>
-                          <span className="text-white font-semibold">
-                            {product.displayTechnology}
-                          </span>
-                        </div>
-                      )}
-                      {product?.brand && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Marca:</span>
-                          <span className="text-white font-semibold">
-                            {product.brand}
-                          </span>
-                        </div>
-                      )}
-                      {product?.type && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Tipo:</span>
-                          <span className="text-white font-semibold">
-                            {product.type}
-                          </span>
-                        </div>
-                      )}
-                      {product?.lumensANSI && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Lúmenes:</span>
-                          <span className="text-white font-semibold">
-                            {product.lumensANSI}
-                          </span>
-                        </div>
-                      )}
-                      {product?.connectivity && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Conectividad:</span>
-                          <span className="text-white font-semibold">
-                            {product.connectivity}
-                          </span>
-                        </div>
-                      )}
-                      {product?.nativeResolution && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Resolución:</span>
-                          <span className="text-white font-semibold">
-                            {product.nativeResolution}
-                          </span>
-                        </div>
-                      )}
-                      {product?.aspectRatio && (
-                        <div className="flex justify-between items-center py-3 border-b border-white/10">
-                          <span className="text-gray-400">Aspecto:</span>
-                          <span className="text-white font-semibold">
-                            {product.aspectRatio}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                            {/* Título del producto */}
+                            <h3 className="text-lg font-bold text-primary mb-4">
+                              {productSpec.name}
+                            </h3>
+
+                            {/* Lista de especificaciones */}
+                            <div className="grid grid-cols-1 gap-4">
+                              {productSpec.specs.map((spec, index) => (
+                                <div
+                                  key={index}
+                                  className="flex justify-between items-center py-3 border-b border-white/10 last:border-b-0"
+                                >
+                                  <span className="text-gray-400">
+                                    {spec.label}:
+                                  </span>
+                                  <span className="text-white font-semibold text-right">
+                                    {spec.value}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // Specs normales para otros productos
+                      <div className="grid grid-cols-1 gap-4">
+                        {condition && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Condición:</span>
+                            <strong
+                              className="inline-flex items-center gap-1 cursor-pointer text-primary hover:text-primary/80 transition-colors"
+                              onClick={() => setShowModal(true)}
+                            >
+                              {condition.name} <Info className="w-4" />
+                            </strong>
+                          </div>
+                        )}
+                        {product?.displayTechnology && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Tecnología:</span>
+                            <span className="text-white font-semibold">
+                              {product.displayTechnology}
+                            </span>
+                          </div>
+                        )}
+                        {product?.brand && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Marca:</span>
+                            <span className="text-white font-semibold">
+                              {product.brand}
+                            </span>
+                          </div>
+                        )}
+                        {product?.type && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Tipo:</span>
+                            <span className="text-white font-semibold">
+                              {product.type}
+                            </span>
+                          </div>
+                        )}
+                        {product?.lumensANSI && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Lúmenes:</span>
+                            <span className="text-white font-semibold">
+                              {product.lumensANSI}
+                            </span>
+                          </div>
+                        )}
+                        {product?.connectivity && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Conectividad:</span>
+                            <span className="text-white font-semibold">
+                              {product.connectivity}
+                            </span>
+                          </div>
+                        )}
+                        {product?.nativeResolution && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Resolución:</span>
+                            <span className="text-white font-semibold">
+                              {product.nativeResolution}
+                            </span>
+                          </div>
+                        )}
+                        {product?.aspectRatio && (
+                          <div className="flex justify-between items-center py-3 border-b border-white/10">
+                            <span className="text-gray-400">Aspecto:</span>
+                            <span className="text-white font-semibold">
+                              {product.aspectRatio}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Descripción del producto */}
@@ -311,7 +346,7 @@ export default function ProductDetailPage({ product }: Props) {
 
                 {/* Right Column - Price Card (Desktop) */}
                 <div className="hidden lg:block lg:col-span-5">
-                  <div className="sticky top-24">
+                  <div className="top-24">
                     <InformationAndPriceCard
                       product={product}
                       showModal={showModal}

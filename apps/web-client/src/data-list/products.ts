@@ -73,7 +73,7 @@ const productsData: Product[] = [
     ],
     displayTechnology: "3LCD",
     lumensANSI: 4000,
-    brand: "iubizon",
+    brand: "Epson",
     type: "Bundle",
     connectivity: "HDMI, VGA, USB, WiFi",
     features:
@@ -85,8 +85,8 @@ const productsData: Product[] = [
     note: `El Bundle Interactivo Completo incluye todo lo necesario para convertir tu espacio en un ambiente de trabajo moderno y colaborativo:
 
 • Proyector Epson PowerLite 109W (4000 lúmenes)
-• Touch Interactivo (10 puntos táctiles)
-• Adaptador Inalámbrico MiraCast (Android integrado)
+• Touch Interactivo
+• Adaptador Inalámbrico
 • Instalación y configuración incluida
 • Garantía extendida de 1 año
 • Soporte técnico especializado
@@ -101,8 +101,8 @@ Más que un kit interactivo, es una solución completa de productividad que mode
   },
   {
     id: "accesorios-duo",
-    model: "Touch + Adaptador Inalámbrico",
-    name: "Touch + Adaptador Inalámbrico",
+    model: "Touch y Adaptador Inalámbrico",
+    name: "Touch y Adaptador Inalámbrico",
     stock: 15,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",

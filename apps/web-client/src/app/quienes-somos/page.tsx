@@ -275,8 +275,8 @@ export default function AboutUsPage() {
                   <p>
                     Desde{" "}
                     <strong className="text-primary font-bold">2020</strong>,
-                    hemos revolucionado la forma en que las organizaciones
-                    implementan tecnología de proyección. Con más de{" "}
+                    hemos revolucionado la implementación en tecnologías de
+                    proyección para distintas instituciones. Con más de{" "}
                     <strong className="text-white font-semibold">
                       5 años de experiencia
                     </strong>{" "}
@@ -339,14 +339,6 @@ export default function AboutUsPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628] to-[#060e1e]"></div>
           <div className="relative z-10">
             <StatsGrid stats={stats} className="" />
-          </div>
-        </section>
-
-        {/* Marcas */}
-        <section className="relative py-16">
-          <div className="absolute inset-0 bg-[#060e1e]"></div>
-          <div className="relative z-10">
-            <Brands className="" />
           </div>
         </section>
 
@@ -443,8 +435,8 @@ export default function AboutUsPage() {
 
         {/* Call to Action */}
         <CTASection
-          title="¿Listo para Transformar tu Espacio?"
-          description="Descubre cómo nuestros especialistas pueden ayudarte a encontrar la solución perfecta en proyectores y tecnología audiovisual para tu negocio o institución."
+          title="¿Estás listo para implementar estas tecnologías?"
+          description="Descubre la solución perfecta en tecnología audiovisual para tu negocio o institución."
           primaryButton={{
             text: "Contáctanos Hoy",
             href: "/contacto",

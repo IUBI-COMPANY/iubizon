@@ -1,7 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export const SeparateProductsSection: React.FC = () => {
   return (
@@ -12,15 +13,13 @@ export const SeparateProductsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Título de la sección */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 py-2 rounded-full mb-4">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-primary font-semibold">
-              ¿Ya tienes proyector?
-            </span>
-          </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-sfpro font-bold text-white mb-4 tracking-tight">
-            Consigue el Dúo de Touch Interactivo con Adaptador Inalámbrico
+            ¿Ya cuentas con un proyector?
           </h2>
+          <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
+            Adquiere nuestro dúo interactivo y no dejes pasar esta experiencia
+            única
+          </p>
         </div>
 
         {/* Card de accesorios en dúo */}
@@ -108,13 +107,19 @@ export const SeparateProductsSection: React.FC = () => {
                 </p>
               </div>
 
-              <Link
-                href="/productos/accesorios-duo"
-                className="flex items-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-sfpro font-bold rounded-full transition-all hover:scale-105 shadow-[0_0_30px_rgba(242,95,12,0.4)]"
-              >
-                Conseguir dúo
-                <ArrowRight className="w-5 h-5" />
-              </Link>
+              <div className="flex justify-center">
+                <Link href="/productos/accesorios-duo">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    styleVariant="solid"
+                    className="font-sfpro font-bold shadow-[0_0_30px_rgba(242,95,12,0.4)]"
+                  >
+                    Conseguir dúo
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -124,15 +129,21 @@ export const SeparateProductsSection: React.FC = () => {
           <p className="text-gray-400 font-sfpro font-light mb-6">
             ¿Necesitas ayuda para elegir? Contáctanos y te asesoramos
           </p>
-          <a
+          <Link
             href="https://wa.me/51972300301?text=Hola%20iubizon,%20necesito%20asesoría"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-sfpro font-semibold rounded-full border-2 border-white/20 hover:border-primary/40 transition-all"
           >
-            Hablar con un asesor
-            <ArrowRight className="w-5 h-5" />
-          </a>
+            <Button
+              variant="secondary"
+              size="lg"
+              styleVariant="solid"
+              className="font-sfpro font-semibold"
+            >
+              Hablar con un asesor
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -20,11 +20,10 @@ export const DemoSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            Aun tienes dudas? Solicita tu Demo de manera gratuita
+            Aun tienes dudas? Solicita una demostración gratis
           </h2>
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
-            Registra una demostración con nosotros y descubre cómo transformar
-            tus presentaciones
+            Regístrate y descubre cómo transformar tus presentaciones
           </p>
         </div>
 

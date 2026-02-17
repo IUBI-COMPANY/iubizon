@@ -9,7 +9,6 @@ import { Controller, useForm, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { X, Check, Loader2, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { InputNumber } from "@/components/ui/InputNumber";
 import { Select } from "@/components/ui/Select";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
@@ -27,7 +26,6 @@ interface FormData {
   phonePrefix: string;
   phoneNumber: string;
   company?: string;
-  quantity: number;
 }
 
 interface Props {
@@ -70,12 +68,6 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       .required("El email es requerido"),
     phonePrefix: yup.string().required("El prefijo es requerido"),
     phoneNumber: yup.string().required("El teléfono es requerido"),
-    quantity: yup
-      .number()
-      .required("La cantidad es requerida")
-      .min(1, "La cantidad mínima es 1")
-      .max(100, "La cantidad máxima es 100")
-      .integer("La cantidad debe ser un número entero"),
     company: yup.string().when("documentType", {
       is: "RUC",
       then: (schema) => schema.required("La razón social es requerida"),
@@ -100,7 +92,6 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       phonePrefix: "+51",
       phoneNumber: "",
       company: "",
-      quantity: 1,
     },
   });
 
@@ -112,6 +103,12 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
 
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
+
+    // Obtener cantidad desde localStorage (guardada al hacer clic en "Comprar ahora")
+    const storedQuantity = localStorage.getItem(
+      `purchase_quantity_${currentProduct?.id}`,
+    );
+    const quantity = storedQuantity ? parseInt(storedQuantity, 10) : 1;
 
     // Mapear ProductCondition a valores válidos de ProductItem
     const getProductCondition = (
@@ -147,7 +144,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
           {
             id: currentProduct?.id || "",
             name: currentProduct?.name,
-            quantity: formData.quantity,
+            quantity: quantity,
             brand: currentProduct?.brand || "iubizon",
             model: currentProduct?.model || "",
           },
@@ -165,6 +162,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
     console.log("📦 Datos del producto enviados:", {
       productId: product.id,
       productName: product.name,
+      quantity: quantity,
       productCondition: product.condition,
       mappedCondition: getProductCondition(product.condition),
       productData: leadData.serviceDetails?.products?.[0],
@@ -242,7 +240,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       {/* Modal Container */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="bg-gradient-to-br from-[#0a1628] via-[#0f1f3a] to-[#1a2942] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-primary/30 shadow-2xl pointer-events-auto"
+          className="bg-gradient-to-br from-[#0a1628] via-[#0f1f3a] to-[#1a2942] rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col border-2 border-primary/30 shadow-2xl pointer-events-auto overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Success Screen */}
@@ -285,7 +283,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
           ) : (
             <>
               {/* Header */}
-              <div className="sticky top-0 bg-gradient-to-r from-primary to-secondary p-6 flex items-center justify-between border-b border-white/10 z-10">
+              <div className="shrink-0 bg-gradient-to-r from-primary to-secondary p-6 flex items-center justify-between border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                     <ShoppingCart className="w-5 h-5 text-white" />
@@ -311,214 +309,199 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
               {/* Form */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="p-6 md:p-8 space-y-6"
+                className="flex flex-col flex-1 min-h-0"
               >
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Controller
-                    name="documentType"
-                    control={control}
-                    render={({ field: { onChange, value, name } }) => (
-                      <Select
-                        label="Tipo de Documento"
-                        name={name}
-                        value={value}
-                        error={error(name)}
-                        helperText={errorMessage(name)}
-                        required={required(name)}
-                        onChange={onChange}
-                        placeholder="Seleccionar"
-                        options={documentsTypes}
-                        textColor="white"
-                      />
-                    )}
-                  />
-                  <Controller
-                    name="documentNumber"
-                    control={control}
-                    render={({ field: { onChange, value, name } }) => (
-                      <Input
-                        label="N° de Documento"
-                        type="text"
-                        name={name}
-                        value={value}
-                        error={error(name)}
-                        helperText={errorMessage(name)}
-                        required={required(name)}
-                        onChange={onChange}
-                        placeholder={
-                          isRuc
-                            ? "10XXXXXXXXX o 20XXXXXXXXX"
-                            : isDni
-                              ? "71XXXXXX"
-                              : "Ingresa el número"
-                        }
-                      />
-                    )}
-                  />
-                </div>
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Controller
+                      name="documentType"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <Select
+                          label="Tipo de Documento"
+                          name={name}
+                          value={value}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          placeholder="Seleccionar"
+                          options={documentsTypes}
+                          textColor="white"
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="documentNumber"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <Input
+                          label="N° de Documento"
+                          type="text"
+                          name={name}
+                          value={value}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          placeholder={
+                            isRuc
+                              ? "10XXXXXXXXX o 20XXXXXXXXX"
+                              : isDni
+                                ? "71XXXXXX"
+                                : "Ingresa el número"
+                          }
+                        />
+                      )}
+                    />
+                  </div>
 
-                {isRuc ? (
+                  {isRuc ? (
+                    <Controller
+                      name="company"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <Input
+                          label="Razón Social / Empresa"
+                          name={name}
+                          value={value}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          placeholder="Mi Empresa S.A.C."
+                        />
+                      )}
+                    />
+                  ) : (
+                    <>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <Controller
+                          name="firstName"
+                          control={control}
+                          render={({ field: { onChange, value, name } }) => (
+                            <Input
+                              label="Nombres"
+                              name={name}
+                              value={value}
+                              error={error(name)}
+                              helperText={errorMessage(name)}
+                              required={required(name)}
+                              onChange={onChange}
+                              placeholder="Juan"
+                            />
+                          )}
+                        />
+                        <Controller
+                          name="lastName"
+                          control={control}
+                          render={({ field: { onChange, value, name } }) => (
+                            <Input
+                              label="Apellidos"
+                              name={name}
+                              value={value}
+                              error={error(name)}
+                              helperText={errorMessage(name)}
+                              required={required(name)}
+                              onChange={onChange}
+                              placeholder="Pérez"
+                            />
+                          )}
+                        />
+                      </div>
+                    </>
+                  )}
+
                   <Controller
-                    name="company"
+                    name="email"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Input
-                        label="Razón Social / Empresa"
+                        label="Correo electrónico"
+                        type="email"
                         name={name}
                         value={value}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}
                         onChange={onChange}
-                        placeholder="Mi Empresa S.A.C."
+                        placeholder="juan@empresa.com"
                       />
                     )}
                   />
-                ) : (
-                  <>
-                    <div className="grid md:grid-cols-2 gap-6">
+
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="col-span-1">
                       <Controller
-                        name="firstName"
+                        name="phonePrefix"
                         control={control}
-                        render={({ field: { onChange, value, name } }) => (
-                          <Input
-                            label="Nombres"
-                            name={name}
-                            value={value}
-                            error={error(name)}
-                            helperText={errorMessage(name)}
-                            required={required(name)}
-                            onChange={onChange}
-                            placeholder="Juan"
-                          />
+                        render={({ field: { onChange, value } }) => (
+                          <div>
+                            <label className="block text-sm/6 font-semibold text-white mb-1.5">
+                              Prefijo
+                              <span className="text-red-400 ml-1">*</span>
+                            </label>
+                            <select
+                              value={value}
+                              onChange={onChange}
+                              className="block w-full rounded-md bg-white px-3 py-2 text-base transition-colors duration-200 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-secondary/70 hover:outline-gray-400"
+                            >
+                              {countriesISO.map((country) => (
+                                <option
+                                  key={country.alpha2}
+                                  value={country.phonePrefix}
+                                >
+                                  {country.phonePrefix}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         )}
                       />
+                    </div>
+                    <div className="col-span-3">
                       <Controller
-                        name="lastName"
+                        name="phoneNumber"
                         control={control}
                         render={({ field: { onChange, value, name } }) => (
                           <Input
-                            label="Apellidos"
+                            label="Teléfono / WhatsApp"
+                            type="tel"
+                            placeholder="999 999 999"
                             name={name}
                             value={value}
                             error={error(name)}
                             helperText={errorMessage(name)}
                             required={required(name)}
                             onChange={onChange}
-                            placeholder="Pérez"
                           />
                         )}
                       />
                     </div>
-                  </>
-                )}
-
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field: { onChange, value, name } }) => (
-                    <Input
-                      label="Correo electrónico"
-                      type="email"
-                      name={name}
-                      value={value}
-                      error={error(name)}
-                      helperText={errorMessage(name)}
-                      required={required(name)}
-                      onChange={onChange}
-                      placeholder="juan@empresa.com"
-                    />
-                  )}
-                />
-
-                <div className="grid grid-cols-8 gap-3">
-                  <div className="col-span-2">
-                    <Controller
-                      name="phonePrefix"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <div>
-                          <label className="block text-sm/6 font-semibold text-white mb-1.5">
-                            Prefijo
-                            <span className="text-red-400 ml-1">*</span>
-                          </label>
-                          <select
-                            value={value}
-                            onChange={onChange}
-                            className="block w-full rounded-md bg-white px-3 py-2 text-base transition-colors duration-200 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-secondary/70 hover:outline-gray-400"
-                          >
-                            {countriesISO.map((country) => (
-                              <option
-                                key={country.alpha2}
-                                value={country.phonePrefix}
-                              >
-                                {country.phonePrefix}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-4">
-                    <Controller
-                      name="phoneNumber"
-                      control={control}
-                      render={({ field: { onChange, value, name } }) => (
-                        <Input
-                          label="Teléfono / WhatsApp"
-                          type="tel"
-                          placeholder="999 999 999"
-                          name={name}
-                          value={value}
-                          error={error(name)}
-                          helperText={errorMessage(name)}
-                          required={required(name)}
-                          onChange={onChange}
-                        />
-                      )}
-                    />
-                  </div>
-
-                  <div className="col-span-2">
-                    <Controller
-                      name="quantity"
-                      control={control}
-                      render={({ field: { onChange, value, name } }) => (
-                        <InputNumber
-                          label="Cantidad"
-                          name={name}
-                          value={value}
-                          error={error(name)}
-                          helperText={errorMessage(name)}
-                          required={required(name)}
-                          onChange={onChange}
-                          placeholder="1"
-                          min={1}
-                          max={100}
-                        />
-                      )}
-                    />
                   </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-sfpro"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Procesando compra...
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-5 h-5" />
-                      Confirmar compra
-                    </>
-                  )}
-                </button>
+                {/* Fixed Button at Bottom */}
+                <div className="shrink-0 p-6 md:p-8 bg-gradient-to-t from-[#0a1628] via-[#0f1f3a] to-transparent border-t border-white/10">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-sfpro"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Procesando compra...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5" />
+                        Confirmar compra
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             </>
           )}

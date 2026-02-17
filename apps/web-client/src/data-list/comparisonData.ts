@@ -6,53 +6,39 @@ export interface ComparisonRow {
 
 export const COMPARISON_DATA: ComparisonRow[] = [
   {
-    caracteristica: "Fijo, diseñado para salas",
+    caracteristica: "Precio accesible para todos los presupuestos!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Incluye Software Educativo!",
+    caracteristica: "Incluye Software de apoyo interactivo!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Solo se calibra una vez !",
+    caracteristica: "Una sola calibración para comenzar!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Llegar y usar!",
+    caracteristica: "Múltiples usuarios para interactuar!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Múltiples usuarios ilimitados",
+    caracteristica:
+      "Barra y herramientas interactivas para potenciar tu creatividad!",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Barra y herramientas de dibujo",
+    caracteristica: "Componentes fáciles de reemplazar",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
   },
   {
-    caracteristica: "Con cualquier pantalla y programa!",
+    caracteristica: "Portable, ligero y fácil de llevar",
     paperluxTank: true,
     pantallaInteractivaTipica: false,
-  },
-  {
-    caracteristica: "Con el tiempo muchos se dejan de usar",
-    paperluxTank: false,
-    pantallaInteractivaTipica: true,
-  },
-  {
-    caracteristica: "Sus componentes quedarán obsoletos en el tiempo",
-    paperluxTank: false,
-    pantallaInteractivaTipica: true,
-  },
-  {
-    caracteristica: "Grandes, pesadas y difíciles de instalar",
-    paperluxTank: false,
-    pantallaInteractivaTipica: true,
   },
 ];
