@@ -215,9 +215,9 @@ export default function AboutUsPage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto mb-8 leading-relaxed">
-                Especialistas en tecnología de proyección y soluciones
-                interactivas, transformando espacios educativos y corporativos
-                desde 2020.
+                Especialistas brindando soluciones tecnológicas en experiencias
+                y aprendizaje dinámico que conecta, inspira y potencia
+                resultados.
               </p>
 
               {/* Decorative line */}
@@ -287,7 +287,7 @@ export default function AboutUsPage() {
                   <p>
                     Como{" "}
                     <strong className="text-white font-semibold">
-                      distribuidores autorizados de Epson
+                      distribuidores de Epson
                     </strong>{" "}
                     y partners de las marcas más reconocidas del sector,
                     garantizamos productos originales respaldados por{" "}

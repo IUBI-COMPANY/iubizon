@@ -374,8 +374,8 @@ export default function PageTechnicalService() {
                 ¿Tu Proyector Necesita Reparación?
               </h2>
               <p className="text-lg text-white/90 mb-6 max-w-xl mx-auto">
-                Técnicos especializados listos para devolver tu proyector Epson,
-                BenQ, Sony y más a su máximo rendimiento.
+                No arriesgues tu equipo con aficionados. Hacemos que tu
+                proyector vuelva a brillar como el primer día.
               </p>
               <div className="flex flex-wrap justify-center gap-6 mb-8 text-white/95">
                 <div className="flex items-center gap-2">

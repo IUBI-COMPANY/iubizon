@@ -4,7 +4,6 @@ import React from "react";
 import {
   Presentation,
   BriefcaseBusiness,
-  School2,
   Building2,
   ClipboardList,
   ShieldCheck,
@@ -38,13 +37,6 @@ const benefits: BenefitCard[] = [
       "Reparación express y disponibilidad inmediata para conferencias, seminarios y presentaciones corporativas.",
     icon: BriefcaseBusiness,
     color: "from-amber-600 to-amber-800",
-  },
-  {
-    title: "Gestión de flotas institucionales",
-    description:
-      "Servicio integral para colegios, universidades y empresas con múltiples proyectores en distintos locales.",
-    icon: School2,
-    color: "from-teal-600 to-teal-800",
   },
   {
     title: "Protocolos y reportes profesionales",

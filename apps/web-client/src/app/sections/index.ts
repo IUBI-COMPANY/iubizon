@@ -5,3 +5,4 @@ export { PriceSection } from "./PriceSection";
 export { SeparateProductsSection } from "./SeparateProductsSection";
 export { ComparisonSection } from "./ComparisonSection";
 export { DemoSection } from "./DemoSection";
+export { FAQSection } from "./FAQSection";

@@ -101,12 +101,11 @@ Más que un kit interactivo, es una solución completa de productividad que mode
   },
   {
     id: "accesorios-duo",
-    model: "Touch + MiraCast Bundle",
+    model: "Touch + Adaptador Inalámbrico",
     name: "Touch + Adaptador Inalámbrico",
     stock: 15,
     condition: "new",
-    description:
-      "Touch Interactivo + Adaptador Inalámbrico MiraCast en un solo paquete",
+    description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 350,
     badge: "Dúo",
     mainImage: "/productos/bundle/touch.png",
@@ -151,82 +150,6 @@ Más que un kit interactivo, es una solución completa de productividad que mode
 - Espacios de trabajo híbridos
 
 Convierte tu proyector tradicional en una solución interactiva e inalámbrica completa.`,
-  },
-  {
-    id: "touch",
-    model: "Touch Hub Pro",
-    name: "Touch Interactivo",
-    stock: 15,
-    condition: "new",
-    description:
-      "Convierte cualquier superficie proyectada en una pantalla táctil interactiva",
-    price: 200,
-    badge: "Accesorio",
-    mainImage: "/productos/bundle/touch.png",
-    media: [{ type: "image", src: "/productos/bundle/touch.png" }],
-    brand: "iubizon",
-    type: "Accesorio",
-    connectivity: "USB",
-    features:
-      "10 puntos táctiles, Multi-usuario simultáneo, Tecnología infrarroja, Compatible con múltiples sistemas operativos",
-    category: ["Tecnología", "Interactividad", "Accesorios"],
-    gama: "media",
-    note: `El Touch Interactivo es la solución perfecta para transformar tu proyector existente en una experiencia interactiva completa.
-
-Características principales:
-• 10 puntos táctiles simultáneos
-• Tecnología infrarroja de alta precisión
-• Compatible con Windows, Mac, Android y Linux
-• Multi-usuario: Varias personas pueden interactuar al mismo tiempo
-• Instalación rápida y sencilla (Plug & Play)
-• No requiere calibración constante
-• Respuesta táctil de baja latencia
-
-Aplicaciones:
-- Presentaciones interactivas en oficinas
-- Clases dinámicas en aulas
-- Sesiones de brainstorming colaborativo
-- Capacitaciones empresariales
-
-El hub interactivo perfecto para llevar tus presentaciones al siguiente nivel.`,
-  },
-  {
-    id: "adaptador",
-    model: "MiraCast Pro Android",
-    name: "Adaptador Inalámbrico MiraCast",
-    stock: 20,
-    condition: "new",
-    description:
-      "Transmite contenido de forma inalámbrica desde cualquier dispositivo",
-    price: 150,
-    badge: "Accesorio",
-    mainImage: "/productos/bundle/miracast.png",
-    media: [{ type: "image", src: "/productos/bundle/miracast.png" }],
-    brand: "iubizon",
-    type: "Accesorio",
-    connectivity: "WiFi, HDMI",
-    features:
-      "WiFi integrado, Android OS, Google Play Store, Streaming inalámbrico, Compatible con múltiples dispositivos",
-    category: ["Tecnología", "Conectividad", "Accesorios"],
-    gama: "media",
-    note: `El Adaptador Inalámbrico MiraCast te permite compartir contenido sin cables de manera rápida y sencilla.
-
-Características principales:
-• Android integrado con acceso a Google Play Store
-• Transmisión nativa compatible con Android
-• Conectividad WiFi de alta velocidad
-• Streaming de video en alta calidad
-• Acceso a aplicaciones educativas y empresariales
-• Configuración simple y rápida
-• Compatible con la mayoría de proyectores
-
-Ventajas:
-- Elimina el uso de cables y adaptadores
-- Comparte desde smartphones, tablets y laptops
-- Ideal para presentaciones dinámicas
-- Actualizable vía OTA (Over The Air)
-
-Perfecto para modernizar cualquier proyector y hacerlo inalámbrico en minutos.`,
   },
 ];
 

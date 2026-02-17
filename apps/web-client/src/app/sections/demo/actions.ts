@@ -21,10 +21,10 @@ export async function sendDemoLead(
       products: [
         {
           id: "bundle-interactivo",
-          name: "Bundle Interactivo Completo",
+          name: "Solicita una Demo del Bundle",
           quantity: 1,
           brand: "iubizon",
-          model: "Bundle Complete 2025",
+          model: "Bundle Interactivo 2025",
         },
       ],
     },

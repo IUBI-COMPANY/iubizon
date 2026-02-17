@@ -91,6 +91,16 @@ export const DemoTypeStep2 = ({
           ),
       otherwise: (schema) => schema.notRequired(),
     }),
+    department: yup.string().when("attendanceType", {
+      is: "at_customer",
+      then: (schema) => schema.required("El departamento es requerido"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    province: yup.string().when("attendanceType", {
+      is: "at_customer",
+      then: (schema) => schema.required("La provincia es requerida"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     district: yup.string().when("attendanceType", {
       is: "at_customer",
       then: (schema) => schema.required("El distrito es requerido"),
@@ -126,6 +136,7 @@ export const DemoTypeStep2 = ({
     control,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<FormData>({
     resolver: yupResolver(schema) as unknown as Resolver<FormData>,
     defaultValues: getInitialValues(),
@@ -134,8 +145,36 @@ export const DemoTypeStep2 = ({
   const { required, error, errorMessage } = useFormUtils({ errors, schema });
 
   const attendanceTypeSelected = watch("attendanceType");
+  const departmentSelected = watch("department");
+  const provinceSelected = watch("province");
 
-  const districtsByLimaProvince = peruUbigeo[13].provinces[0].districts;
+  // Obtener departamentos
+  const departments = peruUbigeo.map((dept) => ({
+    value: dept.name,
+    label: dept.name,
+  }));
+
+  // Obtener provincias según departamento seleccionado
+  const provinces = departmentSelected
+    ? peruUbigeo
+        .find((dept) => dept.name === departmentSelected)
+        ?.provinces.map((prov) => ({
+          value: prov.name,
+          label: prov.name,
+        })) || []
+    : [];
+
+  // Obtener distritos según provincia seleccionada
+  const districts =
+    provinceSelected && departmentSelected
+      ? peruUbigeo
+          .find((dept) => dept.name === departmentSelected)
+          ?.provinces.find((prov) => prov.name === provinceSelected)
+          ?.districts.map((dist) => ({
+            value: dist.name,
+            label: dist.name,
+          })) || []
+      : [];
 
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
@@ -315,6 +354,51 @@ export const DemoTypeStep2 = ({
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               <Controller
+                name="department"
+                control={control}
+                render={({ field: { onChange, value, name } }) => (
+                  <Select
+                    label="Departamento"
+                    placeholder="Seleccionar"
+                    name={name}
+                    value={value}
+                    error={error(name)}
+                    helperText={errorMessage(name)}
+                    required={required(name)}
+                    onChange={(newValue) => {
+                      onChange(newValue);
+                      // Limpiar provincia y distrito cuando cambia departamento
+                      setValue("province", "");
+                      setValue("district", "");
+                    }}
+                    options={departments}
+                    textColor="white"
+                  />
+                )}
+              />
+              <Controller
+                name="province"
+                control={control}
+                render={({ field: { onChange, value, name } }) => (
+                  <Select
+                    label="Provincia"
+                    placeholder="Seleccionar"
+                    name={name}
+                    value={value}
+                    error={error(name)}
+                    helperText={errorMessage(name)}
+                    required={required(name)}
+                    onChange={(newValue) => {
+                      onChange(newValue);
+                      // Limpiar distrito cuando cambia provincia
+                      setValue("district", "");
+                    }}
+                    options={provinces}
+                    textColor="white"
+                  />
+                )}
+              />
+              <Controller
                 name="district"
                 control={control}
                 render={({ field: { onChange, value, name } }) => (
@@ -327,32 +411,29 @@ export const DemoTypeStep2 = ({
                     helperText={errorMessage(name)}
                     required={required(name)}
                     onChange={onChange}
-                    options={districtsByLimaProvince.map((dist) => ({
-                      value: dist.name,
-                      label: dist.name,
-                    }))}
+                    options={districts}
+                    textColor="white"
                   />
                 )}
               />
-              <div className="md:col-span-2">
-                <Controller
-                  name="address"
-                  control={control}
-                  render={({ field: { onChange, value, name } }) => (
-                    <Input
-                      label="Dirección"
-                      placeholder="Av. Principal 123"
-                      name={name}
-                      value={value}
-                      error={error(name)}
-                      helperText={errorMessage(name)}
-                      required={required(name)}
-                      onChange={onChange}
-                    />
-                  )}
-                />
-              </div>
             </div>
+            <Controller
+              name="address"
+              control={control}
+              render={({ field: { onChange, value, name } }) => (
+                <Input
+                  label="Dirección"
+                  placeholder="Av. Principal 123"
+                  name={name}
+                  value={value}
+                  error={error(name)}
+                  helperText={errorMessage(name)}
+                  required={required(name)}
+                  onChange={onChange}
+                  textColor="white"
+                />
+              )}
+            />
           </div>
         )}
 
@@ -360,7 +441,7 @@ export const DemoTypeStep2 = ({
         {attendanceTypeSelected === "remote" && (
           <div className="space-y-6">
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3">
-              <Video className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <Video className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
               <p className="text-blue-300 text-sm">
                 La reunión será realizada mediante{" "}
                 <span className="font-semibold">Google Meet</span>

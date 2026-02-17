@@ -2,16 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import * as yup from "yup";
 import { Controller, useForm, Resolver } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { X, Check, Loader2, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { InputNumber } from "@/components/ui/InputNumber";
 import { Select } from "@/components/ui/Select";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import documentsTypes from "@/data-list/documentsTypes.json";
-import { Product } from "@/data-list/products";
+import { Product, ProductCondition, products } from "@/data-list/products";
 import { sendPurchaseLead } from "./purchaseActions";
 import { useNotification } from "@/components/ui/Notification";
 
@@ -24,6 +27,7 @@ interface FormData {
   phonePrefix: string;
   phoneNumber: string;
   company?: string;
+  quantity: number;
 }
 
 interface Props {
@@ -35,8 +39,14 @@ interface Props {
 export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   const [mounted, setMounted] = useState(false);
   const { showNotification, NotificationComponent } = useNotification();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const getCurrentProductId = pathname.split("/productos/")[1];
+  const currentProduct = products.find((p) => p.id === getCurrentProductId);
 
   const schema = yup.object({
     documentType: yup.string().required("El tipo de documento es requerido"),
@@ -60,6 +70,12 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       .required("El email es requerido"),
     phonePrefix: yup.string().required("El prefijo es requerido"),
     phoneNumber: yup.string().required("El teléfono es requerido"),
+    quantity: yup
+      .number()
+      .required("La cantidad es requerida")
+      .min(1, "La cantidad mínima es 1")
+      .max(100, "La cantidad máxima es 100")
+      .integer("La cantidad debe ser un número entero"),
     company: yup.string().when("documentType", {
       is: "RUC",
       then: (schema) => schema.required("La razón social es requerida"),
@@ -84,6 +100,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       phonePrefix: "+51",
       phoneNumber: "",
       company: "",
+      quantity: 1,
     },
   });
 
@@ -95,6 +112,15 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
 
   const onSubmit = async (formData: FormData) => {
     setLoading(true);
+
+    // Mapear ProductCondition a valores válidos de ProductItem
+    const getProductCondition = (
+      condition?: ProductCondition,
+    ): "new" | "reconditioned" | "used" => {
+      if (condition === "reconditioned") return "reconditioned";
+      // "gama-alta" y "new" se mapean a "new"
+      return "new";
+    };
 
     const leadData: Lead = {
       leadType: "sale",
@@ -119,11 +145,11 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       serviceDetails: {
         products: [
           {
-            id: product.id,
-            name: product.name || product.model,
-            quantity: 1,
-            brand: product.brand || "iubizon",
-            model: product.model,
+            id: currentProduct?.id || "",
+            name: currentProduct?.name,
+            quantity: formData.quantity,
+            brand: currentProduct?.brand || "iubizon",
+            model: currentProduct?.model || "",
           },
         ],
       },
@@ -135,6 +161,14 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
         landingPage: window.location.href,
       },
     };
+
+    console.log("📦 Datos del producto enviados:", {
+      productId: product.id,
+      productName: product.name,
+      productCondition: product.condition,
+      mappedCondition: getProductCondition(product.condition),
+      productData: leadData.serviceDetails?.products?.[0],
+    });
 
     try {
       await sendPurchaseLead(leadData);
@@ -164,6 +198,24 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Countdown y redirección después del éxito
+  useEffect(() => {
+    if (success) {
+      if (countdown === 0) {
+        router.push("/");
+        return;
+      }
+
+      const timer = setTimeout(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setCountdown(5);
+    }
+  }, [success, countdown, router]);
 
   useEffect(() => {
     if (isOpen) {
@@ -219,11 +271,15 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
                   coordinar el pago y la entrega.
                 </p>
               </div>
+              <div className="text-gray-400 text-sm font-sfpro">
+                Redirigiendo a la página principal en {countdown} segundo
+                {countdown !== 1 ? "s" : ""}...
+              </div>
               <button
-                onClick={handleClose}
+                onClick={() => router.push("/")}
                 className="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all font-sfpro"
               >
-                Cerrar
+                Ir ahora
               </button>
             </div>
           ) : (
@@ -301,40 +357,61 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                {isRuc ? (
                   <Controller
-                    name="firstName"
+                    name="company"
                     control={control}
                     render={({ field: { onChange, value, name } }) => (
                       <Input
-                        label="Nombres"
+                        label="Razón Social / Empresa"
                         name={name}
                         value={value}
                         error={error(name)}
                         helperText={errorMessage(name)}
                         required={required(name)}
                         onChange={onChange}
-                        placeholder="Juan"
+                        placeholder="Mi Empresa S.A.C."
                       />
                     )}
                   />
-                  <Controller
-                    name="lastName"
-                    control={control}
-                    render={({ field: { onChange, value, name } }) => (
-                      <Input
-                        label="Apellidos"
-                        name={name}
-                        value={value}
-                        error={error(name)}
-                        helperText={errorMessage(name)}
-                        required={required(name)}
-                        onChange={onChange}
-                        placeholder="Pérez"
+                ) : (
+                  <>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Controller
+                        name="firstName"
+                        control={control}
+                        render={({ field: { onChange, value, name } }) => (
+                          <Input
+                            label="Nombres"
+                            name={name}
+                            value={value}
+                            error={error(name)}
+                            helperText={errorMessage(name)}
+                            required={required(name)}
+                            onChange={onChange}
+                            placeholder="Juan"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </div>
+                      <Controller
+                        name="lastName"
+                        control={control}
+                        render={({ field: { onChange, value, name } }) => (
+                          <Input
+                            label="Apellidos"
+                            name={name}
+                            value={value}
+                            error={error(name)}
+                            helperText={errorMessage(name)}
+                            required={required(name)}
+                            onChange={onChange}
+                            placeholder="Pérez"
+                          />
+                        )}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <Controller
                   name="email"
@@ -354,8 +431,8 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
                   )}
                 />
 
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-1">
+                <div className="grid grid-cols-8 gap-3">
+                  <div className="col-span-2">
                     <Controller
                       name="phonePrefix"
                       control={control}
@@ -383,7 +460,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
                       )}
                     />
                   </div>
-                  <div className="col-span-3">
+                  <div className="col-span-4">
                     <Controller
                       name="phoneNumber"
                       control={control}
@@ -402,26 +479,28 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
                       )}
                     />
                   </div>
-                </div>
 
-                {isRuc && (
-                  <Controller
-                    name="company"
-                    control={control}
-                    render={({ field: { onChange, value, name } }) => (
-                      <Input
-                        label="Razón Social / Empresa"
-                        name={name}
-                        value={value}
-                        error={error(name)}
-                        helperText={errorMessage(name)}
-                        required={required(name)}
-                        onChange={onChange}
-                        placeholder="Mi Empresa S.A.C."
-                      />
-                    )}
-                  />
-                )}
+                  <div className="col-span-2">
+                    <Controller
+                      name="quantity"
+                      control={control}
+                      render={({ field: { onChange, value, name } }) => (
+                        <InputNumber
+                          label="Cantidad"
+                          name={name}
+                          value={value}
+                          error={error(name)}
+                          helperText={errorMessage(name)}
+                          required={required(name)}
+                          onChange={onChange}
+                          placeholder="1"
+                          min={1}
+                          max={100}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
 
                 <button
                   type="submit"
