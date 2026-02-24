@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export const SeparateProductsSection: React.FC = () => {
@@ -13,12 +13,18 @@ export const SeparateProductsSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Título de la sección */}
         <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 py-2 rounded-full mb-4">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm text-primary font-semibold">
+              Dúo perfecto
+            </span>
+          </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-sfpro font-bold text-white mb-4 tracking-tight">
             ¿Ya cuentas con un proyector?
           </h2>
           <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
-            Adquiere nuestro dúo interactivo y no dejes pasar esta experiencia
-            única
+            Adquiere nuestro dúo interactivo y convierte cualquier proyector o
+            pantalla en interactiva
           </p>
         </div>
 
