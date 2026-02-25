@@ -58,7 +58,7 @@ const productsData: Product[] = [
   {
     id: "bundle-interactivo",
     model: "Bundle Complete 2025",
-    name: "Bundle Interactivo Completo",
+    name: "Bundle Interactivo - Completo",
     stock: 10,
     condition: "new",
     description:
@@ -102,7 +102,7 @@ Más que un kit interactivo, es una solución completa de productividad que mode
   {
     id: "accesorios-duo",
     model: "Touch y Adaptador Inalámbrico",
-    name: "Touch y Adaptador Inalámbrico",
+    name: "Duo interactivo",
     stock: 15,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",

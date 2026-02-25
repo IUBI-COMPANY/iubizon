@@ -10,7 +10,7 @@ export const DemoSection: React.FC = () => {
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 blur-[150px] pointer-events-none rounded-full"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/10 blur-[150px] pointer-events-none rounded-full"></div>
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div id="solicitar-demo" className="max-w-4xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 px-4 py-2 rounded-full mb-4">
