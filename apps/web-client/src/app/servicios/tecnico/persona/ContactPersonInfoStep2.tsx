@@ -60,6 +60,10 @@ export const ContactPersonInfoStep2 = ({
           return /^\d{8}$/.test(value);
         } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
+        } else if (documentType === "CE") {
+          return /^\d{9,12}$/.test(value);
+        } else if (documentType === "PASSPORT") {
+          return /^[A-Z0-9]{6,9}$/.test(value);
         }
         return true;
       }),

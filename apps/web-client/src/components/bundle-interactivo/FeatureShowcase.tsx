@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { Video } from "@/components/ui/Video";
 import { LucideIcon } from "lucide-react";
 
 interface Feature {
@@ -129,14 +130,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({
                 >
                   <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
                     {feature.video ? (
-                      <video
-                        className="w-full h-auto object-cover"
-                        src={feature.video}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
+                      <Video className="w-full h-auto" src={feature.video} />
                     ) : feature.image ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
