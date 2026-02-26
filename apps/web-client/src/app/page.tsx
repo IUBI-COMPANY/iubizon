@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { ScrollProgressBar } from "@/components/bundle-interactivo";
 import {
   HeroSection,
@@ -11,18 +11,14 @@ import {
   DemoSection,
   FAQSection,
 } from "./sections";
-import { PROJECTORS, BASE_BUNDLE_PRICE } from "@/data-list/bundleProjectors";
+import { products } from "@/data-list/products";
 export default function BundleInteractivoPage() {
   const [audienceType, setAudienceType] = useState<"escuelas" | "empresas">(
     "escuelas",
   );
   // Proyector seleccionado (por defecto el primero)
-  const selectedProjector = PROJECTORS[0];
+  const selectedProjector = products.find((p) => (p.type = "Bundle"));
   // Calcular precio total del bundle dinámicamente
-  const totalPrice = useMemo(
-    () => selectedProjector.price + BASE_BUNDLE_PRICE,
-    [selectedProjector],
-  );
   return (
     <div className="min-h-screen flex flex-col selection:bg-primary selection:text-white bg-[#060e1e] font-sfpro">
       <ScrollProgressBar />
@@ -34,7 +30,7 @@ export default function BundleInteractivoPage() {
         />
         <SpecsSection />
         <ComparisonSection />
-        <PriceSection totalPrice={totalPrice} />
+        <PriceSection totalPrice={selectedProjector?.price || 0} />
         <SeparateProductsSection />
         <DemoSection />
         <FAQSection />

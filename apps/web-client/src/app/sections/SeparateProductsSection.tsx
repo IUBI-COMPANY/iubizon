@@ -3,8 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { products } from "@/data-list/products";
 
 export const SeparateProductsSection: React.FC = () => {
+  const selectedProduct = products.find((p) => p.type == "Accesorios");
+  console.log("producto: ", selectedProduct);
+
   return (
     <section className="w-full bg-gradient-to-b from-[#060e1e] to-black py-12 relative overflow-hidden">
       {/* Gradient decorativo */}
@@ -109,7 +113,7 @@ export const SeparateProductsSection: React.FC = () => {
                   Dúo de accesorios
                 </p>
                 <p className="text-4xl md:text-5xl font-sfpro font-black text-white">
-                  S/ 2000
+                  S/ {selectedProduct?.price}
                 </p>
               </div>
 

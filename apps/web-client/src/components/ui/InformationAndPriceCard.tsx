@@ -6,6 +6,11 @@ import { GiftCardNews } from "./GiftCardNews";
 import { DetailProductCondition } from "@/data-list/productsCondition";
 import { PurchaseModal } from "./PurchaseModal";
 import { QuantitySelector } from "./QuantitySelector";
+import {
+  getProductDiscountInfo,
+  formatPrice,
+  shouldShowCampaignBadge,
+} from "@/utils/productPriceHelpers";
 
 interface Props {
   product: Product;
@@ -24,8 +29,12 @@ export const InformationAndPriceCard = ({
 }: Props) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
-  // Calculate discount percentage: 17% for new, 42% for reconditioned
-  const discountPercentage = product.condition === "new" ? 17 : 42;
+  // Obtener información de descuento del producto
+  const discountInfo = getProductDiscountInfo(product);
+  const showCampaignBadge = shouldShowCampaignBadge(
+    product,
+    showChristmasCampaign,
+  );
 
   const handlePurchaseClick = () => {
     // Guardar la cantidad actual en localStorage antes de abrir el modal
@@ -48,10 +57,10 @@ export const InformationAndPriceCard = ({
           </h1>
 
           <div className="tags flex flex-wrap gap-2 mb-4">
-            {/* 2. BADGE DE OFERTA ESPECIAL */}
-            {showChristmasCampaign && product?.oldPrice && (
+            {/* 2. BADGE DE OFERTA ESPECIAL - Solo si hay descuento real */}
+            {showCampaignBadge && (
               <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-primary/80 text-white text-xs font-bold shadow-lg shadow-primary/30">
-                <span>-{discountPercentage}% OFF</span>
+                <span>-{discountInfo.percentage}% OFF</span>
               </div>
             )}
 
@@ -131,37 +140,43 @@ export const InformationAndPriceCard = ({
           )}
 
           {/* 5. DESGLOSE DE PRECIOS */}
-          {product?.oldPrice && (
+          {product?.price && (
             <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
               <div className="space-y-3">
-                <div className="flex justify-between text-sm items-center">
-                  <span className="text-gray-400 font-sfpro">
-                    Precio Lista:
-                  </span>
-                  <span className="font-medium text-gray-300 line-through font-sfpro">
-                    S/ {product.oldPrice.toFixed(2)}
-                  </span>
-                </div>
-                {product?.discount && (
+                {/* Precio Lista - Solo mostrar si hay descuento */}
+                {discountInfo.hasDiscount && (
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-primary font-semibold font-sfpro">
-                      Descuento ({discountPercentage}%):
+                    <span className="text-gray-400 font-sfpro">
+                      Precio Lista:
                     </span>
-                    <span className="font-bold text-primary font-sfpro">
-                      - S/ {product.discount.toFixed(2)}
+                    <span className="font-medium text-gray-300 line-through font-sfpro">
+                      {formatPrice(discountInfo.originalPrice)}
                     </span>
                   </div>
                 )}
+
+                {/* Descuento - Solo mostrar si hay descuento */}
+                {discountInfo.hasDiscount && (
+                  <div className="flex justify-between text-sm items-center">
+                    <span className="text-primary font-semibold font-sfpro">
+                      Descuento ({discountInfo.percentage}%):
+                    </span>
+                    <span className="font-bold text-primary font-sfpro">
+                      - {formatPrice(discountInfo.amount)}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-sm items-center">
                   <span className="text-gray-400 font-sfpro">SubTotal</span>
                   <span className="font-medium text-gray-300 font-sfpro">
-                    S/ {product.subTotal?.toFixed(2)}
+                    {formatPrice(product.subTotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm items-center pb-3 border-b border-white/10">
                   <span className="text-gray-400 font-sfpro">IGV (18%)</span>
                   <span className="font-medium text-gray-300 font-sfpro">
-                    S/ {product.IGV?.toFixed(2)}
+                    {formatPrice(product.IGV)}
                   </span>
                 </div>
 
@@ -171,7 +186,7 @@ export const InformationAndPriceCard = ({
                     Total a Pagar:
                   </span>
                   <span className="text-3xl font-black text-primary font-sfpro drop-shadow-lg">
-                    S/ {product.totalPayment?.toFixed(2)}
+                    {formatPrice(product.totalPayment)}
                   </span>
                 </div>
               </div>

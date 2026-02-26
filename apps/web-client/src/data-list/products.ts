@@ -63,7 +63,7 @@ const productsData: Product[] = [
     condition: "new",
     description:
       "Transforma cualquier proyector en una experiencia interactiva profesional",
-    price: 2150,
+    price: 5201.15,
     badge: "Bundle",
     mainImage: "/productos/bundle/upside109W.png",
     media: [
@@ -106,7 +106,7 @@ Más que un kit interactivo, es una solución completa de productividad que mode
     stock: 15,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
-    price: 350,
+    price: 4021.15,
     badge: "Dúo",
     mainImage: "/productos/bundle/touch.png",
     media: [
@@ -153,9 +153,23 @@ Convierte tu proyector tradicional en una solución interactiva e inalámbrica c
   },
 ];
 
-export const DISCOUNT_PERCENTAGE_SUMMER_TO_NEWS = 0.17;
-export const DISCOUNT_PERCENTAGE_42_TO_REACONDITIONED = 0.42;
+// ============================================
+// CONSTANTES DE CONFIGURACIÓN
+// ============================================
+
 export const IGV_RATE = 0.18;
+
+export const DISCOUNT_RATES = {
+  new: 0.17, // 17% para productos nuevos
+  reconditioned: 0.42, // 42% para reacondicionados
+  "gama-alta": 0, // Sin descuento para gama alta
+} as const;
+
+const PRODUCTS_WITHOUT_AUTO_DISCOUNT = ["Bundle", "Accesorios"] as const;
+
+// ============================================
+// FUNCIONES DE CÁLCULO DE PRECIOS
+// ============================================
 
 const calcProductPrices = (
   product: Product,
@@ -163,6 +177,7 @@ const calcProductPrices = (
 ): Price => {
   const originalPrice = product.price;
 
+  // Sin descuento: cálculo directo
   if (percentageDiscount === 0) {
     const totalPayment = originalPrice;
     const subTotal = +(totalPayment / (1 + IGV_RATE)).toFixed(2);
@@ -178,9 +193,9 @@ const calcProductPrices = (
     };
   }
 
+  // Con descuento: cálculo completo
   const discountAmount = +(originalPrice * percentageDiscount).toFixed(2);
   const priceAfterDiscount = +(originalPrice - discountAmount).toFixed(2);
-
   const totalPayment = priceAfterDiscount;
   const subTotal = +(totalPayment / (1 + IGV_RATE)).toFixed(2);
   const IGV = +(subTotal * IGV_RATE).toFixed(2);
@@ -195,18 +210,24 @@ const calcProductPrices = (
   };
 };
 
-const calcProductPricesDetails = (product: Product): Price => {
-  switch (product.condition) {
-    case "reconditioned":
-      return calcProductPrices(
-        product,
-        DISCOUNT_PERCENTAGE_42_TO_REACONDITIONED,
-      );
-    case "new":
-      return calcProductPrices(product, DISCOUNT_PERCENTAGE_SUMMER_TO_NEWS);
-    default:
-      return calcProductPrices(product);
+const getAutoDiscountRate = (product: Product): number => {
+  // Productos excluidos de descuento automático
+  if (
+    product.type &&
+    PRODUCTS_WITHOUT_AUTO_DISCOUNT.includes(
+      product.type as (typeof PRODUCTS_WITHOUT_AUTO_DISCOUNT)[number],
+    )
+  ) {
+    return 0;
   }
+
+  // Descuento según condición del producto
+  return DISCOUNT_RATES[product.condition] ?? 0;
+};
+
+const calcProductPricesDetails = (product: Product): Price => {
+  const discountRate = getAutoDiscountRate(product);
+  return calcProductPrices(product, discountRate);
 };
 
 export const products: Product[] = orderBy(

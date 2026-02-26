@@ -2,8 +2,10 @@
 import React from "react";
 import { Check, X } from "lucide-react";
 import { COMPARISON_DATA } from "@/data-list/comparisonData";
+import { products } from "@/data-list/products";
 
 export const ComparisonSection: React.FC = () => {
+  const selectedProjector = products.find((p) => (p.type = "Bundle"));
   return (
     <section
       id="comparacion"
@@ -34,7 +36,7 @@ export const ComparisonSection: React.FC = () => {
                       scope="col"
                       className="px-6 md:px-8 py-6 md:py-8 text-left text-sm md:text-base font-bold text-white uppercase tracking-wider w-1/3 border-r border-primary/20"
                     >
-                      Característica
+                      Características
                     </th>
                     <th
                       scope="col"
@@ -44,7 +46,7 @@ export const ComparisonSection: React.FC = () => {
                         <span className="text-base">Bundle Interactivo</span>
 
                         <span className="text-2xl md:text-3xl font-extrabold">
-                          S/ 4,500
+                          S/ {selectedProjector?.price}
                         </span>
                       </div>
                     </th>
