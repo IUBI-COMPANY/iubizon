@@ -76,11 +76,11 @@ export const HeroSection: React.FC = () => {
               />
             </div>
 
-            {/* MiraCast - Más pequeño */}
+            {/* Adaptador Inalámbrico - Más pequeño */}
             <div className="flex items-center justify-center w-full md:w-auto mb-0 md:mb-8 lg:mb-12">
               <Image
                 src="/productos/bundle/miracast.png"
-                alt="MiraCast Dongle"
+                alt="Adaptador Inalámbrico WiFi"
                 width={150}
                 height={150}
                 className="w-full max-w-[110px] sm:max-w-[130px] md:max-w-[110px] lg:max-w-[130px] xl:max-w-[150px] h-auto object-contain drop-shadow-2xl"

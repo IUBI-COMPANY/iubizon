@@ -1,4 +1,27 @@
 import React from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Política de Devoluciones y Cambios - Bundle Interactivo | iubizon",
+  description:
+    "Conoce nuestra política de devoluciones y cambios para Bundle Interactivo y productos educativos. 15 días de garantía de satisfacción y reembolso completo en Lima, Perú.",
+  keywords: [
+    "política de devoluciones iubizon",
+    "cambios bundle interactivo",
+    "garantía de satisfacción",
+    "reembolso productos educativos",
+    "política de cambios Lima",
+    "devoluciones tecnología educativa",
+  ],
+  alternates: {
+    canonical: "https://www.iubizon.com/politica-de-devoluciones-y-cambios",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  metadataBase: new URL("https://www.iubizon.com"),
+};
 
 export default function ReturnsAndExchangesPolicyPage() {
   return (

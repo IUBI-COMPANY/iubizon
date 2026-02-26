@@ -6,7 +6,7 @@ const faqItems: FAQItem[] = [
   {
     question: "¿Qué incluye el Bundle Interactivo?",
     answer:
-      "El Bundle Interactivo incluye un proyector de alta calidad, el Touch Hub 2 para convertir cualquier superficie en táctil, y el adaptador MiraCast para compartir contenido de forma inalámbrica. Todo lo necesario para transformar tus espacios en entornos interactivos.",
+      "El Bundle Interactivo incluye un proyector de alta calidad, el Touch Hub 2 para convertir cualquier superficie en táctil, y el Adaptador Inalámbrico WiFi para compartir contenido de forma inalámbrica. Todo lo necesario para transformar tus espacios en entornos interactivos.",
   },
   {
     question: "¿Puedo comprar los productos por separado?",

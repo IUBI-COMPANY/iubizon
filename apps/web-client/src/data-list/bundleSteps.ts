@@ -10,7 +10,7 @@ export const STEPS: UsageStep[] = [
   },
   {
     step: 2,
-    title: "Conectar MiraCast",
+    title: "Conectar Adaptador Inalámbrico",
     description:
       "Ejecuta el sistema operativo y probar las nuevas funcionalidades Android.",
     icon: "ads_click",

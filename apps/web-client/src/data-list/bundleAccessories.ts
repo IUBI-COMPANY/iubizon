@@ -12,7 +12,7 @@ export const ACCESSORIES: ProductItem[] = [
   },
   {
     id: "acc2",
-    name: "MiraCast Dongle",
+    name: "Adaptador Inalámbrico WiFi",
     category: "Transmisión WiFi",
     description:
       "Comparte contenido desde cualquier dispositivo móvil sin cables.",
