@@ -22,7 +22,7 @@ const technicalDocuments: TechnicalDocument[] = [
     description:
       "Especificaciones técnicas completas del proyector Epson EB-109W. Incluye resolución, brillo, conectividad y más.",
     image: "/productos/bundle/upside109W.png",
-    pdfUrl: "/documents/ficha-tecnica-proyector-epson-109w.pdf",
+    pdfUrl: "/documentos/bundle-interactivo.pdf",
     category: "Proyector",
   },
   {
@@ -31,16 +31,16 @@ const technicalDocuments: TechnicalDocument[] = [
     description:
       "Ficha técnica del sistema Touch Interactivo. Tecnología láser, compatibilidad y características de instalación.",
     image: "/productos/bundle/touch1.png",
-    pdfUrl: "/documents/ficha-tecnica-touch-hub2.pdf",
+    pdfUrl: "/documentos/ficha-tecnica-tank-hub-2.pdf",
     category: "Accesorio Interactivo",
   },
   {
     id: "adaptador-miracast",
-    title: "Adaptador Inalámbrico MiraCast",
+    title: "Adaptador Inalámbrico Wifi",
     description:
-      "Especificaciones del adaptador inalámbrico MiraCast. Compatibilidad, conectividad WiFi y sistema Android.",
-    image: "/productos/bundle/miracast1.png",
-    pdfUrl: "/documents/ficha-tecnica-miracast.pdf",
+      "Especificaciones del adaptador inalámbrico. Compatibilidad, conectividad WiFi y sistema Android.",
+    image: "/productos/bundle/adaptador-wifi1.png",
+    pdfUrl: "/documentos/ficha-tecnica-touch-portable.pdf",
     category: "Conectividad",
   },
 ];
