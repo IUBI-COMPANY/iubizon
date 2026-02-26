@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Video } from "@/components/ui/Video";
 
 interface VideoHeroProps {
   videoSrc: string;
@@ -62,14 +63,11 @@ export const VideoHero: React.FC<VideoHeroProps> = ({
       className={`relative w-full ${heightClasses[height]} overflow-hidden bg-bg-dark flex items-center justify-center`}
     >
       {/* Video Background */}
-      <video
+      <Video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full"
         src={videoSrc}
         poster={posterSrc}
-        muted
-        loop
-        playsInline
         preload="metadata"
       />
 

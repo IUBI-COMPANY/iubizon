@@ -7,6 +7,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { twMerge } from "tailwind-merge";
 import { useDevice } from "@/hooks/useDevice";
+import { Video } from "@/components/ui/Video";
 
 export const SlidersComponent = () => {
   const [isPaused, setIsPaused] = useState(false);
@@ -60,16 +61,11 @@ export const SlidersComponent = () => {
       type: "content",
       content: (
         <>
-          <video
-            autoPlay
-            muted
-            loop
+          <Video
             poster="/images/education-projectors.jpg"
-            className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none"
-          >
-            <source src="/videos/education-projectors.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+            className="absolute inset-0 w-full h-full opacity-10 pointer-events-none"
+            src="/videos/education-projectors.mp4"
+          />
           <div className="w-full h-full flex flex-col justify-center items-center text-center text-white relative z-30 px-3 sm:px-6 lg:px-8 py-6 sm:py-8 mt-10 md:mt-1 text-sm">
             <div className="flex-1 flex flex-col lg:flex-row items-center justify-center w-full max-w-7xl gap-3 sm:gap-4 lg:gap-8">
               <div className="flex flex-col items-center lg:items-start justify-center text-center lg:text-left max-w-2xl w-full my-15">

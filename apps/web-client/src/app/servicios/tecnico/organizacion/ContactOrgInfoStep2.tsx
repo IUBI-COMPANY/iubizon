@@ -55,23 +55,27 @@ export const ContactOrgInfoStep2 = ({
           return /^\d{8}$/.test(value);
         } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
+        } else if (documentType === "CE") {
+          return /^\d{9,12}$/.test(value);
+        } else if (documentType === "PASSPORT") {
+          return /^[A-Z0-9]{6,9}$/.test(value);
         }
         return true;
       }),
-    companyName: yup.string().when("documentType", {
-      is: "RUC",
-      then: (schema) => schema.required("La razón social es requerida"),
-      otherwise: (schema) => schema.notRequired(),
+    companyName: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.required("La razón social es requerida")
+        : schema.notRequired();
     }),
-    firstName: yup.string().when("documentType", {
-      is: "RUC",
-      then: (schema) => schema.notRequired(),
-      otherwise: (schema) => schema.required("El nombre es requerido"),
+    firstName: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.notRequired()
+        : schema.required("El nombre es requerido");
     }),
-    lastName: yup.string().when("documentType", {
-      is: "RUC",
-      then: (schema) => schema.notRequired(),
-      otherwise: (schema) => schema.required("El apellido es requerido"),
+    lastName: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.notRequired()
+        : schema.required("El apellido es requerido");
     }),
     email: yup.string().email().required(),
     phonePrefix: yup.string().required(),

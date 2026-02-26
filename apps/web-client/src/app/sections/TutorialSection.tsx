@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { School, Briefcase } from "lucide-react";
 import { DiagramSection } from "@/components/bundle-interactivo";
+import { Video } from "@/components/ui/Video";
 import {
   useScrollAnimation,
   fadeIn,
@@ -26,13 +27,13 @@ const tutorialContent: Record<UserType, TutorialContent> = {
     title: "Escuela o Institución",
     description:
       "Ideal para aulas y centros educativos. Fomenta la participación estudiantil con clases interactivas y colaborativas.",
-    videoUrl: "/videos/fh02-advice.webm",
+    videoUrl: "/videos/escuela.mp4",
   },
   business: {
     title: "Empresa",
     description:
       "Perfecto para salas de conferencia. Optimiza reuniones con anotaciones en tiempo real y presentaciones dinámicas.",
-    videoUrl: "/videos/epiqvision-fh02.webm",
+    videoUrl: "/videos/empresas.mp4",
   },
 };
 
@@ -178,14 +179,13 @@ export const TutorialSection: React.FC<TutorialSectionProps> = ({
           >
             <div className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm group hover:border-primary/40 transition-all">
               <div className="aspect-video bg-bg-dark flex items-center justify-center">
-                <video
+                <Video
                   key={currentContent.videoUrl}
-                  className="w-full h-full object-cover"
+                  src={currentContent.videoUrl}
+                  className="w-full h-full"
                   controls
-                >
-                  <source src={currentContent.videoUrl} type="video/mp4" />
-                  Tu navegador no soporta el elemento de video.
-                </video>
+                  autoPlay={false}
+                />
               </div>
             </div>
           </div>

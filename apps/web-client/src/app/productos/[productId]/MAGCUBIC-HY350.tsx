@@ -4,6 +4,7 @@ import { Product } from "@/data-list/products";
 import Image from "next/image";
 import Link from "next/link";
 import { getWhatsAppMessage } from "@/utils/whatsapp";
+import { Video } from "@/components/ui/Video";
 
 interface SpecialProductProps {
   product: Product;
@@ -72,10 +73,13 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               className="relative w-full aspect-video rounded-none md:rounded-2xl overflow-hidden shadow-2xl shadow-orange-500/20 border-2 border-orange-400/30"
               onClick={(e) => e.stopPropagation()}
             >
-              <video autoPlay controls className="w-full h-full object-contain">
-                <source src="/productos/HY350/outboxing.mp4" type="video/mp4" />
-                Tu navegador no soporta la reproducción de video.
-              </video>
+              <Video
+                src="/productos/HY350/outboxing.mp4"
+                className="w-full h-full"
+                controls
+                autoPlay
+                objectFit="contain"
+              />
             </div>
           </div>
         </div>
@@ -84,15 +88,10 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
       {/* Hero Section with Video */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
-        >
-          <source src="/productos/HY350/outboxing.mp4" type="video/mp4" />
-        </video>
+        <Video
+          src="/productos/HY350/outboxing.mp4"
+          className="absolute inset-0 w-full h-full opacity-40"
+        />
 
         <div className="absolute inset-0 bg-gradient-to-b from-orange-600/50 via-amber-900/40 to-black" />
 

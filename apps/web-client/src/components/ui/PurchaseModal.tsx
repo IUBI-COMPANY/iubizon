@@ -57,21 +57,33 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
           return /^\d{8}$/.test(value);
         } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
+        } else if (documentType === "CE") {
+          return /^\d{9,12}$/.test(value);
+        } else if (documentType === "PASSPORT") {
+          return /^[A-Z0-9]{6,9}$/.test(value);
         }
         return true;
       }),
-    firstName: yup.string().required("El nombre es requerido"),
-    lastName: yup.string().required("El apellido es requerido"),
+    firstName: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.notRequired()
+        : schema.required("El nombre es requerido");
+    }),
+    lastName: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.notRequired()
+        : schema.required("El apellido es requerido");
+    }),
     email: yup
       .string()
       .email("Email inválido")
       .required("El email es requerido"),
     phonePrefix: yup.string().required("El prefijo es requerido"),
     phoneNumber: yup.string().required("El teléfono es requerido"),
-    company: yup.string().when("documentType", {
-      is: "RUC",
-      then: (schema) => schema.required("La razón social es requerida"),
-      otherwise: (schema) => schema.notRequired(),
+    company: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.required("La razón social es requerida")
+        : schema.notRequired();
     }),
   });
 
@@ -125,9 +137,11 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       status: "new",
       archived: false,
       contact: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        firstName: isRuc ? "" : formData.firstName,
+        lastName: isRuc ? "" : formData.lastName,
+        fullName: isRuc
+          ? formData.company || ""
+          : `${formData.firstName} ${formData.lastName}`.trim(),
         socialReason: isRuc ? formData.company : undefined,
         email: formData.email,
         phone: {
@@ -200,13 +214,12 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
   // Countdown y redirección después del éxito
   useEffect(() => {
     if (success) {
-      if (countdown === 0) {
-        router.push("/");
-        return;
-      }
-
       const timer = setTimeout(() => {
-        setCountdown((prev) => prev - 1);
+        if (countdown === 0) {
+          router.push("/");
+        } else {
+          setCountdown((prev) => prev - 1);
+        }
       }, 1000);
 
       return () => clearTimeout(timer);

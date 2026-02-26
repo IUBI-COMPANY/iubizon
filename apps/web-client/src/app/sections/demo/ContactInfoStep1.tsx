@@ -45,6 +45,10 @@ export const ContactInfoStep1 = ({
           return /^\d{8}$/.test(value);
         } else if (documentType === "RUC") {
           return /^(10|20)\d{9}$/.test(value);
+        } else if (documentType === "CE") {
+          return /^\d{9,12}$/.test(value);
+        } else if (documentType === "PASSPORT") {
+          return /^[A-Z0-9]{6,9}$/.test(value);
         }
         return true;
       }),
@@ -55,10 +59,10 @@ export const ContactInfoStep1 = ({
       .required("El email es requerido"),
     phonePrefix: yup.string().required("El prefijo es requerido"),
     phoneNumber: yup.string().required("El teléfono es requerido"),
-    company: yup.string().when("documentType", {
-      is: "RUC",
-      then: (schema) => schema.required("La razón social es requerida"),
-      otherwise: (schema) => schema.notRequired(),
+    company: yup.string().when("documentType", ([documentType], schema) => {
+      return documentType === "RUC"
+        ? schema.required("La razón social es requerida")
+        : schema.notRequired();
     }),
   });
 
