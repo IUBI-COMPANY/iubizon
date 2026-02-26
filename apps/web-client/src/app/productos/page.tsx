@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "catálogo proyectores epson",
       "accesorios bundle interactivo",
       "touch interactivo",
-      "miracast",
+      "adaptador inalámbrico wifi",
       "proyectores en venta",
       "repuestos proyectores",
       "comprar proyectores Lima",
