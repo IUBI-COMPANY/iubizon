@@ -69,7 +69,7 @@ const productsData: Product[] = [
     media: [
       { type: "image", src: "/productos/bundle/upside109W.png" },
       { type: "image", src: "/productos/bundle/touch.png" },
-      { type: "image", src: "/productos/bundle/miracast.png" },
+      { type: "image", src: "/productos/bundle/adaptador-wifi.png" },
     ],
     displayTechnology: "3LCD",
     lumensANSI: 4000,
@@ -111,7 +111,7 @@ Más que un kit interactivo, es una solución completa de productividad que mode
     mainImage: "/productos/bundle/touch.png",
     media: [
       { type: "image", src: "/productos/bundle/touch.png" },
-      { type: "image", src: "/productos/bundle/miracast.png" },
+      { type: "image", src: "/productos/bundle/adaptador-wifi.png" },
     ],
     brand: "iubizon",
     type: "Accesorios",
