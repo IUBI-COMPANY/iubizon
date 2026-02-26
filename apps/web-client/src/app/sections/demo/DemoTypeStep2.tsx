@@ -245,8 +245,6 @@ export const DemoTypeStep2 = ({
       },
     };
 
-    console.log("📦 Lead Data to send:", leadData);
-
     try {
       await sendDemoLead(leadData);
       setLoading(false);

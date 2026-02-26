@@ -1,19 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as yup from "yup";
-import { Controller, useForm, Resolver } from "react-hook-form";
+import { Controller, Resolver, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { X, Check, Loader2, ShoppingCart } from "lucide-react";
+import { Check, Loader2, ShoppingCart, X } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import countriesISO from "@/data-list/countriesISO.json";
 import documentsTypes from "@/data-list/documentsTypes.json";
-import { Product, ProductCondition, products } from "@/data-list/products";
+import { Product, products } from "@/data-list/products";
 import { sendPurchaseLead } from "./purchaseActions";
 import { useNotification } from "@/components/ui/Notification";
 
@@ -122,15 +121,6 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
     );
     const quantity = storedQuantity ? parseInt(storedQuantity, 10) : 1;
 
-    // Mapear ProductCondition a valores válidos de ProductItem
-    const getProductCondition = (
-      condition?: ProductCondition,
-    ): "new" | "reconditioned" | "used" => {
-      if (condition === "reconditioned") return "reconditioned";
-      // "gama-alta" y "new" se mapean a "new"
-      return "new";
-    };
-
     const leadData: Lead = {
       leadType: "sale",
       clientType: isRuc ? "organization" : "individual",
@@ -153,7 +143,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
         type: formData.documentType as DocumentInfo["type"],
         number: formData.documentNumber,
       },
-      serviceDetails: {
+      productSaleDetails: {
         products: [
           {
             id: currentProduct?.id || "",
@@ -172,15 +162,6 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
         landingPage: window.location.href,
       },
     };
-
-    console.log("📦 Datos del producto enviados:", {
-      productId: product.id,
-      productName: product.name,
-      quantity: quantity,
-      productCondition: product.condition,
-      mappedCondition: getProductCondition(product.condition),
-      productData: leadData.serviceDetails?.products?.[0],
-    });
 
     try {
       await sendPurchaseLead(leadData);
