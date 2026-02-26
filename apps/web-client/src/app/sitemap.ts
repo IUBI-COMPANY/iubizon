@@ -13,13 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/productos`,
-      lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/servicios/tecnico`,
+      url: `${baseUrl}/fichas-tecnicas`,
       lastModified: currentDate,
       changeFrequency: "weekly",
       priority: 0.9,
@@ -28,13 +22,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/contacto`,
       lastModified: currentDate,
       changeFrequency: "monthly",
-      priority: 0.8,
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/quienes-somos`,
       lastModified: currentDate,
       changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/productos`,
+      lastModified: currentDate,
+      changeFrequency: "daily",
       priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/servicios/tecnico`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.6,
     },
   ];
 
@@ -43,7 +49,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${baseUrl}/productos/${product.id}`,
     lastModified: currentDate,
     changeFrequency: "weekly" as const,
-    priority: 0.8,
+    priority: 0.5,
   }));
 
   return [...staticPages, ...productPages];

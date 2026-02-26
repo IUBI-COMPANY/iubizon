@@ -131,7 +131,7 @@ Más que un kit interactivo, es una solución completa de productividad que mode
 • Compatible con Windows, Mac, Android y Linux
 • Instalación Plug & Play
 
-**2. Adaptador Inalámbrico MiraCast**
+**2. Adaptador Inalámbrico WiFi**
 • Android integrado con Google Play Store
 • Conectividad WiFi de alta velocidad
 • Streaming inalámbrico desde cualquier dispositivo

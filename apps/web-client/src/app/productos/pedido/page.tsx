@@ -4,27 +4,27 @@ import type { Metadata } from "next";
 import PageAnOrder from "@/app/productos/pedido/PageAnOrder";
 
 export const metadata: Metadata = {
-  title: "Productos a pedido | Iubizon Perú",
+  title: "Productos a Pedido - Bundle Interactivo y Más | Iubizon Perú",
   description:
-    "Soluciones en proyectores y equipos multimedia para empresas, instituciones y organizaciones. Proyectores, accesorios y más para tu organización en Perú.",
+    "Soluciones educativas interactivas para empresas, colegios y organizaciones. Bundle Interactivo, Dúo Interactivo y equipos multimedia personalizados en Perú.",
   keywords: [
-    "productos para personas",
-    "productos para organizaciones",
-    "proyectores para empresas",
-    "soluciones en proyectores",
-    "accesorios para instituciones",
-    "tecnología para organizaciones",
+    "bundle interactivo organizaciones",
+    "dúo interactivo empresas",
+    "soluciones educativas empresas",
+    "tecnología interactiva colegios",
+    "aulas digitales instituciones",
     "equipos multimedia empresas",
     "proyectores empresariales",
+    "touch interactivo organizaciones",
     "iubizon",
-    "proyectores Lima",
-    "equipos presentación Perú",
+    "Lima",
+    "Perú",
   ],
   openGraph: {
-    title: "Productos a pedido | Iubizon Perú",
+    title: "Productos a Pedido - Bundle Interactivo y Más | Iubizon Perú",
     description:
-      "Soluciones en proyectores y equipos multimedia para empresas, instituciones y organizaciones. Proyectores, accesorios y más para tu organización en Perú.",
-    url: "https://iubizon.com/productos/organizaciones",
+      "Soluciones educativas interactivas para empresas, colegios y organizaciones. Bundle Interactivo, Dúo Interactivo y equipos multimedia en Perú.",
+    url: "https://iubizon.com/productos/pedido",
     type: "website",
   },
 };

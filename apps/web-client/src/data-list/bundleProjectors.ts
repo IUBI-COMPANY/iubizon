@@ -48,7 +48,7 @@ export const PROJECTORS: ProjectorOption[] = [
   },
 ];
 
-// Precio base del bundle (Touch + MiraCast)
+// Precio base del bundle (Touch + Adaptador Inalámbrico WiFi)
 export const BASE_BUNDLE_PRICE = 350;
 
 // Función helper para calcular precio total

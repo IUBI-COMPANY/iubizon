@@ -7,20 +7,20 @@ import StatsGrid from "@/components/ui/StatsGrid";
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title:
-      "Quiénes Somos - Expertos en Proyectores y Tecnología Educativa | iubizon",
+      "Quiénes Somos - Expertos en Soluciones Educativas Interactivas | iubizon",
     description:
-      "Conoce la historia de iubizon, empresa especialista en proyectores y tecnología educativa en Lima. Equipo con 5 años de experiencia brindando soluciones innovadoras desde 2020.",
+      "Conoce la historia de iubizon, empresa líder en tecnología educativa interactiva en Lima. Especialistas en Bundle Interactivo y Dúo Interactivo con 5 años de experiencia transformando aulas desde 2020.",
     keywords: [
       "quienes somos iubizon",
-      "empresa proyectores Lima",
+      "empresa tecnología educativa Lima",
       "historia iubizon",
-      "tecnología educativa Perú",
-      "empresa proyectores Perú",
-      "especialistas Epson Lima",
-      "distribuidores proyectores",
-      "servicio técnico proyectores",
-      "empresa tecnología educativa",
-      "proyectores empresariales Lima",
+      "soluciones educativas interactivas Perú",
+      "bundle interactivo empresa",
+      "especialistas tecnología educativa",
+      "distribuidores equipos interactivos",
+      "empresa aulas digitales",
+      "transformación digital educación",
+      "tecnología táctil educativa Lima",
     ],
     alternates: {
       canonical: "https://www.iubizon.com/quienes-somos",
@@ -28,16 +28,16 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       title:
-        "Quiénes Somos - Expertos en Proyectores y Tecnología Educativa | iubizon",
+        "Quiénes Somos - Expertos en Soluciones Educativas Interactivas | iubizon",
       url: "https://www.iubizon.com/quienes-somos",
       description:
-        "Conoce la historia de iubizon, empresa especialista en proyectores y tecnología educativa en Lima. Equipo con 5 años de experiencia desde 2020.",
+        "Conoce la historia de iubizon, empresa líder en tecnología educativa interactiva. Especialistas en Bundle Interactivo y Dúo Interactivo desde 2020.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
           width: 1200,
           height: 630,
-          alt: "Equipo iubizon - Expertos en proyectores y tecnología educativa",
+          alt: "Equipo iubizon - Expertos en tecnología educativa interactiva",
         },
       ],
       siteName: "iubizon",
@@ -45,13 +45,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Quiénes Somos - Expertos en Proyectores | iubizon",
+      title: "Quiénes Somos - Expertos en Tecnología Educativa | iubizon",
       description:
-        "Conoce la historia de iubizon, empresa especialista en proyectores y tecnología educativa en Lima desde 2020.",
+        "Conoce la historia de iubizon, empresa líder en soluciones educativas interactivas en Lima desde 2020.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
-          alt: "Equipo iubizon - Expertos en proyectores y tecnología educativa",
+          alt: "Equipo iubizon - Expertos en tecnología educativa interactiva",
         },
       ],
       site: "@iubizon",
@@ -85,7 +85,7 @@ function generateStructuredData() {
     "@type": "Organization",
     name: "iubizon",
     description:
-      "Empresa líder en proyectores y tecnología educativa en Lima, Perú. Especialistas en soluciones Epson para empresas y centros educativos.",
+      "Empresa líder en soluciones educativas interactivas en Lima, Perú. Especialistas en Bundle Interactivo y Dúo Interactivo para transformar aulas y salas de reuniones con tecnología táctil e inalámbrica.",
     url: "https://www.iubizon.com/quienes-somos",
     logo: "https://www.iubizon.com/images/logo.png",
     foundingDate: "2020",
@@ -114,11 +114,13 @@ function generateStructuredData() {
       name: "Peru",
     },
     knowsAbout: [
-      "Proyectores",
-      "Tecnología Educativa",
-      "Equipos Audiovisuales",
-      "Servicio Técnico",
-      "Epson",
+      "Bundle Interactivo",
+      "Dúo Interactivo",
+      "Tecnología Educativa Interactiva",
+      "Touch Interactivo",
+      "Adaptador Inalámbrico WiFi",
+      "Aulas Digitales",
+      "Proyectores Epson",
     ],
   };
 

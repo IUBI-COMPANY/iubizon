@@ -6,18 +6,18 @@ import ProductsClientPage from "./ProductsClientPage";
 // ==========================
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Catálogo de proyectores y accesorios en Lima y Perú | iubizon",
+    title: "Catálogo de Proyectores y Accesorios | iubizon",
     description:
-      "Descubre nuestro catálogo de proyectores, repuestos y accesorios originales en Lima y todo Perú. Compra online, cotiza gratis y recibe asesoría personalizada.",
+      "Explora nuestro catálogo de proyectores Epson, accesorios para Bundle Interactivo y componentes individuales. Compra online, cotiza gratis y recibe asesoría personalizada en Lima y Perú.",
     keywords: [
-      "catálogo de proyectores",
+      "catálogo proyectores epson",
+      "accesorios bundle interactivo",
+      "touch interactivo",
+      "miracast",
       "proyectores en venta",
-      "accesorios para proyectores",
-      "repuestos de proyectores",
+      "repuestos proyectores",
       "comprar proyectores Lima",
       "proyectores Epson",
-      "proyectores BenQ",
-      "proyectores Optoma",
       "accesorios originales",
       "iubizon",
       "Perú",
@@ -27,10 +27,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      title: "Catálogo de proyectores y accesorios en Lima y Perú | iubizon",
+      title: "Catálogo de Proyectores y Accesorios | iubizon",
       url: "https://www.iubizon.com/productos",
       description:
-        "Descubre nuestro catálogo de proyectores, repuestos y accesorios originales en Lima y todo Perú. Compra online, cotiza gratis y recibe asesoría personalizada.",
+        "Explora nuestro catálogo de proyectores Epson y accesorios para Bundle Interactivo en Lima y Perú. Compra online, cotiza gratis y recibe asesoría personalizada.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",
@@ -44,9 +44,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Catálogo de proyectores y accesorios en Lima y Perú | iubizon",
+      title: "Catálogo de Proyectores y Accesorios | iubizon",
       description:
-        "Descubre nuestro catálogo de proyectores, repuestos y accesorios originales en Lima y todo Perú. Compra online, cotiza gratis y recibe asesoría personalizada.",
+        "Explora nuestro catálogo de proyectores Epson y accesorios para Bundle Interactivo en Lima y Perú.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",

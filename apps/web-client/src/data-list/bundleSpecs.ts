@@ -92,8 +92,8 @@ export const BUNDLE_PRODUCTS_SPECS: ProductSpecs[] = [
     specs: TOUCH_SPECS,
   },
   {
-    id: "miracast",
-    name: "Adaptador Inalámbrico MiraCast",
+    id: "adaptador-inalambrico",
+    name: "Adaptador Inalámbrico WiFi",
     image: "/productos/bundle/miracast1.png",
     specs: MIRACAST_SPECS,
   },

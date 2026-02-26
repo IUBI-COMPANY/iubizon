@@ -19,7 +19,7 @@ export const getWhatsAppMessage = (product: Product): string => {
 ━━━━━━━━━━━━━━━━━━━━
 🔸 Proyector Epson PowerLite 109W (4000 lúmenes)
 🔸 Touch Interactivo (10 puntos táctiles)
-🔸 Adaptador Inalámbrico MiraCast (Android)
+🔸 Adaptador Inalámbrico WiFi (Android)
 🔸 Instalación y configuración incluida
 🔸 Garantía extendida de 1 año
 🔸 Soporte técnico especializado
@@ -79,11 +79,11 @@ export const getWhatsAppMessage = (product: Product): string => {
     );
   }
 
-  // Mensaje específico para Adaptador Inalámbrico MiraCast
+  // Mensaje específico para Adaptador Inalámbrico WiFi
   if (product?.id === "adaptador") {
-    const message = `Hola 👋, quiero adquirir el *Adaptador Inalámbrico MiraCast* de *iubizon* 📡✨
+    const message = `Hola 👋, quiero adquirir el *Adaptador Inalámbrico WiFi* de *iubizon* 📡✨
 
-📦 *MIRACAST PRO INCLUYE:*
+📦 *ADAPTADOR INALÁMBRICO INCLUYE:*
 ━━━━━━━━━━━━━━━━━━━━
 🔸 Android integrado
 🔸 Acceso a Google Play Store

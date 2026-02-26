@@ -3,19 +3,20 @@ import ContactClientPage from "./ContactClientPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Contacto - Cotiza proyectores y servicios en Lima y Perú | iubizon",
+    title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
     description:
-      "Contáctanos para cotizar proyectores, repuestos, accesorios y servicios de mantenimiento en Lima y todo Perú. Atención personalizada y respuesta rápida.",
+      "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras para colegios y empresas en Lima y todo Perú. Atención personalizada y respuesta rápida.",
     keywords: [
       "contacto iubizon",
-      "cotizar proyectores",
-      "consultas proyectores",
+      "cotizar bundle interactivo",
+      "cotizar dúo interactivo",
+      "consultas tecnología educativa",
       "atención al cliente",
       "soporte técnico",
       "Lima",
       "Perú",
-      "asesoría proyectores",
-      "servicio técnico",
+      "asesoría soluciones educativas",
+      "cotizar aulas interactivas",
       "iubizon",
     ],
     alternates: {
@@ -23,11 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      title:
-        "Contacto - Cotiza proyectores y servicios en Lima y Perú | iubizon",
+      title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
       url: "https://www.iubizon.com/contacto",
       description:
-        "Contáctanos para cotizar proyectores, repuestos, accesorios y servicios de mantenimiento en Lima y todo Perú. Atención personalizada y respuesta rápida.",
+        "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras para colegios y empresas en Lima y todo Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
@@ -41,10 +41,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title:
-        "Contacto - Cotiza proyectores y servicios en Lima y Perú | iubizon",
+      title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
       description:
-        "Contáctanos para cotizar proyectores, repuestos, accesorios y servicios de mantenimiento en Lima y todo Perú. Atención personalizada y respuesta rápida.",
+        "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras en Lima y todo Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
