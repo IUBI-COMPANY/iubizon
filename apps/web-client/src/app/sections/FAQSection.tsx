@@ -42,7 +42,7 @@ const faqItems: FAQItem[] = [
   {
     question: "¿Es compatible con cualquier sistema operativo?",
     answer:
-      "Sí, nuestro Bundle Interactivo es compatible con Windows, macOS, Android e iOS. El adaptador MiraCast permite compartir contenido desde cualquier dispositivo compatible con Miracast o AirPlay.",
+      "Sí, nuestro Bundle Interactivo es compatible con Windows, macOS, Android e iOS. El Adaptador Inalámbrico WiFi permite compartir contenido desde cualquier dispositivo compatible con proyección inalámbrica o AirPlay.",
   },
 ];
 

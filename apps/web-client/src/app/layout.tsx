@@ -1,4 +1,3 @@
-//cambiooasd
 import type { Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -110,7 +109,7 @@ export const metadata: Metadata = {
     title:
       "iubizon - Bundle Interactivo y Dúo Interactivo | Tecnología Educativa",
     description:
-      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras con proyector Epson, touch interactivo y MiraCast en Lima, Perú.",
+      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras con proyector Epson, touch interactivo y Adaptador Inalámbrico WiFi en Lima, Perú.",
     images: [
       {
         url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",

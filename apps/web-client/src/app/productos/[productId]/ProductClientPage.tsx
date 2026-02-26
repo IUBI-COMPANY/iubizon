@@ -168,7 +168,7 @@ export default function ProductDetailPage({ product }: Props) {
                       </div>
                     </div>
                   ) : isAccesoriosDuo ? (
-                    // Accesorios Dúo: Mostrar Touch + MiraCast juntos
+                    // Accesorios Dúo: Mostrar Touch + Adaptador Inalámbrico WiFi juntos
                     <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
                       <div className="flex items-center justify-center gap-8 lg:gap-16 min-h-[350px] lg:min-h-[450px]">
                         {/* Touch Interactivo */}
@@ -182,11 +182,11 @@ export default function ProductDetailPage({ product }: Props) {
                           />
                         </div>
 
-                        {/* MiraCast */}
+                        {/* Adaptador Inalámbrico */}
                         <div className="relative z-10">
                           <Image
                             src="/productos/bundle/miracast.png"
-                            alt="Adaptador MiraCast"
+                            alt="Adaptador Inalámbrico WiFi"
                             width={350}
                             height={350}
                             className="w-[240px] sm:w-[300px] lg:w-[350px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
@@ -225,7 +225,9 @@ export default function ProductDetailPage({ product }: Props) {
                         {(isBundleComplete
                           ? BUNDLE_PRODUCTS_SPECS
                           : BUNDLE_PRODUCTS_SPECS.filter(
-                              (p) => p.id === "touch" || p.id === "miracast",
+                              (p) =>
+                                p.id === "touch" ||
+                                p.id === "adaptador-inalambrico",
                             )
                         ).map((productSpec) => (
                           <div

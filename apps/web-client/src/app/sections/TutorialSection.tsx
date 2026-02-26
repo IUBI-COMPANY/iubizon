@@ -183,8 +183,6 @@ export const TutorialSection: React.FC<TutorialSectionProps> = ({
                   key={currentContent.videoUrl}
                   src={currentContent.videoUrl}
                   className="w-full h-full"
-                  controls
-                  autoPlay={false}
                 />
               </div>
             </div>
