@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Info, XCircle } from "lucide-react";
 import { Product } from "@/data-list/products";
 import { GiftCardReaconditioned } from "./GiftCardReaconditioned";
@@ -32,17 +32,23 @@ export const InformationAndPriceCard = ({
   const minQuantity = 1;
   const maxQuantity = Math.max(minQuantity, product.stock ?? minQuantity);
 
-  const clampQuantity = (nextValue: number) => {
-    return Math.min(maxQuantity, Math.max(minQuantity, nextValue));
-  };
+  const clampQuantity = useCallback(
+    (nextValue: number) => {
+      return Math.min(maxQuantity, Math.max(minQuantity, nextValue));
+    },
+    [maxQuantity, minQuantity],
+  );
 
-  const handleQuantityChange = (nextValue: number) => {
-    const clamped = clampQuantity(nextValue);
-    setQuantity(clamped);
-    localStorage.setItem(`quantity_${product.id}`, String(clamped));
-  };
+  const handleQuantityChange = useCallback(
+    (nextValue: number) => {
+      const clamped = clampQuantity(nextValue);
+      setQuantity(clamped);
+      localStorage.setItem(`quantity_${product.id}`, String(clamped));
+    },
+    [clampQuantity, product.id],
+  );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const storedQuantity = localStorage.getItem(`quantity_${product.id}`);
     if (storedQuantity) {
       const parsed = Number(storedQuantity);
@@ -56,9 +62,9 @@ export const InformationAndPriceCard = ({
     } else {
       localStorage.setItem(`quantity_${product.id}`, String(minQuantity));
     }
-  }, [product.id, product.stock, maxQuantity]);
+  }, [product.id, product.stock, maxQuantity, clampQuantity]);
 
-  const priceData = React.useMemo(() => {
+  const priceData = useMemo(() => {
     return {
       subtotal: (product.subTotal ?? 0) * quantity,
       igv: (product.IGV ?? 0) * quantity,
