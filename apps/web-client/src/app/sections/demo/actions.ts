@@ -21,29 +21,29 @@ export async function sendDemoLead(
           ];
 
     return {
-    // Core Fields
-    leadType: data.leadType,
-    clientType: data.clientType,
-    status: data.status,
-    archived: data.archived,
-    // Contact Information
-    contact: data?.contact || undefined,
-    // Document Information
-    document: data?.document || undefined,
-    // Service Details
-    serviceDetails: {
-      ...serviceDetails,
-      products,
-    },
-    // Communication
-    hostname: "iubizon.com",
-    termsAndConditions: data.termsAndConditions || true,
-    isQuoteRequest: data.isQuoteRequest || false,
-    // Tracking
-    tracking: {
-      source: data.tracking.source,
-      landingPage: data.tracking.landingPage,
-    },
+      // Core Fields
+      leadType: data.leadType,
+      clientType: data.clientType,
+      status: data.status,
+      archived: data.archived,
+      // Contact Information
+      contact: data?.contact || undefined,
+      // Document Information
+      document: data?.document || undefined,
+      // Service Details
+      serviceDetails: {
+        ...serviceDetails,
+        products,
+      },
+      // Communication
+      hostname: "iubizon.com",
+      termsAndConditions: data.termsAndConditions || true,
+      isQuoteRequest: data.isQuoteRequest || false,
+      // Tracking
+      tracking: {
+        source: data.tracking.source,
+        landingPage: data.tracking.landingPage,
+      },
     };
   };
 
