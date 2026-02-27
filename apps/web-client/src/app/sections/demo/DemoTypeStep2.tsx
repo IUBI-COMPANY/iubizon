@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/Select";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { RadioGroup } from "@/components/ui/RadioGroup";
+import { TextArea } from "@/components/ui/TextArea";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { sendDemoLead } from "./actions";
 import { useNotification } from "@/components/ui/Notification";
@@ -26,6 +27,7 @@ interface FormData {
   province?: string;
   district?: string;
   address?: string;
+  additionalInformation?: string;
 }
 
 interface Props {
@@ -128,6 +130,10 @@ export const DemoTypeStep2 = ({
       province: leadFormData?.serviceDetails?.address?.city || "",
       district: leadFormData?.serviceDetails?.address?.area || "",
       address: leadFormData?.serviceDetails?.address?.street || "",
+      additionalInformation:
+        leadFormData?.serviceDetails?.additionalInformation ||
+        parsedData?.serviceDetails?.additionalInformation ||
+        "",
     };
   };
 
@@ -203,6 +209,7 @@ export const DemoTypeStep2 = ({
                 street: formData.address,
               }
             : undefined,
+        additionalInformation: formData.additionalInformation?.trim() || "",
       },
     };
 
@@ -479,6 +486,22 @@ export const DemoTypeStep2 = ({
             </div>
           </div>
         )}
+
+        <Controller
+          name="additionalInformation"
+          control={control}
+          render={({ field: { onChange, value, name } }) => (
+            <TextArea
+              label="Comentarios adicionales"
+              name={name}
+              value={value}
+              onChange={onChange}
+              placeholder="Cuéntanos más sobre lo que necesitas en la demo."
+              rows={4}
+              resize="vertical"
+            />
+          )}
+        />
 
         <div className="flex gap-4">
           <button

@@ -8,13 +8,18 @@ import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
 import { ContactInfoStep1 } from "./ContactInfoStep1";
 import { DemoTypeStep2 } from "./DemoTypeStep2";
+import { Product } from "@/data-list/products";
 
 const STORAGE_KEYS = {
   currentStep: "demo_currentStep",
   formData: "demo_formData",
 };
 
-export const DemoStepsGroup = () => {
+interface Props {
+  product?: Product;
+}
+
+export const DemoStepsGroup = ({ product }: Props) => {
   const [globalStep, setGlobalStep] = useState(0);
   const [leadFormData, setLeadFormData] = useState<Partial<Lead>>({});
   const [loading, setLoading] = useState(true);
@@ -22,6 +27,10 @@ export const DemoStepsGroup = () => {
   const [countdown, setCountdown] = useState(8);
   const formRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
+
+  const getLocalStorageData = () => {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.formData) || "{}");
+  };
 
   useEffect(() => {
     const stepsData = Number(
@@ -39,6 +48,28 @@ export const DemoStepsGroup = () => {
     setLeadFormData(data);
     setLoading(false);
   }, [globalStep]);
+
+  useEffect(() => {
+    if (!product) return;
+    const currentData = getLocalStorageData();
+    const updatedData = {
+      ...currentData,
+      serviceDetails: {
+        ...currentData?.serviceDetails,
+        products: [
+          {
+            id: product.id,
+            name: product.name || product.model,
+            quantity: 1,
+            brand: product.brand || "iubizon",
+            model: product.model || "",
+          },
+        ],
+      },
+    };
+    localStorage.setItem(STORAGE_KEYS.formData, JSON.stringify(updatedData));
+    setLeadFormData(updatedData);
+  }, [product, product?.id]);
 
   const addLocalStorageData = (data: object) => {
     const currentLocalData = getLocalStorageData();
@@ -58,10 +89,6 @@ export const DemoStepsGroup = () => {
         });
       }, 100);
     }
-  };
-
-  const getLocalStorageData = () => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.formData) || "{}");
   };
 
   const stepItems = [

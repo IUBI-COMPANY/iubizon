@@ -6,6 +6,7 @@ import OtherProductsCarousel from "../../../components/ui/OtherProductsCarousel"
 import { Product } from "@/data-list/products";
 import { NoFoundComponent } from "@/components/ui/NoFoundComponent";
 import { InformationAndPriceCard } from "@/components/ui/InformationAndPriceCard";
+import { Button } from "@/components/ui/Button";
 import React, { useEffect, useState } from "react";
 import { productsCondition } from "@/data-list/productsCondition";
 import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
@@ -16,6 +17,7 @@ import { isEmpty } from "lodash";
 import ContentDetailBundleInteractivo from "@/app/productos/[productId]/ContentDetailBundleInteractivo";
 import ContentDetailDuoInteractivo from "@/app/productos/[productId]/ContentDetailDuoInteractivo";
 import { Info } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   product: Product;
@@ -26,7 +28,7 @@ const SPECIAL_PRODUCT_ID =
 const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 // IDs de productos del bundle
-const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "duo-interactivo"];
+const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "accesorios-duo"];
 
 export default function ProductDetailPage({ product }: Props) {
   const [showModal, setShowModal] = useState(false);
@@ -214,6 +216,20 @@ export default function ProductDetailPage({ product }: Props) {
                       showChristmasCampaign={showChristmasCampaign}
                       getBundleDescription={getBundleDescription}
                     />
+                    <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-5">
+                      <h3 className="text-lg font-bold text-white mb-2">
+                        ¿Quieres una demo de este producto?
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        Agenda una demostración personalizada para{" "}
+                        {product.name || product.model}.
+                      </p>
+                      <Link href={`/demo/${product.id}`}>
+                        <Button variant="primary" styleVariant="filled" block>
+                          Solicitar demo
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
 
                   <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10 mb-8">
@@ -441,6 +457,20 @@ export default function ProductDetailPage({ product }: Props) {
                       showChristmasCampaign={showChristmasCampaign}
                       getBundleDescription={getBundleDescription}
                     />
+                    <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-6">
+                      <h3 className="text-lg font-bold text-white mb-2">
+                        ¿Quieres una demo de este producto?
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        Agenda una demostración personalizada para{" "}
+                        {product.name || product.model}.
+                      </p>
+                      <Link href={`/demo/${product.id}`}>
+                        <Button variant="primary" styleVariant="filled" block>
+                          Solicitar demo
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
