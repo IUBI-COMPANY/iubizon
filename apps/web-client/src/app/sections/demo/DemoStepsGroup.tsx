@@ -28,6 +28,10 @@ export const DemoStepsGroup = ({ product }: Props) => {
   const formRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
+  const getLocalStorageData = () => {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.formData) || "{}");
+  };
+
   useEffect(() => {
     const stepsData = Number(
       localStorage.getItem(STORAGE_KEYS.currentStep) || 0,
@@ -65,7 +69,7 @@ export const DemoStepsGroup = ({ product }: Props) => {
     };
     localStorage.setItem(STORAGE_KEYS.formData, JSON.stringify(updatedData));
     setLeadFormData(updatedData);
-  }, [product?.id]);
+  }, [product, product?.id]);
 
   const addLocalStorageData = (data: object) => {
     const currentLocalData = getLocalStorageData();
@@ -85,10 +89,6 @@ export const DemoStepsGroup = ({ product }: Props) => {
         });
       }, 100);
     }
-  };
-
-  const getLocalStorageData = () => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.formData) || "{}");
   };
 
   const stepItems = [
