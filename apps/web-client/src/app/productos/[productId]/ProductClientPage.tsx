@@ -159,7 +159,7 @@ export default function ProductDetailPage({ product }: Props) {
                         <div className="absolute right-0 bottom-8 z-0">
                           <Image
                             src="/productos/bundle/miracast.png"
-                            alt="MiraCast Dongle"
+                            alt="Adaptador Inalámbrico Wifi"
                             width={220}
                             height={220}
                             className="w-[140px] sm:w-[170px] lg:w-[200px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"

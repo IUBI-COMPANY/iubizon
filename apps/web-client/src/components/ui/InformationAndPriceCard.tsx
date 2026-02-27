@@ -28,6 +28,15 @@ export const InformationAndPriceCard = ({
   showChristmasCampaign = false,
 }: Props) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  const priceData = React.useMemo(() => {
+    return {
+      subtotal: (product.subTotal ?? 0) * quantity,
+      igv: (product.IGV ?? 0) * quantity,
+      total: (product.totalPayment ?? 0) * quantity,
+    };
+  }, [product, quantity]);
 
   // Obtener información de descuento del producto
   const discountInfo = getProductDiscountInfo(product);
@@ -170,13 +179,13 @@ export const InformationAndPriceCard = ({
                 <div className="flex justify-between text-sm items-center">
                   <span className="text-gray-400 font-sfpro">SubTotal</span>
                   <span className="font-medium text-gray-300 font-sfpro">
-                    {formatPrice(product.subTotal)}
+                    {formatPrice(priceData.subtotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm items-center pb-3 border-b border-white/10">
                   <span className="text-gray-400 font-sfpro">IGV (18%)</span>
                   <span className="font-medium text-gray-300 font-sfpro">
-                    {formatPrice(product.IGV)}
+                    {formatPrice(priceData.igv)}
                   </span>
                 </div>
 
@@ -186,7 +195,7 @@ export const InformationAndPriceCard = ({
                     Total a Pagar:
                   </span>
                   <span className="text-3xl font-black text-primary font-sfpro drop-shadow-lg">
-                    {formatPrice(product.totalPayment)}
+                    {formatPrice(priceData.total)}
                   </span>
                 </div>
               </div>
@@ -205,7 +214,11 @@ export const InformationAndPriceCard = ({
 
           {/* SELECTOR DE CANTIDAD */}
           <div className="mb-6 flex justify-center">
-            <QuantitySelector productId={product.id} />
+            <QuantitySelector
+              value={quantity}
+              onChange={setQuantity}
+              max={product.stock}
+            />
           </div>
 
           {/* BOTÓN DE ACCIÓN (CTA) */}
