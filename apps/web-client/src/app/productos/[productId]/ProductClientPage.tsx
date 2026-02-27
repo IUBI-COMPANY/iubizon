@@ -11,7 +11,6 @@ import React, { useEffect, useState } from "react";
 import { productsCondition } from "@/data-list/productsCondition";
 import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
 import { EPSONFH02 } from "./EPSON-FH02";
-import { SummerBanner } from "@/components/ui/SummerBanner";
 import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
 import { isEmpty } from "lodash";
 import ContentDetailBundleInteractivo from "@/app/productos/[productId]/ContentDetailBundleInteractivo";
