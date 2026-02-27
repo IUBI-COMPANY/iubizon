@@ -174,7 +174,7 @@ export default function ProductDetailPage({ product }: Props) {
                         {/* Touch Interactivo */}
                         <div className="relative z-10">
                           <Image
-                            src="/productos/bundle/touch.png"
+                            src="/productos/bundle/touch1.png"
                             alt="Touch Interactivo"
                             width={400}
                             height={400}
