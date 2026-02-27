@@ -26,6 +26,17 @@ const navigation: HeaderNavigation[] = [
   { name: "Inicio", href: "/" },
   { name: "¿Quienes somos?", href: "/quienes-somos" },
   {
+    name: "Productos",
+    options: [
+      { name: "Bundle Interactivo", href: "/productos/bundle-interactivo" },
+      { name: "Duo interactivo", href: "/productos/duo-interactivo" },
+      {
+        name: "Otros productos (proyectores,accesorios,etc.)",
+        href: "/productos/pedido",
+      },
+    ],
+  },
+  {
     name: "Servicio Técnico",
     href: "/servicios/tecnico",
     options: [
