@@ -117,6 +117,7 @@ export const InputNumber = ({
         className={twMerge(
           "block w-full rounded-md bg-white px-3.5 py-2 text-base placeholder:text-gray-400 transition-colors duration-200",
           "outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2",
+          "appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
           error
             ? "outline-red-500 border-red-500 focus:outline-red-500"
             : "focus:outline-secondary/70 hover:outline-gray-400",

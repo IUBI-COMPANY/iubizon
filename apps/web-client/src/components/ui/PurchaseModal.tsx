@@ -44,6 +44,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
 
   const getCurrentProductId = pathname.split("/productos/")[1];
   const currentProduct = products.find((p) => p.id === getCurrentProductId);
+  const resolvedProduct = currentProduct ?? product;
 
   const schema = yup.object({
     documentType: yup.string().required("El tipo de documento es requerido"),
@@ -117,7 +118,7 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
 
     // Obtener cantidad desde localStorage (guardada al hacer clic en "Comprar ahora")
     const storedQuantity = localStorage.getItem(
-      `purchase_quantity_${currentProduct?.id}`,
+      `purchase_quantity_${resolvedProduct?.id}`,
     );
     const quantity = storedQuantity ? parseInt(storedQuantity, 10) : 1;
 
@@ -146,11 +147,11 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       productSaleDetails: {
         products: [
           {
-            id: currentProduct?.id || "",
-            name: currentProduct?.name,
+            id: resolvedProduct?.id || "",
+            name: resolvedProduct?.name,
             quantity: quantity,
-            brand: currentProduct?.brand || "iubizon",
-            model: currentProduct?.model || "",
+            brand: resolvedProduct?.brand || "iubizon",
+            model: resolvedProduct?.model || "",
           },
         ],
       },
@@ -168,6 +169,10 @@ export const PurchaseModal = ({ isOpen, onClose, product }: Props) => {
       setLoading(false);
       setSuccess(true);
       reset();
+      if (resolvedProduct?.id) {
+        localStorage.removeItem(`quantity_${resolvedProduct.id}`);
+        localStorage.removeItem(`purchase_quantity_${resolvedProduct.id}`);
+      }
     } catch (error) {
       console.error("Error sending purchase lead: ", error);
       setLoading(false);
