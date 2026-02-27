@@ -28,7 +28,7 @@ const SPECIAL_PRODUCT_ID =
 const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 // IDs de productos del bundle
-const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "accesorios-duo"];
+const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "duo-interactivo"];
 
 export default function ProductDetailPage({ product }: Props) {
   const [showModal, setShowModal] = useState(false);
@@ -85,13 +85,6 @@ export default function ProductDetailPage({ product }: Props) {
           <NoFoundComponent />
         ) : (
           <div className="w-full">
-            {/* Banner de Verano - Oculto para productos del bundle */}
-            {!isBundleProduct && (
-              <div className="w-full pt-5 max-w-[1470px] mx-auto px-7">
-                <SummerBanner product={product} />
-              </div>
-            )}
-
             {/* Título y Descripción personalizados para productos del bundle */}
             {isBundleProduct && (
               <div className="relative py-16 px-6 overflow-hidden">
@@ -218,7 +211,7 @@ export default function ProductDetailPage({ product }: Props) {
                     />
                     <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-5">
                       <h3 className="text-lg font-bold text-white mb-2">
-                        ¿Quieres una demo de este producto?
+                        ¿Aún no te convence? Solicita una demostración gratuita.
                       </h3>
                       <p className="text-gray-400 text-sm mb-4">
                         Agenda una demostración personalizada para{" "}
@@ -459,7 +452,7 @@ export default function ProductDetailPage({ product }: Props) {
                     />
                     <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-6">
                       <h3 className="text-lg font-bold text-white mb-2">
-                        ¿Quieres una demo de este producto?
+                        ¿Aún no te convence? Solicita una demostración gratuita.
                       </h3>
                       <p className="text-gray-400 text-sm mb-4">
                         Agenda una demostración personalizada para{" "}
