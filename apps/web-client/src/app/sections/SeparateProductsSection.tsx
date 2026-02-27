@@ -39,9 +39,9 @@ export const SeparateProductsSection: React.FC = () => {
               <Image
                 src="/productos/duo-interactivo/duo-interactivo-logotipo.png"
                 alt="Duo Interactivo"
-                width={100}
-                height={100}
-                className="w-full h-[7em] object-contain"
+                width={400}
+                height={400}
+                className="w-full h-[8em] object-contain relative z-30"
               />
             </div>
             <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
