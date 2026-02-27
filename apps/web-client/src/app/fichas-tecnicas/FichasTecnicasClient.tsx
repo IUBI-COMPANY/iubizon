@@ -15,24 +15,24 @@ interface TechnicalDocument {
   category: string;
 }
 
-const technicalDocuments: TechnicalDocument[] = [
+export const technicalDocuments: TechnicalDocument[] = [
   {
     id: "proyector-epson-109w",
     title: "Proyector Epson 109W",
     description:
       "Especificaciones técnicas completas del proyector Epson EB-109W. Incluye resolución, brillo, conectividad y más.",
     image: "/productos/bundle/upside109W.png",
-    pdfUrl: "/documentos/bundle-interactivo.pdf",
+    pdfUrl: "/productos/109W/Proyector_Epson_PowerLite_109W_Ficha_Tecnica.pdf",
     category: "Proyector",
   },
   {
     id: "touch-interactivo",
-    title: "Touch Interactivo Hub 2",
+    title: "Touch Tank Hub 2",
     description:
       "Ficha técnica del sistema Touch Interactivo. Tecnología láser, compatibilidad y características de instalación.",
     image: "/productos/bundle/touch1.png",
-    pdfUrl: "/documentos/ficha-tecnica-tank-hub-2.pdf",
-    category: "Accesorio Interactivo",
+    pdfUrl: "/productos/touch-hub-tank/Ficha_Tecnica_Touch_Tank_Hub2.pdf",
+    category: "Modulo Interactivo",
   },
   {
     id: "adaptador-inalambrico-wifi",
@@ -40,8 +40,9 @@ const technicalDocuments: TechnicalDocument[] = [
     description:
       "Especificaciones del adaptador inalámbrico. Compatibilidad, conectividad WiFi y sistema Android.",
     image: "/productos/bundle/adaptador-wifi1.png",
-    pdfUrl: "/documentos/ficha-tecnica-touch-portable.pdf",
-    category: "Conectividad",
+    pdfUrl:
+      "/productos/adaptador-wifi/Modulo_Conexion_Inalambrica_Ficha_Tecnica.pdf",
+    category: "Accesorio",
   },
 ];
 

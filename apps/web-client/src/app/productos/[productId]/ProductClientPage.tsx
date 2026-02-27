@@ -4,7 +4,6 @@ import Image from "next/image";
 import MediaCarousel from "../../../components/ui/MediaCarousel";
 import OtherProductsCarousel from "../../../components/ui/OtherProductsCarousel";
 import { Product } from "@/data-list/products";
-import { Info } from "lucide-react";
 import { NoFoundComponent } from "@/components/ui/NoFoundComponent";
 import { InformationAndPriceCard } from "@/components/ui/InformationAndPriceCard";
 import React, { useEffect, useState } from "react";
@@ -16,6 +15,7 @@ import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
 import { isEmpty } from "lodash";
 import ContentDetailBundleInteractivo from "@/app/productos/[productId]/ContentDetailBundleInteractivo";
 import ContentDetailDuoInteractivo from "@/app/productos/[productId]/ContentDetailDuoInteractivo";
+import { Info } from "lucide-react";
 
 interface Props {
   product: Product;
@@ -267,34 +267,68 @@ export default function ProductDetailPage({ product }: Props) {
                                 p.id === "touch" ||
                                 p.id === "adaptador-inalambrico",
                             )
-                        ).map((productSpec) => (
-                          <div
-                            key={productSpec.id}
-                            className="pb-6 border-b border-white/10 last:border-b-0 last:pb-0"
-                          >
-                            {/* Título del producto */}
-                            <h3 className="text-lg font-bold text-primary mb-4">
-                              {productSpec.name}
-                            </h3>
-
-                            {/* Lista de especificaciones */}
-                            <div className="grid grid-cols-1 gap-4">
-                              {productSpec.specs.map((spec, index) => (
-                                <div
-                                  key={index}
-                                  className="flex justify-between items-center py-3 border-b border-white/10 last:border-b-0"
-                                >
-                                  <span className="text-gray-400">
-                                    {spec.label}:
-                                  </span>
-                                  <span className="text-white font-semibold text-right">
-                                    {spec.value}
-                                  </span>
-                                </div>
-                              ))}
+                        ).map((productSpec) => {
+                          // Fichas técnicas para cada producto
+                          const fichaLinks: Record<string, string> = {
+                            proyector:
+                              "/productos/109W/Proyector_Epson_PowerLite_109W_Ficha_Tecnica.pdf",
+                            touch:
+                              "/productos/touch-hub-tank/Ficha_Tecnica_Touch_Tank_Hub2.pdf",
+                            "adaptador-inalambrico":
+                              "/productos/adaptador-wifi/Modulo_Conexion_Inalambrica_Ficha_Tecnica.pdf",
+                          };
+                          return (
+                            <div
+                              key={productSpec.id}
+                              className="pb-6 border-b border-white/10 last:border-b-0 last:pb-0"
+                            >
+                              {/* Título del producto + ficha técnica */}
+                              <div className="flex items-center gap-3 mb-4">
+                                <h3 className="text-lg font-bold text-primary">
+                                  {productSpec.name}
+                                </h3>
+                                {fichaLinks[productSpec.id] && (
+                                  <a
+                                    href={fichaLinks[productSpec.id]}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition"
+                                  >
+                                    <span>Ficha técnica</span>
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        d="M7 17 17 7m0 0h-6m6 0v6"
+                                      />
+                                    </svg>
+                                  </a>
+                                )}
+                              </div>
+                              {/* Lista de especificaciones */}
+                              <div className="grid grid-cols-1 gap-4">
+                                {productSpec.specs.map((spec, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex justify-between items-center py-3 border-b border-white/10 last:border-b-0"
+                                  >
+                                    <span className="text-gray-400">
+                                      {spec.label}:
+                                    </span>
+                                    <span className="text-white font-semibold text-right">
+                                      {spec.value}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       // Specs normales para otros productos
@@ -364,6 +398,31 @@ export default function ProductDetailPage({ product }: Props) {
                             <span className="text-white font-semibold">
                               {product.aspectRatio}
                             </span>
+                          </div>
+                        )}
+                        {/* Ficha técnica para productos individuales si existe */}
+                        {product?.technicalSheetUrl && (
+                          <div className="flex justify-end pt-2">
+                            <a
+                              href={product.technicalSheetUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 transition"
+                            >
+                              <span>Ficha técnica</span>
+                              <svg
+                                width="16"
+                                height="16"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  d="M7 17 17 7m0 0h-6m6 0v6"
+                                />
+                              </svg>
+                            </a>
                           </div>
                         )}
                       </div>

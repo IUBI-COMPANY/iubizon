@@ -37,6 +37,7 @@ export interface Product extends Price {
   campaign?: string;
   classification?: Classification;
   technicalSheetUrl?: string;
+  technicalSheetUrlForDownload?: string;
   gama?: "baja" | "media" | "alta" | "muy alta";
 }
 
@@ -87,7 +88,7 @@ const productsData: Product[] = [
     id: "duo-interactivo",
     model: "Touch y Adaptador Inalámbrico",
     name: "Duo interactivo",
-    stock: 15,
+    stock: 10,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 4021.15,
