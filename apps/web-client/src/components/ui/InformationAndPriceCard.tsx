@@ -29,6 +29,34 @@ export const InformationAndPriceCard = ({
 }: Props) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const minQuantity = 1;
+  const maxQuantity = Math.max(minQuantity, product.stock ?? minQuantity);
+
+  const clampQuantity = (nextValue: number) => {
+    return Math.min(maxQuantity, Math.max(minQuantity, nextValue));
+  };
+
+  const handleQuantityChange = (nextValue: number) => {
+    const clamped = clampQuantity(nextValue);
+    setQuantity(clamped);
+    localStorage.setItem(`quantity_${product.id}`, String(clamped));
+  };
+
+  React.useEffect(() => {
+    const storedQuantity = localStorage.getItem(`quantity_${product.id}`);
+    if (storedQuantity) {
+      const parsed = Number(storedQuantity);
+      if (!Number.isNaN(parsed)) {
+        const clamped = clampQuantity(parsed);
+        setQuantity(clamped);
+        if (clamped !== parsed) {
+          localStorage.setItem(`quantity_${product.id}`, String(clamped));
+        }
+      }
+    } else {
+      localStorage.setItem(`quantity_${product.id}`, String(minQuantity));
+    }
+  }, [product.id, product.stock, maxQuantity]);
 
   const priceData = React.useMemo(() => {
     return {
@@ -216,8 +244,8 @@ export const InformationAndPriceCard = ({
           <div className="mb-6 flex justify-center">
             <QuantitySelector
               value={quantity}
-              onChange={setQuantity}
-              max={product.stock}
+              onChange={handleQuantityChange}
+              max={maxQuantity}
             />
           </div>
 
