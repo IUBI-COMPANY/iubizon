@@ -54,11 +54,11 @@ export function OrganizationGallery() {
           className="opacity-0 animate-fade-in-up"
           style={{ animationFillMode: "forwards" }}
         >
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight mb-3 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-3 sm:mb-4">
             De Problema a<span className="text-orange-600"> Solución</span>{" "}
             Integral
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Cada proyector pasa por nuestro proceso completo de mantenimiento,
             asegurando óptimo rendimiento y máxima durabilidad.
           </p>

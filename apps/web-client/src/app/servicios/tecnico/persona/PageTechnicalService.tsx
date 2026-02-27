@@ -185,7 +185,7 @@ export default function PageTechnicalService() {
           }}
         />
       </Head>
-      <main>
+      <main className="bg-secondary">
         <header
           className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
           role="banner"
@@ -202,14 +202,14 @@ export default function PageTechnicalService() {
           </div>
         </header>
         <section
-          className="relative -mt-[39rem] sm:-mt-[40rem] z-20 px-4"
+          className="relative -mt-[39rem] sm:-mt-[40rem] z-20 px-4 "
           id="contact-form"
           aria-label="Formulario de contacto para reparación de proyectores"
         >
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto ">
             <div className="relative z-10 h-auto px-[2em] pt-[3em] 2xl:pt-[5em] flex flex-col justify-center items-center text-center">
-              <div className="max-w-4xl mx-auto mb-8">
-                <div className="w-full flex justify-center">
+              <div className="max-w-4xl mx-auto mb-8 ">
+                <div className="w-full flex justify-center ">
                   <span className="inline-block bg-primary/13 text-primary font-semibold px-4 py-1 rounded-full mb-4">
                     Solicita o Cotiza
                   </span>
@@ -229,21 +229,21 @@ export default function PageTechnicalService() {
         </section>
         <WorksGallery type="individual" />
         <section
-          className="mt-10 pt-0 pb-16 bg-white"
+          className=" mt-10 pt-0 pb-16 "
           itemScope
           itemType="https://schema.org/HowTo"
           aria-label="Cómo funciona el servicio de reparación de proyectores"
         >
-          <div className="max-w-6xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto px-4 ">
             <div className="text-center mb-16">
               <h2
-                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+                className="text-3xl md:text-4xl font-bold text-white mb-4"
                 itemProp="name"
               >
                 ¿Cómo Funciona Nuestro Servicio de Reparación de Proyectores?
               </h2>
               <p
-                className="text-xl text-gray-600 max-w-3xl mx-auto"
+                className="text-xl text-gray-400 max-w-3xl mx-auto"
                 itemProp="description"
               >
                 Recibimos tu proyector Epson, BenQ, Sony u otra marca en Lima,
@@ -252,7 +252,7 @@ export default function PageTechnicalService() {
                 garantizados.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 max-w-7xl mx-auto items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 max-w-7xl mx-auto items-center ">
               {/* Columna izquierda - Imagen */}
               <div
                 className="md:col-span-1 opacity-0 animate-fade-in-up"
@@ -322,7 +322,7 @@ export default function PageTechnicalService() {
           </div>
         </section>
         <section
-          className="py-20 bg-gradient-to-b from-white via-gray-50 to-white"
+          className="py-20 bg-secondary"
           aria-labelledby="benefits-heading"
           aria-label="Beneficios del servicio de reparación de proyectores"
         >
@@ -330,13 +330,13 @@ export default function PageTechnicalService() {
             <div className="text-center mb-20">
               <h2
                 id="benefits-heading"
-                className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 opacity-0 animate-fade-in-up"
+                className="text-4xl md:text-5xl font-bold text-white mb-6 opacity-0 animate-fade-in-up"
                 style={{ animationFillMode: "forwards" }}
               >
                 ¿Por Qué Elegir Nuestro Servicio Técnico?
               </h2>
               <p
-                className="text-xl text-gray-600 max-w-2xl mx-auto font-medium opacity-0 animate-fade-in-up"
+                className="text-xl text-gray-400 max-w-2xl mx-auto font-medium opacity-0 animate-fade-in-up"
                 style={{
                   animationDelay: "0.1s",
                   animationFillMode: "forwards",

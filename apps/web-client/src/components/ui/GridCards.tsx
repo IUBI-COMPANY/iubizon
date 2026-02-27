@@ -79,10 +79,8 @@ export default function GridCards({
                 />
               </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              {item.title}
-            </h3>
-            <p className="text-gray-600 text-base leading-relaxed">
+            <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+            <p className="text-gray-400 text-base leading-relaxed">
               {item.description}
             </p>
           </div>

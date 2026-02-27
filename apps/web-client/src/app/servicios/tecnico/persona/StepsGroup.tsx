@@ -120,7 +120,7 @@ export const StepsGroup = () => {
   }, [globalStep, router]);
 
   return loading ? (
-    <div className="w-full h-full min-h-[40svh] grid place-items-center">
+    <div className="w-full h-full min-h-[40svh] grid place-items-center ">
       <Loader2 className="w-20 h-20 text-primary animate-spin" />
     </div>
   ) : (

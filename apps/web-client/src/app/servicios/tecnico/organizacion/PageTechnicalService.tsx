@@ -154,7 +154,7 @@ export default function PageTechnicalService() {
           }}
         />
       </Head>
-      <main>
+      <main className="bg-secondary">
         <header
           className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
           role="banner"
