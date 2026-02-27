@@ -63,10 +63,7 @@ export const TutorialSection: React.FC<TutorialSectionProps> = ({
   };
 
   return (
-    <section
-      id="tutorial-section"
-      className="py-24 bg-bg-deep relative overflow-hidden"
-    >
+    <section className="py-24 bg-bg-deep relative overflow-hidden">
       <div className="absolute top-1/2 left-0 w-1/3 h-96 bg-primary/10 blur-[150px] pointer-events-none rounded-full -translate-x-1/2"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

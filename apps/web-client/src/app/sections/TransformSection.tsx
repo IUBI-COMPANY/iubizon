@@ -4,7 +4,10 @@ import { LuCode } from "react-icons/lu";
 import { ProjectorIcon } from "lucide-react";
 
 export const TransformSection = () => (
-  <section className="w-full py-12 px-4 md:px-0 flex flex-col items-center bg-linear-to-b from-[#0a1833] to-[#060e1e] text-white text-center rounded-2xl mb-8 shadow-lg">
+  <section
+    id="transform-section"
+    className="w-full py-12 px-4 md:px-0 flex flex-col items-center text-white text-center rounded-2xl mb-8 shadow-lg"
+  >
     <h1 className="text-3xl md:text-5xl font-bold mb-10">
       Transforma tus espacios
       <br />
