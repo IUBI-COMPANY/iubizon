@@ -5,7 +5,22 @@ import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 export async function sendDemoLead(
   leadDemo: Lead,
 ): Promise<{ success: boolean; error?: string }> {
-  const mapDemoLeadData = (data: Lead) => ({
+  const mapDemoLeadData = (data: Lead) => {
+    const serviceDetails = data?.serviceDetails || {};
+    const products =
+      serviceDetails?.products && serviceDetails.products.length > 0
+        ? serviceDetails.products
+        : [
+            {
+              id: "bundle-interactivo",
+              name: "Solicita una Demo del Bundle",
+              quantity: 1,
+              brand: "iubizon",
+              model: "Bundle Interactivo 2025",
+            },
+          ];
+
+    return {
     // Core Fields
     leadType: data.leadType,
     clientType: data.clientType,
@@ -17,16 +32,8 @@ export async function sendDemoLead(
     document: data?.document || undefined,
     // Service Details
     serviceDetails: {
-      ...data?.serviceDetails,
-      products: [
-        {
-          id: "bundle-interactivo",
-          name: "Solicita una Demo del Bundle",
-          quantity: 1,
-          brand: "iubizon",
-          model: "Bundle Interactivo 2025",
-        },
-      ],
+      ...serviceDetails,
+      products,
     },
     // Communication
     hostname: "iubizon.com",
@@ -37,7 +44,8 @@ export async function sendDemoLead(
       source: data.tracking.source,
       landingPage: data.tracking.landingPage,
     },
-  });
+    };
+  };
 
   try {
     const response = await fetch(buildApiUrl(API_ENDPOINTS.LEADS), {

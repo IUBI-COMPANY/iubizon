@@ -1,7 +1,8 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { Calendar } from "lucide-react";
-import { DemoStepsGroup } from "./demo/DemoStepsGroup";
+import { Button } from "@/components/ui/Button";
 
 export const DemoSection: React.FC = () => {
   return (
@@ -23,14 +24,22 @@ export const DemoSection: React.FC = () => {
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-            ¿Aun tienes dudas? Solicita una demostración gratis
+            ¿Aún tienes dudas?
+          </h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+            Solicita una demostración gratis
           </h2>
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto">
             Regístrate y descubre cómo transformar tus presentaciones
           </p>
         </div>
-        {/* Steps Form */}
-        <DemoStepsGroup />
+        <div className="flex justify-center">
+          <Link href="/demo">
+            <Button size="lg" variant="primary" styleVariant="filled">
+              Solicitar demo
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

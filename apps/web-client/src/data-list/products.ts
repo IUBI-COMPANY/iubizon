@@ -66,7 +66,7 @@ const productsData: Product[] = [
       "Transforma cualquier proyector en una experiencia interactiva profesional",
     price: 5201.15,
     badge: "Bundle",
-    mainImage: "/productos/bundle/upside109W.png",
+    mainImage: "/productos/bundle/bundlepack2.png",
     media: [
       { type: "image", src: "/productos/bundle/upside109W.png" },
       { type: "image", src: "/productos/bundle/touch.png" },
@@ -93,7 +93,7 @@ const productsData: Product[] = [
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 4021.15,
     badge: "Dúo",
-    mainImage: "/productos/bundle/touch.png",
+    mainImage: "/productos/bundle/duo-interactivo.png",
     media: [
       { type: "image", src: "/productos/bundle/touch.png" },
       { type: "image", src: "/productos/bundle/adaptador-wifi.png" },
