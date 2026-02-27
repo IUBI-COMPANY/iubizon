@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Transforma tu aula o sala de reuniones con el Bundle Interactivo (Proyector Epson + Touch + MiraCast) y Dúo Interactivo (Touch + MiraCast). Tecnología educativa innovadora en Lima, Perú.",
+    "Transforma tu aula o sala de reuniones con el Bundle Interactivo (Proyector Epson + Touch + Adaptador Inalámbrico WiFi) y Dúo Interactivo (Touch + Adaptador Inalámbrico WiFi). Tecnología educativa innovadora en Lima, Perú.",
   alternates: {
     canonical: "https://www.iubizon.com",
   },
@@ -50,8 +50,8 @@ export const metadata: Metadata = {
     "touch interactivo",
     "pantalla táctil interactiva",
     "touch portátil",
-    "miracast para educación",
-    "adaptador inalámbrico miracast",
+    "Adaptador Inalámbrico WiFi para educación",
+    "adaptador inalámbrico wifi",
     "proyección inalámbrica",
 
     //Educación y tecnología
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     "epson powerlite 109w",
     "proyector epson interactivo",
     "touch screen portátil",
-    "miracast epson",
+    "Adaptador Inalámbrico WiFi",
 
     //Ubicación
     "soluciones educativas lima",

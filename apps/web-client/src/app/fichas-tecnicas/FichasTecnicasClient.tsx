@@ -35,7 +35,7 @@ const technicalDocuments: TechnicalDocument[] = [
     category: "Accesorio Interactivo",
   },
   {
-    id: "adaptador-miracast",
+    id: "adaptador-inalambrico-wifi",
     title: "Adaptador Inalámbrico Wifi",
     description:
       "Especificaciones del adaptador inalámbrico. Compatibilidad, conectividad WiFi y sistema Android.",

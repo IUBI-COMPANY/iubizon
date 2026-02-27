@@ -73,7 +73,7 @@ export const SeparateProductsSection: React.FC = () => {
                 <div className="relative h-64 flex items-center justify-center">
                   <div className="absolute inset-0 bg-gradient-radial from-purple-500/20 via-transparent to-transparent"></div>
                   <Image
-                    src="/productos/bundle/miracast1.png"
+                    src="/productos/bundle/adaptador-wifi1.png"
                     alt="Adaptador Inalámbrico"
                     width={400}
                     height={400}

@@ -507,7 +507,7 @@ const productsData: Product[] = [
       "TV y Video",
       "Proyectores para Home Theater",
     ],
-    note: `El videoproyector PowerLite 975W ofrece una resolución Wide que se adapta a computadoras, tabletas y dispositivos móviles.  Ofrece una  luminosidad de 3.600 lúmenes en color y blanco para presentaciones brillantes. Alta conectividad, Miracast,  HDMI, Inalámbrica.
+    note: `El videoproyector PowerLite 975W ofrece una resolución Wide que se adapta a computadoras, tabletas y dispositivos móviles.  Ofrece una  luminosidad de 3.600 lúmenes en color y blanco para presentaciones brillantes. Alta conectividad, Adaptador Inalámbrico WiFi,  HDMI, Inalámbrica.
     Epson PowerLite 975W es el mejor proyector para el aula de clase o sala de reuninoes.  Cuenta con 3.600 lúmenes de brillo en color y blanco otorgando imágenes claras.  Su lámpara de 10,000 horas en modo Normal lo convierte en tu mejor aliado en costo de operación.`,
   },
   {

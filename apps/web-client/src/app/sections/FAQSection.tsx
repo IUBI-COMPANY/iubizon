@@ -11,7 +11,7 @@ const faqItems: FAQItem[] = [
   {
     question: "¿Puedo comprar los productos por separado?",
     answer:
-      "Sí, ofrecemos la opción de adquirir el Touch Hub 2 y el adaptador MiraCast como dúo, sin incluir el proyector. Esta opción es ideal si ya cuentas con un proyector compatible.",
+      "Sí, ofrecemos la opción de adquirir el Touch Hub 2 y el Adaptador Inalámbrico WiFi como dúo, sin incluir el proyector. Esta opción es ideal si ya cuentas con un proyector compatible.",
   },
   {
     question:

@@ -53,16 +53,11 @@ export const TOUCH_SPECS: TechnicalSpec[] = [
   },
 ];
 
-export const MIRACAST_SPECS: TechnicalSpec[] = [
+export const ADAPTADOR_WIFI_SPECS: TechnicalSpec[] = [
   {
     iconName: "Wifi",
     label: "Streaming Inalámbrico",
     value: "Transmisión nativa compatible con cualquier dispositivo",
-  },
-  {
-    iconName: "Smartphone",
-    label: "Aplicaciones",
-    value: "Acceso a Google Play Store y apps educativas",
   },
   {
     iconName: "Globe",
@@ -95,7 +90,7 @@ export const BUNDLE_PRODUCTS_SPECS: ProductSpecs[] = [
     id: "adaptador-inalambrico",
     name: "Adaptador Inalámbrico WiFi",
     image: "/productos/bundle/adaptador-wifi1.png",
-    specs: MIRACAST_SPECS,
+    specs: ADAPTADOR_WIFI_SPECS,
   },
 ];
 
@@ -103,5 +98,5 @@ export const BUNDLE_PRODUCTS_SPECS: ProductSpecs[] = [
 export const SPECS: TechnicalSpec[] = [
   ...PROJECTOR_SPECS,
   ...TOUCH_SPECS,
-  ...MIRACAST_SPECS,
+  ...ADAPTADOR_WIFI_SPECS,
 ];

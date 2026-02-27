@@ -155,11 +155,11 @@ export default function ProductDetailPage({ product }: Props) {
                           />
                         </div>
 
-                        {/* MiraCast */}
+                        {/* Adaptador Inalámbrico WiFi */}
                         <div className="absolute right-0 bottom-8 z-0">
                           <Image
-                            src="/productos/bundle/miracast.png"
-                            alt="MiraCast Dongle"
+                            src="/productos/bundle/adaptador-wifi1.png"
+                            alt="Adaptador Inalámbrico WiFi"
                             width={220}
                             height={220}
                             className="w-[140px] sm:w-[170px] lg:w-[200px] h-auto object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
@@ -185,7 +185,7 @@ export default function ProductDetailPage({ product }: Props) {
                         {/* Adaptador Inalámbrico */}
                         <div className="relative z-10">
                           <Image
-                            src="/productos/bundle/miracast.png"
+                            src="/productos/bundle/adaptador-wifi1.png"
                             alt="Adaptador Inalámbrico WiFi"
                             width={350}
                             height={350}

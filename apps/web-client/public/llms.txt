@@ -2,7 +2,7 @@
 # Última actualización: Febrero 2026
 # Sitio web: https://www.iubizon.com
 
-> Iubizon es líder en soluciones educativas interactivas en Lima, Perú. Especialistas en Bundle Interactivo (Proyector Epson + Touch Interactivo + MiraCast) y Dúo Interactivo (Touch Interactivo + MiraCast) para transformar aulas y salas de reuniones.
+> Iubizon es líder en soluciones educativas interactivas en Lima, Perú. Especialistas en Bundle Interactivo (Proyector Epson + Touch Interactivo + Adaptador Inalámbrico WiFi) y Dúo Interactivo (Touch Interactivo + Adaptador Inalámbrico WiFi) para transformar aulas y salas de reuniones.
 
 ## Empresa
 
@@ -13,7 +13,7 @@ Iubizon - Expertos en tecnología educativa interactiva en Perú desde 2020. Equ
 - 5+ años de experiencia en tecnología educativa
 - Soluciones completas para aulas digitales
 - Tecnología táctil de última generación
-- Proyección inalámbrica con MiraCast
+- Proyección inalámbrica con Adaptador Inalámbrico WiFi
 - Atención personalizada para colegios y empresas
 
 ## Productos Principales
@@ -21,13 +21,13 @@ Iubizon - Expertos en tecnología educativa interactiva en Perú desde 2020. Equ
 **Bundle Interactivo:**
 - Proyector Epson PowerLite (109W, FH06, L200W)
 - Touch Interactivo portátil
-- Adaptador Inalámbrico MiraCast
+- Adaptador Inalámbrico WiFi
 - Precio desde S/ 2,150
 - Ideal para aulas, salas de reunión, capacitaciones
 
 **Dúo Interactivo:**
 - Touch Interactivo portátil
-- Adaptador Inalámbrico MiraCast
+- Adaptador Inalámbrico WiFi
 - Precio: S/ 350
 - Perfecto para complementar proyectores existentes
 
@@ -46,7 +46,7 @@ Iubizon - Expertos en tecnología educativa interactiva en Perú desde 2020. Equ
 **Instalación y Configuración:**
 - Instalación profesional del Bundle Interactivo
 - Configuración de Touch Interactivo
-- Setup de proyección inalámbrica MiraCast
+- Setup de proyección inalámbrica Adaptador Inalámbrico WiFi
 - Capacitación en uso del equipo
 - Soporte post-venta
 

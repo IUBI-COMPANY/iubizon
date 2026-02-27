@@ -79,7 +79,7 @@ export const HeroSection: React.FC = () => {
             {/* Adaptador Inalámbrico - Más pequeño */}
             <div className="flex items-center justify-center w-full md:w-auto mb-0 md:mb-8 lg:mb-12">
               <Image
-                src="/productos/bundle/miracast.png"
+                src="/productos/bundle/adaptador-wifi.png"
                 alt="Adaptador Inalámbrico WiFi"
                 width={150}
                 height={150}
