@@ -74,6 +74,7 @@ const ProductItem = ({
         <div className={hideServiceTypeField ? "w-full" : "w-full sm:w-1/8"}>
           <InputNumber
             label={index === 0 ? "Cantidad" : ""}
+            textColor="secondary"
             name={`products.${index}.quantity`}
             value={product.quantity}
             onChange={(value) => updateProduct(product.id, "quantity", value)}
@@ -88,6 +89,7 @@ const ProductItem = ({
         <div className={hideServiceTypeField ? "w-full" : "w-full sm:w-1/4"}>
           <Input
             label={index === 0 ? "Marca" : ""}
+            textColor="secondary"
             name={`products.${index}.brand`}
             value={product.brand}
             onChange={(value) => updateProduct(product.id, "brand", value)}
@@ -101,6 +103,7 @@ const ProductItem = ({
         <div className={hideServiceTypeField ? "w-full" : "w-full sm:w-1/4"}>
           <Input
             label={index === 0 ? "Modelo" : ""}
+            textColor="secondary"
             name={`products.${index}.model`}
             value={product.model}
             onChange={(value) => updateProduct(product.id, "model", value)}
@@ -115,6 +118,7 @@ const ProductItem = ({
           <div className="w-full sm:w-1/3">
             <Select
               label={index === 0 ? "Tipo de Servicio" : ""}
+              textColor="secondary"
               name={`products.${index}.serviceType`}
               value={product.serviceType}
               onChange={(value) =>

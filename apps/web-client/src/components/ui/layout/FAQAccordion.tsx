@@ -57,7 +57,7 @@ export default function FAQAccordion() {
 
   return (
     <section
-      className="py-16 bg-gray-50"
+      className="py-16 bg-secondary"
       itemScope
       itemType="https://schema.org/FAQPage"
       aria-labelledby="faq-heading"
@@ -67,11 +67,11 @@ export default function FAQAccordion() {
         <div className="text-center mb-12">
           <h2
             id="faq-heading"
-            className="text-3xl md:text-4xl font-bold text-color-secondary mb-6"
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
           >
             Preguntas Frecuentes
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-400">
             Resolvemos las dudas más comunes sobre nuestro servicio técnico de
             proyectores Epson, BenQ, Sony y más en Lima.
           </p>

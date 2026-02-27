@@ -250,42 +250,42 @@ export default function TechnicalServicePage() {
           {/* Options Cards */}
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mt-12">
             {/* Persona Natural Card */}
-            <div className="bg-white text-gray-900 rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(233,78,27,0.3)] border-2 border-transparent hover:border-[#E94E1B]/20">
+            <div className="bg-secondary text-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(233,78,27,0.3)] border-2 border-transparent hover:border-[#E94E1B]/20">
               <div className="p-8">
                 <div className="flex justify-center mb-6">
-                  <div className="w-20 h-20 bg-[#E94E1B]/10 rounded-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-[#E94E1B]" />
+                  <div className="w-20 h-20 bg-[#ffffff]/10 rounded-full flex items-center justify-center">
+                    <User className="w-10 h-10 text-[#ffffff]" />
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold text-center mb-4">
                   Persona Natural
                 </h2>
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-gray-400 text-center mb-6">
                   Servicio personalizado para usuarios individuales, hogares y
                   pequeños proyectos
                 </p>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Atención personalizada y directa
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Servicio a domicilio en Lima
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Presupuesto gratuito sin compromiso
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Garantía de 6 meses en reparaciones
                     </span>
                   </li>
@@ -307,42 +307,42 @@ export default function TechnicalServicePage() {
             </div>
 
             {/* Organización Card */}
-            <div className="bg-white text-gray-900 rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(16,34,57,0.3)] border-2 border-transparent hover:border-[#102239]/20">
+            <div className="bg-secondary text-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_60px_rgba(16,34,57,0.3)] border-2 border-transparent hover:border-[#102239]/20">
               <div className="p-8">
                 <div className="flex justify-center mb-6">
-                  <div className="w-20 h-20 bg-[#102239]/10 rounded-full flex items-center justify-center">
-                    <Building2 className="w-10 h-10 text-[#102239]" />
+                  <div className="w-20 h-20 bg-[#ffffff]/10 rounded-full flex items-center justify-center">
+                    <Building2 className="w-10 h-10 text-[#ffffff]" />
                   </div>
                 </div>
                 <h2 className="text-3xl font-bold text-center mb-4">
                   Organización
                 </h2>
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-gray-400 text-center mb-6">
                   Soluciones integrales para empresas privadas, colegios,
                   institutos, universidades, iglesias y centros educativos
                 </p>
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Contratos de mantenimiento preventivo
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Atención prioritaria y soporte técnico
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Facturación electrónica disponible
                     </span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">
+                    <span className="text-gray-300">
                       Descuentos por volumen y contratos
                     </span>
                   </li>
@@ -367,15 +367,15 @@ export default function TechnicalServicePage() {
       </section>
 
       {/* B2C Section - Servicio para Personas */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Servicio Técnico de Proyectores para Personas Naturales en Lima
                 (B2C)
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-gray-400">
                 Reparación y mantenimiento de proyectores a domicilio - Cuidamos
                 tu proyector como si fuera nuestro
               </p>
@@ -392,7 +392,7 @@ export default function TechnicalServicePage() {
                 />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="text-2xl font-bold text-white mb-4">
                   ¿Por qué elegirnos?
                 </h3>
                 <div className="space-y-4">
@@ -401,10 +401,10 @@ export default function TechnicalServicePage() {
                       <Clock className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Respuesta Rápida
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         Atendemos tu solicitud en menos de 24 horas. Servicio a
                         domicilio disponible en Lima.
                       </p>
@@ -415,10 +415,10 @@ export default function TechnicalServicePage() {
                       <ShieldCheck className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Garantía Extendida
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         6 meses de garantía en todas nuestras reparaciones. Tu
                         inversión está protegida.
                       </p>
@@ -429,10 +429,10 @@ export default function TechnicalServicePage() {
                       <Wrench className="w-6 h-6 text-orange-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Expertos Certificados
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         Técnicos especializados con años de experiencia en todas
                         las marcas de proyectores.
                       </p>
@@ -442,8 +442,8 @@ export default function TechnicalServicePage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            <div className="bg-secondary rounded-lg shadow-md p-8">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">
                 Nuestros Servicios para Ti
               </h3>
               <div className="grid md:grid-cols-3 gap-6">
@@ -451,10 +451,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Wrench className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Reparación
-                  </h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Reparación</h4>
+                  <p className="text-gray-400 text-sm">
                     Diagnóstico gratuito y reparación de cualquier falla en tu
                     proyector
                   </p>
@@ -463,10 +461,10 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <ShieldCheck className="w-8 h-8 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
+                  <h4 className="font-semibold text-white mb-2">
                     Mantenimiento
                   </h4>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Limpieza profunda y mantenimiento preventivo para alargar la
                     vida útil
                   </p>
@@ -475,10 +473,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Instalación
-                  </h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Instalación</h4>
+                  <p className="text-gray-400 text-sm">
                     Instalación profesional y configuración óptima en tu hogar u
                     oficina
                   </p>
@@ -490,15 +486,15 @@ export default function TechnicalServicePage() {
       </section>
 
       {/* B2B Section - Servicio para Organizaciones */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Servicio Técnico de Proyectores para Organizaciones y Empresas
                 en Lima (B2B)
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-gray-400">
                 Mantenimiento preventivo y soporte técnico integral para
                 empresas e instituciones educativas
               </p>
@@ -506,7 +502,7 @@ export default function TechnicalServicePage() {
 
             <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
               <div className="order-2 md:order-1">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="text-2xl font-bold text-white mb-4">
                   Soluciones Empresariales
                 </h3>
                 <div className="space-y-4">
@@ -515,10 +511,10 @@ export default function TechnicalServicePage() {
                       <Users className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Contratos de Mantenimiento
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         Planes personalizados de mantenimiento preventivo para
                         mantener tus equipos siempre operativos.
                       </p>
@@ -529,10 +525,10 @@ export default function TechnicalServicePage() {
                       <Briefcase className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Soporte Prioritario
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         Atención preferencial con tiempos de respuesta
                         garantizados y soporte técnico dedicado.
                       </p>
@@ -543,10 +539,10 @@ export default function TechnicalServicePage() {
                       <ShieldCheck className="w-6 h-6 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 mb-1">
+                      <h4 className="font-semibold text-white mb-1">
                         Facturación Corporativa
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         Facturación electrónica, crédito empresarial y
                         descuentos por volumen disponibles.
                       </p>
@@ -565,8 +561,8 @@ export default function TechnicalServicePage() {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg shadow-md p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            <div className="bg-secondary rounded-lg shadow-md p-8">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">
                 Sectores que Atendemos
               </h3>
               <div className="grid md:grid-cols-4 gap-6">
@@ -574,10 +570,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Building2 className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Corporativo
-                  </h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Corporativo</h4>
+                  <p className="text-gray-400 text-sm">
                     Oficinas, salas de juntas y espacios corporativos
                   </p>
                 </div>
@@ -585,10 +579,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users className="w-8 h-8 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    Educativo
-                  </h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Educativo</h4>
+                  <p className="text-gray-400 text-sm">
                     Colegios, universidades y centros de capacitación
                   </p>
                 </div>
@@ -596,8 +588,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Briefcase className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Gobierno</h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Gobierno</h4>
+                  <p className="text-gray-400 text-sm">
                     Instituciones públicas y entidades gubernamentales
                   </p>
                 </div>
@@ -605,8 +597,8 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users className="w-8 h-8 text-orange-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Eventos</h4>
-                  <p className="text-gray-600 text-sm">
+                  <h4 className="font-semibold text-white mb-2">Eventos</h4>
+                  <p className="text-gray-400 text-sm">
                     Empresas de eventos, hoteles y centros de convenciones
                   </p>
                 </div>
@@ -617,15 +609,15 @@ export default function TechnicalServicePage() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Servicio Técnico de Proyectores para Organizaciones y Empresas
                 en Lima (B2B)
               </h2>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-gray-400">
                 Mantenimiento preventivo y soporte técnico integral para
                 empresas privadas, colegios, institutos, universidades, iglesias
                 y centros educativos
@@ -633,40 +625,40 @@ export default function TechnicalServicePage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-[#102239]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ShieldCheck className="w-8 h-8 text-[#102239]" />
+              <div className="bg-secondary rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 bg-[#ffffff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShieldCheck className="w-8 h-8 text-[#ffffff]" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-white mb-3">
                   Garantía Real
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-400">
                   6 meses de garantía en todas nuestras reparaciones.
                   Respaldamos nuestro trabajo con compromiso.
                 </p>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-[#E94E1B]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Clock className="w-8 h-8 text-[#E94E1B]" />
+              <div className="bg-secondary rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 bg-[#ffffff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-[#ffffff]" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-white mb-3">
                   Atención Rápida
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-400">
                   Respondemos en 24 horas. Sabemos que tu tiempo es valioso y
                   tus equipos son importantes.
                 </p>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
-                <div className="w-16 h-16 bg-[#102239]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Wrench className="w-8 h-8 text-[#102239]" />
+              <div className="bg-secondary rounded-lg shadow-md p-6 text-center transform transition-all duration-300 hover:scale-105">
+                <div className="w-16 h-16 bg-[#ffffff]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Wrench className="w-8 h-8 text-[#ffffff]" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold text-white mb-3">
                   Técnicos Expertos
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-400">
                   Especialistas certificados en todas las marcas: Epson, BenQ,
                   Optoma, Sony, Panasonic y más.
                 </p>

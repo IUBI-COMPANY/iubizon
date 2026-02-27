@@ -196,6 +196,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Select
                       label="Tipo de Documento"
+                      textColor="secondary"
                       name={name}
                       value={value}
                       error={error(name)}
@@ -215,6 +216,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="N° de Documento"
+                      textColor="secondary"
                       type="number"
                       name={name}
                       value={value}
@@ -241,6 +243,7 @@ export const ContactOrgInfoStep2 = ({
                     render={({ field: { onChange, value, name } }) => (
                       <Input
                         label="Razón Social"
+                        textColor="secondary"
                         name={name}
                         value={value}
                         error={error(name)}
@@ -261,6 +264,7 @@ export const ContactOrgInfoStep2 = ({
                       render={({ field: { onChange, value, name } }) => (
                         <Input
                           label="Nombres"
+                          textColor="secondary"
                           name={name}
                           value={value}
                           error={error(name)}
@@ -279,6 +283,7 @@ export const ContactOrgInfoStep2 = ({
                       render={({ field: { onChange, value, name } }) => (
                         <Input
                           label="Apellidos"
+                          textColor="secondary"
                           name={name}
                           value={value}
                           error={error(name)}
@@ -299,6 +304,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="Email"
+                      textColor="secondary"
                       name={name}
                       value={value}
                       error={error(name)}
@@ -318,6 +324,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Select
                       label="Prefijo"
+                      textColor="secondary"
                       placeholder="Selecciona un país"
                       name={name}
                       value={value}
@@ -340,6 +347,7 @@ export const ContactOrgInfoStep2 = ({
                   render={({ field: { onChange, value, name } }) => (
                     <Input
                       label="Teléfono"
+                      textColor="secondary"
                       placeholder="9XXXXXXXX"
                       type="number"
                       name={name}

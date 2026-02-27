@@ -367,6 +367,7 @@ export const ServiceTypeStep3 = ({
                             render={({ field: { onChange, value, name } }) => (
                               <DatePicker
                                 label="Dinos qué día podemos visitarte"
+                                textColor="secondary"
                                 name={name}
                                 value={value as string}
                                 error={error(name)}
@@ -384,6 +385,7 @@ export const ServiceTypeStep3 = ({
                             render={({ field: { onChange, value, name } }) => (
                               <TimePicker
                                 label="Dinos a qué hora podemos visitarte"
+                                textColor="secondary"
                                 name={name}
                                 value={value}
                                 error={error(name)}
@@ -413,6 +415,7 @@ export const ServiceTypeStep3 = ({
                               }) => (
                                 <Select
                                   label="Departamento"
+                                  textColor="secondary"
                                   placeholder="Ej. Lima"
                                   name={name}
                                   value={value}
@@ -437,6 +440,7 @@ export const ServiceTypeStep3 = ({
                               }) => (
                                 <Select
                                   label="Provincia"
+                                  textColor="secondary"
                                   placeholder="Ej. Lima"
                                   name={name}
                                   value={value}
@@ -468,6 +472,7 @@ export const ServiceTypeStep3 = ({
                             render={({ field: { onChange, value, name } }) => (
                               <Select
                                 label="Distrito"
+                                textColor="secondary"
                                 placeholder="Ej. Chorrillos"
                                 name={name}
                                 value={value}
@@ -496,6 +501,7 @@ export const ServiceTypeStep3 = ({
                             render={({ field: { onChange, value, name } }) => (
                               <Input
                                 label="Dirección"
+                                textColor="secondary"
                                 placeholder="Av. Huaylas 123"
                                 name={name}
                                 value={value}

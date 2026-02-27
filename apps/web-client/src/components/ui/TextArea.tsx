@@ -48,7 +48,7 @@ export const TextArea = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm/6 font-semibold text-white mb-1.5 font-sfpro"
+          className="block text-sm/6 font-semibold text-secondary mb-1.5 font-sfpro"
         >
           {label}
           {required && <span className="text-red-400 ml-1">*</span>}
