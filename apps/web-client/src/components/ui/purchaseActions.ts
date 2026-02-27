@@ -16,7 +16,7 @@ export async function sendPurchaseLead(
     // Document Information
     document: data?.document || undefined,
     // Service Details (products)
-    serviceDetails: data?.serviceDetails || undefined,
+    productSaleDetails: data?.productSaleDetails || undefined,
     // Communication
     hostname: "iubizon.com",
     termsAndConditions: data.termsAndConditions || true,
