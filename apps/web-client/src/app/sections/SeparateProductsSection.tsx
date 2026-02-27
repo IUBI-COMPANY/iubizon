@@ -35,6 +35,15 @@ export const SeparateProductsSection: React.FC = () => {
         {/* Card de accesorios en dúo */}
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 backdrop-blur-sm border-2 border-primary/30 rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-[0_0_60px_rgba(242,95,12,0.3)]">
+            <div className="mt-10">
+              <Image
+                src="/productos/duo-interactivo/duo-interactivo-logotipo.png"
+                alt="Duo Interactivo"
+                width={100}
+                height={100}
+                className="w-full h-[7em] object-contain"
+              />
+            </div>
             <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
               {/* Touch Interactivo */}
               <div className="text-center space-y-4">
