@@ -60,7 +60,7 @@ const productsData: Product[] = [
     id: "bundle-interactivo",
     model: "Bundle Complete 2025",
     name: "Bundle Interactivo - Completo",
-    stock: 10,
+    stock: 20,
     condition: "new",
     description:
       "Transforma cualquier proyector en una experiencia interactiva profesional",
@@ -88,7 +88,7 @@ const productsData: Product[] = [
     id: "duo-interactivo",
     model: "Touch y Adaptador Inalámbrico",
     name: "Duo interactivo",
-    stock: 10,
+    stock: 20,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 4021.15,
