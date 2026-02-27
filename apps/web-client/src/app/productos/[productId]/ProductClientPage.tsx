@@ -13,6 +13,9 @@ import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
 import { EPSONFH02 } from "./EPSON-FH02";
 import { SummerBanner } from "@/components/ui/SummerBanner";
 import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
+import { isEmpty } from "lodash";
+import ContentDetailBundleInteractivo from "@/app/productos/[productId]/ContentDetailBundleInteractivo";
+import ContentDetailDuoInteractivo from "@/app/productos/[productId]/ContentDetailDuoInteractivo";
 
 interface Props {
   product: Product;
@@ -23,7 +26,7 @@ const SPECIAL_PRODUCT_ID =
 const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 // IDs de productos del bundle
-const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "accesorios-duo"];
+const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "duo-interactivo"];
 
 export default function ProductDetailPage({ product }: Props) {
   const [showModal, setShowModal] = useState(false);
@@ -34,26 +37,26 @@ export default function ProductDetailPage({ product }: Props) {
 
   // Verificar si es un producto del bundle
   const isBundleProduct = BUNDLE_PRODUCT_IDS.includes(product.id);
-  const isBundleComplete = product.id === "bundle-interactivo";
-  const isAccesoriosDuo = product.id === "accesorios-duo";
+  const isBundleInteractive = product.id === "bundle-interactivo";
+  const isDuoInteractive = product.id === "duo-interactivo";
 
   // Títulos y descripciones personalizadas para productos del bundle
   const getBundleTitle = () => {
-    if (isBundleComplete) {
+    if (isBundleInteractive) {
       return "Estás a un paso de modernizar tus presentaciones";
     }
-    if (isAccesoriosDuo) {
-      return "Estás a un paso de conseguir tu dúo de accesorios";
+    if (isDuoInteractive) {
+      return "Estás a un paso de modernizar tus presentaciones";
     }
     return null;
   };
 
   const getBundleDescription = () => {
-    if (isBundleComplete) {
+    if (isBundleInteractive) {
       return "Mejora tu espacio educativo o sala de presentaciones con tecnología interactiva.";
     }
-    if (isAccesoriosDuo) {
-      return "Transforma tu proyector actual en una solución moderna e interactiva.";
+    if (isDuoInteractive) {
+      return "Transforma tu proyector o pantalla actual en una solución moderna e interactiva.";
     }
     return null;
   };
@@ -102,7 +105,7 @@ export default function ProductDetailPage({ product }: Props) {
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-4">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                     <span className="text-sm font-semibold text-white uppercase tracking-wide">
-                      {isBundleComplete
+                      {isBundleInteractive
                         ? "Solución Completa"
                         : "Mejora tu Equipo"}
                     </span>
@@ -125,11 +128,11 @@ export default function ProductDetailPage({ product }: Props) {
             )}
 
             <main className="max-w-[1470px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12">
                 {/* Left Column - Product Media & Details */}
                 <div className="lg:col-span-7">
                   {/*Product media*/}
-                  {isBundleComplete ? (
+                  {isBundleInteractive ? (
                     // Bundle: Mostrar las 3 imágenes juntas
                     <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
                       <div className="relative flex items-center justify-center min-h-[400px] lg:min-h-[500px]">
@@ -167,7 +170,7 @@ export default function ProductDetailPage({ product }: Props) {
                         </div>
                       </div>
                     </div>
-                  ) : isAccesoriosDuo ? (
+                  ) : isDuoInteractive ? (
                     // Accesorios Dúo: Mostrar Touch + Adaptador Inalámbrico WiFi juntos
                     <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
                       <div className="flex items-center justify-center gap-8 lg:gap-16 min-h-[350px] lg:min-h-[450px]">
@@ -209,8 +212,43 @@ export default function ProductDetailPage({ product }: Props) {
                       setShowModal={setShowModal}
                       condition={condition}
                       showChristmasCampaign={showChristmasCampaign}
+                      getBundleDescription={getBundleDescription}
                     />
                   </div>
+
+                  <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10 mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                      <div className="w-1 h-8 bg-primary rounded-full"></div>
+                      Detalle del Producto
+                    </h2>
+                    {/* Fix: Avoid h2 inside p for bundle/duo */}
+                    {product.id === "bundle-interactivo" && (
+                      <ContentDetailBundleInteractivo />
+                    )}
+                    {product.id === "duo-interactivo" && (
+                      <ContentDetailDuoInteractivo />
+                    )}
+                    {/* For other products, keep p tag */}
+                    {product.id !== "bundle-interactivo" &&
+                      product.id !== "duo-interactivo" && (
+                        <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                          {product.note}
+                        </p>
+                      )}
+                  </div>
+
+                  {/* Descripción del producto */}
+                  {!isEmpty(product?.note) && (
+                    <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
+                      <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <div className="w-1 h-8 bg-primary rounded-full"></div>
+                        Descripción del Producto
+                      </h2>
+                      <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                        {product.note}
+                      </p>
+                    </div>
+                  )}
 
                   {/*Product specifications*/}
                   <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10 mb-8">
@@ -222,7 +260,7 @@ export default function ProductDetailPage({ product }: Props) {
                     {/* Si es Bundle o Dúo, mostrar especificaciones segmentadas */}
                     {isBundleProduct ? (
                       <div className="space-y-6">
-                        {(isBundleComplete
+                        {(isBundleInteractive
                           ? BUNDLE_PRODUCTS_SPECS
                           : BUNDLE_PRODUCTS_SPECS.filter(
                               (p) =>
@@ -331,30 +369,18 @@ export default function ProductDetailPage({ product }: Props) {
                       </div>
                     )}
                   </div>
-
-                  {/* Descripción del producto */}
-                  {product?.note && (
-                    <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
-                      <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                        <div className="w-1 h-8 bg-primary rounded-full"></div>
-                        Descripción del Producto
-                      </h2>
-                      <p className="text-gray-300 whitespace-pre-line leading-relaxed">
-                        {product.note}
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Right Column - Price Card (Desktop) */}
-                <div className="hidden lg:block lg:col-span-5">
-                  <div className="top-24">
+                <div className="hidden lg:block lg:col-span-3">
+                  <div className="top-7 sticky">
                     <InformationAndPriceCard
                       product={product}
                       showModal={showModal}
                       setShowModal={setShowModal}
                       condition={condition}
                       showChristmasCampaign={showChristmasCampaign}
+                      getBundleDescription={getBundleDescription}
                     />
                   </div>
                 </div>

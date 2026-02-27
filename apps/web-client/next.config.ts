@@ -40,6 +40,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "paperlux.cl" },
+      { protocol: "https", hostname: "mediaserver.goepson.com" },
+    ],
+  },
 };
 
 export default nextConfig;

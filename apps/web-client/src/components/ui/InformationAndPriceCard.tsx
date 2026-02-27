@@ -18,6 +18,7 @@ interface Props {
   setShowModal: (showModal: boolean) => void;
   condition: DetailProductCondition;
   showChristmasCampaign?: boolean;
+  getBundleDescription: () => string | null;
 }
 
 export const InformationAndPriceCard = ({
@@ -26,6 +27,7 @@ export const InformationAndPriceCard = ({
   setShowModal,
   condition,
   showChristmasCampaign = false,
+  getBundleDescription,
 }: Props) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
@@ -55,6 +57,11 @@ export const InformationAndPriceCard = ({
           <h1 className="text-2xl md:text-3xl font-bold text-left mb-4 text-white leading-tight font-sfpro">
             {product.name || product.model}
           </h1>
+
+          {/* Description */}
+          <p className="text-base md:text-lg text-white/90 leading-relaxed max-w-3xl">
+            {getBundleDescription()}
+          </p>
 
           <div className="tags flex flex-wrap gap-2 mb-4">
             {/* 2. BADGE DE OFERTA ESPECIAL - Solo si hay descuento real */}

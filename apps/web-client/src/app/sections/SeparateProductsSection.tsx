@@ -118,7 +118,7 @@ export const SeparateProductsSection: React.FC = () => {
               </div>
 
               <div className="flex justify-center">
-                <Link href="/productos/accesorios-duo">
+                <Link href="/productos/duo-interactivo">
                   <Button
                     variant="primary"
                     size="lg"
