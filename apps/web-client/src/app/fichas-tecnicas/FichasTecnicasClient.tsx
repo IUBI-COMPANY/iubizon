@@ -160,7 +160,7 @@ export const FichasTecnicasClient: React.FC = () => {
             dudas sobre nuestros productos
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/">
+            <Link href="/productos/bundle-interactivo">
               <Button
                 variant="primary"
                 size="lg"
