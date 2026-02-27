@@ -6,3 +6,4 @@ export { SeparateProductsSection } from "./SeparateProductsSection";
 export { ComparisonSection } from "./ComparisonSection";
 export { DemoSection } from "./DemoSection";
 export { FAQSection } from "./FAQSection";
+export { TransformSection } from "./TransformSection";
