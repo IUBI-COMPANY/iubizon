@@ -42,7 +42,7 @@ const faqItems: FAQItem[] = [
   {
     question: "¿Es compatible con cualquier sistema operativo?",
     answer:
-      "Sí, nuestro Bundle Interactivo es compatible con Windows, macOS, Android e iOS. El Adaptador Inalámbrico WiFi permite compartir contenido desde cualquier dispositivo compatible con proyección inalámbrica o AirPlay.",
+      "Sí, nuestro Bundle Interactivo es compatible con Windows y una version beta para macOS con chip serie M. El Adaptador Inalámbrico WiFi permite compartir contenido desde cualquier dispositivo compatible con proyección inalámbrica o AirPlay.",
   },
 ];
 
