@@ -231,10 +231,10 @@ export default function ProductDetailPage({ product }: Props) {
                     </h2>
                     {/* Fix: Avoid h2 inside p for bundle/duo */}
                     {product.id === "bundle-interactivo" && (
-                      <ContentDetailBundleInteractivo />
+                      <ContentDetailBundleInteractivo product={product} />
                     )}
                     {product.id === "duo-interactivo" && (
-                      <ContentDetailDuoInteractivo />
+                      <ContentDetailDuoInteractivo product={product} />
                     )}
                     {/* For other products, keep p tag */}
                     {product.id !== "bundle-interactivo" &&

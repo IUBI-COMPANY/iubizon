@@ -1,18 +1,11 @@
 // components/ContentDetailBundleInteractivo.tsx
 import React from "react";
 import Image from "next/image";
+import { Product } from "@/data-list/products";
 
 type Props = {
   className?: string;
-  images?: Partial<{
-    projector: string;
-    tankHero: string;
-    tankHand: string;
-    tankInstall: string;
-    paperflix: string;
-    mouseEasy: string;
-    compatibleAll: string;
-  }>;
+  product: Product;
 };
 
 function cx(...classes: Array<string | undefined | false>) {
@@ -53,7 +46,10 @@ function Bullet({
  * Contenido para el card "Detalle del Producto" (Bundle Interactivo)
  * Basado 1:1 en el componente del Duo que ya refactorizaste, pero agregando el Proyector.
  */
-export default function ContentDetailBundleInteractivo({ className }: Props) {
+export default function ContentDetailBundleInteractivo({
+  className,
+  product,
+}: Props) {
   return (
     <div className={cx("space-y-5", className)}>
       {/* Header */}
@@ -61,8 +57,8 @@ export default function ContentDetailBundleInteractivo({ className }: Props) {
         <Image
           src="/images/bundle-and-duo/bundle-logotipo.png"
           alt="Bundle interactivo - iubizon"
-          width={420}
-          height={110}
+          width={620}
+          height={210}
           className="object-contain p-1"
         />
         <h3 className="text-lg font-semibold text-white">
@@ -320,7 +316,7 @@ export default function ContentDetailBundleInteractivo({ className }: Props) {
       </div>
 
       {/* Education + Easy to use */}
-      <div className="space-y-7 mb-10">
+      <div className="space-y-10 mb-10">
         {/* Education */}
         <div className="space-y-2">
           <div>
@@ -382,6 +378,121 @@ export default function ContentDetailBundleInteractivo({ className }: Props) {
           </div>
         </div>
 
+        {/* Comparación de precios en cards */}
+        <div className="mb-10">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-2xl font-bold shadow-lg">
+              💸
+            </span>
+            <span className="text-lg font-bold text-primary drop-shadow">
+              ¿Por qué el Bundle es más accesible?
+            </span>
+          </div>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Bundle Interactivo */}
+            <div className="flex-1 rounded-2xl border-2 border-emerald-400 bg-white/5 p-6 shadow-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">🌟</span>
+                <span className="text-lg font-bold text-emerald-400">
+                  Bundle Interactivo
+                </span>
+              </div>
+              <div className="mb-3 w-full flex justify-center">
+                <Image
+                  src="/images/bundle-and-duo/bundle-interactivo.png"
+                  alt="Bundle Interactivo"
+                  width={200}
+                  height={90}
+                  className="rounded-lg object-contain bg-white"
+                />
+              </div>
+              <ul className="mb-3 text-slate-200 text-sm space-y-1">
+                <li>Proyector Epson 109W</li>
+                <li>Touch Tank (interactividad táctil)</li>
+                <li>WiFi inalámbrico</li>
+                <li>Plataforma educativa</li>
+              </ul>
+              <div className="text-2xl font-bold text-emerald-400 mb-1">
+                S/{" "}
+                {product?.subTotal?.toFixed
+                  ? product.subTotal.toFixed(2)
+                  : product?.subTotal}
+              </div>
+              <div className="text-xs text-emerald-300 font-semibold">
+                Solución completa
+              </div>
+            </div>
+            {/* Proyector Interactivo */}
+            <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">🎥</span>
+                <span className="text-lg font-bold text-rose-400">
+                  Proyector Interactivo
+                </span>
+              </div>
+              <div className="mb-3 w-full flex justify-center">
+                <Image
+                  src="/images/bundle-and-duo/proyector-interactivo.webp"
+                  alt="Proyector Interactivo"
+                  width={170}
+                  height={90}
+                  className="rounded-lg object-contain bg-black"
+                />
+              </div>
+              <ul className="mb-3 text-slate-200 text-sm space-y-1">
+                <li>Proyector with touch integrated</li>
+                <li>Sin plataforma educativa</li>
+                <li>Sin WiFi</li>
+                <li>Precio elevado por tecnología integrada</li>
+              </ul>
+              <div className="text-2xl font-bold text-rose-400 mb-1">
+                S/ 8,000+
+              </div>
+              <div className="text-xs text-rose-300 font-semibold">
+                Menos flexible, mayor costo
+              </div>
+            </div>
+            {/* Pantalla Interactiva */}
+            <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">🖥️</span>
+                <span className="text-lg font-bold text-rose-400">
+                  Pantalla Interactiva
+                </span>
+              </div>
+              <div className="mb-3 w-full flex justify-center">
+                <Image
+                  src="/images/bundle-and-duo/pantalla-interactiva.webp"
+                  alt="Pantalla Interactiva"
+                  width={170}
+                  height={90}
+                  className="rounded-lg object-contain bg-black"
+                />
+              </div>
+              <ul className="mb-3 text-slate-200 text-sm space-y-1">
+                <li>Pantalla touch (sin proyector)</li>
+                <li>Sin plataforma educativa</li>
+                <li>Sin WiFi</li>
+                <li>Instalación compleja y costosa</li>
+              </ul>
+              <div className="text-2xl font-bold text-rose-400 mb-1">
+                S/ 10,000+
+              </div>
+              <div className="text-xs text-rose-300 font-semibold">
+                La opción más costosa
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 text-slate-200 text-sm">
+            <span className="font-semibold text-primary">
+              El Bundle Interactivo
+            </span>{" "}
+            te da todo lo necesario para transformar tu espacio en interactivo,
+            a un precio mucho más accesible que un proyector interactivo o una
+            pantalla touch, y con más valor que un proyector tradicional.
+          </div>
+        </div>
+
         {/* Easy + compatibility */}
         <div>
           <p className="text-[1.4em] font-semibold text-white">
@@ -392,7 +503,7 @@ export default function ContentDetailBundleInteractivo({ className }: Props) {
             Touch Tank.
           </p>
 
-          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <div className="mt-3 flex flex-col sm:flex-row gap-2 justify-center">
             <Image
               src="/images/bundle-and-duo/igual-a-un-mouse.webp"
               alt="Muy fácil de usar (como mouse)"
@@ -420,7 +531,7 @@ export default function ContentDetailBundleInteractivo({ className }: Props) {
       </div>
 
       {/* Summary */}
-      <div className="relative rounded-2xl border-2 border-primary bg-gradient-to-br from-primary/20 via-white/10 to-transparent p-6 shadow-xl overflow-hidden mt-8">
+      <div className="relative rounded-2xl border-2 border-primary bg-linear-to-br from-primary/20 via-white/10 to-transparent p-6 shadow-xl overflow-hidden mt-8">
         <div className="absolute -top-8 -left-8 w-32 h-32 bg-primary/30 rounded-full blur-2xl opacity-60 pointer-events-none" />
         <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-orange-400/20 rounded-full blur-2xl opacity-50 pointer-events-none" />
 
