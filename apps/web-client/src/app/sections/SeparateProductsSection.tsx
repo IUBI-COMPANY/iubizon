@@ -122,7 +122,7 @@ export const SeparateProductsSection: React.FC = () => {
                   Dúo de accesorios
                 </p>
                 <p className="text-4xl md:text-5xl font-sfpro font-black text-white">
-                  S/ {selectedProduct?.price}
+                  S/ {selectedProduct?.subTotal}
                 </p>
               </div>
 

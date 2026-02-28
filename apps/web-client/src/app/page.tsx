@@ -33,7 +33,7 @@ export default function BundleInteractivoPage() {
         />
         <SpecsSection />
         <ComparisonSection />
-        <PriceSection totalPrice={selectedProjector?.price || 0} />
+        <PriceSection totalPrice={selectedProjector?.subTotal || 0} />
         <SeparateProductsSection />
         <DemoSection />
         <FAQSection />

@@ -46,7 +46,7 @@ export const ComparisonSection: React.FC = () => {
                         <span className="text-base">Bundle Interactivo</span>
 
                         <span className="text-2xl md:text-3xl font-extrabold">
-                          S/ {selectedProjector?.price}
+                          S/ {selectedProjector?.subTotal}
                         </span>
                       </div>
                     </th>
@@ -60,7 +60,7 @@ export const ComparisonSection: React.FC = () => {
                         </span>
 
                         <span className="text-2xl md:text-3xl font-extrabold">
-                          S/ 8,000 - 10,000
+                          S/ 8,000+
                         </span>
                       </div>
                     </th>
