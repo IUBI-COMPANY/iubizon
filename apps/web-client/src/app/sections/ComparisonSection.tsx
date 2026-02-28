@@ -56,7 +56,7 @@ export const ComparisonSection: React.FC = () => {
                     >
                       <div className="flex flex-col items-center gap-3">
                         <span className="text-base">
-                          Proyector Interactivo Típico
+                          Proyector o Pantalla Interactiva Típico
                         </span>
 
                         <span className="text-2xl md:text-3xl font-extrabold">

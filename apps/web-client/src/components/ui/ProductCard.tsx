@@ -126,7 +126,7 @@ export const ProductCard = ({ product }: Props) => {
         <div className="flex items-end justify-center gap-3">
           <p className="text-base font-extrabold text-primary flex justify-center items-start gap-1 transition-transform duration-300 group-hover:scale-110">
             <span className="text-[.8em] font-bold">S/</span>
-            <span className="text-3xl">{product.price}</span>
+            <span className="text-3xl">{product?.subTotal}</span>
           </p>
           {product?.oldPrice && (
             <p className="text-sm font-normal text-gray-400 flex justify-center items-start gap-0.5 line-through">
