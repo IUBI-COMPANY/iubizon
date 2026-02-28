@@ -378,6 +378,46 @@ export default function ContentDetailBundleInteractivo({
           </div>
         </div>
 
+        {/* Easy + compatibility */}
+        <div>
+          <p className="text-[1.4em] font-semibold text-white">
+            ⚡ Súper fácil de usar
+          </p>
+          <p className="mt-1 text-lg text-slate-200">
+            Funciona como “mouse”: si sabes usar tu laptop, ya sabes usar el
+            Touch Tank.
+          </p>
+
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+            <div className="relative w-full aspect-2/2 min-h-45">
+              <Image
+                src="/images/bundle-and-duo/igual-a-un-mouse.webp"
+                alt="Muy fácil de usar (como mouse)"
+                fill
+                className="rounded-lg border object-contain w-full h-full"
+                priority
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </div>
+            <div className="relative w-full aspect-2/2 min-h-45">
+              <Image
+                src="/images/bundle-and-duo/compatible-con-todo.webp"
+                alt="Compatible con todo"
+                fill
+                className="rounded-lg border object-contain w-full h-full"
+                priority
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <SoftChip>Sin licencias</SoftChip>
+            <SoftChip>Sin complicaciones</SoftChip>
+            <SoftChip>Listo para sala</SoftChip>
+          </div>
+        </div>
+
         {/* Comparación de precios en cards */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-4">
@@ -490,42 +530,6 @@ export default function ContentDetailBundleInteractivo({
             te da todo lo necesario para transformar tu espacio en interactivo,
             a un precio mucho más accesible que un proyector interactivo o una
             pantalla touch, y con más valor que un proyector tradicional.
-          </div>
-        </div>
-
-        {/* Easy + compatibility */}
-        <div>
-          <p className="text-[1.4em] font-semibold text-white">
-            ⚡ Súper fácil de usar
-          </p>
-          <p className="mt-1 text-lg text-slate-200">
-            Funciona como “mouse”: si sabes usar tu laptop, ya sabes usar el
-            Touch Tank.
-          </p>
-
-          <div className="mt-3 flex flex-col sm:flex-row gap-2 justify-center">
-            <Image
-              src="/images/bundle-and-duo/igual-a-un-mouse.webp"
-              alt="Muy fácil de usar (como mouse)"
-              width={600}
-              height={400}
-              className="rounded-lg border w-full h-auto"
-              priority
-            />
-            <Image
-              src="/images/bundle-and-duo/compatible-con-todo.webp"
-              alt="Compatible con todo"
-              width={600}
-              height={400}
-              className="rounded-lg border w-full h-auto"
-              priority
-            />
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <SoftChip>Sin licencias</SoftChip>
-            <SoftChip>Sin complicaciones</SoftChip>
-            <SoftChip>Listo para sala</SoftChip>
           </div>
         </div>
       </div>

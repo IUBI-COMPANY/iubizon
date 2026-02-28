@@ -313,22 +313,26 @@ export default function ContentDetailDuoInteractivo({
           </p>
 
           <div className="mt-3 flex flex-col sm:flex-row gap-2">
-            <Image
-              src="/images/bundle-and-duo/igual-a-un-mouse.webp"
-              alt="Muy fácil de usar (como mouse)"
-              width={600}
-              height={400}
-              className="rounded-lg border w-full h-auto"
-              priority
-            />
-            <Image
-              src="/images/bundle-and-duo/compatible-con-todo.webp"
-              alt="Compatible con todo"
-              width={600}
-              height={400}
-              className="rounded-lg border w-full h-auto"
-              priority
-            />
+            <div className="relative w-full aspect-2/2 min-h-45">
+              <Image
+                src="/images/bundle-and-duo/igual-a-un-mouse.webp"
+                alt="Muy fácil de usar (como mouse)"
+                fill
+                className="rounded-lg border object-contain w-full h-full"
+                priority
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </div>
+            <div className="relative w-full aspect-2/2 min-h-45">
+              <Image
+                src="/images/bundle-and-duo/compatible-con-todo.webp"
+                alt="Compatible con todo"
+                fill
+                className="rounded-lg border object-contain w-full h-full"
+                priority
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </div>
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
