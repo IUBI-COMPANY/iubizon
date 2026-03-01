@@ -157,20 +157,25 @@ export const HeroSection: React.FC = () => {
               </div>
             </Link>
 
-            {/* Solicitar Demo button */}
+            {/* Solicitar Demo button - Brand colors style */}
             <Link href="/demo" className="inline-block">
-              <div className="relative rounded-full p-[1px] bg-[linear-gradient(90deg,rgba(255,255,255,0.35),rgba(255,255,255,0.15),rgba(255,255,255,0.25))] shadow-[0_0_40px_rgba(255,255,255,0.15)]">
+              <div className="relative rounded-full p-px bg-[linear-gradient(135deg,rgba(242,95,12,0.8),rgba(255,255,255,0.25),rgba(242,95,12,0.6))] shadow-[0_0_60px_rgba(242,95,12,0.4)]">
                 <Button
                   variant="secondary"
                   size="lg"
                   styleVariant="outline"
-                  className="group relative overflow-hidden bg-white/5 hover:bg-white/10 text-white font-sfpro font-semibold text-lg px-8 py-4 rounded-full border border-white/20
-                  shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)]
-                  transition-all duration-300 hover:scale-[1.03] hover:border-white/40"
+                  className="group relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-orange-700/5 hover:from-primary/30 hover:via-primary/20 hover:to-orange-700/10 text-white font-sfpro font-bold text-lg px-8 py-4 rounded-full
+                  border border-primary/50 hover:border-primary/70 backdrop-blur-md
+                  shadow-[0_0_50px_rgba(242,95,12,0.25)] hover:shadow-[0_0_100px_rgba(242,95,12,0.5)]
+                  transition-all duration-300 hover:scale-[1.05]"
                 >
-                  {/* Subtle shine */}
-                  <span className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/2 bg-white/15 blur-md rotate-12 translate-x-[-120%] group-hover:translate-x-[260%] transition-transform duration-700" />
-                  <span className="relative">Solicitar Demo</span>
+                  {/* Shine sweep diagonal */}
+                  <span className="pointer-events-none absolute -top-1 -right-1 h-full w-1/2 bg-gradient-to-l from-white/35 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  {/* Bottom orange glow */}
+                  <span className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1/3 bg-primary/30 blur-2xl rounded-full" />
+                  <span className="relative flex items-center gap-2">
+                    Solicitar Demo
+                  </span>
                 </Button>
               </div>
             </Link>
