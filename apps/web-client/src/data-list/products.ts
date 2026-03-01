@@ -197,7 +197,7 @@ export const products: Product[] = orderBy(
               : "Proyección media/estándar",
         }),
         ...calcProductPricesDetails(product),
-        campaign: "Navidad",
+        campaign: "Tecnología interactiva",
       }) as Product,
   ),
   ["type", "stock"],

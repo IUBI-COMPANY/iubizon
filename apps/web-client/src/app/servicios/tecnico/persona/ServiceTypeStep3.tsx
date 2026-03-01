@@ -60,10 +60,10 @@ export const ServiceTypeStep3 = ({
     attendanceType: yup.string().required("Debes seleccionar una opción"),
     isQuotation: yup.boolean().notRequired(),
     visitDate: yup.string().when("attendanceType", {
-      is: "at_customer",
+      is: (value: string) => ["at_customer"].includes(value),
       then: (schema) =>
         schema
-          .required("La fecha de visita es requerida")
+          .required("La fecha es requerida")
           .test(
             "is-valid-date",
             "La fecha no puede ser anterior al día actual",
@@ -75,13 +75,13 @@ export const ServiceTypeStep3 = ({
       otherwise: (schema) => schema.notRequired(),
     }),
     visitTime: yup.string().when("attendanceType", {
-      is: "at_customer",
+      is: (value: string) => ["at_customer", "remote"].includes(value),
       then: (schema) =>
         schema
           .required("La hora de visita es requerida")
           .test(
             "is-valid-time",
-            "El horario de atención es de 08:00 AM a 05:00 PM",
+            "El horario de atención es de 09:00 AM a 05:00 PM",
             (value) => {
               if (!value) return false;
               const [hours] = value.split(":").map(Number);

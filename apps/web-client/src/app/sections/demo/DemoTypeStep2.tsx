@@ -75,7 +75,7 @@ export const DemoTypeStep2 = ({
           .required("La hora es requerida")
           .test(
             "is-valid-time",
-            "El horario de atención es de 08:00 AM a 05:00 PM",
+            "El horario de atención es de 09:00 AM a 05:00 PM",
             (value) => {
               if (!value) return false;
               const [hours] = value.split(":").map(Number);
