@@ -47,8 +47,9 @@ export default function DemoPageClient({ demoProducts }: Props) {
                 {product?.name || product?.model}
               </h2>
               <p className="text-gray-400 mb-6">
-                {product?.note ||
-                  "Agenda una demostración personalizada y conoce cada detalle."}
+                {product?.id === "bundle-interactivo"
+                  ? "Vive en vivo y directo lo que el Bundle interactivo puede hacer en tu espacio de enseñanza o presentación"
+                  : "Presencia como tu proyector o tv se transforma en una herramienta interactiva con el Dúo Interactivo"}
               </p>
               {product?.id && (
                 <Link href={`/demo/${product.id}`}>

@@ -87,7 +87,7 @@ const productsData: Product[] = [
   {
     id: "duo-interactivo",
     model: "Touch y Adaptador Inalámbrico",
-    name: "Duo interactivo",
+    name: "Dúo interactivo",
     stock: 20,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
