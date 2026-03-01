@@ -134,8 +134,9 @@ export const HeroSection: React.FC = () => {
             initial={{ opacity: 0, y: 14, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-            className="mt-8 flex justify-center"
+            className="mt-8 flex justify-center gap-4"
           >
+            {/* Realizar mi pedido button */}
             <Link href="/productos/bundle-interactivo" className="inline-block">
               {/* Premium button wrapper with gradient stroke */}
               <div className="relative rounded-full p-[1px] bg-[linear-gradient(90deg,rgba(242,95,12,0.65),rgba(255,255,255,0.16),rgba(242,95,12,0.55))] shadow-[0_0_60px_rgba(242,95,12,0.25)]">
@@ -152,6 +153,24 @@ export const HeroSection: React.FC = () => {
                   {/* Inner glow */}
                   <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.18),transparent_55%)] opacity-80" />
                   <span className="relative">Realizar mi pedido</span>
+                </Button>
+              </div>
+            </Link>
+
+            {/* Solicitar Demo button */}
+            <Link href="/demo" className="inline-block">
+              <div className="relative rounded-full p-[1px] bg-[linear-gradient(90deg,rgba(255,255,255,0.35),rgba(255,255,255,0.15),rgba(255,255,255,0.25))] shadow-[0_0_40px_rgba(255,255,255,0.15)]">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  styleVariant="outline"
+                  className="group relative overflow-hidden bg-white/5 hover:bg-white/10 text-white font-sfpro font-semibold text-lg px-8 py-4 rounded-full border border-white/20
+                  shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)]
+                  transition-all duration-300 hover:scale-[1.03] hover:border-white/40"
+                >
+                  {/* Subtle shine */}
+                  <span className="pointer-events-none absolute -left-1/2 top-0 h-full w-1/2 bg-white/15 blur-md rotate-12 translate-x-[-120%] group-hover:translate-x-[260%] transition-transform duration-700" />
+                  <span className="relative">Solicitar Demo</span>
                 </Button>
               </div>
             </Link>
