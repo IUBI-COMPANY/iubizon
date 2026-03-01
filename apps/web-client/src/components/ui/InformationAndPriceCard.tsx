@@ -123,14 +123,6 @@ export const InformationAndPriceCard = ({
 
           {/* 3. STOCK Y DISPONIBILIDAD */}
           <div className="mb-5 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-300 font-sfpro">
-                Stock:
-              </span>
-              <span className="text-lg font-bold text-primary font-sfpro">
-                {product.stock} {product.stock === 1 ? "unidad" : "unidades"}
-              </span>
-            </div>
             {product.stock <= 0 ? (
               <p className="text-xs text-red-400 font-medium">
                 ⚠️ Sin stock •{" "}
@@ -235,7 +227,7 @@ export const InformationAndPriceCard = ({
                   <span className="text-base font-bold text-white font-sfpro">
                     Total a Pagar:
                   </span>
-                  <span className="text-3xl font-black text-primary font-sfpro drop-shadow-lg">
+                  <span className="text-[1.4em] font-black text-primary font-sfpro drop-shadow-lg">
                     {formatPrice(priceData.total)}
                   </span>
                 </div>
