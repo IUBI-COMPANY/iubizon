@@ -6,7 +6,7 @@ export default function Page() {
       <section className="mx-auto w-full max-w-5xl px-6 py-14 md:px-10 md:py-16 normal-case">
         <header className="mb-10 rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8 normal-case">
           <h1 className="text-3xl font-semibold tracking-tight text-zinc-50 md:text-4xl normal-case">
-            Politica de Garantia Comercial
+            Politica de Garantia
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-zinc-300 md:text-base normal-case">
             La presente Politica de Garantia Comercial regula las condiciones
