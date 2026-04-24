@@ -175,7 +175,7 @@ export default function Page() {
             Domicilio legal: CAL.LAS ACACIAS NRO. 181 URB. LA VILLA LIMA - LIMA
             - CHORRILLOS
           </p>
-          <p className="mt-4 text-zinc-400">Ultima actualizacion: 24/04/2026</p>
+          <p className="mt-4 text-zinc-400">Ultima actualizacion: 01/09/2025</p>
         </footer>
       </section>
     </main>
