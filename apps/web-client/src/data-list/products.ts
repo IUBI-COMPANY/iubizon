@@ -64,7 +64,7 @@ const productsData: Product[] = [
     condition: "new",
     description:
       "Transforma cualquier proyector en una experiencia interactiva profesional",
-    price: 5201.15,
+    price: 7490,
     badge: "Bundle",
     mainImage: "/productos/bundle/bundlepack2.png",
     media: [
@@ -91,7 +91,7 @@ const productsData: Product[] = [
     stock: 20,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
-    price: 4021.15,
+    price: 5790,
     badge: "Dúo",
     mainImage: "/productos/bundle/duo-interactivo.png",
     media: [
