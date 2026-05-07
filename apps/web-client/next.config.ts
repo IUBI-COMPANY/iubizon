@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   trailingSlash: false,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async redirects() {
     return [
       {

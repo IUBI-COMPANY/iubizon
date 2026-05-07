@@ -6,11 +6,6 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Todos los productos | Iubizon Marketplace',
-  description: 'Explora todos los productos disponibles en Iubizon. Electrónica, hogar, herramientas y más.',
-};
-
 async function getProducts(limit = 20) {
   const supabase = createServerClient();
   
@@ -31,7 +26,7 @@ async function getProducts(limit = 20) {
   return { products: data || [], total: data?.length || 0 };
 }
 
-export default async function ProductosPage() {
+export default async function ProductsPage() {
   const { products, total } = await getProducts();
 
   return (

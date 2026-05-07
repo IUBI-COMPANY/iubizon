@@ -6,22 +6,39 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Todos los productos | Iubizon Marketplace',
-  description: 'Explora todos los productos disponibles en Iubizon. Electrónica, hogar, herramientas y más.',
-};
+interface Props {
+  searchParams: Promise<{ q?: string; category?: string; minPrice?: string; maxPrice?: string }>;
+}
 
-async function getProducts(limit = 20) {
+async function getProducts(query: string, categoryId?: string, minPrice?: number, maxPrice?: number) {
   const supabase = createServerClient();
   
-  const { data, error } = await supabase
+  let queryBuilder = supabase
     .from('products')
     .select('*, category:categories(*), seller:profiles(*), images:product_images(*), bundle:product_bundles(*)', {
       count: 'exact',
     })
     .eq('status', 'active')
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .limit(20);
+
+  if (query) {
+    queryBuilder = queryBuilder.ilike('title', `%${query}%`);
+  }
+  
+  if (categoryId) {
+    queryBuilder = queryBuilder.eq('category_id', categoryId);
+  }
+  
+  if (minPrice) {
+    queryBuilder = queryBuilder.gte('price', minPrice);
+  }
+  
+  if (maxPrice) {
+    queryBuilder = queryBuilder.lte('price', maxPrice);
+  }
+
+  const { data, error } = await queryBuilder;
 
   if (error) {
     console.error('Error fetching products:', error);
@@ -31,8 +48,22 @@ async function getProducts(limit = 20) {
   return { products: data || [], total: data?.length || 0 };
 }
 
-export default async function ProductosPage() {
-  const { products, total } = await getProducts();
+const conditionLabels: Record<string, string> = {
+  new: 'Nuevo',
+  like_new: 'Como nuevo',
+  good: 'Buen estado',
+  fair: 'Aceptable',
+};
+
+export default async function SearchPage({ searchParams }: Props) {
+  const { q, category, minPrice, maxPrice } = await searchParams;
+  
+  const { products, total } = await getProducts(
+    q || '', 
+    category,
+    minPrice ? parseInt(minPrice) : undefined,
+    maxPrice ? parseInt(maxPrice) : undefined
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -41,14 +72,11 @@ export default async function ProductosPage() {
       
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-[#112237]">Todos los productos</h1>
-              <p className="text-[#64748b]">{total} productos disponibles</p>
-            </div>
-            <Link href="/products/new" className="bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]">
-              + Publicar producto
-            </Link>
+          <div className="mb-6">
+            <h1 className="text-xl font-bold text-[#112237] mb-4">
+              Resultados de búsqueda: <span className="text-[#f25c05]">"{q || ''}"</span>
+            </h1>
+            <p className="text-[#64748b]">{total} productos encontrados</p>
           </div>
 
           {products.length > 0 ? (
@@ -70,7 +98,7 @@ export default async function ProductosPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-[#64748b]">No hay productos disponibles</p>
+              <p className="text-[#64748b]">No se encontraron productos</p>
             </div>
           )}
         </div>

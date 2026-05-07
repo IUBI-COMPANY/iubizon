@@ -1,84 +1,42 @@
-import React from "react";
-import { twMerge } from "tailwind-merge";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-interface Props {
-  name: string;
-  type?: "text" | "email" | "password" | "number" | "tel";
-  label?: string;
-  value?: string | number;
-  onChange?: (value: string) => void;
-  error?: boolean;
-  helperText?: string;
-  required?: boolean;
-  hidden?: boolean;
-  className?: string;
-  placeholder?: string;
-  autoComplete?: string;
-  textColor?: "white" | "secondary";
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  error?: string;
+  icon?: React.ReactNode;
 }
 
-export const Input = ({
-  name,
-  type = "text",
-  label,
-  value,
-  onChange,
-  error = false,
-  helperText,
-  required = false,
-  hidden = false,
-  className,
-  placeholder,
-  autoComplete,
-  textColor = "white",
-}: Props) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange?.(e.target.value);
-  };
-
-  return (
-    <div className={twMerge("", hidden && "hidden")}>
-      {label && (
-        <label
-          htmlFor={name}
-          className={twMerge(
-            "block text-sm/6 font-semibold mb-1.5 font-sfpro",
-            textColor === "white" ? "text-white" : "text-secondary",
-          )}
-        >
-          {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
-        </label>
-      )}
-
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value ?? ""}
-        onChange={handleChange}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        className={twMerge(
-          "block w-full rounded-md bg-white px-3.5 py-2 text-base placeholder:text-gray-400 transition-colors duration-200",
-          "outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2",
-          error
-            ? "outline-red-500 border-red-500 focus:outline-red-500"
-            : "focus:outline-secondary/70 hover:outline-gray-400",
-          className,
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, error, icon, ...props }, ref) => {
+    return (
+      <div className="relative w-full">
+        {icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#64748b]">
+            {icon}
+          </div>
         )}
-        aria-describedby={error ? `${name}-error` : undefined}
-        aria-invalid={error}
-      />
-      {error && helperText && (
-        <p
-          id={`${name}-error`}
-          className="mt-1 text-sm text-red-600 scroll-error-anchor"
-          role="alert"
-        >
-          {helperText}
-        </p>
-      )}
-    </div>
-  );
-};
+        <input
+          type={type}
+          className={cn(
+            'flex h-11 w-full rounded-lg border border-[#e2e8f0] bg-white px-4 py-2 text-sm transition-colors',
+            'placeholder:text-[#94a3b8]',
+            'focus:outline-none focus:ring-2 focus:ring-[#f25c05] focus:border-transparent',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            error && 'border-[#ef4444] focus:ring-[#ef4444]',
+            icon && 'pl-10',
+            className
+          )}
+          ref={ref}
+          {...props}
+        />
+        {error && (
+          <p className="mt-1 text-xs text-[#ef4444]">{error}</p>
+        )}
+      </div>
+    );
+  }
+);
+Input.displayName = 'Input';
+
+export { Input };

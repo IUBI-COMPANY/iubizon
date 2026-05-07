@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
+export const dynamic = 'force-dynamic';
+
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { FooterLayout } from "@/components/ui/layout/FooterLayout";
-import { HeaderLayout } from "@/components/ui/layout/HeaderLayout";
-import { WhatsAppFloatingButton } from "@/components/ui/WhatsAppFloatingButton";
+import { ClientLayout } from "@/components/providers/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,77 +21,33 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.iubizon.com"),
   title: {
-    default:
-      "iubizon - Bundle Interactivo y Dúo Interactivo | Soluciones Educativas en Lima, Perú",
-    template: "%s",
+    default: "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
+    template: "%s | iubizon",
   },
   description:
-    "Transforma tu aula o sala de reuniones con el Bundle Interactivo (Proyector Epson + Touch + Adaptador Inalámbrico WiFi) y Dúo Interactivo (Touch + Adaptador Inalámbrico WiFi). Tecnología educativa innovadora en Lima, Perú.",
+    "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas. like Wallapop - marketplace C2C y B2C en Lima y todo Peru.",
   alternates: {
     canonical: "https://www.iubizon.com",
   },
   authors: [{ name: "iubizon", url: "https://www.iubizon.com" }],
   creator: "iubizon",
   publisher: "iubizon",
-  category: "technology",
+  category: "shopping",
   keywords: [
-    //Bundle Interactivo
-    "bundle interactivo",
-    "bundle interactivo perú",
-    "bundle interactivo lima",
-    "paquete interactivo educativo",
-    "solución interactiva para aulas",
-    "kit interactivo para colegios",
-    "bundle educativo epson",
-    "paquete multimedia interactivo",
-
-    //Dúo Interactivo
-    "dúo interactivo",
-    "touch interactivo",
-    "pantalla táctil interactiva",
-    "touch portátil",
-    "Adaptador Inalámbrico WiFi para educación",
-    "adaptador inalámbrico wifi",
-    "proyección inalámbrica",
-
-    //Educación y tecnología
-    "tecnología educativa",
-    "tecnología educativa perú",
-    "tecnología educativa lima",
-    "aulas interactivas",
-    "clases interactivas",
-    "educación digital",
-    "herramientas digitales educación",
-    "soluciones educativas innovadoras",
-    "transformación digital educativa",
-    "tecnología para colegios",
-    "tecnología para universidades",
-    "equipos interactivos educación",
-
-    //Aplicaciones
-    "proyector interactivo",
-    "proyector táctil",
-    "proyector para aulas",
-    "proyector para empresas",
-    "presentaciones interactivas",
-    "clases dinámicas",
-    "colaboración digital",
-    "pizarra digital",
-
-    //Marcas y modelos
-    "epson powerlite 109w",
-    "proyector epson interactivo",
-    "touch screen portátil",
-    "Adaptador Inalámbrico WiFi",
-
-    //Ubicación
-    "soluciones educativas lima",
-    "tecnología educativa san isidro",
-    "bundle interactivo miraflores",
-    "equipos educativos surco",
-    "tecnología para colegios lima",
-    "venta de equipos educativos perú",
-    "distribuidor tecnología educativa lima",
+    "marketplace peru",
+    "comprar online peru",
+    "vender productos peru",
+    "tienda online lima",
+    "electronica peru",
+    "hogar peru",
+    "herramientas peru",
+    "productos nuevos peru",
+    "productos usados peru",
+    "wallapop peru",
+    "mercado libre peru",
+    "compra venta peru",
+    "tienda virtual peru",
+    "comercio electronico peru",
   ],
   robots: {
     index: true,
@@ -106,25 +62,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.iubizon.com",
-    title:
-      "iubizon - Bundle Interactivo y Dúo Interactivo | Tecnología Educativa",
+    title: "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
     description:
-      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras con proyector Epson, touch interactivo y Adaptador Inalámbrico WiFi en Lima, Perú.",
+      "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas.",
     images: [
       {
-        url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
+        url: "https://www.iubizon.com/og-image.jpg",
       },
     ],
-    siteName: "iubizon - Tecnología Educativa Interactiva",
+    siteName: "iubizon - Marketplace Peru",
   },
   twitter: {
     card: "summary_large_image",
-    title: "iubizon - Bundle Interactivo y Dúo Interactivo",
+    title: "iubizon - Marketplace Peru",
     description:
-      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Tecnología educativa innovadora en Lima, Perú.",
+      "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas.",
     images: [
       {
-        url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
+        url: "https://www.iubizon.com/og-image.jpg",
       },
     ],
   },
@@ -146,13 +101,13 @@ export default function RootLayout({
 }>) {
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "OnlineMarketplace",
     name: "iubizon",
     description:
-      "Empresa líder en soluciones educativas interactivas en Lima, Perú. Especialistas en Bundle Interactivo y Dúo Interactivo para transformar aulas y salas de reuniones con tecnología táctil e inalámbrica.",
+      "Marketplace Peru para comprar y vender productos nuevos y usados. Electronica, hogar, herramientas y mas.",
     url: "https://www.iubizon.com",
     logo: "https://www.iubizon.com/images/logo.png",
-    image: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
+    image: "https://www.iubizon.com/og-image.jpg",
     telephone: "+51972300301",
     email: "iubizon.company@gmail.com",
     address: {
@@ -162,31 +117,6 @@ export default function RootLayout({
       addressRegion: "Lima",
       postalCode: "15067",
       addressCountry: "PE",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: -12.186,
-      longitude: -77.014,
-    },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: "09:00",
-        closes: "18:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Saturday",
-        opens: "09:00",
-        closes: "12:00",
-      },
-    ],
-    priceRange: "$$",
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "127",
     },
     sameAs: [
       "https://www.facebook.com/iubizon/",
@@ -200,7 +130,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <Script
           id="organization-schema"
@@ -289,13 +219,9 @@ export default function RootLayout({
             alt="facebook pixel"
           />
         </noscript>
-        <HeaderLayout />
-        {children}
-        <SpeedInsights />
-        <Analytics />
-        {/* LAYOUT */}
-        <FooterLayout />
-        <WhatsAppFloatingButton />
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );
