@@ -30,8 +30,8 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ total }) => {
       </div>
 
       <p className="mt-10 text-gray-500 text-xs font-light italic font-sfpro">
-        *Precio sugerido antes de impuestos. Incluye 1 año de garantía en todos
-        los componentes y soporte técnico remoto.
+        *Precio incluye IGV. Incluye 1 año de garantía en todos los componentes
+        y soporte técnico remoto.
       </p>
 
       <Link
