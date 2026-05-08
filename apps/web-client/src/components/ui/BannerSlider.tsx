@@ -40,10 +40,7 @@ export default function BannerSlider({
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {banners.map((banner, index) => (
-          <div
-            key={index}
-            className="w-full h-full flex-shrink-0 relative"
-          >
+          <div key={index} className="w-full h-full flex-shrink-0 relative">
             <Image
               src={banner.src}
               alt={banner.alt}
