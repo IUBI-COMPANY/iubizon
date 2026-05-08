@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Info, XCircle } from "lucide-react";
 import { Product } from "@/data-list/products";
-import { GiftCardReaconditioned } from "./GiftCardReaconditioned";
-import { GiftCardNews } from "./GiftCardNews";
 import { DetailProductCondition } from "@/data-list/productsCondition";
 import { PurchaseModal } from "./PurchaseModal";
 import { QuantitySelector } from "./QuantitySelector";
 import {
-  getProductDiscountInfo,
   formatPrice,
+  getProductDiscountInfo,
   shouldShowCampaignBadge,
 } from "@/utils/productPriceHelpers";
 
@@ -232,16 +230,6 @@ export const InformationAndPriceCard = ({
                   </span>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* 6. REGALOS Y BENEFICIOS */}
-          {product?.type === "Proyector" && (
-            <div className="mb-5">
-              {product?.condition === "new" && <GiftCardNews />}
-              {product?.condition === "reconditioned" && (
-                <GiftCardReaconditioned />
-              )}
             </div>
           )}
 

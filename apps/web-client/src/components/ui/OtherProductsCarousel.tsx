@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Product, products as allProducts } from "../../data-list/products";
-import { useKeenSlider } from "keen-slider/react";
-import "keen-slider/keen-slider.min.css";
 import { ProductCard } from "@/components/ui/ProductCard";
 
 interface OtherProductsCarouselProps {
@@ -14,11 +12,9 @@ export default function OtherProductsCarousel({
   const products = allProducts
     .filter((p) => p.id !== currentProduct.id)
     .sort((a, b) => {
-      // Segundo: Productos con special: true
       if (a.campaign && !b.campaign) return -1;
       if (!a.campaign && b.campaign) return 1;
 
-      // Tercero: Productos del mismo tipo que currentProduct
       const aIsSameType = a.type === currentProduct.type;
       const bIsSameType = b.type === currentProduct.type;
 
@@ -27,67 +23,83 @@ export default function OtherProductsCarousel({
       return 0;
     });
 
-  const [current, setCurrent] = useState(0);
-  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
-    slides: { perView: 3, spacing: 16 },
-    loop: true,
-    slideChanged(s) {
-      setCurrent(s.track.details.rel);
-    },
-    breakpoints: {
-      "(max-width: 900px)": { slides: { perView: 2, spacing: 12 } },
-      "(max-width: 600px)": { slides: { perView: 1, spacing: 8 } },
-    },
-  });
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemsPerView = 4;
+  const totalSlides = Math.ceil(products.length / itemsPerView);
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
+  };
+
+  if (products.length === 0) return null;
 
   return (
-    <div className="rounded-xl w-full max-w-[1370px] mx-auto my-20">
-      <h2 className="text-[2em] font-semibold mb-2 text-primary">
+    <div className="w-full max-w-[1470px] mx-auto py-8 px-4">
+      <h2 className="text-xl font-semibold mb-6 text-gray-900">
         Otros productos
       </h2>
-      <div className="w-full relative">
-        <div ref={sliderRef} className="keen-slider relative">
-          {products.map((product, index) => (
-            <ProductCard product={product} key={index} />
-          ))}
-        </div>
-        {products.length > 1 && (
-          <div className="absolute w-full top-[40%] flex items-center justify-center min-h-[40px]">
-            <div className="flex items-center justify-center w-full h-full">
-              <button
-                onClick={() => slider.current?.prev()}
-                className="hidden md:block md:absolute w-[3em] h-[3em] left-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-secondary/60 hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
-                aria-label="Anterior"
+      <div className="relative">
+        <div className="overflow-hidden">
+          <div
+            ref={containerRef}
+            className="flex transition-transform duration-300 ease-out"
+            style={{
+              transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+            }}
+          >
+            {products.map((product, index) => (
+              <div
+                key={index}
+                className="w-[25%] flex-shrink-0 px-2"
+                style={{ width: `${100 / itemsPerView}%` }}
               >
-                ◀
-              </button>
-              <button
-                onClick={() => slider.current?.next()}
-                className="hidden md:block md:absolute w-[3em] h-[3em] right-[-1.5em] top-1/2 -translate-y-1/2 text-white rounded-full p-2 shadow bg-secondary/60 hover:bg-[#f25c05] transition z-10 cursor-pointer border-solid border-2 border-primary"
-                aria-label="Siguiente"
-              >
-                ▶
-              </button>
-            </div>
-          </div>
-        )}
-        {products.length > 1 && (
-          <div className="flex gap-2 justify-center mt-8">
-            {products.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => slider.current?.moveToIdx(idx)}
-                className={`w-3 h-3 rounded-full border-2 cursor-pointer ${
-                  current === idx
-                    ? "border-primary/100 bg-primary/80"
-                    : "border-secondary bg-white"
-                } transition`}
-                aria-label={`Ver producto ${idx + 1}`}
-              />
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
+        </div>
+
+        {products.length > itemsPerView && (
+          <>
+            <button
+              onClick={handlePrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md hover:border-orange-400 hover:text-orange-500 z-10 transition -translate-x-2"
+              aria-label="Anterior"
+            >
+              <span className="text-xl">‹</span>
+            </button>
+            <button
+              onClick={handleNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full shadow-md hover:border-orange-400 hover:text-orange-500 z-10 transition translate-x-2"
+              aria-label="Siguiente"
+            >
+              <span className="text-xl">›</span>
+            </button>
+          </>
         )}
       </div>
+
+      {totalSlides > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          {Array.from({ length: totalSlides }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                currentIndex === idx
+                  ? "bg-orange-500 w-6"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+              aria-label={`Ver grupo ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -200,7 +200,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head>
         <Script
           id="organization-schema"
