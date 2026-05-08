@@ -542,6 +542,193 @@ const productsData: Product[] = [
         Nota Al emparejar el proyector con el control remoto a través de Bluetooth, podrás utilizar la función de control por voz.
     `,
   },
+  {
+    id: "Cable-hdmi",
+    model: "HY350",
+    name: "Cable Hdmi de 1.5mts Luxshare-ICT",
+    stock: 50,
+    oldStock: 60,
+    condition: "new",
+    description: "",
+    price: 19.99,
+    badge: "Nuevo",
+    mainImage: "/productos/Cable-hdmi/Cable-hdmi.jpg",
+    media: [
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-2.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-3.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-4.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-5.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-6.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-7.jpg" },
+      { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-8.jpg" },
+    ],
+    brand: "Luxshare-ICT",
+    type: "Accesorio",
+    connectivity: "HDMI Estándar",
+    note: `
+        - Tipo de Cable: HDMI de alta velocidad
+        - Versión: HDMI 2.0 (compatible con versiones anteriores)
+        - Longitud: 1.5 metros
+        - Resolución Soportada: Hasta 4K Ultra HD (3840 x 2160)
+        - Material del Conductor: Cobre de alta pureza
+        - Conectores: HDMI macho a HDMI macho
+        - Compatibilidad: TV, monitores, proyectores, consolas, laptops
+        
+        Características del Producto:
+        
+        Transmisión de Video y Audio en Alta Definición
+        Este cable HDMI permite la transmisión simultánea de video y audio digital en alta calidad, soportando resoluciones de hasta 4K Ultra HD. Ideal para disfrutar contenido con excelente nitidez, colores vibrantes y sonido envolvente sin pérdidas.
+        
+        Conectividad Estable y de Alto Rendimiento
+        Gracias a su construcción con materiales de alta calidad, el cable ofrece una señal estable y sin interferencias. Es perfecto para uso continuo en equipos como televisores, proyectores, consolas de videojuegos y reproductores multimedia.
+
+        Diseño Resistente y Duradero
+        El cable cuenta con conectores reforzados y recubrimiento resistente que protege contra el desgaste, dobleces y uso frecuente. Su diseño garantiza una larga vida útil incluso en entornos exigentes.
+        
+        Compatibilidad Universal
+        Es compatible con una amplia gama de dispositivos con puerto HDMI, incluyendo Smart TV, laptops, PC, consolas como PlayStation y Xbox, reproductores Blu-ray y proyectores, facilitando una conexión rápida y sencilla.
+        
+        Nota: Para obtener el mejor rendimiento, se recomienda conectar correctamente ambos extremos del cable y evitar dobleces extremos que puedan afectar la transmisión de señal.    `,
+  },
+  {
+    id: "Cable-poder",
+    model: "",
+    name: "Cable de poder para proyector",
+    stock: 50,
+    oldStock: 60,
+    condition: "new",
+    description: "",
+    price: 25.99,
+    badge: "Nuevo",
+    mainImage: "/productos/Cable-poder/Cable-poder.jpg",
+    media: [
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-2.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-3.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-4.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-5.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-6.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-7.jpg" },
+      { type: "image", src: "/productos/Cable-poder/Cable-poder-8.jpg" },
+    ],
+    brand: "Standar",
+    type: "Accesorio",
+    connectivity: "Cable de poder Estándar",
+    note: `
+        - Tipo de Cable: Cable de poder AC para proyector
+        - Tipo de Conector: IEC C13 a enchufe estándar (según región)
+        - Longitud: 1.5 metros 
+        - Voltaje Soportado: 110V – 250V
+        - Corriente Máxima: 10A
+        - Material del Conductor: Cobre de alta calidad
+        - Compatibilidad: Proyectores, monitores, CPU, impresoras
+        
+        Características del Producto:
+        
+        Suministro de Energía Seguro y Estable
+        Este cable de poder está diseñado para proporcionar una conexión eléctrica confiable y estable a proyectores y otros equipos electrónicos. Garantiza un flujo de energía continuo, evitando interrupciones durante el uso.
+        
+        Alta Compatibilidad con Equipos Electrónicos
+        Gracias a su conector estándar IEC C13, este cable es ampliamente compatible con proyectores de diversas marcas, así como con computadoras de escritorio, monitores e impresoras, facilitando su uso en diferentes entornos.
+        
+        Diseño Resistente y Duradero
+        Fabricado con materiales de alta calidad, el cable cuenta con un recubrimiento resistente que protege contra el desgaste, el calor y el uso constante. Su estructura robusta asegura una larga vida útil.
+        
+        Instalación Fácil y Uso Práctico
+        Su diseño permite una conexión rápida y segura sin necesidad de herramientas. Ideal para uso en oficinas, hogares, salas de reuniones o entornos educativos.
+        
+        Nota: Asegúrese de verificar la compatibilidad del conector con su equipo antes de usarlo y evite el uso en condiciones de humedad o con cables dañados para garantizar la seguridad.    `,
+  },
+  {
+    id: "Cable-vga",
+    model: "",
+    name: "Cable vga de 1.5mts",
+    stock: 50,
+    oldStock: 60,
+    condition: "new",
+    description: "",
+    price: 19.99,
+    badge: "Nuevo",
+    mainImage: "/productos/Cable-vga/Cable-vga.jpg",
+    media: [
+      { type: "image", src: "/productos/Cable-vga/Cable-vga-2.jpg" },
+      { type: "image", src: "/productos/Cable-vga/Cable-vga-3.jpg" },
+      { type: "image", src: "/productos/Cable-vga/Cable-vga-4.jpg" },
+      { type: "image", src: "/productos/Cable-vga/Cable-vga-5.jpg" },
+      { type: "image", src: "/productos/Cable-vga/Cable-vga-6.jpg" },
+    ],
+    brand: "Cable vga",
+    type: "Accesorio",
+    connectivity: "VGA Estándar",
+    note: `
+        - Tipo de Cable: VGA (Video Graphics Array)
+        - Tipo de Conector: VGA macho a VGA macho (15 pines)
+        - Longitud: 1.5 metros
+        - Resolución Soportada: Hasta 1080p Full HD (dependiendo del equipo)
+        - Material del Conductor: Cobre de alta calidad
+        - Blindaje: Protección contra interferencias electromagnéticas
+        - Compatibilidad: Monitores, proyectores, CPU, laptops con puerto VGA
+        
+        Características del Producto:
+        
+        Transmisión de Video Clara y Estable
+        Este cable VGA permite transmitir señal de video analógica con buena calidad, ideal para presentaciones, oficinas o entornos educativos. Ofrece una imagen estable y continua para proyectores y monitores compatibles.
+        
+        Conectividad Segura y Sin Interferencias
+        Gracias a su sistema de blindaje, el cable reduce interferencias externas, asegurando una mejor calidad de señal. Sus conectores de 15 pines proporcionan una conexión firme y confiable.
+        
+        Diseño Resistente y de Larga Duración
+        Fabricado con materiales duraderos, el cable cuenta con un recubrimiento resistente al uso frecuente, evitando daños por dobleces o manipulación constante.
+        
+        Amplia Compatibilidad
+        Compatible con una gran variedad de dispositivos con puerto VGA, como computadoras de escritorio, laptops, monitores y proyectores, facilitando su integración en diferentes configuraciones.
+        
+        El cable VGA transmite únicamente señal de video, por lo que se requiere un cable adicional para audio en caso de ser necesario.    `,
+  },
+  {
+    id: "Control-remoto",
+    model: "",
+    name: "Cable remoto para proyector Epson",
+    stock: 50,
+    oldStock: 60,
+    condition: "new",
+    description: "",
+    price: 80.99,
+    badge: "Nuevo",
+    mainImage: "/productos/Control/Control-epson.jpg",
+    media: [
+      { type: "image", src: "/productos/Control/Control-epson-2.jpg" },
+      { type: "image", src: "/productos/Control/Control-epson-3.jpg" },
+      { type: "image", src: "/productos/Control/Control-epson-4.jpg" },
+      { type: "image", src: "/productos/Control/Control-epson-5.jpg" },
+    ],
+    brand: "Control remoto Epson",
+    type: "Accesorio",
+    connectivity: "Estandar",
+    note: `
+        - Tipo de Producto: Control remoto para proyector
+        - Marca Compatible: Epson
+        - Tipo de Conexión: Infrarrojo (IR)
+        - Alcance: Hasta 8–10 metros (aproximadamente)
+        - Alimentación: 2 baterías AAA
+        - Funciones: Encendido/apagado, navegación de menú, control de imagen, volumen
+        - Compatibilidad: Diversos modelos de proyectores Epson
+        
+        Características del Producto:
+        
+        Control Total del Proyector a Distancia
+        Este control remoto permite manejar todas las funciones principales del proyector Epson de forma cómoda, incluyendo encendido, apagado, navegación por menús, ajuste de imagen y control de volumen.
+        
+        Conectividad Segura y Sin Interferencias
+        Gracias a su sistema de blindaje, el cable reduce interferencias externas, asegurando una mejor calidad de señal. Sus conectores de 15 pines proporcionan una conexión firme y confiable.
+        
+        Diseño Resistente y de Larga Duración
+        Fabricado con materiales duraderos, el cable cuenta con un recubrimiento resistente al uso frecuente, evitando daños por dobleces o manipulación constante.
+        
+        Amplia Compatibilidad
+        Compatible con una gran variedad de dispositivos con puerto VGA, como computadoras de escritorio, laptops, monitores y proyectores, facilitando su integración en diferentes configuraciones.
+        
+        El cable VGA transmite únicamente señal de video, por lo que se requiere un cable adicional para audio en caso de ser necesario.    `,
+  },
 ];
 
 // ============================================
