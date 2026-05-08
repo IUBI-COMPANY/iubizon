@@ -95,7 +95,11 @@ export const InputNumber = ({
           htmlFor={name}
           className={twMerge(
             "block text-sm/6 font-semibold mb-1.5 font-sfpro",
-            textColor === "white" ? "text-white" : textColor === "dark" ? "text-gray-900" : "text-secondary",
+            textColor === "white"
+              ? "text-white"
+              : textColor === "dark"
+                ? "text-gray-900"
+                : "text-secondary",
           )}
         >
           {label}

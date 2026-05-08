@@ -47,13 +47,17 @@ export default function StatsGrid({
   return (
     <div className={className}>
       {title && (
-        <h2 className={`text-2xl md:text-3xl font-bold mb-8 text-center font-sfpro ${titleClass}`}>
+        <h2
+          className={`text-2xl md:text-3xl font-bold mb-8 text-center font-sfpro ${titleClass}`}
+        >
           {title}
         </h2>
       )}
 
       {description && (
-        <p className={`text-center mb-8 max-w-2xl mx-auto font-sfpro ${descClass}`}>
+        <p
+          className={`text-center mb-8 max-w-2xl mx-auto font-sfpro ${descClass}`}
+        >
           {description}
         </p>
       )}
@@ -66,12 +70,16 @@ export default function StatsGrid({
             {isDark && (
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
             )}
-            <div className={`relative ${cardBg} rounded-3xl p-8 text-center hover:border-primary/30 transition-all duration-300 ${isDark ? "backdrop-blur-sm" : "shadow-lg border"}`}>
+            <div
+              className={`relative ${cardBg} rounded-3xl p-8 text-center hover:border-primary/30 transition-all duration-300 ${isDark ? "backdrop-blur-sm" : "shadow-lg border"}`}
+            >
               {stat.icon && <div className="text-5xl mb-4">{stat.icon}</div>}
               <div className="text-5xl font-bold text-primary mb-3 font-sfpro">
                 {stat.number}
               </div>
-              <div className={`text-xl font-semibold mb-2 font-sfpro ${cardText}`}>
+              <div
+                className={`text-xl font-semibold mb-2 font-sfpro ${cardText}`}
+              >
                 {stat.label}
               </div>
               {stat.description && (

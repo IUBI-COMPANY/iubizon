@@ -42,7 +42,9 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   const borderClass = isDark ? "border-white/20" : "border-gray-300";
   const textClass = isDark ? "text-white" : "text-gray-900";
   const hoverClass = isDark ? "hover:bg-white/20" : "hover:bg-gray-200";
-  const disabledClass = isDark ? "disabled:hover:bg-white/10" : "disabled:hover:bg-gray-100";
+  const disabledClass = isDark
+    ? "disabled:hover:bg-white/10"
+    : "disabled:hover:bg-gray-100";
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>

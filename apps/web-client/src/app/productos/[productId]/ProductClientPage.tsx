@@ -73,7 +73,9 @@ export default function ProductDetailPage({ product }: Props) {
 
   return (
     <>
-      <div className={`min-h-screen h-auto flex flex-col w-full font-sfpro ${isBundleProduct ? "bg-gray-900" : "bg-slate-50"}`}>
+      <div
+        className={`min-h-screen h-auto flex flex-col w-full font-sfpro ${isBundleProduct ? "bg-gray-900" : "bg-slate-50"}`}
+      >
         {!product ? (
           <NoFoundComponent />
         ) : (
@@ -205,7 +207,8 @@ export default function ProductDetailPage({ product }: Props) {
                     {isBundleProduct && (
                       <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
                         <h3 className="text-lg font-bold text-gray-900 mb-2">
-                          ¿Aún no te convence? Solicita una demostración gratuita.
+                          ¿Aún no te convence? Solicita una demostración
+                          gratuita.
                         </h3>
                         <p className="text-gray-600 text-sm mb-4">
                           Agenda una demostración personalizada para{" "}
@@ -220,8 +223,12 @@ export default function ProductDetailPage({ product }: Props) {
                     )}
                   </div>
 
-                  <div className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
-                    <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
+                  <div
+                    className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}
+                  >
+                    <h2
+                      className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}
+                    >
                       <div className="w-1 h-8 bg-primary rounded-full"></div>
                       Detalle del Producto
                     </h2>
@@ -243,20 +250,30 @@ export default function ProductDetailPage({ product }: Props) {
 
                   {/* Descripción del producto - Solo para bundle/duo */}
                   {isBundleProduct && !isEmpty(product?.note) && (
-                    <div className={`rounded-3xl p-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
-                      <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
+                    <div
+                      className={`rounded-3xl p-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}
+                    >
+                      <h2
+                        className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}
+                      >
                         <div className="w-1 h-8 bg-primary rounded-full"></div>
                         Descripción del Producto
                       </h2>
-                      <p className={`whitespace-pre-line leading-relaxed ${isBundleProduct ? "text-gray-300" : "text-gray-700"}`}>
+                      <p
+                        className={`whitespace-pre-line leading-relaxed ${isBundleProduct ? "text-gray-300" : "text-gray-700"}`}
+                      >
                         {product.note}
                       </p>
                     </div>
                   )}
 
                   {/*Product specifications*/}
-                  <div className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
-                    <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
+                  <div
+                    className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}
+                  >
+                    <h2
+                      className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}
+                    >
                       <div className="w-1 h-8 bg-primary rounded-full"></div>
                       Especificaciones Técnicas
                     </h2>
@@ -446,7 +463,8 @@ export default function ProductDetailPage({ product }: Props) {
                     {isBundleProduct && (
                       <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
                         <h3 className="text-lg font-bold text-gray-900 mb-2">
-                          ¿Aún no te convence? Solicita una demostración gratuita.
+                          ¿Aún no te convence? Solicita una demostración
+                          gratuita.
                         </h3>
                         <p className="text-gray-600 text-sm mb-4">
                           Agenda una demostración personalizada para{" "}
