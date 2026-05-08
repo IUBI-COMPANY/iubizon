@@ -53,12 +53,6 @@ export const ProductCard = ({ product }: Props) => {
               {isClearance ? "De Remate" : isNew ? "Premium" : "Exhibición"}
             </span>
           )}
-          {/* Badge Oferta - para productos en campaña con color azul oscuro */}
-          {isByCampaign && (
-            <span className="rounded-full px-3 py-1 text-xs font-bold bg-secondary text-white absolute top-1 right-1 shadow-lg flex items-center gap-1 border-2 border-white uppercase tracking-wide">
-              <span>Oferta del Verano</span>
-            </span>
-          )}
           <Image
             src={product?.mainImage || "product-not-found.png"}
             width={300}

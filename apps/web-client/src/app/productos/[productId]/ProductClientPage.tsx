@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/Button";
 import React, { useEffect, useState } from "react";
 import { productsCondition } from "@/data-list/productsCondition";
 import { MAGCUBICHY350 } from "./MAGCUBIC-HY350";
-import { EPSONFH02 } from "./EPSON-FH02";
 import { BUNDLE_PRODUCTS_SPECS } from "@/data-list/bundleSpecs";
 import { isEmpty } from "lodash";
 import ContentDetailBundleInteractivo from "@/app/productos/[productId]/ContentDetailBundleInteractivo";
@@ -24,7 +23,6 @@ interface Props {
 
 const SPECIAL_PRODUCT_ID =
   "Proyector-Led-Portatil-Hy350-Magcubic-Full-Hd-1080p-Android";
-const EPSON_FH02_ID = "Proyector-Portatil-EpiqVision-FH02-con-Android-TV-Epson";
 
 // IDs de productos del bundle
 const BUNDLE_PRODUCT_IDS = ["bundle-interactivo", "duo-interactivo"];
@@ -73,13 +71,9 @@ export default function ProductDetailPage({ product }: Props) {
     return <MAGCUBICHY350 product={product} />;
   }
 
-  if (product.id.toUpperCase() === EPSON_FH02_ID.toUpperCase()) {
-    return <EPSONFH02 product={product} />;
-  }
-
   return (
     <>
-      <div className="min-h-screen h-auto flex flex-col w-full bg-[#060e1e] font-sfpro">
+      <div className={`min-h-screen h-auto flex flex-col w-full font-sfpro ${isBundleProduct ? "bg-gray-900" : "bg-slate-50"}`}>
         {!product ? (
           <NoFoundComponent />
         ) : (
@@ -88,11 +82,11 @@ export default function ProductDetailPage({ product }: Props) {
             {isBundleProduct && (
               <div className="relative py-16 px-6 overflow-hidden">
                 {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/95 to-primary opacity-95"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-secondary opacity-95"></div>
 
                 {/* Decorative circles */}
-                <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/30 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+                <div className="absolute -top-20 -right-20 w-96 h-96 bg-white/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
 
                 <div className="relative z-10 max-w-[1470px] mx-auto">
                   {/* Badge */}
@@ -128,7 +122,7 @@ export default function ProductDetailPage({ product }: Props) {
                   {/*Product media*/}
                   {isBundleInteractive ? (
                     // Bundle: Mostrar las 3 imágenes juntas
-                    <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
+                    <div className="w-full mb-12 bg-white rounded-3xl p-8 border border-gray-200 shadow-lg">
                       <div className="relative flex items-center justify-center min-h-[400px] lg:min-h-[500px]">
                         {/* Touch Interactivo */}
                         <div className="absolute left-0 bottom-8 z-0">
@@ -166,7 +160,7 @@ export default function ProductDetailPage({ product }: Props) {
                     </div>
                   ) : isDuoInteractive ? (
                     // Accesorios Dúo: Mostrar Touch + Adaptador Inalámbrico WiFi juntos
-                    <div className="w-full mb-12 bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
+                    <div className="w-full mb-12 bg-white rounded-3xl p-8 border border-gray-200 shadow-lg">
                       <div className="flex items-center justify-center gap-8 lg:gap-16 min-h-[350px] lg:min-h-[450px]">
                         {/* Touch Interactivo */}
                         <div className="relative z-10">
@@ -208,24 +202,26 @@ export default function ProductDetailPage({ product }: Props) {
                       showChristmasCampaign={showChristmasCampaign}
                       getBundleDescription={getBundleDescription}
                     />
-                    <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-5">
-                      <h3 className="text-lg font-bold text-white mb-2">
-                        ¿Aún no te convence? Solicita una demostración gratuita.
-                      </h3>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Agenda una demostración personalizada para{" "}
-                        {product.name || product.model}.
-                      </p>
-                      <Link href={`/demo/${product.id}`}>
-                        <Button variant="primary" styleVariant="filled" block>
-                          Solicitar demo
-                        </Button>
-                      </Link>
-                    </div>
+                    {isBundleProduct && (
+                      <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-lg">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          ¿Aún no te convence? Solicita una demostración gratuita.
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                          Agenda una demostración personalizada para{" "}
+                          {product.name || product.model}.
+                        </p>
+                        <Link href={`/demo/${product.id}`}>
+                          <Button variant="primary" styleVariant="filled" block>
+                            Solicitar demo
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10 mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <div className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
+                    <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
                       <div className="w-1 h-8 bg-primary rounded-full"></div>
                       Detalle del Producto
                     </h2>
@@ -239,28 +235,28 @@ export default function ProductDetailPage({ product }: Props) {
                     {/* For other products, keep p tag */}
                     {product.id !== "bundle-interactivo" &&
                       product.id !== "duo-interactivo" && (
-                        <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                        <p className="text-gray-600 whitespace-pre-line leading-relaxed">
                           {product.note}
                         </p>
                       )}
                   </div>
 
-                  {/* Descripción del producto */}
-                  {!isEmpty(product?.note) && (
-                    <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10">
-                      <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  {/* Descripción del producto - Solo para bundle/duo */}
+                  {isBundleProduct && !isEmpty(product?.note) && (
+                    <div className={`rounded-3xl p-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
+                      <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
                         <div className="w-1 h-8 bg-primary rounded-full"></div>
                         Descripción del Producto
                       </h2>
-                      <p className="text-gray-300 whitespace-pre-line leading-relaxed">
+                      <p className={`whitespace-pre-line leading-relaxed ${isBundleProduct ? "text-gray-300" : "text-gray-700"}`}>
                         {product.note}
                       </p>
                     </div>
                   )}
 
                   {/*Product specifications*/}
-                  <div className="bg-gradient-to-br from-white/5 to-white/10 rounded-3xl p-8 border border-white/10 mb-8">
-                    <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                  <div className={`rounded-3xl p-8 mb-8 ${isBundleProduct ? "bg-gray-800/50 border border-gray-700 shadow-lg" : "bg-white border border-gray-200 shadow-lg"}`}>
+                    <h2 className={`text-2xl font-bold mb-6 flex items-center gap-3 ${isBundleProduct ? "text-white" : "text-gray-900"}`}>
                       <div className="w-1 h-8 bg-primary rounded-full"></div>
                       Especificaciones Técnicas
                     </h2>
@@ -288,7 +284,7 @@ export default function ProductDetailPage({ product }: Props) {
                           return (
                             <div
                               key={productSpec.id}
-                              className="pb-6 border-b border-white/10 last:border-b-0 last:pb-0"
+                              className="pb-6 border-b border-gray-200 last:border-b-0 last:pb-0"
                             >
                               {/* Título del producto + ficha técnica */}
                               <div className="flex items-center gap-3 mb-4">
@@ -323,12 +319,12 @@ export default function ProductDetailPage({ product }: Props) {
                                 {productSpec.specs.map((spec, index) => (
                                   <div
                                     key={index}
-                                    className="flex justify-between items-center py-3 border-b border-white/10 last:border-b-0"
+                                    className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0"
                                   >
-                                    <span className="text-gray-400">
+                                    <span className="text-gray-600">
                                       {spec.label}:
                                     </span>
-                                    <span className="text-white font-semibold text-right">
+                                    <span className="text-gray-900 font-semibold text-right">
                                       {spec.value}
                                     </span>
                                   </div>
@@ -339,11 +335,10 @@ export default function ProductDetailPage({ product }: Props) {
                         })}
                       </div>
                     ) : (
-                      // Specs normales para otros productos
                       <div className="grid grid-cols-1 gap-4">
                         {condition && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Condición:</span>
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Condición:</span>
                             <strong
                               className="inline-flex items-center gap-1 cursor-pointer text-primary hover:text-primary/80 transition-colors"
                               onClick={() => setShowModal(true)}
@@ -353,62 +348,61 @@ export default function ProductDetailPage({ product }: Props) {
                           </div>
                         )}
                         {product?.displayTechnology && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Tecnología:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Tecnología:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.displayTechnology}
                             </span>
                           </div>
                         )}
                         {product?.brand && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Marca:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Marca:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.brand}
                             </span>
                           </div>
                         )}
                         {product?.type && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Tipo:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Tipo:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.type}
                             </span>
                           </div>
                         )}
                         {product?.lumensANSI && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Lúmenes:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Lúmenes:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.lumensANSI}
                             </span>
                           </div>
                         )}
                         {product?.connectivity && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Conectividad:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Conectividad:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.connectivity}
                             </span>
                           </div>
                         )}
                         {product?.nativeResolution && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Resolución:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Resolución:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.nativeResolution}
                             </span>
                           </div>
                         )}
                         {product?.aspectRatio && (
-                          <div className="flex justify-between items-center py-3 border-b border-white/10">
-                            <span className="text-gray-400">Aspecto:</span>
-                            <span className="text-white font-semibold">
+                          <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span className="text-gray-600">Aspecto:</span>
+                            <span className="text-gray-900 font-semibold">
                               {product.aspectRatio}
                             </span>
                           </div>
                         )}
-                        {/* Ficha técnica para productos individuales si existe */}
                         {product?.technicalSheetUrl && (
                           <div className="flex justify-end pt-2">
                             <a
@@ -449,20 +443,22 @@ export default function ProductDetailPage({ product }: Props) {
                       showChristmasCampaign={showChristmasCampaign}
                       getBundleDescription={getBundleDescription}
                     />
-                    <div className="mt-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-6">
-                      <h3 className="text-lg font-bold text-white mb-2">
-                        ¿Aún no te convence? Solicita una demostración gratuita.
-                      </h3>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Agenda una demostración personalizada para{" "}
-                        {product.name || product.model}.
-                      </p>
-                      <Link href={`/demo/${product.id}`}>
-                        <Button variant="primary" styleVariant="filled" block>
-                          Solicitar demo
-                        </Button>
-                      </Link>
-                    </div>
+                    {isBundleProduct && (
+                      <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">
+                          ¿Aún no te convence? Solicita una demostración gratuita.
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                          Agenda una demostración personalizada para{" "}
+                          {product.name || product.model}.
+                        </p>
+                        <Link href={`/demo/${product.id}`}>
+                          <Button variant="primary" styleVariant="filled" block>
+                            Solicitar demo
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

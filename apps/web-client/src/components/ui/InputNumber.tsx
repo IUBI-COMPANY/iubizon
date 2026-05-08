@@ -14,7 +14,7 @@ interface Props {
   placeholder?: string;
   min?: number;
   max?: number;
-  textColor?: "white" | "secondary";
+  textColor?: "white" | "secondary" | "dark";
 }
 
 export const InputNumber = ({
@@ -30,7 +30,7 @@ export const InputNumber = ({
   placeholder,
   min,
   max,
-  textColor = "white",
+  textColor = "secondary",
 }: Props) => {
   // Internal state to allow free typing before validation
   const [internalValue, setInternalValue] = useState<string>("");
@@ -95,7 +95,7 @@ export const InputNumber = ({
           htmlFor={name}
           className={twMerge(
             "block text-sm/6 font-semibold mb-1.5 font-sfpro",
-            textColor === "white" ? "text-white" : "text-secondary",
+            textColor === "white" ? "text-white" : textColor === "dark" ? "text-gray-900" : "text-secondary",
           )}
         >
           {label}

@@ -9,6 +9,7 @@ interface QuantitySelectorProps {
   min?: number;
   max?: number;
   className?: string;
+  theme?: "light" | "dark";
 }
 
 export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
@@ -17,6 +18,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   min = 1,
   max = 100,
   className = "",
+  theme = "dark",
 }) => {
   const safeMax = Math.max(min, max);
   const clampValue = (nextValue: number) => {
@@ -35,13 +37,20 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
     onChange(clampValue(nextValue));
   };
 
+  const isDark = theme === "dark";
+  const bgClass = isDark ? "bg-white/10" : "bg-gray-100";
+  const borderClass = isDark ? "border-white/20" : "border-gray-300";
+  const textClass = isDark ? "text-white" : "text-gray-900";
+  const hoverClass = isDark ? "hover:bg-white/20" : "hover:bg-gray-200";
+  const disabledClass = isDark ? "disabled:hover:bg-white/10" : "disabled:hover:bg-gray-100";
+
   return (
     <div className={`flex items-center gap-3 ${className}`}>
       <button
         type="button"
         onClick={decrement}
         disabled={value <= min}
-        className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10"
+        className={`w-10 h-10 rounded-lg ${bgClass} ${borderClass} ${hoverClass} flex items-center justify-center ${textClass} transition-all disabled:opacity-50 disabled:cursor-not-allowed ${disabledClass}`}
         aria-label="Disminuir cantidad"
       >
         <Minus className="w-4 h-4" />
@@ -52,13 +61,14 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         min={min}
         max={safeMax}
         onChange={handleInputChange}
-        className="w-20 h-10 rounded-lg bg-white/10 border border-white/20 text-center text-2xl font-bold text-white placeholder:text-white/60 outline-none focus:outline-none focus:ring-2 focus:ring-primary/60"
+        textColor={isDark ? "white" : "dark"}
+        className={`w-20 h-10 rounded-lg ${bgClass} ${borderClass} text-center text-2xl font-bold ${textClass} outline-none focus:outline-none focus:ring-2 focus:ring-primary/60`}
       />
       <button
         type="button"
         onClick={increment}
         disabled={value >= max}
-        className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10"
+        className={`w-10 h-10 rounded-lg ${bgClass} ${borderClass} ${hoverClass} flex items-center justify-center ${textClass} transition-all disabled:opacity-50 disabled:cursor-not-allowed ${disabledClass}`}
         aria-label="Aumentar cantidad"
       >
         <Plus className="w-4 h-4" />

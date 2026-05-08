@@ -95,14 +95,14 @@ export const InformationAndPriceCard = ({
   return (
     <>
       <section className="w-full">
-        <div className="product-price-card bg-gradient-to-br from-[#0a1628] via-[#0f1f3a] to-[#1a2942] rounded-3xl p-6 md:p-8 border-2 border-primary/20 shadow-[0_0_40px_rgba(242,95,12,0.15)]">
+        <div className="product-price-card bg-white rounded-3xl p-6 md:p-8 border-2 border-gray-200 shadow-xl">
           {/* 1. TÍTULO DEL PRODUCTO */}
-          <h1 className="text-2xl md:text-3xl font-bold text-left mb-4 text-white leading-tight font-sfpro">
+          <h1 className="text-2xl md:text-3xl font-bold text-left mb-4 text-gray-900 leading-tight font-sfpro">
             {product.name || product.model}
           </h1>
 
           {/* Description */}
-          <p className="text-base md:text-lg text-white/90 leading-relaxed max-w-3xl">
+          <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-3xl">
             {getBundleDescription()}
           </p>
 
@@ -122,14 +122,14 @@ export const InformationAndPriceCard = ({
           </div>
 
           {/* 3. STOCK Y DISPONIBILIDAD */}
-          <div className="mb-5 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+          <div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-200">
             {product.stock <= 0 ? (
-              <p className="text-xs text-red-400 font-medium">
+              <p className="text-xs text-red-600 font-medium">
                 ⚠️ Sin stock •{" "}
                 <span className="font-semibold">Compra a pedido</span>
               </p>
             ) : (
-              <p className="text-xs text-emerald-400 font-medium">
+              <p className="text-xs text-emerald-600 font-medium">
                 ✓ Disponible para compra inmediata
               </p>
             )}
@@ -139,11 +139,11 @@ export const InformationAndPriceCard = ({
           {product?.condition && (
             <div className="mb-5">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-400 font-sfpro">
+                <span className="text-sm text-gray-600 font-sfpro">
                   Condición:
                 </span>
                 <button
-                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-xs font-semibold rounded-full hover:bg-primary/30 transition-colors backdrop-blur-sm"
+                  className="inline-flex items-center gap-1 px-4 py-2 bg-primary/10 text-primary border border-primary/20 text-xs font-semibold rounded-full hover:bg-primary/20 transition-colors"
                   onClick={() => setShowModal(true)}
                 >
                   {condition.name}
@@ -153,27 +153,27 @@ export const InformationAndPriceCard = ({
 
               {/* Modal de información */}
               <div
-                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+                className={`fixed inset-0 z-40 flex items-center justify-center bg-black/50 transition-opacity duration-300 ${
                   showModal ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
                 onClick={() => setShowModal(false)}
               >
                 <div
-                  className="bg-gradient-to-br from-[#0a1628] to-[#1a2942] rounded-3xl p-8 max-w-lg w-full mx-4 border-2 border-primary/30 shadow-2xl shadow-primary/20"
+                  className="bg-white rounded-3xl p-8 max-w-lg w-full mx-4 border-2 border-gray-200 shadow-2xl"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex justify-between items-start mb-6">
-                    <h3 className="text-2xl font-bold text-white font-sfpro">
+                    <h3 className="text-2xl font-bold text-gray-900 font-sfpro">
                       {condition.name}
                     </h3>
                     <button
                       onClick={() => setShowModal(false)}
-                      className="text-gray-400 hover:text-white transition-colors"
+                      className="text-gray-500 hover:text-gray-700 transition-colors"
                     >
                       <XCircle className="w-6 h-6" />
                     </button>
                   </div>
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-line font-sfpro">
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line font-sfpro">
                     {condition.description}
                   </p>
                 </div>
@@ -183,15 +183,15 @@ export const InformationAndPriceCard = ({
 
           {/* 5. DESGLOSE DE PRECIOS */}
           {product?.price && (
-            <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10">
+            <div className="mb-6 p-5 rounded-2xl bg-gray-50 border border-gray-200">
               <div className="space-y-3">
                 {/* Precio Lista - Solo mostrar si hay descuento */}
                 {discountInfo.hasDiscount && (
                   <div className="flex justify-between text-sm items-center">
-                    <span className="text-gray-400 font-sfpro">
+                    <span className="text-gray-500 font-sfpro">
                       Precio Lista:
                     </span>
-                    <span className="font-medium text-gray-300 line-through font-sfpro">
+                    <span className="font-medium text-gray-400 line-through font-sfpro">
                       {formatPrice(discountInfo.originalPrice)}
                     </span>
                   </div>
@@ -210,24 +210,24 @@ export const InformationAndPriceCard = ({
                 )}
 
                 <div className="flex justify-between text-sm items-center">
-                  <span className="text-gray-400 font-sfpro">SubTotal</span>
-                  <span className="font-medium text-gray-300 font-sfpro">
+                  <span className="text-gray-500 font-sfpro">SubTotal</span>
+                  <span className="font-medium text-gray-700 font-sfpro">
                     {formatPrice(priceData.subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm items-center pb-3 border-b border-white/10">
-                  <span className="text-gray-400 font-sfpro">IGV (18%)</span>
-                  <span className="font-medium text-gray-300 font-sfpro">
+                <div className="flex justify-between text-sm items-center pb-3 border-b border-gray-200">
+                  <span className="text-gray-500 font-sfpro">IGV (18%)</span>
+                  <span className="font-medium text-gray-700 font-sfpro">
                     {formatPrice(priceData.igv)}
                   </span>
                 </div>
 
                 {/* Total destacado */}
                 <div className="flex justify-between items-center pt-3">
-                  <span className="text-base font-bold text-white font-sfpro">
+                  <span className="text-base font-bold text-gray-900 font-sfpro">
                     Total a Pagar:
                   </span>
-                  <span className="text-[1.4em] font-black text-primary font-sfpro drop-shadow-lg">
+                  <span className="text-[1.4em] font-black text-primary font-sfpro">
                     {formatPrice(priceData.total)}
                   </span>
                 </div>
@@ -251,13 +251,14 @@ export const InformationAndPriceCard = ({
               value={quantity}
               onChange={handleQuantityChange}
               max={maxQuantity}
+              theme="light"
             />
           </div>
 
           {/* BOTÓN DE ACCIÓN (CTA) */}
           <button
             onClick={handlePurchaseClick}
-            className="block w-full rounded-full px-6 py-4 text-base font-bold text-center shadow-[0_0_30px_rgba(242,95,12,0.4)] transition-all bg-primary text-white hover:bg-primary/90 hover:scale-105 hover:shadow-[0_0_50px_rgba(242,95,12,0.6)] duration-300 font-sfpro"
+            className="block w-full rounded-full px-6 py-4 text-base font-bold text-center shadow-lg transition-all bg-primary text-white hover:bg-primary/90 hover:scale-105 duration-300 font-sfpro"
           >
             {product.stock <= 0 ? "Comprar a pedido" : "Comprar ahora"}
           </button>
