@@ -7,16 +7,12 @@ import BannerSlider from "@/components/ui/BannerSlider";
 
 const BANNERS = [
   {
-    src: "/images/organizacion-reparacion.webp",
-    alt: "Banner iubizon - Servicios profesionales",
+    src: "/images/slider1.png",
+    alt: "Quieres distribuir productos Epson, nosotros te proveemos, tú los comercializas.",
   },
   {
-    src: "/images/seo-banner.jpg",
-    alt: "Banner iubizon - Proyectores y tecnología",
-  },
-  {
-    src: "/images/epson-banner.jpg",
-    alt: "Banner iubizon - Epson projectors",
+    src: "/images/slider2.png",
+    alt: "Tenemos los mejores productos Epson, la mejor calidad.",
   },
 ];
 
@@ -55,7 +51,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen h-auto w-full bg-slate-50">
-      <BannerSlider banners={BANNERS} autoPlay autoPlayInterval={5000} />
+      <BannerSlider banners={BANNERS} autoPlay autoPlayInterval={7000} />
       <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
         {productsByCondition["gama-alta"].products.length > 0 && (
           <div className="!mt-6 !mb-[3em]">

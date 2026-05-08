@@ -71,9 +71,9 @@ export const HeaderLayout = () => {
   return (
     <header
       className={twMerge(
-        "top-header top-2 left-0 w-full p-4 z-50",
+        "top-header left-0 w-full p-4 z-50",
         isHomePage
-          ? "absolute top-0 z-50 w-full h-auto object-cover"
+          ? "relative bg-gradient-to-r from-secondary/95 via-secondary to-secondary/95"
           : "static bg-gradient-to-r from-secondary/90 via-secondary/100 to-secondary/90",
       )}
     >

@@ -6,7 +6,6 @@ import Image from "next/image";
 import { productsCondition } from "@/data-list/productsCondition";
 import { products } from "@/data-list/products";
 import { Filter, Package, ShoppingCart, Star } from "lucide-react";
-import { CiberWowCountDownComponent } from "@/components/ui/CiberWowCountDownComponent";
 
 export default function ProductsClientPage() {
   const breadcrumbData = {
@@ -58,10 +57,6 @@ export default function ProductsClientPage() {
     totalStock: products.reduce((acc, p) => acc + p.stock, 0),
     brands: [...new Set(products.map((p) => p.brand).filter(Boolean))].length,
   };
-
-  const quantityProjectors = products
-    .filter((product) => product.type === "Proyector")
-    .reduce((acc, product) => acc + product.stock, 0);
 
   return (
     <>
@@ -136,11 +131,6 @@ export default function ProductsClientPage() {
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary/30 to-transparent"></div>
         </section>
 
-        {/* Cyber WOW Banner */}
-        <div className="m-5">
-          <CiberWowCountDownComponent />
-        </div>
-
         {/* Products Section */}
         <main className="max-w-7xl mx-auto px-4 py-10">
           {/* New Products */}
@@ -159,10 +149,6 @@ export default function ProductsClientPage() {
                           {productsByCondition.new.name}
                         </h2>
                       </div>
-                      <span className="inline-flex items-center gap-1 bg-gradient-to-r from-primary to-primary/80 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
-                        <span>🔥</span>
-                        <span>17% DSCTO</span>
-                      </span>
                     </div>
                     <p className="text-gray-600 mt-2 max-w-2xl">
                       {productsByCondition.new.description}
@@ -200,22 +186,11 @@ export default function ProductsClientPage() {
                         <h2 className="text-3xl font-bold text-color-secondary">
                           {productsByCondition.reconditioned.name}
                         </h2>
-                        <span className="text-2xl">♻️</span>
                       </div>
-                      <span className="inline-flex items-center gap-1 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md animate-pulse">
-                        <span>💥</span>
-                        <span>42% DSCTO</span>
-                      </span>
                     </div>
                     <p className="text-gray-600 mt-2 max-w-2xl">
                       {productsByCondition.reconditioned.description}
                     </p>
-                    <div className="mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md">
-                      <span>
-                        Equipos a precios accesibles, totalmente funcionales y
-                        con garantía
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -228,78 +203,9 @@ export default function ProductsClientPage() {
             </section>
           )}
 
-          {quantityProjectors >= 3 && (
-            <section className="mt-20 lg:mt-50 rounded-2xl p-6 text-center shadow-sm text-white  bg-gradient-to-br from-secondary/90 via-secondary to-secondary/90 relative">
-              <Image
-                src="/images/pet-corriendo-izquierda.png"
-                alt="pet iubizon"
-                width={500}
-                height={500}
-                className="relative lg:absolute top-[1em] lg:top-[-8em] right-[1em] lg:right-[4em] w-[23em] mx-auto"
-              />
-              <h3 className="text-xl font-bold">
-                🔥 Oferta por compra por lotes
-              </h3>
-              <p className="mt-1 opaproducty-90">
-                Entre proyectores mixtos o del mismo modelo
-              </p>
-              <p className="mt-2 text-2xl font-extrabold text-primary">
-                A UN PRECIO ESPECIAL
-              </p>
-              <p className="text-sm opacity-95">
-                Prueba de funcionamiento • Con garantía
-              </p>
-              <a
-                href="https://wa.me/51972300301?text=Hola%20iubizon,%20quiero%20un%20lote%20de%20"
-                target="_blank"
-                className="mt-4 inline-flex rounded-full px-10 py-3 text-sm font-semibold shadow bg-primary"
-              >
-                Reservar ahora
-              </a>
-            </section>
-          )}
-
           {/* Guarantee Information */}
           <div className="mt-12 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-50 rounded-2xl"></div>
-
-            <div className="relative p-8 rounded-2xl text-center border-2 border-blue-200/50 shadow-sm">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <h3 className="text-2xl font-bold text-color-secondary">
-                  Garantía y Calidad Asegurada
-                </h3>
-              </div>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                Todos nuestros productos vienen con garantía extendida y soporte
-                técnico especializado
-              </p>
-              <div className="flex flex-wrap justify-center gap-4 text-sm">
-                <div className="bg-white rounded-xl px-5 py-3 shadow-md border-2 border-green-200/50 hover:scale-105 transition-transform duration-300">
-                  <div className="flex items-center gap-2 text-green-600 font-semibold">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span>Todos los equipos son funcionales</span>
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl px-5 py-3 shadow-md border-2 border-blue-200/50 hover:scale-105 transition-transform duration-300">
-                  <div className="flex items-center gap-2 text-blue-600 font-semibold">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span>Prueba de funcionamiento en local</span>
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl px-5 py-3 shadow-md border-2 border-yellow-200/50 hover:scale-105 transition-transform duration-300">
-                  <div className="flex items-center gap-2 text-yellow-600 font-semibold">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                    <span>Garantía incluida</span>
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl px-5 py-3 shadow-md border-2 border-purple-200/50 hover:scale-105 transition-transform duration-300">
-                  <div className="flex items-center gap-2 text-purple-600 font-semibold">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                    <span>Soporte técnico especializado</span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </main>
       </div>
