@@ -1,9 +1,24 @@
 import React from "react";
 import { products } from "@/data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
-import Image from "next/image";
 import { productsCondition } from "@/data-list/productsCondition";
 import Link from "next/link";
+import BannerSlider from "@/components/ui/BannerSlider";
+
+const BANNERS = [
+  {
+    src: "/images/organizacion-reparacion.webp",
+    alt: "Banner iubizon - Servicios profesionales",
+  },
+  {
+    src: "/images/seo-banner.jpg",
+    alt: "Banner iubizon - Proyectores y tecnología",
+  },
+  {
+    src: "/images/epson-banner.jpg",
+    alt: "Banner iubizon - Epson projectors",
+  },
+];
 
 export default function Home() {
   const sortProductsBySpecial = (productsList: typeof products) => {
@@ -38,21 +53,9 @@ export default function Home() {
     },
   };
 
-  const quantityProjectors = products
-    .filter((product) => product.type === "Proyector")
-    .reduce((acc, product) => {
-      return acc + product.stock;
-    }, 0);
-
   return (
     <div className="min-h-screen h-auto w-full bg-slate-50">
-      <div className="banner-iubizon">
-        <img
-          src="/images/organizacion-reparacion.webp"
-          alt="banner"
-          className="w-full max-h-[20em] mx-auto"
-        />
-      </div>
+      <BannerSlider banners={BANNERS} autoPlay autoPlayInterval={5000} />
       <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
         {productsByCondition["gama-alta"].products.length > 0 && (
           <div className="!mt-6 !mb-[3em]">
@@ -72,7 +75,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {productsByCondition["gama-alta"].products.map(
                 (product, index) => (
                   <ProductCard key={index} product={product} />
@@ -99,7 +102,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {productsByCondition.new.products.map((product, index) => (
                 <ProductCard key={index} product={product} />
               ))}
@@ -124,7 +127,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {productsByCondition.reconditioned.products.map(
                 (product, index) => (
                   <ProductCard key={index} product={product} />
