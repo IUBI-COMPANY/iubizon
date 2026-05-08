@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp, signIn, signInWithGoogle } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,7 +60,15 @@ export default function RegisterPage() {
     if (error) {
       setError('Error al crear la cuenta: ' + error.message);
     } else {
-      setSuccess(true);
+      const { error: signInError } = await signIn(email, password);
+      
+      if (signInError) {
+        setSuccess(true);
+        router.push('/auth/login?registered=true&redirect=' + encodeURIComponent(window.location.search.get('redirect') || '/'));
+      } else {
+        const redirectUrl = window.location.search.get('redirect') || '/';
+        router.push(redirectUrl);
+      }
     }
 
     setIsLoading(false);

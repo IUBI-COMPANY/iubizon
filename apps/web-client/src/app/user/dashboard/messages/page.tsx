@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AuthProvider, useAuth } from '@/hooks';
 import { Navbar } from '@/components/features/layout/Navbar';
@@ -28,14 +28,26 @@ interface Conversation {
   unreadCount: number;
 }
 
+interface Message {
+  id: string;
+  content: string;
+  sender_id: string;
+  created_at: string;
+}
+
 function MessagesContent() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,36 +57,47 @@ function MessagesContent() {
 
   useEffect(() => {
     const fetchConversations = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-
-      const { data: convs } = await supabase
-        .from('conversations')
-        .select('*')
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order('updated_at', { ascending: false });
-
-      if (!convs || convs.length === 0) {
-        setConversations([]);
+      if (authLoading) return;
+      
+      if (!user) {
         setIsLoading(false);
         return;
       }
+
+      setIsLoading(true);
+
+      try {
+        const { data: convs, error: convError } = await supabase
+          .from('conversations')
+          .select('*')
+          .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+          .order('updated_at', { ascending: false });
+
+        if (convError) {
+          console.error('Error fetching conversations:', convError);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!convs || convs.length === 0) {
+          setConversations([]);
+          setIsLoading(false);
+          return;
+        }
 
       const conversationsWithDetails = await Promise.all(
         convs.map(async (conv) => {
           const otherUserId = conv.buyer_id === user.id ? conv.seller_id : conv.buyer_id;
 
           const [userRes, productRes, lastMsgRes, unreadRes] = await Promise.all([
-            supabase.from('profiles').select('name, avatar_url').eq('id', otherUserId).single(),
-            supabase.from('products').select('title, images').eq('id', conv.product_id).single(),
+            supabase.from('profiles').select('name, avatar_url').eq('id', otherUserId).maybeSingle(),
+            supabase.from('products').select('title').eq('id', conv.product_id).maybeSingle(),
             supabase
               .from('messages')
               .select('content, created_at')
               .eq('conversation_id', conv.id)
               .order('created_at', { ascending: false })
-              .limit(1)
-              .single(),
+              .limit(1),
             supabase
               .from('messages')
               .select('id', { count: 'exact' })
@@ -83,28 +106,108 @@ function MessagesContent() {
               .is('read_at', null),
           ]);
 
-          const productImages = productRes.data?.images || [];
+          const productImagesRes = await supabase
+            .from('product_images')
+            .select('url')
+            .eq('product_id', conv.product_id)
+            .order('position', { ascending: true })
+            .limit(1);
+
+          const productTitle = productRes?.data?.title || 'Producto';
+          const productImage = productImagesRes.data && productImagesRes.data.length > 0 
+            ? productImagesRes.data[0].url 
+            : '';
+          const lastMsg = lastMsgRes.data && lastMsgRes.data.length > 0 ? lastMsgRes.data[0] : null;
+          
           return {
             id: conv.id,
             productId: conv.product_id,
-            productTitle: productRes.data?.title || 'Producto',
-            productImage: productImages[0]?.url || '',
+            productTitle: productTitle,
+            productImage: productImage,
             otherUserId,
             otherUserName: userRes.data?.name || 'Usuario',
             otherUserAvatar: userRes.data?.avatar_url || '',
-            lastMessage: lastMsgRes.data?.content || 'Sin mensajes',
-            lastMessageAt: lastMsgRes.data?.created_at || conv.created_at,
+            lastMessage: lastMsg?.content || 'Sin mensajes',
+            lastMessageAt: lastMsg?.created_at || conv.created_at,
             unreadCount: unreadRes.count || 0,
           };
         })
       );
 
       setConversations(conversationsWithDetails);
-      setIsLoading(false);
+
+        const convParam = searchParams.get('conversation');
+        if (convParam) {
+          const found = conversationsWithDetails.find(c => c.id === convParam);
+          if (found) setSelectedConversation(found);
+        }
+      } catch (err) {
+        console.error('Error in fetchConversations:', err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchConversations();
-  }, [user, supabase]);
+  }, [user, supabase, searchParams, authLoading]);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!selectedConversation) return;
+
+      setIsLoadingMessages(true);
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', selectedConversation.id)
+        .order('created_at', { ascending: true });
+
+      setMessages(data || []);
+      setIsLoadingMessages(false);
+    };
+
+    fetchMessages();
+  }, [selectedConversation, supabase]);
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation || !user) return;
+
+    setIsSending(true);
+    try {
+      await supabase.from('messages').insert({
+        conversation_id: selectedConversation.id,
+        sender_id: user.id,
+        content: newMessage.trim(),
+      });
+
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', selectedConversation.id);
+
+      setNewMessage('');
+      
+      const newMsg: Message = {
+        id: Date.now().toString(),
+        content: newMessage.trim(),
+        sender_id: user.id,
+        created_at: new Date().toISOString(),
+      };
+      setMessages([...messages, newMsg]);
+      
+      const updatedConvs = conversations.map(c => 
+        c.id === selectedConversation.id 
+          ? { ...c, lastMessage: newMessage.trim(), lastMessageAt: new Date().toISOString() }
+          : c
+      );
+      setConversations(updatedConvs);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      alert('Error al enviar mensaje');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const filteredConversations = conversations.filter(
     (c) =>
@@ -214,18 +317,50 @@ function MessagesContent() {
                       </div>
                     </div>
 
-                    <div className="flex-1 flex items-center justify-center text-[#64748b]">
-                      <div className="text-center">
-                        <MessageCircle className="w-12 h-12 mx-auto mb-4 text-[#94a3b8]" />
-                        <p>Esta es la vista previa de la conversación</p>
-                        <p className="text-sm mt-2">El chat en tiempo real requiere más configuración</p>
-                      </div>
+                    <div className="flex-1 overflow-y-auto space-y-4 p-4">
+                      {isLoadingMessages ? (
+                        <div className="flex justify-center py-8">
+                          <div className="animate-spin w-6 h-6 border-2 border-[#f25c05] border-t-transparent rounded-full" />
+                        </div>
+                      ) : messages.length > 0 ? (
+                        messages.map((msg) => (
+                          <div
+                            key={msg.id}
+                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                                msg.sender_id === user?.id
+                                  ? 'bg-[#f25c05] text-white'
+                                  : 'bg-[#f1f5f9] text-[#112237]'
+                              }`}
+                            >
+                              <p className="text-sm">{msg.content}</p>
+                              <p className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-white/70' : 'text-[#94a3b8]'}`}>
+                                {formatRelativeTime(msg.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-[#64748b] py-8">
+                          <MessageCircle className="w-10 h-10 mx-auto mb-2 text-[#94a3b8]" />
+                          <p className="text-sm">No hay mensajes aún</p>
+                          <p className="text-xs">¡Inicia la conversación!</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-4 border-t border-[#e2e8f0]">
                       <div className="flex gap-2">
-                        <Input placeholder="Escribe un mensaje..." className="flex-1" />
-                        <Button>
+                        <Input
+                          placeholder="Escribe un mensaje..."
+                          className="flex-1"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                        />
+                        <Button onClick={sendMessage} disabled={isSending || !newMessage.trim()}>
                           <Send className="w-4 h-4" />
                         </Button>
                       </div>

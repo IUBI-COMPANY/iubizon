@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function GET() {
   const { data, error } = await supabase
     .from('products')
-    .select('*, category:categories(*), seller:profiles(*)')
+    .select('*, category:categories(*), seller:profiles(*), images:product_images(*)')
     .eq('status', 'active')
     .limit(20);
 

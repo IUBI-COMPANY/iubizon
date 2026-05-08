@@ -13,7 +13,7 @@ import {
   useTransform,
 } from "framer-motion";
 
-import BundleTitle from "@/components/bundle-interactivo/BundleTitle";
+import BundleTitle from "@/components/ui/BundleTitle";
 import { Button } from "@/components/ui/Button";
 
 /**

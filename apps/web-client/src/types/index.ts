@@ -15,6 +15,9 @@ export interface User {
   total_sales: number;
   positive_reviews: number;
   response_time: string | null;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +45,9 @@ export interface Product {
   stock: number;
   views: number;
   favorites: number;
+  location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
   seller?: User;

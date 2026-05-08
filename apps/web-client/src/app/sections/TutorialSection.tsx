@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { School, Briefcase } from "lucide-react";
-import { DiagramSection } from "@/components/bundle-interactivo";
 import { Video } from "@/components/ui/Video";
 import {
   useScrollAnimation,
@@ -184,11 +183,6 @@ export const TutorialSection: React.FC<TutorialSectionProps> = ({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Diagrama del Bundle */}
-        <div ref={stepsRef} style={fadeIn(stepsVisible)}>
-          <DiagramSection />
         </div>
       </div>
     </section>

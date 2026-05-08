@@ -5,6 +5,9 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { Heart, MessageCircle, MapPin, Eye } from 'lucide-react';
+import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
+import { ChatButton } from './ChatButton';
+import { BuyButton } from './BuyButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +16,7 @@ interface Props {
 }
 
 async function getProduct(id: string) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   
   const { data, error } = await supabase
     .from('products')
@@ -55,7 +58,6 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   const images = product.images || [];
-  const mainImage = images[0]?.url;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -71,20 +73,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl overflow-hidden border border-[#e2e8f0]">
-                <div className="relative aspect-square bg-[#f8fafc]">
-                  {mainImage ? (
-                    <img
-                      src={mainImage}
-                      alt={product.title}
-                      className="object-contain w-full h-full"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-6xl">
-                      📦
-                    </div>
-                  )}
-                </div>
+              <div className="bg-white rounded-xl overflow-hidden border border-[#e2e8f0] p-4">
+                <ProductImageGallery 
+                  images={images.map((img: any) => ({ id: img.id, url: img.url }))}
+                  title={product.title}
+                />
               </div>
 
               <div className="bg-white rounded-xl border border-[#e2e8f0] mt-6 p-6">
@@ -147,13 +140,21 @@ export default async function ProductDetailPage({ params }: Props) {
                 </div>
 
                 <div className="space-y-3">
-                  <Button className="w-full" size="lg">
-                    <MessageCircle className="w-4 h-4" />
-                    Chatear con vendedor
-                  </Button>
-                  <Button variant="secondary" className="w-full">
-                    Comprar ahora
-                  </Button>
+                  {product.seller && (
+                    <>
+                      <BuyButton 
+                        productId={product.id}
+                        productTitle={product.title}
+                        productPrice={product.price}
+                        sellerId={product.seller.id}
+                      />
+                      <ChatButton 
+                        sellerId={product.seller.id}
+                        productId={product.id}
+                        productTitle={product.title}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 

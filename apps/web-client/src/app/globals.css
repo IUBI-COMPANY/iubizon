@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @tailwind utilities;
 
+/* Override container max-width to use full width */
+@layer components {
+  .container {
+    max-width: 100% !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #1b242a;
@@ -225,23 +234,33 @@ body {
   }
 }
 
-/* Scrollbar Styles */
+/* Scrollbar Styles - Natural */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b162c;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #f25f0c 0%, #d95208 100%);
-  border-radius: 5px;
-  transition: background 0.3s ease;
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #d95208 0%, #f25f0c 100%);
+  background: #94a3b8;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mejora de performance para animaciones */

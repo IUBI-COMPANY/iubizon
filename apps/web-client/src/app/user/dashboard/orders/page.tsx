@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AuthProvider, useAuth } from '@/hooks';
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { createClient } from '@/lib/supabase/client';
 import { formatPrice, formatDate } from '@/lib/utils';
-import { ShoppingCart, Package, Truck, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, Package, Truck, CheckCircle, XCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -24,6 +24,8 @@ interface Order {
   status: string;
   createdAt: string;
   buyerName: string;
+  buyerId: string;
+  sellerId: string;
   shippingStatus?: string;
 }
 
@@ -42,7 +44,9 @@ function OrdersContent() {
   const supabase = createClient();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
+  const [orderType, setOrderType] = useState<'purchases' | 'sales'>('purchases');
+  const [statusTab, setStatusTab] = useState('all');
+  const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -52,16 +56,31 @@ function OrdersContent() {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) return;
+      if (authLoading) {
+        console.log('Auth loading, waiting...');
+        return;
+      }
+      
+      if (!user) {
+        console.log('No user found in orders page');
+        setIsLoading(false);
+        return;
+      }
 
       setIsLoading(true);
 
-      const { data: ordersData } = await supabase
+      // Get orders where user is buyer OR seller
+      const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
-        .eq('buyer_id', user.id)
-        .or(`seller_id.eq.${user.id}`)
+        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
+
+      if (ordersError) {
+        console.error('Error fetching orders:', ordersError);
+        setIsLoading(false);
+        return;
+      }
 
       if (!ordersData || ordersData.length === 0) {
         setOrders([]);
@@ -71,21 +90,31 @@ function OrdersContent() {
 
       const ordersWithDetails = await Promise.all(
         ordersData.map(async (order) => {
-          const [productRes, buyerRes] = await Promise.all([
-            supabase.from('products').select('title, images').eq('id', order.product_id).single(),
-            supabase.from('profiles').select('name').eq('id', order.buyer_id).single(),
+          const [productRes, buyerRes, sellerRes, imagesRes] = await Promise.all([
+            supabase.from('products').select('title').eq('id', order.product_id).maybeSingle(),
+            supabase.from('profiles').select('name').eq('id', order.buyer_id).maybeSingle(),
+            supabase.from('profiles').select('name').eq('id', order.seller_id).maybeSingle(),
+            supabase
+              .from('product_images')
+              .select('url')
+              .eq('product_id', order.product_id)
+              .order('position', { ascending: true })
+              .limit(1),
           ]);
 
-          const productImages = productRes.data?.images || [];
+          const productImage = imagesRes.data && imagesRes.data.length > 0 ? imagesRes.data[0].url : '';
           return {
             id: order.id,
             productId: order.product_id,
-            productTitle: productRes.data?.title || 'Producto',
-            productImage: productImages[0]?.url || '',
+            productTitle: productRes?.data?.title || 'Producto',
+            productImage: productImage,
             amount: order.amount,
             status: order.status,
             createdAt: order.created_at,
-            buyerName: buyerRes.data?.name || 'Comprador',
+            buyerName: buyerRes?.data?.name || 'Comprador',
+            buyerId: order.buyer_id,
+            sellerId: order.seller_id,
+            sellerName: sellerRes?.data?.name || 'Vendedor',
           };
         })
       );
@@ -95,13 +124,46 @@ function OrdersContent() {
     };
 
     fetchOrders();
-  }, [user, supabase]);
+  }, [user, supabase, authLoading]);
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    setUpdatingOrder(orderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      
+      const statusMessages: Record<string, string> = {
+        paid: 'Pedido confirmado',
+        cancelled: 'Pedido cancelado',
+        shipped: 'Pedido marcado como enviado',
+        delivered: 'Pedido marcado como entregado',
+      };
+      alert(statusMessages[newStatus] || 'Estado actualizado');
+    } catch (err) {
+      console.error('Error updating order:', err);
+      alert('Error al actualizar el pedido: ' + (err as any)?.message);
+    } finally {
+      setUpdatingOrder(null);
+    }
+  };
 
   const filteredOrders = orders.filter((order) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'pending') return order.status === 'pending' || order.status === 'paid';
-    if (activeTab === 'active') return ['shipped', 'delivered'].includes(order.status);
-    if (activeTab === 'completed') return order.status === 'completed';
+    const isSale = order.sellerId === user.id;
+    const isPurchase = order.buyerId === user.id;
+    
+    if (orderType === 'sales' && !isSale) return false;
+    if (orderType === 'purchases' && !isPurchase) return false;
+    
+    if (statusTab === 'all') return true;
+    if (statusTab === 'pending') return order.status === 'pending';
+    if (statusTab === 'in_progress') return ['paid', 'shipped'].includes(order.status);
+    if (statusTab === 'completed') return ['delivered', 'completed', 'cancelled'].includes(order.status);
     return true;
   });
 
@@ -130,15 +192,22 @@ function OrdersContent() {
             <h1 className="text-2xl font-bold text-[#112237]">Mis pedidos</h1>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="all">Todos</TabsTrigger>
-              <TabsTrigger value="pending">Pendientes</TabsTrigger>
-              <TabsTrigger value="active">En proceso</TabsTrigger>
-              <TabsTrigger value="completed">Completados</TabsTrigger>
+          <Tabs value={orderType} onValueChange={setOrderType}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="purchases">Mis compras</TabsTrigger>
+              <TabsTrigger value="sales">Mis ventas</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeTab}>
+            <TabsContent value={orderType}>
+              <Tabs value={statusTab} onValueChange={setStatusTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger value="pending">Pendientes</TabsTrigger>
+                  <TabsTrigger value="in_progress">En proceso</TabsTrigger>
+                  <TabsTrigger value="completed">Completados</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value={statusTab}>
               {filteredOrders.length > 0 ? (
                 <div className="space-y-4">
                   {filteredOrders.map((order) => {
@@ -173,7 +242,9 @@ function OrdersContent() {
                                     {order.productTitle}
                                   </Link>
                                   <p className="text-sm text-[#64748b] mt-1">
-                                    {order.buyerName !== user.name ? `Vendido por: ${order.buyerName}` : `Comprado a: ${order.buyerName}`}
+                                    {order.sellerId === user.id 
+                                      ? `Venta a: ${order.buyerName}` 
+                                      : `Compra a: ${order.sellerName || 'Vendedor'}`}
                                   </p>
                                 </div>
                                 <Badge variant={status.variant as any}>
@@ -197,11 +268,52 @@ function OrdersContent() {
                                       Ver producto
                                     </Button>
                                   </Link>
-                                  {order.status === 'paid' && (
-                                    <Button size="sm">
-                                      <Truck className="w-4 h-4" />
-                                      Rastrear
-                                    </Button>
+                                  
+                                  {/* Seller Actions */}
+                                  {order.sellerId === user.id && (
+                                    <>
+                                      {order.status === 'pending' && (
+                                        <>
+                                          <Button 
+                                            size="sm" 
+                                            onClick={() => updateOrderStatus(order.id, 'paid')}
+                                            disabled={updatingOrder === order.id}
+                                          >
+                                            {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
+                                            Confirmar
+                                          </Button>
+                                          <Button 
+                                            variant="destructive" 
+                                            size="sm"
+                                            onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                                            disabled={updatingOrder === order.id}
+                                          >
+                                            <XCircle className="w-4 h-4" />
+                                            Cancelar
+                                          </Button>
+                                        </>
+                                      )}
+                                      {order.status === 'paid' && (
+                                        <Button 
+                                          size="sm"
+                                          onClick={() => updateOrderStatus(order.id, 'shipped')}
+                                          disabled={updatingOrder === order.id}
+                                        >
+                                          {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Truck className="w-4 h-4 mr-1" />}
+                                          Marcar enviado
+                                        </Button>
+                                      )}
+                                      {order.status === 'shipped' && (
+                                        <Button 
+                                          size="sm"
+                                          onClick={() => updateOrderStatus(order.id, 'delivered')}
+                                          disabled={updatingOrder === order.id}
+                                        >
+                                          {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Package className="w-4 h-4 mr-1" />}
+                                          Marcar entregado
+                                        </Button>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               </div>
@@ -226,6 +338,8 @@ function OrdersContent() {
                   </Link>
                 </div>
               )}
+                </TabsContent>
+              </Tabs>
             </TabsContent>
           </Tabs>
         </div>

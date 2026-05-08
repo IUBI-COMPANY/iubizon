@@ -12,17 +12,22 @@ export const formatPrice = (price: number): string => {
   }).format(price);
 };
 
-export const formatDate = (date: string): string => {
+export const formatDate = (date: string | null | undefined): string => {
+  if (!date) return '-';
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return '-';
   return new Intl.DateTimeFormat('es-PE', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(new Date(date));
+  }).format(parsedDate);
 };
 
-export const formatRelativeTime = (date: string): string => {
-  const now = new Date();
+export const formatRelativeTime = (date: string | null | undefined): string => {
+  if (!date) return '-';
   const then = new Date(date);
+  if (isNaN(then.getTime())) return '-';
+  const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
 
   if (diffInSeconds < 60) return 'Hace un momento';

@@ -1,14 +1,39 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient as createServerClientSSR } from '@supabase/ssr';
+import type { CookieOptions } from '@supabase/ssr';
 
-export const createServerClient = () => {
-  return createClient(
+interface CookieStore {
+  getAll(): Array<{ name: string; value: string }>;
+  setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>): void;
+}
+
+export const createServerClient = async () => {
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  
+  return createServerClientSSR(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // Called from Server Component
+          }
+        },
+      },
+    }
   );
 };
 
 export async function getActiveProducts() {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   
   const { data, error } = await supabase
     .from('products')
@@ -22,5 +47,10 @@ export async function getActiveProducts() {
     return [];
   }
 
-  return data || [];
+  const productsWithOrderedImages = data?.map(product => ({
+    ...product,
+    images: product.images?.sort((a: any, b: any) => a.position - b.position) || [],
+  })) || [];
+
+  return productsWithOrderedImages;
 }

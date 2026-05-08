@@ -10,6 +10,7 @@ CREATE TABLE public.profiles (
   avatar_url TEXT,
   phone TEXT,
   bio TEXT,
+  location TEXT,
   is_pro BOOLEAN DEFAULT false,
   rating DECIMAL(3,2) DEFAULT 0,
   total_sales INTEGER DEFAULT 0,
@@ -44,6 +45,7 @@ CREATE TABLE public.products (
   stock INTEGER DEFAULT 1,
   views INTEGER DEFAULT 0,
   favorites INTEGER DEFAULT 0,
+  specifications JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -218,6 +220,10 @@ CREATE POLICY "Users can send messages" ON messages FOR INSERT WITH CHECK (auth.
 
 -- Orders
 CREATE POLICY "Users can view own orders" ON orders FOR SELECT 
+  USING (buyer_id = auth.uid() OR seller_id = auth.uid());
+CREATE POLICY "Users can create orders" ON orders FOR INSERT 
+  WITH CHECK (buyer_id = auth.uid());
+CREATE POLICY "Users can update own orders" ON orders FOR UPDATE 
   USING (buyer_id = auth.uid() OR seller_id = auth.uid());
 
 -- Favorites

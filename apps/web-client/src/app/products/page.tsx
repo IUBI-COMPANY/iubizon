@@ -7,7 +7,7 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 async function getProducts(limit = 20) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   
   const { data, error } = await supabase
     .from('products')

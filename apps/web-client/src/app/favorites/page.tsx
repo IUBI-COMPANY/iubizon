@@ -1,69 +1,80 @@
-'use client';
-
-import { Suspense, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth, useFavorites } from '@/hooks';
+import { createServerClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { Footer } from '@/components/features/layout/Footer';
-import { ProductGrid } from '@/components/features/products/ProductGrid';
-import { Button } from '@/components/ui/Button';
-import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-function FavoritesContent() {
-  const { user, isLoading: authLoading } = useAuth();
-  const router = useRouter();
-  const { favorites, isLoading, toggleFavorite } = useFavorites();
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/login?redirect=/favorites');
-    }
-  }, [user, authLoading, router]);
+async function getFavorites(userId: string) {
+  const supabase = await createServerClient();
+  
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('*, product:products(*, category:categories(*), images:product_images(*))')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
 
-  if (authLoading || isLoading) {
+  if (error) {
+    console.error('Error fetching favorites:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export default async function FavoritesPage() {
+  const supabase = await createServerClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-[#112237] mb-4">Inicia sesión para ver tus favoritos</h2>
+            <Link href="/auth/login?redirect=/favorites" className="bg-[#f25c05] text-white px-6 py-3 rounded-lg hover:bg-[#d94d04]">
+              Iniciar sesión
+            </Link>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  if (!user) return null;
-
-  const products = favorites.map((f) => f.product).filter(Boolean);
+  const favorites = await getFavorites(user.id);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <CategoryNav />
-
+      
       <div className="flex-1 bg-[#f8fafc]">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold text-[#112237] mb-2">Mis favoritos</h1>
-          <p className="text-[#64748b] mb-8">
-            Productos que has guardado para ver después
-          </p>
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold text-[#112237] mb-6">Mis favoritos</h1>
 
-          {products.length > 0 ? (
-            <ProductGrid
-              products={products as any}
-              favorites={favorites.map((f) => f.productId)}
-              onToggleFavorite={toggleFavorite}
-              showSeller
-            />
+          {favorites.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {favorites.map(fav => (
+                <Link key={fav.id} href={`/products/${fav.product?.id}`} className="block">
+                  <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 hover:shadow-lg transition-shadow">
+                    <div className="aspect-square bg-[#f8fafc] rounded-lg mb-3 flex items-center justify-center text-4xl">
+                      📦
+                    </div>
+                    <h3 className="font-medium text-[#112237] truncate">{fav.product?.title}</h3>
+                    <p className="text-[#f25c05] font-bold">S/ {fav.product?.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           ) : (
-            <div className="text-center py-16">
-              <div className="text-6xl mb-4">❤️</div>
-              <h2 className="text-xl font-semibold text-[#112237] mb-2">
-                No tienes favoritos aún
-              </h2>
-              <p className="text-[#64748b] mb-6">
-                Guarda productos que te interesen para verlos después
-              </p>
-              <Link href="/products">
-                <Button>Explorar productos</Button>
+            <div className="text-center py-12">
+              <p className="text-[#64748b] mb-4">No tienes productos en favoritos</p>
+              <Link href="/productos" className="text-[#f25c05] hover:underline">
+                Ver productos
               </Link>
             </div>
           )}
@@ -72,19 +83,5 @@ function FavoritesContent() {
 
       <Footer />
     </div>
-  );
-}
-
-export default function FavoritesPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
-      </div>
-    }>
-      <AuthProvider>
-        <FavoritesContent />
-      </AuthProvider>
-    </Suspense>
   );
 }

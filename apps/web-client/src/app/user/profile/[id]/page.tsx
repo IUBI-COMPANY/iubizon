@@ -1,93 +1,44 @@
-'use client';
-
-import { useState, useEffect, Suspense } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { AuthProvider, useAuth } from '@/hooks';
+import { createServerClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { Footer } from '@/components/features/layout/Footer';
-import { ProductGrid } from '@/components/features/products/ProductGrid';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { RatingStars } from '@/components/ui/RatingStars';
-import { Loader2 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import { formatRelativeTime } from '@/lib/utils';
-import { MapPin, Calendar, MessageCircle, Shield, Package } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { cookies } from 'next/headers';
+import { MapPin, Calendar, Package } from 'lucide-react';
 
-function ProfileContent() {
-  const params = useParams();
-  const profileId = params.id as string;
-  const { user } = useAuth();
-  const supabase = createClient();
+export const dynamic = 'force-dynamic';
 
-  const [profile, setProfile] = useState<{
-    id: string;
-    name: string;
-    avatarUrl: string;
-    bio: string;
-    isPro: boolean;
-    rating: number;
-    totalSales: number;
-    positiveReviews: number;
-    createdAt: string;
-  } | null>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface Props {
+  params: Promise<{ id: string }>;
+}
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      setIsLoading(true);
+async function getProfileData(profileId: string) {
+  const supabase = await createServerClient();
+  
+  const [profileRes, productsRes] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', profileId).single(),
+    supabase.from('products')
+      .select('*, images:product_images(*)')
+      .eq('seller_id', profileId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
 
-      const [profileRes, productsRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('id, name, avatar_url, bio, is_pro, rating, total_sales, positive_reviews, created_at')
-          .eq('id', profileId)
-          .single(),
-        supabase
-          .from('products')
-          .select('*, seller:profiles(*), images:product_images(*), bundle:product_bundles(*)')
-          .eq('sellerId', profileId)
-          .eq('status', 'active')
-          .order('createdAt', { ascending: false }),
-      ]);
+  return {
+    profile: profileRes.data,
+    products: productsRes.data || [],
+  };
+}
 
-      if (profileRes.data) {
-        setProfile({
-          id: profileRes.data.id,
-          name: profileRes.data.name,
-          avatarUrl: profileRes.data.avatar_url,
-          bio: profileRes.data.bio,
-          isPro: profileRes.data.is_pro,
-          rating: profileRes.data.rating,
-          totalSales: profileRes.data.total_sales,
-          positiveReviews: profileRes.data.positive_reviews,
-          createdAt: profileRes.data.created_at,
-        });
-      }
-
-      if (productsRes.data) {
-        setProducts(productsRes.data);
-      }
-
-      setIsLoading(false);
-    };
-
-    fetchProfileData();
-  }, [profileId, supabase]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
-      </div>
-    );
-  }
+export default async function UserProfilePage({ params }: Props) {
+  const { id } = await params;
+  const cookieStore = cookies();
+  const supabase = await createServerClient();
+  
+  const { data: { user: currentUser } } = await supabase.auth.getUser();
+  const { profile, products } = await getProfileData(id);
 
   if (!profile) {
     return (
@@ -97,8 +48,8 @@ function ProfileContent() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-[#112237] mb-2">Usuario no encontrado</h2>
-            <Link href="/products">
-              <Button>Ver productos</Button>
+            <Link href="/" className="text-[#f25c05] hover:underline">
+              Volver al inicio
             </Link>
           </div>
         </div>
@@ -107,85 +58,113 @@ function ProfileContent() {
     );
   }
 
-  const memberSince = new Date(profile.createdAt).toLocaleDateString('es-PE', {
-    month: 'long',
-    year: 'numeric',
-  });
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <CategoryNav />
-
+      
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container mx-auto px-4 py-8">
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                <Avatar
-                  src={profile.avatarUrl}
-                  alt={profile.name || 'Usuario'}
-                  size="xl"
-                  showProBadge={profile.isPro}
-                />
-
-                <div className="flex-1 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                    <h1 className="text-2xl font-bold text-[#112237]">
-                      {profile.name || 'Usuario'}
-                    </h1>
-                    {profile.isPro && (
-                      <Badge variant="pro">PRO</Badge>
-                    )}
+          {/* Profile Header */}
+          <div className="bg-white rounded-xl border border-[#e2e8f0] p-6 mb-8">
+            <div className="flex items-start gap-6">
+              <div className="w-24 h-24 rounded-full bg-[#f8fafc] overflow-hidden shrink-0">
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.name || 'Usuario'}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-[#64748b]">
+                    {profile.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-
-                  {profile.bio && (
-                    <p className="text-[#64748b] mb-4">{profile.bio}</p>
-                  )}
-
-                  <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm">
-                    <div className="flex items-center gap-2 text-[#64748b]">
-                      <RatingStars
-                        rating={profile.rating}
-                        showValue
-                        reviewCount={profile.totalSales}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 text-[#64748b]">
-                      <Package className="w-4 h-4" />
-                      <span>{profile.totalSales} ventas</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[#64748b]">
-                      <Calendar className="w-4 h-4" />
-                      <span>Desde {memberSince}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {user && user.id !== profileId && (
-                  <Link href={`/user/messages?user=${profileId}`}>
-                    <Button>
-                      <MessageCircle className="w-4 h-4" />
-                      Contactar
-                    </Button>
-                  </Link>
                 )}
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold text-[#112237]">{profile.name || 'Usuario'}</h1>
+                  {profile.is_pro && (
+                    <span className="bg-[#f25c05] text-white text-xs px-2 py-0.5 rounded-full">
+                      Verificado
+                    </span>
+                  )}
+                </div>
+                
+                {profile.bio && (
+                  <p className="text-[#64748b] mb-4">{profile.bio}</p>
+                )}
+                
+                <div className="flex flex-wrap gap-4 text-sm text-[#64748b]">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>Joined {new Date(profile.created_at).toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Package className="w-4 h-4" />
+                    <span>{products.length} productos</span>
+                  </div>
+                  {profile.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-500">★</span>
+                      <span>{profile.rating.toFixed(1)} ({profile.positive_reviews} reseñas)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
+              {currentUser && currentUser.id !== id && (
+                <Link 
+                  href={`/messages?user=${id}`}
+                  className="bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]"
+                >
+                  Enviar mensaje
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Products Grid */}
           <div>
-            <h2 className="text-xl font-bold text-[#112237] mb-6">
-              Productos de {profile.name}
-            </h2>
-
+            <h2 className="text-xl font-bold text-[#112237] mb-6">Productos publicados</h2>
+            
             {products.length > 0 ? (
-              <ProductGrid
-                products={products}
-                showSeller={false}
-              />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {products.map(product => {
+                  const images = [...(product.images || [])].sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0));
+                  const firstImage = images[0]?.url;
+                  
+                  return (
+                    <Link key={product.id} href={`/products/${product.id}`} className="block">
+                      <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+                        <div className="aspect-square relative bg-[#f8fafc]">
+                          {firstImage ? (
+                            <Image
+                              src={firstImage}
+                              alt={product.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-4xl">
+                              📦
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <h3 className="font-medium text-[#112237] truncate text-sm">{product.title}</h3>
+                          <p className="text-[#f25c05] font-bold">S/ {product.price}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="text-center py-16">
+              <div className="bg-white rounded-xl border border-[#e2e8f0] p-12 text-center">
                 <p className="text-[#64748b]">Este usuario no tiene productos publicados</p>
               </div>
             )}
@@ -195,19 +174,5 @@ function ProfileContent() {
 
       <Footer />
     </div>
-  );
-}
-
-export default function UserProfilePage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
-      </div>
-    }>
-      <AuthProvider>
-        <ProfileContent />
-      </AuthProvider>
-    </Suspense>
   );
 }

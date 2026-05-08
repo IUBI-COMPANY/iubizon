@@ -47,6 +47,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "paperlux.cl" },
       { protocol: "https", hostname: "mediaserver.goepson.com" },
+      { protocol: "https", hostname: "svmrptsbmhcwciggsnkd.supabase.co" },
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
     ],
   },
 };

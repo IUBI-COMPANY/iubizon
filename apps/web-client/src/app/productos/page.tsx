@@ -3,6 +3,7 @@ import { Navbar } from '@/components/features/layout/Navbar';
 import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export const metadata = {
 };
 
 async function getProducts(limit = 20) {
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   
   const { data, error } = await supabase
     .from('products')
@@ -53,20 +54,45 @@ export default async function ProductosPage() {
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {products.map(product => (
+              {products.map((product) => {
+                const images = product.images || [];
+                
+                return (
                 <Link key={product.id} href={`/products/${product.id}`} className="block">
-                  <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 hover:shadow-lg transition-shadow">
-                    <div className="aspect-square bg-[#f8fafc] rounded-lg mb-3 flex items-center justify-center text-4xl">
-                      📦
+                  <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="aspect-square relative bg-[#f8fafc]">
+                      {images.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-0.5 h-full w-full">
+                          {images.slice(0, 4).map((img, idx) => (
+                            <div key={idx} className="relative overflow-hidden bg-[#f1f5f9]">
+                              <Image
+                                src={img.url}
+                                alt={`${product.title} ${idx + 1}`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          ))}
+                          {images.length > 4 && (
+                            <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
+                              +{images.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-5xl">
+                          {product.category?.icon || '📦'}
+                        </div>
+                      )}
                     </div>
-                    <h3 className="font-medium text-[#112237] truncate">{product.title}</h3>
-                    <p className="text-[#f25c05] font-bold">S/ {product.price}</p>
-                    <span className="text-xs text-[#64748b] capitalize">
-                      {(product.condition || '').replace('_', ' ')}
-                    </span>
+                    <div className="p-3">
+                      <h3 className="font-medium text-[#112237] line-clamp-2 text-sm">{product.title}</h3>
+                      <p className="text-[#f25c05] font-bold mt-1">S/ {product.price}</p>
+                      <p className="text-xs text-[#64748b] mt-1">{product.category?.name}</p>
+                    </div>
                   </div>
                 </Link>
-              ))}
+              )})}
             </div>
           ) : (
             <div className="text-center py-12">

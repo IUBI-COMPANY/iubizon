@@ -29,8 +29,11 @@ export const ProductCard = ({
   onToggleFavorite,
   showSeller = false,
 }: ProductCardProps) => {
-  const mainImage = product.images?.[0]?.url;
-  const hasMultipleImages = (product.images?.length || 0) > 1;
+  const sortedImages = [...(product.images || [])].sort((a, b) => 
+    (a.position ?? 0) - (b.position ?? 0)
+  );
+  const mainImage = sortedImages[0]?.url;
+  const hasMultipleImages = sortedImages.length > 1;
 
   return (
     <Link href={`/products/${product.id}`}>
@@ -64,7 +67,7 @@ export const ProductCard = ({
 
           {hasMultipleImages && (
             <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
-              +{product.images!.length - 1}
+              +{sortedImages.length - 1}
             </div>
           )}
 

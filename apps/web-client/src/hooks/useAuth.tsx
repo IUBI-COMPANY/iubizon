@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { User } from '@/types';
 
 interface AuthContextType {
@@ -16,49 +15,71 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const fetchProfile = async (supabase: ReturnType<typeof createClient>, userId: string): Promise<User | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error || !data) return null;
+    return data as User;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initialized = useRef(false);
   const supabase = createClient();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-      
-      if (supabaseUser) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', supabaseUser.id)
-          .single();
+    if (initialized.current) return;
+    initialized.current = true;
 
-        if (profile) {
-          setUser(profile as User);
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const profile = await fetchProfile(supabase, session.user.id);
+          if (profile) {
+            setUser(profile);
+          }
         }
+      } catch (error) {
+        console.error('Auth init error:', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
-    getUser();
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          setUser(profile as User);
-        } else {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED_FAILED') {
           setUser(null);
+          setIsLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          const profile = await fetchProfile(supabase, session.user.id);
+          if (profile) {
+            setUser(profile);
+          }
         }
         setIsLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const signIn = async (email: string, password: string) => {

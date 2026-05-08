@@ -2,129 +2,90 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth, useCategories } from '@/hooks';
+import { useForm } from 'react-hook-form';
+import { createClient } from '@/lib/supabase/client';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { TextArea } from '@/components/ui/TextArea';
 import { Label } from '@/components/ui/Label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { createClient } from '@/lib/supabase/client';
-import { PRODUCT_CONDITIONS } from '@/lib/config';
-import { Upload, X, DollarSign, Package } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
-function PublishProductContent() {
+const CATEGORIES = [
+  { id: 'f17e5a31-6c47-462b-bfe8-5d7c40a27fde', name: 'Electrónica y Tecnología' },
+  { id: 'f405fbd0-46a8-4f18-a7c3-06e7970f0271', name: 'Proyectores' },
+  { id: '0bf474fb-d2ec-43a7-bf4c-5da9a4d6d008', name: 'Laptops y Computadoras' },
+  { id: '980013ea-226d-4233-9205-1a7d5be784b4', name: 'Móviles y Tablets' },
+  { id: 'b703445a-5933-4a0c-8175-a9ae2c3f7ea3', name: 'Consolas y Videojuegos' },
+  { id: 'c4072527-1d13-467e-926f-007be9a915fd', name: 'TVs y Audio' },
+];
+
+interface ProductFormData {
+  title: string;
+  description: string;
+  price: string;
+  condition: string;
+  category_id: string;
+}
+
+export default function NewProductPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { categories } = useCategories();
   const supabase = createClient();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [images, setImages] = useState<string[]>([]);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    condition: '',
-    isBundle: false,
-    bundleQuantity: '',
-    bundlePricePerUnit: '',
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProductFormData>();
 
-  if (!user) {
-    router.push('/auth/login?redirect=/products/new');
-    return null;
-  }
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) newErrors.title = 'El título es requerido';
-    if (!formData.description.trim()) newErrors.description = 'La descripción es requerida';
-    if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'El precio es requerido';
-    if (!formData.categoryId) newErrors.categoryId = 'Selecciona una categoría';
-    if (!formData.condition) newErrors.condition = 'Selecciona la condición';
-
-    if (formData.isBundle) {
-      if (!formData.bundleQuantity || parseInt(formData.bundleQuantity) < 2) {
-        newErrors.bundleQuantity = 'Mínimo 2 unidades para un lote';
-      }
-      if (!formData.bundlePricePerUnit) newErrors.bundlePricePerUnit = 'Precio por unidad requerido';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
-    setIsLoading(true);
+  const onSubmit = async (data: ProductFormData) => {
+    setLoading(true);
+    setError(null);
 
     try {
-      const { data: product, error } = await supabase
-        .from('products')
-        .insert({
-          seller_id: user.id,
-          category_id: formData.categoryId,
-          title: formData.title,
-          description: formData.description,
-          price: parseFloat(formData.price),
-          condition: formData.condition,
-          is_bundle: formData.isBundle,
-          status: 'active',
-          stock: formData.isBundle ? parseInt(formData.bundleQuantity) : 1,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (formData.isBundle) {
-        await supabase.from('product_bundles').insert({
-          product_id: product.id,
-          quantity: parseInt(formData.bundleQuantity),
-          price_per_unit: parseFloat(formData.bundlePricePerUnit),
-          total_price: parseFloat(formData.bundlePricePerUnit) * parseInt(formData.bundleQuantity),
-        });
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push('/auth/login?redirect=/products/new');
+        return;
       }
 
-      for (let i = 0; i < images.length; i++) {
-        await supabase.from('product_images').insert({
-          product_id: product.id,
-          url: images[i],
-          position: i,
-        });
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        body: new FormData(Object.entries({ ...data, price: parseFloat(data.price) }).reduce((acc, [key, value]) => {
+          acc.append(key, String(value));
+          return acc;
+        }, new FormData())),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || 'Error al crear el producto');
+        setLoading(false);
+        return;
       }
 
-      router.push(`/products/${product.id}`);
+      setSuccess(true);
+      setTimeout(() => {
+        router.push(`/products/edit/${result.product.id}`);
+      }, 1500);
     } catch (err) {
-      console.error('Error publishing product:', err);
-      setErrors({ submit: 'Error al publicar el producto. Intenta de nuevo.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateField = (field: string, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setError('Error de conexión. Intenta de nuevo.');
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
+      
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container mx-auto px-4 py-8 max-w-3xl">
           <h1 className="text-2xl font-bold text-[#112237] mb-2">Publicar producto</h1>
@@ -132,230 +93,122 @@ function PublishProductContent() {
             Completa los detalles de tu producto para publicarlo en Iubizon
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.submit && (
-              <div className="p-4 bg-[#ef4444]/10 text-[#ef4444] rounded-lg">
-                {errors.submit}
-              </div>
-            )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Imágenes</CardTitle>
-                <CardDescription>
-                  Añade hasta 10 fotos de tu producto. La primera será la principal.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-[#e2e8f0] rounded-xl p-8 text-center">
-                  <Upload className="w-10 h-10 text-[#94a3b8] mx-auto mb-4" />
-                  <p className="text-[#64748b] mb-2">
-                    Arrastra las imágenes aquí o haz clic para seleccionar
-                  </p>
-                  <p className="text-xs text-[#94a3b8]">
-                    PNG, JPG hasta 5MB cada una
-                  </p>
-                </div>
-                {images.length > 0 && (
-                  <div className="flex gap-2 mt-4 overflow-x-auto">
-                    {images.map((img, idx) => (
-                      <div key={idx} className="relative w-20 h-20 shrink-0">
-                        <img
-                          src={img}
-                          alt={`Imagen ${idx + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
-                          className="absolute -top-2 -right-2 bg-[#ef4444] text-white rounded-full p-1"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Información básica</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Título del producto *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => updateField('title', e.target.value)}
-                    placeholder="Ej: Proyector Epson PowerLite 980W"
-                    error={errors.title}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descripción *</Label>
-                  <TextArea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => updateField('description', e.target.value)}
-                    placeholder="Describe tu producto: características, estado, incluye..."
-                    rows={5}
-                    error={errors.description}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Categoría *</Label>
-                    <Select
-                      value={formData.categoryId}
-                      onValueChange={(value) => updateField('categoryId', value)}
-                    >
-                      <SelectTrigger error={errors.categoryId}>
-                        <SelectValue placeholder="Selecciona una categoría" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.icon} {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Condición *</Label>
-                    <Select
-                      value={formData.condition}
-                      onValueChange={(value) => updateField('condition', value)}
-                    >
-                      <SelectTrigger error={errors.condition}>
-                        <SelectValue placeholder="Selecciona la condición" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PRODUCT_CONDITIONS.map((cond) => (
-                          <SelectItem key={cond.value} value={cond.value}>
-                            {cond.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Precio</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label>Precio (S/) *</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.price}
-                      onChange={(e) => updateField('price', e.target.value)}
-                      placeholder="0.00"
-                      className="pl-10"
-                      error={errors.price}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.isBundle}
-                      onChange={(e) => updateField('isBundle', e.target.checked)}
-                      className="w-5 h-5 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
-                    />
-                    <div>
-                      <span className="font-medium text-[#112237]">Venta por lotes</span>
-                      <p className="text-xs text-[#64748b]">
-                        Activa esta opción si vendes múltiples unidades del mismo producto
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
-                {formData.isBundle && (
-                  <div className="mt-4 p-4 bg-[#f8fafc] rounded-lg space-y-4">
-                    <p className="text-sm font-medium text-[#112237]">
-                      Configuración del lote
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Cantidad de unidades *</Label>
-                        <Input
-                          type="number"
-                          min="2"
-                          value={formData.bundleQuantity}
-                          onChange={(e) => updateField('bundleQuantity', e.target.value)}
-                          placeholder="Ej: 5"
-                          error={errors.bundleQuantity}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Precio por unidad (S/) *</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={formData.bundlePricePerUnit}
-                          onChange={(e) => updateField('bundlePricePerUnit', e.target.value)}
-                          placeholder="Ej: 100"
-                          error={errors.bundlePricePerUnit}
-                        />
-                      </div>
-                    </div>
-                    {formData.bundleQuantity && formData.bundlePricePerUnit && (
-                      <div className="text-sm text-[#64748b]">
-                        Precio total del lote: <span className="font-bold text-[#f25c05]">
-                          S/ {(parseInt(formData.bundleQuantity) * parseFloat(formData.bundlePricePerUnit)).toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                className="flex-1"
+          <AnimatePresence>
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6"
               >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Publicando...' : 'Publicar producto'}
-              </Button>
+                Producto publicado exitosamente. Redirigiendo...
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <Label htmlFor="title">Título del producto *</Label>
+              <Input 
+                id="title" 
+                placeholder="Ej: iPhone 14 Pro Max 256GB"
+                {...register('title', { required: 'El título es requerido' })}
+              />
+              {errors.title && (
+                <span className="text-red-500 text-sm">{errors.title.message}</span>
+              )}
             </div>
+
+            <div>
+              <Label htmlFor="description">Descripción *</Label>
+              <TextArea 
+                id="description" 
+                placeholder="Describe tu producto en detalle..."
+                rows={4}
+                {...register('description', { required: 'La descripción es requerida' })}
+              />
+              {errors.description && (
+                <span className="text-red-500 text-sm">{errors.description.message}</span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="price">Precio (S/) *</Label>
+                <Input 
+                  id="price" 
+                  type="number" 
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  {...register('price', { required: 'El precio es requerido', min: 0 })}
+                />
+                {errors.price && (
+                  <span className="text-red-500 text-sm">{errors.price.message}</span>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="condition">Condición *</Label>
+                <select 
+                  id="condition" 
+                  className="flex h-10 w-full rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 text-sm"
+                  {...register('condition', { required: 'La condición es requerida' })}
+                >
+                  <option value="">Selecciona...</option>
+                  <option value="new">Nuevo</option>
+                  <option value="like_new">Como nuevo</option>
+                  <option value="good">Buen estado</option>
+                  <option value="fair">Aceptable</option>
+                </select>
+                {errors.condition && (
+                  <span className="text-red-500 text-sm">{errors.condition.message}</span>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="category_id">Categoría *</Label>
+              <select 
+                id="category_id" 
+                className="flex h-10 w-full rounded-lg border border-[#e2e8f0] bg-white px-3 py-2 text-sm"
+                {...register('category_id', { required: 'La categoría es requerida' })}
+              >
+                <option value="">Selecciona una categoría...</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              {errors.category_id && (
+                <span className="text-red-500 text-sm">{errors.category_id.message}</span>
+              )}
+            </div>
+
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Publicando...
+                </span>
+              ) : 'Publicar producto'}
+            </Button>
           </form>
         </div>
       </div>
 
       <Footer />
     </div>
-  );
-}
-
-export default function PublishProductPage() {
-  return (
-    <AuthProvider>
-      <PublishProductContent />
-    </AuthProvider>
   );
 }
