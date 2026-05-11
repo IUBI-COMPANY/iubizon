@@ -39,6 +39,7 @@ export interface Product extends Price {
   technicalSheetUrl?: string;
   technicalSheetUrlForDownload?: string;
   gama?: "baja" | "media" | "alta" | "muy alta";
+  withIgv?: boolean;
 }
 
 interface Price {
@@ -48,6 +49,7 @@ interface Price {
   subTotal?: number;
   IGV?: number;
   totalPayment?: number;
+  withIgv?: boolean;
 }
 
 export interface MediaItem {
@@ -712,12 +714,13 @@ const productsData: Product[] = [
     id: "Filtro",
     model: "",
     name: "Filtro para proyector Epson",
-    stock: 50,
-    oldStock: 60,
+    stock: 4,
+    oldStock: 20,
     condition: "new",
     description: "",
     price: 40,
     badge: "Nuevo",
+    withIgv: true,
     mainImage: "/productos/Filtro/Filtro.jpg",
     media: [
       { type: "image", src: "/productos/Filtro/Filtro-2.jpg" },
@@ -886,6 +889,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
     price: 900,
     badge: "Lote",
     note: "IGV aparte",
+    withIgv: true,
     mainImage: "/productos/lote-7-proyectores/1.jpg",
     media: [
       { type: "image", src: "/productos/lote-7-proyectores/1.jpg" },
@@ -933,38 +937,64 @@ const calcProductPrices = (
   percentageDiscount: number = 0,
 ): Price => {
   const originalPrice = product.price;
+  const withIgv = product.withIgv === true;
 
-  // Sin descuento: cálculo directo
   if (percentageDiscount === 0) {
-    const totalPayment = originalPrice;
-    const subTotal = +(totalPayment / (1 + IGV_RATE)).toFixed(2);
+    if (withIgv) {
+      const subTotal = originalPrice;
+      const IGV = +(subTotal * IGV_RATE).toFixed(2);
+      const totalPayment = +(subTotal + IGV).toFixed(2);
+
+      return {
+        oldPrice: undefined,
+        price: originalPrice,
+        discount: undefined,
+        subTotal,
+        IGV,
+        totalPayment,
+        withIgv: true,
+      };
+    } else {
+      return {
+        oldPrice: undefined,
+        price: originalPrice,
+        discount: undefined,
+        subTotal: originalPrice,
+        IGV: 0,
+        totalPayment: originalPrice,
+        withIgv: false,
+      };
+    }
+  }
+
+  const discountAmount = +(originalPrice * percentageDiscount).toFixed(2);
+  const priceAfterDiscount = +(originalPrice - discountAmount).toFixed(2);
+
+  if (withIgv) {
+    const subTotal = priceAfterDiscount;
     const IGV = +(subTotal * IGV_RATE).toFixed(2);
+    const totalPayment = +(subTotal + IGV).toFixed(2);
 
     return {
-      oldPrice: undefined,
-      price: originalPrice,
-      discount: undefined,
+      oldPrice: originalPrice,
+      price: priceAfterDiscount,
+      discount: discountAmount,
       subTotal,
       IGV,
       totalPayment,
+      withIgv: true,
+    };
+  } else {
+    return {
+      oldPrice: originalPrice,
+      price: priceAfterDiscount,
+      discount: discountAmount,
+      subTotal: priceAfterDiscount,
+      IGV: 0,
+      totalPayment: priceAfterDiscount,
+      withIgv: false,
     };
   }
-
-  // Con descuento: cálculo completo
-  const discountAmount = +(originalPrice * percentageDiscount).toFixed(2);
-  const priceAfterDiscount = +(originalPrice - discountAmount).toFixed(2);
-  const totalPayment = priceAfterDiscount;
-  const subTotal = +(totalPayment / (1 + IGV_RATE)).toFixed(2);
-  const IGV = +(subTotal * IGV_RATE).toFixed(2);
-
-  return {
-    oldPrice: originalPrice,
-    price: priceAfterDiscount,
-    discount: discountAmount,
-    subTotal,
-    IGV,
-    totalPayment,
-  };
 };
 
 const getAutoDiscountRate = (product: Product): number => {
@@ -1000,6 +1030,7 @@ export const products: Product[] = orderBy(
         }),
         ...calcProductPricesDetails(product),
         campaign: "Tecnología interactiva",
+        withIgv: false,
       }) as Product,
   ),
   ["type", "stock"],
