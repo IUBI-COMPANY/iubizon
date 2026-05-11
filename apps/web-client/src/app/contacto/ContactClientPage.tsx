@@ -203,7 +203,7 @@ export default function ContactClientPage() {
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Horario</h3>
                   <p className="text-gray-600 text-sm mb-2">Lun - Vie</p>
-                  <p className="text-gray-900 font-semibold">9:00 AM - 6:00 PM</p>
+                  <p className="text-gray-900 font-semibold">8:00 AM - 5:00 PM</p>
                   <p className="text-gray-600 text-sm mt-2">Sábado</p>
                   <p className="text-gray-900 font-semibold">9:00 AM - 12:00 PM</p>
                   <p className="text-xs text-gray-500 mt-1">(Previa cita)</p>

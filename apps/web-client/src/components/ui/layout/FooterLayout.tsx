@@ -28,7 +28,7 @@ export const FooterLayout = () => {
           <div className="text-sm text-blue-100 text-center md:text-left">
             <span className="font-semibold">Horario:</span>
             <p>
-              Lun-Vie 9:00 AM - 6:00 PM <br />
+              Lun-Vie 8:00 AM - 5:00 PM <br />
               Sáb 9:00 AM - 12:00 PM - Previa cita
             </p>
           </div>

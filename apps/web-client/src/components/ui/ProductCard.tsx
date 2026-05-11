@@ -21,7 +21,11 @@ export const ProductCard = ({ product }: Props) => {
         <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
           {product?.condition && (
             <span className="absolute top-1.5 left-1.5 z-10 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-              {product?.condition === "new" ? "Nuevo" : product?.condition === "reconditioned" ? "Reacondicionado" : product?.condition}
+              {product?.condition === "new"
+                ? "Nuevo"
+                : product?.condition === "reconditioned"
+                  ? "Como nuevo"
+                  : product?.condition}
             </span>
           )}
           {hasDiscount && (
@@ -54,7 +58,7 @@ export const ProductCard = ({ product }: Props) => {
             {product.brand}
           </span>
         )}
-        
+
         <Link href={`/productos/${product.id}`}>
           <h2 className="text-sm font-medium text-gray-800 leading-tight line-clamp-2 mb-2 group-hover:text-orange-500 transition-colors">
             {product?.name}
