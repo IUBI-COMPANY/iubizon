@@ -114,7 +114,7 @@ export default function ProductsClientPage() {
                   <div className="text-2xl font-bold text-white drop-shadow-lg">
                     {stats.reconditioned}
                   </div>
-                  <div className="text-sm text-gray-200">Reacondicionados</div>
+                  <div className="text-sm text-gray-200">Como nuevos</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border-2 border-white/20 hover:border-blue-400/30 transition-all duration-300 hover:scale-105 hover:bg-white/15">
                   <Filter className="w-6 h-6 text-blue-400 mx-auto mb-2" />
@@ -132,7 +132,7 @@ export default function ProductsClientPage() {
         </section>
 
         {/* Products Section */}
-        <main className="max-w-7xl mx-auto px-4 py-10">
+        <main className="max-w-[1370px] mx-auto px-4 py-10">
           {/* New Products */}
           {productsByCondition.new.products.length > 0 && (
             <section className="mb-16 relative">
@@ -162,7 +162,7 @@ export default function ProductsClientPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {productsByCondition.new.products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
@@ -194,7 +194,7 @@ export default function ProductsClientPage() {
                   </div>
                 </div>
 
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {productsByCondition.reconditioned.products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
