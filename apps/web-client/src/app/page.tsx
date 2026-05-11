@@ -119,8 +119,8 @@ export default function Home() {
                     {productsByCondition.reconditioned.description}
                   </p>
                   <p className="text-primary text-[.8em] mt-2 font-medium">
-                    Equipos a precios más accesibles, totalmente funcionales y
-                    con garantía
+                    Productos únicos disponibles solo por tiempo limitado, ya
+                    que son oportunidades exclusivas para reventa.”
                   </p>
                 </div>
               </div>

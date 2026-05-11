@@ -59,8 +59,8 @@ const productsData: Product[] = [
   {
     id: "bundle-interactivo",
     model: "Bundle Complete 2025",
-    name: "Bundle Interactivo - Completo",
-    stock: 20,
+    name: "Bundle Interactivo Completo 2025 - Transforma Tu Proyector en Pizarra Digital",
+    stock: 4,
     condition: "new",
     description:
       "Transforma cualquier proyector en una experiencia interactiva profesional",
@@ -87,8 +87,8 @@ const productsData: Product[] = [
   {
     id: "duo-interactivo",
     model: "Touch y Adaptador Inalámbrico",
-    name: "Dúo interactivo",
-    stock: 20,
+    name: "Duo Interactivo - Touch + WiFi para Aulas",
+    stock: 4,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 5790,
@@ -109,12 +109,12 @@ const productsData: Product[] = [
   {
     id: "ELPAP07",
     model: "V12H418P12",
-    name: "Adaptador Epson ELPAP07 Módulo Inalámbrico WiFi",
+    name: "Adaptador WiFi Epson ELPAP07",
     stock: 10,
     oldStock: 20,
     condition: "new",
     description: "Accesorio de proyección",
-    price: 230.0,
+    price: 190.0,
     badge: "Nuevo",
     mainImage: "/productos/ELPAP07/Elpap07-1.jpg",
     media: [
@@ -258,7 +258,7 @@ const productsData: Product[] = [
     oldStock: 20,
     condition: "new",
     description: "Accesorio de proyección",
-    price: 370.0,
+    price: 350.0,
     badge: "Nuevo",
     mainImage: "/productos/ELPAP10/Elpap10-1.jpg",
     media: [
@@ -345,7 +345,7 @@ const productsData: Product[] = [
     oldStock: 20,
     condition: "new",
     description: "Accesorio de proyección",
-    price: 570.0,
+    price: 490.0,
     badge: "Nuevo",
     mainImage: "/productos/ELPAP11/Elpap11-1.jpg",
     media: [
@@ -455,53 +455,14 @@ const productsData: Product[] = [
 `,
   },
   {
-    id: "980W-1",
-    model: "H866A",
-    name: "Epson PowerLite 980W",
-    stock: 0,
-    oldStock: 2,
-    condition: "reconditioned",
-    description: "Buena proyección, detalles estéticos",
-    price: 2300.0,
-    badge: "Top venta",
-    mainImage: "/productos/980W-reacon/980w.jpg",
-    media: [
-      { type: "image", src: "/productos/980W-reacon/2.png" },
-      { type: "video", src: "/productos/980W-reacon/980W-reacon.mp4" },
-      { type: "image", src: "/productos/980W-reacon/3.png" },
-      { type: "image", src: "/productos/980W-reacon/4.png" },
-      { type: "image", src: "/productos/980W-reacon/5.png" },
-    ],
-    displayTechnology: "3LCD",
-    lumensANSI: 3800,
-    brand: "Epson",
-    type: "Proyector",
-    contrastRatio: "15,000:1",
-    connectivity: "VGA/SVGA, USB, HDMI Estándar, HDMI Micro",
-    features: "Altavoces integrados",
-    nativeResolution: "1280 x 800",
-    aspectRatio: "16:10",
-    throwRatio: "Proyección media/alta",
-    category: [
-      "Electrónica",
-      "TV, Video y Audio para el Hogar",
-      "TV y Video",
-      "Proyectores para Home Theater",
-    ],
-    note: `
-    Proyector ideal para aulas de estudio bien iluminadas y pequeños auditorios.  Resolución WXGA ideal para presentaciones multimedia.  Lámpara con durabilidad de hasta 12,000 horas.
-    Colores tres veces más brillantes, Luminosidad en Color y Excelente calidad.
-    `,
-  },
-  {
     id: "Proyector-Led-Portatil-HY350-Magcubic-Full-Hd-1080p-Android",
     model: "HY350",
-    name: "Proyector Led Portátil HY350 Magcubic Full Hd 1080p Android",
+    name: "Proyector Magcubic HY350 Android TV - Full HD 1080p Portatil",
     stock: 4,
     oldStock: 20,
     condition: "new",
     description: "",
-    price: 490.99,
+    price: 390,
     badge: "Nuevo",
     mainImage: "/productos/HY350/Magic.jpg",
     media: [
@@ -568,7 +529,7 @@ const productsData: Product[] = [
     oldStock: 60,
     condition: "new",
     description: "",
-    price: 19.99,
+    price: 20,
     badge: "Nuevo",
     mainImage: "/productos/Cable-hdmi/Cable-hdmi.jpg",
     media: [
@@ -616,7 +577,7 @@ const productsData: Product[] = [
     oldStock: 60,
     condition: "new",
     description: "",
-    price: 25.99,
+    price: 25,
     badge: "Nuevo",
     mainImage: "/productos/Cable-poder/Cable-poder.jpg",
     media: [
@@ -664,7 +625,7 @@ const productsData: Product[] = [
     oldStock: 60,
     condition: "new",
     description: "",
-    price: 19.99,
+    price: 16,
     badge: "Nuevo",
     mainImage: "/productos/Cable-vga/Cable-vga.jpg",
     media: [
@@ -710,7 +671,7 @@ const productsData: Product[] = [
     oldStock: 60,
     condition: "new",
     description: "",
-    price: 80.99,
+    price: 45,
     badge: "Nuevo",
     mainImage: "/productos/Control/Control-epson.jpg",
     media: [
@@ -755,7 +716,7 @@ const productsData: Product[] = [
     oldStock: 60,
     condition: "new",
     description: "",
-    price: 80.99,
+    price: 40,
     badge: "Nuevo",
     mainImage: "/productos/Filtro/Filtro.jpg",
     media: [
@@ -795,6 +756,157 @@ const productsData: Product[] = [
         
         Se recomienda limpiar o reemplazar el filtro regularmente según el uso del proyector para evitar acumulación de polvo y garantizar un rendimiento adecuado.  },
     `,
+  },
+  // Producto 97H Open Box - Tiro Largo
+  {
+    id: "97H-open-box",
+    model: "97H-OpenBox",
+    name: "Proyector Epson 97H - Tiro Largo 2700 Lumens",
+    stock: 3,
+    condition: "new",
+    description:
+      "Proyector de tiro largo con 2700 lumens, ideal para aulas y salas de reuniones medianas",
+    price: 1200,
+    badge: "Open Box",
+    mainImage: "/productos/97H-open-box/1.jpg",
+    media: [
+      { type: "image", src: "/productos/97H-open-box/1.jpg" },
+      { type: "image", src: "/productos/97H-open-box/2.jpg" },
+      { type: "image", src: "/productos/97H-open-box/3.jpg" },
+      { type: "image", src: "/productos/97H-open-box/4.jpg" },
+      { type: "image", src: "/productos/97H-open-box/5.jpg" },
+      { type: "image", src: "/productos/97H-open-box/6.jpg" },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 2700,
+    brand: "Epson",
+    type: "Proyector",
+    contrastRatio: "3000:1",
+    connectivity: "HDMI, VGA, USB, Audio",
+    features: "Tiro largo, Alta luminosidad, Bajo consumo",
+    nativeResolution: "XGA (1024x768)",
+    aspectRatio: "4:3",
+    throwRatio: "Tiro largo (1.5 - 2.0)",
+    category: ["Proyector", "Tiro Largo", "2700 lumens"],
+    note: `🔥 Pantalla gigante en cualquier espacio
+
+¿Necesitas proyectar en grande desde lejos y con buena calidad?
+
+Este proyector de tiro largo Epson 97H es ideal para lograr una imagen potente y clara en aulas, salas o negocios 🔥
+
+💰 Llévatelo hoy por solo S/ 1,200
+
+✅ Imagen grande desde mayor distancia
+✅ Perfecto para espacios amplios
+✅ Ideal para clases, capacitaciones o presentaciones
+✅ Incluye caja y accesorios originales (Cable poder, hdmi, control, pilas, manual)
+✅ Estado 10/10, OpenBox
+✅ Incluye 6 meses de garantía 🔒
+
+💡 Recomendado para:
+✔ Salones grandes
+✔ Iglesias
+✔ Oficinas
+✔ Eventos y capacitaciones
+
+Nos encontramos en Chorrillos, Lima
+
+⚡ Stock limitado – 3 unidades
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // Producto 520 Open Box - Tiro Corto
+  {
+    id: "520-openbox",
+    model: "520-OpenBox",
+    name: "Proyector Epson 520 - Tiro Corto 2700 Lumens",
+    stock: 1,
+    condition: "new",
+    description:
+      "Proyector de tiro corto con 2700 lumens, perfecto para espacios pequeños y pizarras interactivas",
+    price: 1200,
+    badge: "Open Box",
+    mainImage: "/productos/520-openbox/1.jpg",
+    media: [
+      { type: "image", src: "/productos/520-openbox/1.jpg" },
+      { type: "image", src: "/productos/520-openbox/3.jpg" },
+      { type: "image", src: "/productos/520-openbox/4.jpg" },
+      { type: "image", src: "/productos/520-openbox/5.jpg" },
+      { type: "image", src: "/productos/520-openbox/6.jpg" },
+      { type: "image", src: "/productos/520-openbox/7.jpg" },
+      { type: "image", src: "/productos/520-openbox/8.jpg" },
+      { type: "image", src: "/productos/520-openbox/9.jpg" },
+      { type: "image", src: "/productos/520-openbox/10.jpg" },
+      { type: "image", src: "/productos/520-openbox/11.jpg" },
+      { type: "image", src: "/productos/520-openbox/12.jpg" },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 2700,
+    brand: "Epson",
+    type: "Proyector",
+    contrastRatio: "3000:1",
+    connectivity: "HDMI, VGA, USB, Audio",
+    features: "Tiro corto, Ideal para pizarras, Compacto",
+    nativeResolution: "XGA (1024x768)",
+    aspectRatio: "4:3",
+    throwRatio: "Tiro corto (0.5 - 0.7)",
+    category: ["Proyector", "Tiro Corto", "2700 lumens"],
+    note: `🚀 Convierte cualquier pared en una pantalla gigante profesional
+
+Exclusivo para areas pequeñas, se usa pegado a la pared.
+
+Proyector de tiro corto tipo educativo/profesional por solo S/ 1,200 😱
+
+✅ Imagen grande incluso en espacios pequeños
+✅ Ideal para clases, presentaciones o negocios
+✅ Ahorra espacio (se instala cerca de la pared)
+✅ Incluye caja y accesorios originales (Cable poder, hdmi, control, pilas, manual)
+✅ Estado 10/10, OpenBox
+✅ Incluye 6 meses de garantía 🔒
+
+💡 Perfecto para:
+✔ Colegios
+✔ Academias
+✔ Oficinas
+✔ Emprendedores
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // Lote 7 Proyectores
+  {
+    id: "lote-7-proyectores",
+    model: "Lote-7-Proyectores",
+    name: "Lote 7 Proyectores Epson 3800 Lumens - Precio por Volumen",
+    stock: 1,
+    condition: "reconditioned",
+    description:
+      "Lote de 7 proyectores Epson, ideales para aulas y oficinas. Precio especial Llevando 5 unidades a más.",
+    price: 900,
+    badge: "Lote",
+    note: "IGV aparte",
+    mainImage: "/productos/lote-7-proyectores/1.jpg",
+    media: [
+      { type: "image", src: "/productos/lote-7-proyectores/1.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/2.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/3.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/4.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/5.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/6.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/7.jpg" },
+      { type: "image", src: "/productos/lote-7-proyectores/8.jpg" },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 3800,
+    brand: "Epson",
+    type: "Lote",
+    connectivity: "HDMI, VGA, USB",
+    features:
+      "Proyectores Epson 3800-4000 lumens, Ideal para aulas y oficinas grandes",
+    nativeResolution: "XGA",
+    aspectRatio: "4:3",
+    category: ["Lote", "Proyectores", "Epson"],
   },
 ];
 

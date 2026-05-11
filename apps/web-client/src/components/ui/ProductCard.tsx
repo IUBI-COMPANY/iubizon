@@ -9,7 +9,7 @@ interface Props {
 
 export const ProductCard = ({ product }: Props) => {
   const hasDiscount =
-    product?.oldPrice && product.oldPrice > (product?.subTotal || 0);
+    product?.oldPrice && product.oldPrice > (product?.price || 0);
 
   return (
     <article
@@ -19,20 +19,16 @@ export const ProductCard = ({ product }: Props) => {
       {/* Imagen */}
       <Link href={`/productos/${product.id}`} className="block">
         <div className="relative w-full aspect-square overflow-hidden bg-gray-100">
-          {product?.condition && (
+          {product?.badge && (
             <span className="absolute top-1.5 left-1.5 z-10 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-              {product?.condition === "new"
-                ? "Nuevo"
-                : product?.condition === "reconditioned"
-                  ? "Como nuevo"
-                  : product?.condition}
+              {product.badge}
             </span>
           )}
           {hasDiscount && (
             <span className="absolute top-1.5 right-1.5 z-10 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
               -
               {Math.round(
-                ((product.oldPrice! - (product?.subTotal || 0)) /
+                ((product.oldPrice! - (product?.price || 0)) /
                   product.oldPrice!) *
                   100,
               )}
@@ -80,7 +76,7 @@ export const ProductCard = ({ product }: Props) => {
               </span>
             )}
             <span className="text-base font-bold text-gray-900">
-              S/ {product.subTotal?.toFixed(0)}
+              S/ {product.price?.toFixed(0)}
             </span>
           </div>
         </div>
