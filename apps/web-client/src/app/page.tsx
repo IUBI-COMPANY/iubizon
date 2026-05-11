@@ -50,8 +50,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen h-auto w-full bg-slate-50">
+    <>
       <BannerSlider banners={BANNERS} autoPlay autoPlayInterval={7000} />
+      <div className="min-h-screen h-auto w-full bg-slate-50">
       <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
         {productsByCondition["gama-alta"].products.length > 0 && (
           <div className="!mt-6 !mb-[3em]">
@@ -380,6 +381,7 @@ export default function Home() {
           </p>
         </section>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
