@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Product } from "@/data-list/products";
+import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Package, Sparkles, Monitor, Mouse } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -92,7 +93,7 @@ export default function ContentDetailBundleInteractivo({
       {/* What includes (3 cards) */}
       <div className="space-y-7 mb-10">
         <p className="text-[1.4em] font-semibold text-white">
-          📦 ¿Qué incluye?
+          ¿Qué incluye?
         </p>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
@@ -260,7 +261,7 @@ export default function ContentDetailBundleInteractivo({
         {/* Bonus de bundle: por qué es mejor que comprar separado */}
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 mt-4">
           <p className="text-[1.1em] font-semibold text-white">
-            ⭐ Ventaja del Bundle
+            Ventaja del Bundle
           </p>
           <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="flex items-center gap-2 text-md text-slate-200">
@@ -282,7 +283,7 @@ export default function ContentDetailBundleInteractivo({
       {/* For Business */}
       <div className="space-y-7 mb-10">
         <p className="text-[1.4em] font-semibold text-white">
-          🏢 Empresas y Oficinas
+          Empresas y Oficinas
         </p>
 
         <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 mb-5">
@@ -321,7 +322,7 @@ export default function ContentDetailBundleInteractivo({
         <div className="space-y-2">
           <div>
             <p className="text-[1.4em] font-semibold text-white">
-              🎓 Educación (con PaperFlix Plataforma educativa)
+              Educación (con PaperFlix Plataforma educativa)
             </p>
             <p className="mt-1 text-lg text-slate-200">
               Plus para enseñanza dinámica: contenidos listos para usar y mayor
@@ -381,7 +382,7 @@ export default function ContentDetailBundleInteractivo({
         {/* Easy + compatibility */}
         <div>
           <p className="text-[1.4em] font-semibold text-white">
-            ⚡ Súper fácil de usar
+            Súper fácil de usar
           </p>
           <p className="mt-1 text-lg text-slate-200">
             Funciona como “mouse”: si sabes usar tu laptop, ya sabes usar el
@@ -422,7 +423,7 @@ export default function ContentDetailBundleInteractivo({
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-4">
             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-2xl font-bold shadow-lg">
-              💸
+              $
             </span>
             <span className="text-lg font-bold text-primary drop-shadow">
               ¿Por qué el Bundle es más accesible?
@@ -432,7 +433,7 @@ export default function ContentDetailBundleInteractivo({
             {/* Bundle Interactivo */}
             <div className="flex-1 rounded-2xl border-2 border-emerald-400 bg-white/5 p-6 shadow-xl">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🌟</span>
+                <Star className="w-6 h-6 text-yellow-400" />
                 <span className="text-lg font-bold text-emerald-400">
                   Bundle Interactivo
                 </span>
@@ -465,7 +466,7 @@ export default function ContentDetailBundleInteractivo({
             {/* Proyector Interactivo */}
             <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🎥</span>
+                <Monitor className="w-6 h-6 text-blue-400" />
                 <span className="text-lg font-bold text-rose-400">
                   Proyector Interactivo
                 </span>
@@ -495,7 +496,7 @@ export default function ContentDetailBundleInteractivo({
             {/* Pantalla Interactiva */}
             <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🖥️</span>
+                <Monitor className="w-6 h-6 text-gray-400" />
                 <span className="text-lg font-bold text-rose-400">
                   Pantalla Interactiva
                 </span>
@@ -541,7 +542,7 @@ export default function ContentDetailBundleInteractivo({
 
         <div className="flex items-center gap-3 mb-2">
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-2xl font-bold shadow-lg">
-            🎯
+            <Target className="w-5 h-5" />
           </span>
           <span className="text-lg font-bold text-primary drop-shadow">
             En resumen

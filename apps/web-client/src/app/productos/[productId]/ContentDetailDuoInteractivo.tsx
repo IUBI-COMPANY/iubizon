@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Product } from "@/data-list/products";
+import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Package, Sparkles, Monitor, Wifi } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -87,7 +88,7 @@ export default function ContentDetailDuoInteractivo({
       {/* What includes (2 cards) */}
       <div className="space-y-7 mb-10">
         <p className="text-[1.4em] font-semibold text-white">
-          📦 ¿Qué incluye?
+          ¿Qué incluye?
         </p>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

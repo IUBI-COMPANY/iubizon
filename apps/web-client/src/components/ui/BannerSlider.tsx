@@ -42,7 +42,7 @@ export default function BannerSlider({
   };
 
   return (
-    <div className="relative w-full h-[170px] sm:h-[250px] md:h-[350px] lg:h-[450px]">
+    <div className="relative w-full h-[170px] sm:h-[250px] md:h-[380px] lg:h-[480px]">
       {banners.map((banner, index) => (
         <div
           key={index}
