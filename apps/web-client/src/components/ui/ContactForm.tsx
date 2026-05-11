@@ -92,10 +92,10 @@ export const ContactForm = ({
     <div className="w-full min-h-auto isolate flex flex-col justify-center py-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto w-full">
         <div className="text-center mb-10">
-          <h1 className="text-[2.3em] sm:text-[2.5em] font-semibold tracking-tight text-balance text-white leading-13 font-sfpro">
+          <h1 className="text-[2.3em] sm:text-[2.5em] font-semibold tracking-tight text-balance text-gray-900 leading-13 font-sfpro">
             Envíanos un Mensaje
           </h1>
-          <p className="text-base text-gray-400 font-sfpro">
+          <p className="text-base text-gray-600 font-sfpro">
             Completa el formulario y nos pondremos en contacto contigo lo antes
             posible
           </p>
@@ -117,6 +117,7 @@ export const ContactForm = ({
                     required={required(name)}
                     onChange={onChange}
                     autoComplete="given-name"
+                    textColor="secondary"
                   />
                 )}
               />
@@ -136,6 +137,7 @@ export const ContactForm = ({
                     required={required(name)}
                     onChange={onChange}
                     autoComplete="family-name"
+                    textColor="secondary"
                   />
                 )}
               />
@@ -156,6 +158,7 @@ export const ContactForm = ({
                     required={required(name)}
                     onChange={onChange}
                     autoComplete="email"
+                    textColor="secondary"
                   />
                 )}
               />
@@ -178,6 +181,7 @@ export const ContactForm = ({
                       label: `${iso.name} (${iso.phonePrefix})`,
                       value: iso.phonePrefix,
                     }))}
+                    textColor="secondary"
                   />
                 )}
               />
@@ -197,6 +201,7 @@ export const ContactForm = ({
                     helperText={errorMessage(name)}
                     required={required(name)}
                     onChange={onChange}
+                    textColor="secondary"
                   />
                 )}
               />
@@ -233,12 +238,13 @@ export const ContactForm = ({
                     helperText={errorMessage(name)}
                     required={required(name)}
                     onChange={onChange}
+                    textColor="secondary"
                   >
-                    <div>
+                    <div className="text-gray-900">
                       Acepto los{" "}
                       <a
                         href="#"
-                        className="hover:text-slate-800 font-semibold underline"
+                        className="hover:text-primary font-semibold underline"
                       >
                         términos y condiciones
                       </a>

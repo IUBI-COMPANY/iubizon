@@ -102,7 +102,7 @@ export default function PageAnOrder() {
         />
       </Head>
       <header
-        className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
+        className="relative h-[39rem] bg-gray-900 overflow-hidden"
         role="banner"
       >
         <div className="absolute inset-0">
@@ -110,10 +110,10 @@ export default function PageAnOrder() {
             src="/images/Realiza el pedido de tus proyectores en iubizon.png"
             alt="Productos para organizaciones, empresas e instituciones"
             fill
-            className="object-cover opacity-50"
+            className="object-cover opacity-80"
             priority
           />
-          <div className="absolute inset-0 bg-secondary/40"></div>
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
       </header>
       <section
@@ -129,10 +129,10 @@ export default function PageAnOrder() {
                   Solicita o Cotiza
                 </span>
               </div>
-              <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
+              <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight drop-shadow-md">
                 ¿No encuentras lo que buscas? Solicita productos a pedido
               </h1>
-              <p className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto">
+              <p className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto">
                 Proyectores, accesorios y soluciones audiovisuales a medida para{" "}
                 <strong className="text-primary">
                   personas, empresas, colegios y organizaciones
@@ -147,7 +147,7 @@ export default function PageAnOrder() {
       {/* Brands Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <Brands title="Marcas Líderes que Ofrecemos" />
+          <Brands title="Marcas Líderes que Ofrecemos" theme="light" />
         </div>
       </section>
 
@@ -175,8 +175,8 @@ export default function PageAnOrder() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2">Sector Educativo</h3>
-                <p className="text-sm text-gray-200">
+                <h3 className="text-2xl font-bold mb-2 text-white">Sector Educativo</h3>
+                <p className="text-sm text-gray-100">
                   Colegios, universidades e institutos. Equipamiento para aulas,
                   auditorios y laboratorios.
                 </p>
@@ -195,8 +195,8 @@ export default function PageAnOrder() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2">Sector Empresarial</h3>
-                <p className="text-sm text-gray-200">
+                <h3 className="text-2xl font-bold mb-2 text-white">Sector Empresarial</h3>
+                <p className="text-sm text-gray-100">
                   Salas de reuniones, capacitaciones y presentaciones
                   corporativas profesionales.
                 </p>

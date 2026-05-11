@@ -3,7 +3,14 @@
 import { Metadata } from "next";
 import { StepsGroup } from "@/app/servicios/tecnico/persona/StepsGroup";
 import FAQAccordion from "@/components/ui/layout/FAQAccordion";
-import { CheckCircle, ShieldCheck, Clock, CircleCheck } from "lucide-react";
+import {
+  CheckCircle,
+  ShieldCheck,
+  Clock,
+  CircleCheck,
+  Zap,
+  Mail,
+} from "lucide-react";
 import GridCards, { GridCardItem } from "@/components/ui/GridCards";
 import Image from "next/image";
 import Head from "next/head";
@@ -185,9 +192,9 @@ export default function PageTechnicalService() {
           }}
         />
       </Head>
-      <main className="bg-secondary">
+      <main className="bg-gray-50">
         <header
-          className="relative h-[39rem] bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
+          className="relative h-[39rem] bg-gray-100 overflow-hidden"
           role="banner"
         >
           <div className="absolute inset-0">
@@ -195,10 +202,10 @@ export default function PageTechnicalService() {
               src="/images/Servicio tecnico para retail.png"
               alt="Servicio técnico de proyectores Epson, BenQ, Sony en Lima"
               fill
-              className="object-cover opacity-50"
+              className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-black/60"></div>
+            <div className="absolute inset-0 bg-black/60" />
           </div>
         </header>
         <section
@@ -214,10 +221,10 @@ export default function PageTechnicalService() {
                     Solicita o Cotiza
                   </span>
                 </div>
-                <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight">
+                <h1 className="text-3xl md:text-[2.5em] font-bold text-white mb-4 leading-tight drop-shadow-md">
                   Servicio Técnico de Proyectores
                 </h1>
-                <p className="text-lg md:text-xl text-blue-100 mb-6 max-w-3xl mx-auto">
+                <p className="text-lg md:text-xl text-white/90 mb-6 max-w-3xl mx-auto">
                   Soluciones profesionales en mantenimiento, diagnóstico y
                   reparación de proyectores en Lima. Garantía, repuestos
                   originales y atención a domicilio para todas las marcas.
@@ -237,13 +244,13 @@ export default function PageTechnicalService() {
           <div className="max-w-6xl mx-auto px-4 ">
             <div className="text-center mb-16">
               <h2
-                className="text-3xl md:text-4xl font-bold text-white mb-4"
+                className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
                 itemProp="name"
               >
                 ¿Cómo Funciona Nuestro Servicio de Reparación de Proyectores?
               </h2>
               <p
-                className="text-xl text-gray-400 max-w-3xl mx-auto"
+                className="text-xl text-gray-600 max-w-3xl mx-auto"
                 itemProp="description"
               >
                 Recibimos tu proyector Epson, BenQ, Sony u otra marca en Lima,
@@ -322,7 +329,7 @@ export default function PageTechnicalService() {
           </div>
         </section>
         <section
-          className="py-20 bg-secondary"
+          className="py-20 bg-gray-50"
           aria-labelledby="benefits-heading"
           aria-label="Beneficios del servicio de reparación de proyectores"
         >
@@ -330,13 +337,13 @@ export default function PageTechnicalService() {
             <div className="text-center mb-20">
               <h2
                 id="benefits-heading"
-                className="text-4xl md:text-5xl font-bold text-white mb-6 opacity-0 animate-fade-in-up"
+                className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 opacity-0 animate-fade-in-up"
                 style={{ animationFillMode: "forwards" }}
               >
                 ¿Por Qué Elegir Nuestro Servicio Técnico?
               </h2>
               <p
-                className="text-xl text-gray-400 max-w-2xl mx-auto font-medium opacity-0 animate-fade-in-up"
+                className="text-xl text-gray-600 max-w-2xl mx-auto font-medium opacity-0 animate-fade-in-up"
                 style={{
                   animationDelay: "0.1s",
                   animationFillMode: "forwards",
@@ -355,7 +362,7 @@ export default function PageTechnicalService() {
         <FAQAccordion />
 
         <section
-          className="py-16 relative bg-gradient-to-br from-secondary/10 via-secondary to-secondary/0 overflow-hidden"
+          className="py-16 relative bg-gray-100 overflow-hidden"
           aria-label="Solicita reparación de proyector"
         >
           <div className="absolute inset-0">
@@ -363,21 +370,20 @@ export default function PageTechnicalService() {
               src="/images/proyectores-reparaciones.webp"
               alt="Servicio técnico de proyectores Epson, BenQ, Sony en Lima"
               fill
-              className="object-cover opacity-50"
+              className="object-cover opacity-30"
               priority
             />
           </div>
-          <div className="absolute inset-0 bg-black/10"></div>
           <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-            <div className="bg-white/15 backdrop-blur-md rounded-2xl p-8 md:p-10 border border-white/30 shadow-2xl">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <div className="bg-white rounded-2xl p-8 md:p-10 border border-gray-200 shadow-xl">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 ¿Tu Proyector Necesita Reparación?
               </h2>
-              <p className="text-lg text-white/90 mb-6 max-w-xl mx-auto">
+              <p className="text-lg text-gray-900/90 mb-6 max-w-xl mx-auto">
                 No arriesgues tu equipo con aficionados. Hacemos que tu
                 proyector vuelva a brillar como el primer día.
               </p>
-              <div className="flex flex-wrap justify-center gap-6 mb-8 text-white/95">
+              <div className="flex flex-wrap justify-center gap-6 mb-8 text-gray-900/95">
                 <div className="flex items-center gap-2">
                   <CheckCircle
                     className="w-5 h-5 text-primary"
@@ -414,12 +420,13 @@ export default function PageTechnicalService() {
                 >
                   Solicitar Reparación Ahora
                 </Button>
-                <p className="text-sm text-white/80">
-                  ⚡ Proceso rápido • 📧 Confirmación por email
+                <p className="text-sm text-gray-900/80 flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Proceso rápido •{" "}
+                  <Mail className="w-4 h-4" /> Confirmación por email
                 </p>
                 <Link
                   href="/contacto"
-                  className="underline text-white/90 hover:text-primary"
+                  className="underline text-gray-900/90 hover:text-primary"
                 >
                   ¿Tienes dudas? Contáctanos
                 </Link>

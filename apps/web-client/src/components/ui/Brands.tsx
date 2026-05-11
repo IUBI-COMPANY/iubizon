@@ -9,6 +9,7 @@ interface BrandsProps {
   columns?: 3 | 5;
   showTitle?: boolean;
   className?: string;
+  theme?: "light" | "dark";
 }
 
 /**
@@ -21,8 +22,10 @@ export default function Brands({
   columns = 5,
   showTitle = true,
   className = "",
+  theme = "dark",
 }: BrandsProps) {
   const gridClass = columns === 3 ? "md:grid-cols-3" : "md:grid-cols-5";
+  const isDark = theme === "dark";
 
   return (
     <div className={className}>
@@ -33,18 +36,18 @@ export default function Brands({
               Nuestros Partners
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-sfpro">
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 font-sfpro ${isDark ? "text-white" : "text-gray-900"}`}>
             {title}
           </h2>
           {description && (
-            <p className="text-gray-400 max-w-2xl mx-auto font-sfpro">
+            <p className={`max-w-2xl mx-auto font-sfpro ${isDark ? "text-gray-400" : "text-gray-600"}`}>
               {description}
             </p>
           )}
         </div>
       )}
 
-      <div className="bg-gradient-to-br from-white/[0.07] to-white/[0.02] rounded-3xl p-12 border border-white/10 backdrop-blur-sm max-w-6xl mx-auto">
+      <div className={`rounded-3xl p-12 max-w-6xl mx-auto ${isDark ? "bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 backdrop-blur-sm" : "bg-white border border-gray-200 shadow-lg"}`}>
         <div
           className={`grid grid-cols-2 ${gridClass} gap-12 items-center justify-items-center`}
         >
@@ -58,7 +61,7 @@ export default function Brands({
                 alt={brand.alt}
                 width={140}
                 height={70}
-                className="object-contain max-h-20 w-auto brightness-0 invert opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                className={`object-contain max-h-20 w-auto transition-opacity duration-300 ${isDark ? "brightness-0 invert opacity-70 group-hover:opacity-100" : "opacity-100 hover:opacity-80"}`}
               />
             </div>
           ))}

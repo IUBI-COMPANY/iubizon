@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { StepItem } from "@/components/ui/StepItem";
-import { CircleCheck, Loader2, Projector, User, Wrench } from "lucide-react";
+import { CircleCheck, Loader2, Mail, Projector, User, Wrench } from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
@@ -181,7 +181,7 @@ export const StepsGroup = () => {
                 </p>
                 <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-400 rounded-r-lg p-3">
                   <p className="text-sm text-blue-900 flex items-center gap-2">
-                    <span className="text-lg">📧</span>
+                    <Mail className="w-4 h-4" />
                     <span>
                       <strong>Confirmación enviada</strong> a tu correo con
                       todos los detalles
@@ -195,8 +195,8 @@ export const StepsGroup = () => {
                     segundo{countdown !== 1 ? "s" : ""}...
                   </p>
                 </div>
-                <p className="text-sm text-gray-500 italic">
-                  Gracias por confiar en nosotros 🛠️
+                <p className="text-sm text-gray-500 italic flex items-center gap-2">
+                  Gracias por confiar en nosotros <Wrench className="w-4 h-4" />
                 </p>
               </div>
             </div>

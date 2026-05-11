@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Product } from "@/data-list/products";
-import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Package, Sparkles, Monitor, Mouse } from "lucide-react";
+import { Check, Monitor, Star, Target } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -92,9 +92,7 @@ export default function ContentDetailBundleInteractivo({
 
       {/* What includes (3 cards) */}
       <div className="space-y-7 mb-10">
-        <p className="text-[1.4em] font-semibold text-white">
-          ¿Qué incluye?
-        </p>
+        <p className="text-[1.4em] font-semibold text-white">¿Qué incluye?</p>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
           {/* Proyector */}
@@ -266,13 +264,13 @@ export default function ContentDetailBundleInteractivo({
           <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="flex items-center gap-2 text-md text-slate-200">
               <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                ✔
+                <Check className="w-4 h-4 text-green-400" />
               </span>
               <span>Todo compatible y optimizado entre sí</span>
             </div>
             <div className="flex items-center gap-2 text-md text-slate-200">
               <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                ✔
+                <Check className="w-4 h-4 text-green-400" />
               </span>
               <span>Instalación más rápida y sin dudas de compatibilidad</span>
             </div>
@@ -334,19 +332,19 @@ export default function ContentDetailBundleInteractivo({
             <div className="mt-3 space-y-2">
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Actividades dinámicas por grado</span>
               </div>
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Mayor atención y participación</span>
               </div>
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Mejora en comprensión y retención</span>
               </div>

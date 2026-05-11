@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { Product } from "@/data-list/products";
-import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Package, Sparkles, Monitor, Wifi } from "lucide-react";
+import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Monitor } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -87,9 +87,7 @@ export default function ContentDetailDuoInteractivo({
 
       {/* What includes (2 cards) */}
       <div className="space-y-7 mb-10">
-        <p className="text-[1.4em] font-semibold text-white">
-          ¿Qué incluye?
-        </p>
+        <p className="text-[1.4em] font-semibold text-white">¿Qué incluye?</p>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {/* Touch Tank */}
@@ -211,8 +209,9 @@ export default function ContentDetailDuoInteractivo({
 
       {/* For Business */}
       <div className="space-y-7 mb-10">
-        <p className="text-[1.4em] font-semibold text-white">
-          🏢 Empresas y Oficinas
+        <p className="text-[1.4em] font-semibold text-white flex items-center gap-2">
+          <Building2 className="w-6 h-6" />
+          Empresas y Oficinas
         </p>
         <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 mb-5">
           <div className="flex items-center gap-2 text-lg text-slate-200">
@@ -248,8 +247,9 @@ export default function ContentDetailDuoInteractivo({
         {/* Education */}
         <div className="space-y-2">
           <div>
-            <p className="text-[1.4em] font-semibold text-white">
-              🎓 Educación (con PaperFlix Plataforma educativa)
+            <p className="text-[1.4em] font-semibold text-white flex items-center gap-2">
+              <GraduationCap className="w-6 h-6" />
+              Educación (con PaperFlix Plataforma educativa)
             </p>
             <p className="mt-1 text-lg text-slate-200">
               Plus para enseñanza dinámica: contenidos listos para usar y mayor
@@ -260,19 +260,19 @@ export default function ContentDetailDuoInteractivo({
             <div className="mt-3 space-y-2">
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Actividades dinámicas por grado</span>
               </div>
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Mayor atención y participación</span>
               </div>
               <div className="flex items-center gap-2 text-md text-slate-200">
                 <span className="grid h-6 w-6 place-items-center rounded-md border border-white/10 bg-slate-950/40">
-                  ✔
+                  <Check className="w-4 h-4 text-green-400" />
                 </span>
                 <span>Mejora en comprensión y retención</span>
               </div>
@@ -305,8 +305,9 @@ export default function ContentDetailDuoInteractivo({
 
         {/* Easy + compatibility */}
         <div>
-          <p className="text-[1.4em] font-semibold text-white">
-            ⚡ Súper fácil de usar
+          <p className="text-[1.4em] font-semibold text-white flex items-center gap-2">
+            <Zap className="w-6 h-6 text-yellow-400" />
+            Súper fácil de usar
           </p>
           <p className="mt-1 text-lg text-slate-200">
             Funciona como “mouse”: si sabes usar tu laptop, ya sabes usar el
@@ -348,7 +349,7 @@ export default function ContentDetailDuoInteractivo({
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-2xl font-bold shadow-lg">
-            💸
+            <DollarSign className="w-5 h-5" />
           </span>
           <span className="text-lg font-bold text-primary drop-shadow">
             ¿Por qué el Dúo Interactivo es más accesible?
@@ -358,7 +359,7 @@ export default function ContentDetailDuoInteractivo({
           {/* Dúo Interactivo */}
           <div className="flex-1 rounded-2xl border-2 border-emerald-400 bg-white/5 p-6 shadow-xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🌟</span>
+              <Star className="w-6 h-6 text-yellow-400" />
               <span className="text-lg font-bold text-emerald-400">
                 Dúo Interactivo
               </span>
@@ -391,7 +392,7 @@ export default function ContentDetailDuoInteractivo({
           {/* Proyector Interactivo */}
           <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🎥</span>
+              <Monitor className="w-6 h-6 text-blue-400" />
               <span className="text-lg font-bold text-rose-400">
                 Proyector Interactivo
               </span>
@@ -421,7 +422,7 @@ export default function ContentDetailDuoInteractivo({
           {/* Pantalla Interactiva */}
           <div className="flex-1 rounded-2xl border-2 border-rose-500 bg-white/5 p-6 shadow-xl">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🖥️</span>
+              <Monitor className="w-6 h-6 text-gray-400" />
               <span className="text-lg font-bold text-rose-400">
                 Pantalla Interactiva
               </span>
@@ -463,7 +464,7 @@ export default function ContentDetailDuoInteractivo({
         <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-orange-400/20 rounded-full blur-2xl opacity-50 pointer-events-none" />
         <div className="flex items-center gap-3 mb-2">
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-2xl font-bold shadow-lg">
-            🎯
+            <Target className="w-5 h-5" />
           </span>
           <span className="text-lg font-bold text-primary drop-shadow">
             En resumen

@@ -56,17 +56,17 @@ const benefits: BenefitCard[] = [
 
 export default function AnimateCards() {
   return (
-    <div className="w-full py-16 px-4 sm:px-6 lg:px-8">
+    <div className="w-full py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
       {/* Título integrado */}
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl sm:text-4xl md:text-4xl font-bold text-white tracking-tight">
+        <h2 className="text-3xl sm:text-4xl md:text-4xl font-bold text-gray-900 tracking-tight">
           Servicios Especializados Para
           <span className="text-orange-600 block sm:inline">
             {" "}
             Empresas y Organizaciones
           </span>
         </h2>
-        <p className="mt-5 text-lg text-gray-400 max-w-3xl mx-auto">
+        <p className="mt-5 text-lg text-gray-600 max-w-3xl mx-auto">
           Soluciones técnicas profesionales pensadas para instituciones
           educativas, empresas y organizaciones que requieren proyectores
           confiables y un servicio de calidad corporativa.
