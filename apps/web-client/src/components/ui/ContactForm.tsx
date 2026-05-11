@@ -238,7 +238,6 @@ export const ContactForm = ({
                     helperText={errorMessage(name)}
                     required={required(name)}
                     onChange={onChange}
-                    textColor="secondary"
                   >
                     <div className="text-gray-900">
                       Acepto los{" "}

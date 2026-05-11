@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Handshake, Headphones, MonitorSmartphone, Shield, Calendar, Target, BadgeCheck, Award } from "lucide-react";
+import { Handshake, Headphones, MonitorSmartphone, Shield } from "lucide-react";
 import CTASection from "@/components/ui/CTASection";
 import StatsGrid from "@/components/ui/StatsGrid";
 
@@ -154,25 +154,25 @@ export default function AboutUsPage() {
     {
       number: "5+",
       label: "Años de Experiencia",
-      icon: <Calendar className="w-8 h-8 text-primary" />,
+      icon: "📅",
       description: "En el mercado peruano",
     },
     {
       number: "20+",
       label: "Proyectos Realizados",
-      icon: <Target className="w-8 h-8 text-primary" />,
+      icon: "🎯",
       description: "Para empresas e instituciones",
     },
     {
       number: "12",
       label: "Meses de Garantía",
-      icon: <Shield className="w-8 h-8 text-primary" />,
+      icon: "🛡️",
       description: "En equipos nuevos",
     },
     {
       number: "100%",
       label: "Productos Originales",
-      icon: <BadgeCheck className="w-8 h-8 text-primary" />,
+      icon: "✓",
       description: "Distribuidores autorizados",
     },
   ];
