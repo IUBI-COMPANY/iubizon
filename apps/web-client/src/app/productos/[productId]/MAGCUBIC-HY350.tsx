@@ -5,6 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { getWhatsAppMessage } from "@/utils/whatsapp";
 import { Video } from "@/components/ui/Video";
+import {
+  Tag,
+  Clock,
+  Percent,
+  Star,
+  Zap,
+  Gift,
+  AlertCircle,
+  Truck,
+  Shield,
+  CreditCard,
+  User,
+  Sparkles,
+} from "lucide-react";
 
 interface SpecialProductProps {
   product: Product;
@@ -133,15 +147,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
           <div className="mb-6 inline-block">
             <span className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase bg-gradient-to-r from-white via-orange-400 to-white bg-clip-text text-transparent">
-              MagCubic HY350 - Oferta de Verano
+              MagCubic HY350 - Oferta Limitada
             </span>
           </div>
-
-          {/* Urgency Banner */}
-          <div className="mb-4 inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 rounded-full text-sm font-bold animate-pulse shadow-lg shadow-orange-500/50">
-            <span>☀️ OFERTA DE VERANO</span>
-          </div>
-
           <h1
             className="text-5xl md:text-7xl lg:text-9xl font-bold mb-6 leading-none"
             style={{
@@ -212,7 +220,7 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               className="group relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 text-white px-10 py-5 rounded-full text-lg font-semibold overflow-hidden transition-all transform hover:scale-105 shadow-xl shadow-orange-500/50 animate-pulse hover:shadow-orange-500/70"
             >
               <span className="relative z-10">
-                ☀️ SÍ, LO QUIERO AHORA · s/ {discountedPrice.toFixed(2)}
+                SÍ, LO QUIERO AHORA · s/ {discountedPrice.toFixed(2)}
               </span>
             </a>
             <button
@@ -287,8 +295,8 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               Innovadoras
             </span>
           </h2>
-          <p className="text-center text-orange-400/70 mb-20 text-sm">
-            ☀️ Especial Oferta de Verano
+          <p className="text-center text-orange-400/70 mb-20 text-sm flex items-center justify-center gap-2">
+            <Tag className="w-4 h-4" /> Especial Oferta Limitada
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -434,13 +442,13 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-4xl md:text-6xl font-bold text-center mb-4">
-            Conectividad y
+            Versatilidad
             <span className="block mt-2 bg-gradient-to-r from-yellow-200 via-orange-400 to-amber-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(251,146,60,0.5)]">
               Versatilidad
             </span>
           </h2>
-          <p className="text-center text-orange-400/70 mb-20 text-sm">
-            ☀️ Especial Oferta de Verano
+          <p className="text-center text-orange-400/70 mb-20 text-sm flex items-center justify-center gap-2">
+            <Tag className="w-4 h-4" /> Especial Oferta Limitada
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -541,8 +549,8 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               Técnicas
             </span>
           </h2>
-          <p className="text-center text-orange-400/70 mb-12 md:mb-20 text-xs md:text-sm">
-            ☀️ Oferta de Verano
+          <p className="text-center text-orange-400/70 mb-12 md:mb-20 text-xs md:text-sm flex items-center justify-center gap-2">
+            <Tag className="w-4 h-4" /> Oferta Limitada
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 md:gap-x-20 gap-y-4 md:gap-y-8">
@@ -677,8 +685,8 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               Precios
             </span>
           </h2>
-          <p className="text-center text-orange-400/70 mb-12 text-sm">
-            ☀️ Oferta de Verano - Precios Especiales
+          <p className="text-center text-orange-400/70 mb-12 text-sm flex items-center justify-center gap-2">
+            <Tag className="w-4 h-4" /> Oferta Limitada - Precios Especiales
           </p>
 
           <div className="bg-gradient-to-br from-gray-900 to-black border-2 border-orange-400/30 rounded-2xl p-8 shadow-2xl shadow-orange-500/20">
@@ -749,23 +757,23 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
 
           {/* Beneficios adicionales */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-orange-900/30 to-amber-900/30 border border-orange-400/30 rounded-xl p-4 text-center">
-              <div className="text-3xl mb-2">✨</div>
-              <h4 className="text-orange-400 font-bold mb-1">Ahorro Real</h4>
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-600/30 rounded-xl p-4 text-center">
+              <div className="mb-2"><Sparkles className="w-8 h-8 text-primary mx-auto" /></div>
+              <h4 className="text-white font-bold mb-1">Ahorro Real</h4>
               <p className="text-xs text-gray-400">
                 S/ {(originalPrice - discountedPrice).toFixed(2)} de descuento
               </p>
             </div>
             <div className="bg-gradient-to-br from-amber-900/30 to-yellow-900/30 border border-amber-400/30 rounded-xl p-4 text-center">
-              <div className="text-3xl mb-2">☀️</div>
-              <h4 className="text-amber-400 font-bold mb-1">
-                Oferta de Verano
-              </h4>
+              <div className="mb-2">
+                <Star className="w-8 h-8 text-amber-400" />
+              </div>
+              <h4 className="text-amber-400 font-bold mb-1">Oferta Limitada</h4>
               <p className="text-xs text-gray-400">Solo por tiempo limitado</p>
             </div>
-            <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 border border-yellow-400/30 rounded-xl p-4 text-center">
-              <div className="text-3xl mb-2">🚚</div>
-              <h4 className="text-yellow-400 font-bold mb-1">Envío Incluido</h4>
+            <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-600/30 rounded-xl p-4 text-center">
+              <div className="mb-2"><Truck className="w-8 h-8 text-white mx-auto" /></div>
+              <h4 className="text-white font-bold mb-1">Envío Incluido</h4>
               <p className="text-xs text-gray-400">
                 Gratis en Lima Metropolitana
               </p>
@@ -836,47 +844,12 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
             className="absolute bottom-[50%] left-[10%] w-2.5 h-2.5 bg-yellow-200 rounded-full blur-sm animate-pulse shadow-lg shadow-yellow-200/50"
             style={{ animationDelay: "1.3s" }}
           />
-          <div
-            className="absolute top-[70%] left-[50%] w-2 h-2 bg-orange-300 rounded-full blur-sm animate-pulse shadow-lg shadow-orange-300/50"
-            style={{ animationDelay: "0.9s" }}
-          />
-        </div>
-
-        {/* Decoraciones geométricas sutiles */}
-        <div className="absolute inset-0 overflow-hidden opacity-10">
-          <div className="absolute top-10 left-10 w-32 h-32 border-2 border-orange-300 rounded-full animate-pulse" />
-          <div
-            className="absolute top-20 right-20 w-24 h-24 border-2 border-amber-300/60 rotate-45 animate-pulse"
-            style={{ animationDelay: "0.5s" }}
-          />
-          <div
-            className="absolute bottom-20 left-1/4 w-20 h-20 border-2 border-yellow-300 animate-pulse"
-            style={{ animationDelay: "1s" }}
-          />
-          <div
-            className="absolute bottom-10 right-1/3 w-28 h-28 border-2 border-orange-300/60 rounded-full animate-pulse"
-            style={{ animationDelay: "1.5s" }}
-          />
         </div>
 
         {/* Efecto de brillo sutil */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/20" />
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          {/* Urgency Indicator */}
-          <div className="mb-4 md:mb-6 inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 px-3 md:px-6 py-2 md:py-3 rounded-full text-xs md:text-base font-bold animate-pulse shadow-lg shadow-orange-500/50">
-            <span className="relative flex h-2 w-2 md:h-3 md:w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-white"></span>
-            </span>
-            <span className="leading-tight">
-              ☀️ ÚLTIMAS UNIDADES - OFERTA DE VERANO
-            </span>
-          </div>
-
-          <div className="mb-3 md:mb-4 text-3xl md:text-4xl animate-bounce">
-            ☀️
-          </div>
           <h2 className="text-3xl md:text-5xl lg:text-7xl font-bold mb-3 md:mb-4 px-2 leading-tight">
             <span className="block bg-gradient-to-r from-yellow-200 via-orange-300 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(251,146,60,0.8)] filter brightness-125">
               No Dejes Pasar
@@ -908,8 +881,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
                 s/ {product.totalPayment?.toFixed(2)}
               </span>
             </p>
-            <p className="text-white text-base md:text-lg font-semibold">
-              ⚡ ¡Ahorra s/ {(originalPrice - discountedPrice).toFixed(2)} HOY!
+            <p className="mx-auto text-center text-white/80 text-base md:text-lg font-medium flex items-center justify-center gap-2">
+              <Zap className="w-5 h-5 text-white" /> ¡Ahorra s/{" "}
+              {(originalPrice - discountedPrice).toFixed(2)} HOY!
             </p>
           </div>
 
@@ -927,13 +901,13 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               <>
                 <div className="w-full bg-white/20 rounded-full h-2 md:h-3 mb-2">
                   <div
-                    className="bg-gradient-to-r from-orange-400 to-amber-400 h-2 md:h-3 rounded-full animate-pulse"
+                    className="bg-gradient-to-r from-blue-400 to-cyan-400 h-2 md:h-3 rounded-full animate-pulse"
                     style={{ width: `${(product.stock / 10) * 100}%` }}
                   ></div>
                 </div>
-                <p className="text-white text-xs md:text-sm font-semibold animate-pulse leading-tight">
-                  ☀️ ¡Solo quedan {product.stock} unidades! Se están agotando
-                  rápido
+                <p className="text-white text-xs md:text-sm font-semibold animate-pulse leading-tight flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-blue-300" /> ¡Solo quedan{" "}
+                  {product.stock} unidades! Se están agotando rápido
                 </p>
               </>
             )}
@@ -942,10 +916,10 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
           {/* CTA Button */}
           <Link
             href={`https://wa.me/51972300301?text=${getWhatsAppMessage(product)}`}
-            className="inline-flex items-center justify-center gap-2 md:gap-3 bg-white hover:bg-white/90 text-orange-600 px-8 md:px-16 py-5 md:py-7 rounded-full text-base md:text-xl lg:text-2xl font-bold hover:shadow-2xl transition-all transform hover:scale-105 mb-6 animate-pulse w-full sm:w-auto max-w-full shadow-lg"
+            className="inline-flex items-center justify-center gap-2 md:gap-3 bg-white hover:bg-gray-100 text-gray-900 px-8 md:px-16 py-5 md:py-7 rounded-full text-base md:text-xl lg:text-2xl font-bold hover:shadow-2xl transition-all transform hover:scale-105 mb-6 animate-pulse w-full sm:w-auto max-w-full shadow-lg"
           >
-            <span className="text-center leading-tight">
-              ⚡ SÍ, LO QUIERO CON DESCUENTO
+            <span className="text-center leading-tight flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" /> SÍ, LO QUIERO CON DESCUENTO
             </span>
             <svg
               className="w-5 h-5 md:w-7 md:h-7 flex-shrink-0"
@@ -965,29 +939,31 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
           {/* Risk Reversal - Garantías */}
           <div className="mt-6 md:mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-3xl mx-auto">
             <div className="bg-white/5 backdrop-blur-sm border border-orange-400/30 rounded-xl p-3 md:p-4">
-              <div className="text-2xl md:text-3xl mb-1 md:mb-2">🚚</div>
+              <div className="text-2xl md:text-3xl mb-1 md:mb-2">
+                <Truck className="w-6 h-6 text-white" />
+              </div>
               <h4 className="font-bold text-white mb-1 text-sm md:text-base">
                 Envío GRATIS
               </h4>
-              <p className="text-xs md:text-sm text-gray-400">
+              <p className="text-xs md:text-sm text-gray-200">
                 En Lima Metropolitana
               </p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-orange-400/30 rounded-xl p-3 md:p-4">
-              <div className="text-2xl md:text-3xl mb-1 md:mb-2">🛡️</div>
+            <div className="bg-white/5 backdrop-blur-sm border border-gray-500/30 rounded-xl p-3 md:p-4">
+              <div className="mb-1 md:mb-2"><Shield className="w-6 h-6 text-white mx-auto" /></div>
               <h4 className="font-bold text-white mb-1 text-sm md:text-base">
                 Garantía 1 Año
               </h4>
-              <p className="text-xs md:text-sm text-gray-400">
+              <p className="text-xs md:text-sm text-gray-200">
                 Cubierta por fabricante
               </p>
             </div>
-            <div className="bg-white/5 backdrop-blur-sm border border-orange-400/30 rounded-xl p-3 md:p-4">
-              <div className="text-2xl md:text-3xl mb-1 md:mb-2">💳</div>
+            <div className="bg-white/5 backdrop-blur-sm border border-gray-500/30 rounded-xl p-3 md:p-4">
+              <div className="mb-1 md:mb-2"><CreditCard className="w-6 h-6 text-white mx-auto" /></div>
               <h4 className="font-bold text-white mb-1 text-sm md:text-base">
                 Pago Seguro
               </h4>
-              <p className="text-xs md:text-sm text-gray-400">
+              <p className="text-xs md:text-sm text-gray-200">
                 Múltiples métodos
               </p>
             </div>
@@ -996,27 +972,27 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
           {/* Social Proof */}
           <div className="mt-6 md:mt-8 flex items-center justify-center gap-2 text-xs md:text-sm flex-wrap">
             <div className="flex -space-x-2">
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-orange-500 border-2 border-white flex items-center justify-center text-xs">
-                👤
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center text-xs">
-                👤
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-orange-500 border-2 border-white flex items-center justify-center text-xs">
-                👤
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-amber-500 border-2 border-white flex items-center justify-center text-xs">
-                👤
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
             </div>
             <p className="text-gray-300 text-center leading-tight">
-              <span className="text-orange-200 font-bold">+16 clientes</span>{" "}
+              <span className="text-white font-bold">+16 clientes</span>{" "}
               compraron esta semana
             </p>
           </div>
 
-          <p className="text-xs md:text-sm text-gray-500 mt-4 md:mt-6 px-4 leading-relaxed">
-            ⚡ Soporte técnico especializado • Instalación guiada • Asesoría
+          <p className="text-xs md:text-sm text-gray-300 mt-4 md:mt-6 px-4 leading-relaxed flex items-center justify-center gap-2 flex-wrap">
+            <Zap className="w-4 h-4 text-white" /> Soporte técnico especializado • Instalación guiada • Asesoría
             personalizada
           </p>
         </div>
