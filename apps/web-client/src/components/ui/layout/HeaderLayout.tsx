@@ -27,6 +27,7 @@ const navigation: HeaderNavigation[] = [
   { name: "¿Quienes somos?", href: "/quienes-somos" },
   {
     name: "Productos",
+    href: "/productos",
     options: [
       { name: "Bundle Interactivo", href: "/productos/bundle-interactivo" },
       { name: "Duo interactivo", href: "/productos/duo-interactivo" },

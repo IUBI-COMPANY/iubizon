@@ -305,7 +305,9 @@ export default function ProductDetailPage({ product }: Props) {
                             >
                               {/* Título del producto + ficha técnica */}
                               <div className="flex items-center gap-3 mb-4">
-                                <h3 className={`text-lg font-bold ${isBundleProduct ? "text-orange-400" : "text-primary"}`}>
+                                <h3
+                                  className={`text-lg font-bold ${isBundleProduct ? "text-orange-400" : "text-primary"}`}
+                                >
                                   {productSpec.name}
                                 </h3>
                                 {fichaLinks[productSpec.id] && (
@@ -338,10 +340,22 @@ export default function ProductDetailPage({ product }: Props) {
                                     key={index}
                                     className={`flex justify-between items-center py-3 border-b last:border-b-0 ${isBundleProduct ? "border-gray-700" : "border-gray-100"}`}
                                   >
-                                    <span className={isBundleProduct ? "text-gray-400" : "text-gray-600"}>
+                                    <span
+                                      className={
+                                        isBundleProduct
+                                          ? "text-gray-400"
+                                          : "text-gray-600"
+                                      }
+                                    >
                                       {spec.label}:
                                     </span>
-                                    <span className={isBundleProduct ? "text-white font-semibold text-right" : "text-gray-900 font-semibold text-right"}>
+                                    <span
+                                      className={
+                                        isBundleProduct
+                                          ? "text-white font-semibold text-right"
+                                          : "text-gray-900 font-semibold text-right"
+                                      }
+                                    >
                                       {spec.value}
                                     </span>
                                   </div>

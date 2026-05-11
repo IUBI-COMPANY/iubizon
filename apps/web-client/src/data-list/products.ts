@@ -747,6 +747,55 @@ const productsData: Product[] = [
         
         El cable VGA transmite únicamente señal de video, por lo que se requiere un cable adicional para audio en caso de ser necesario.    `,
   },
+  {
+    id: "Filtro",
+    model: "",
+    name: "Filtro para proyector Epson",
+    stock: 50,
+    oldStock: 60,
+    condition: "new",
+    description: "",
+    price: 80.99,
+    badge: "Nuevo",
+    mainImage: "/productos/Filtro/Filtro.jpg",
+    media: [
+      { type: "image", src: "/productos/Filtro/Filtro-2.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-3.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-4.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-5.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-6.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-7.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-8.jpg" },
+      { type: "image", src: "/productos/Filtro/Filtro-9.jpg" },
+    ],
+    brand: "Filtro para Epson",
+    type: "Accesorio",
+    connectivity: "Estandar",
+    note: `
+        - Tipo de Producto: Filtro de aire para proyector
+        - Función: Protección contra polvo y partículas
+        - Material: Espuma/fibra filtrante de alta eficiencia
+        - Compatibilidad: Proyectores  Epson 
+        - Instalación: Fácil, sin herramientas 
+        - Ubicación: Compartimiento lateral o inferior del proyector
+        
+        Características del Producto:
+        
+        Protección del Sistema Interno del Proyector
+        Este filtro de aire evita que el polvo y otras partículas ingresen al interior del proyector, protegiendo componentes clave como la lente, el sistema óptico y los ventiladores.
+        
+        Mejora del Rendimiento y Vida Útil
+        Al mantener limpio el sistema interno, el filtro ayuda a prevenir el sobrecalentamiento y asegura un funcionamiento óptimo del equipo, prolongando su vida útil.
+        
+        Fácil Mantenimiento y Limpieza
+        El filtro puede retirarse fácilmente para su limpieza periódica, lo que permite mantener el proyector en buenas condiciones sin necesidad de mantenimiento técnico frecuente.
+        
+        Diseño Práctico y Compatible
+        Está diseñado para adaptarse a distintos modelos de proyectores, facilitando su reemplazo cuando el filtro original se encuentra desgastado o saturado.
+        
+        Se recomienda limpiar o reemplazar el filtro regularmente según el uso del proyector para evitar acumulación de polvo y garantizar un rendimiento adecuado.  },
+    `,
+  },
 ];
 
 // ============================================

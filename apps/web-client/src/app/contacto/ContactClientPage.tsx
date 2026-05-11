@@ -41,7 +41,7 @@ export default function ContactClientPage() {
             className="w-full h-full object-cover object-[center_30%] transition-transform duration-700 group-hover:scale-105"
             priority
           />
-          
+
           <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 text-gray-900">
             <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-200 shadow-xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight text-gray-900">
@@ -185,7 +185,9 @@ export default function ContactClientPage() {
                   <div className="bg-purple-500/20 p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 border border-purple-500/20">
                     <Mail className="w-8 h-8 text-purple-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Email</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Email
+                  </h3>
                   <p className="text-gray-600 text-sm mb-2">
                     Escríbenos un correo
                   </p>
@@ -201,11 +203,17 @@ export default function ContactClientPage() {
                   <div className="bg-orange-500/20 p-4 rounded-2xl mb-4 border border-orange-500/20">
                     <Clock className="w-8 h-8 text-orange-400" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Horario</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    Horario
+                  </h3>
                   <p className="text-gray-600 text-sm mb-2">Lun - Vie</p>
-                  <p className="text-gray-900 font-semibold">9:00 AM - 6:00 PM</p>
+                  <p className="text-gray-900 font-semibold">
+                    8:00 AM - 5:00 PM
+                  </p>
                   <p className="text-gray-600 text-sm mt-2">Sábado</p>
-                  <p className="text-gray-900 font-semibold">9:00 AM - 12:00 PM</p>
+                  <p className="text-gray-900 font-semibold">
+                    9:00 AM - 12:00 PM
+                  </p>
                   <p className="text-xs text-gray-500 mt-1">(Previa cita)</p>
                 </div>
               </div>
@@ -271,7 +279,7 @@ export default function ContactClientPage() {
                       src="/svg/facebook.svg"
                       alt="Facebook"
                       className="w-6 h-6"
-                      style={{ filter: 'invert(1)' }}
+                      style={{ filter: "invert(1)" }}
                     />
                   </div>
                   <div>
@@ -291,7 +299,7 @@ export default function ContactClientPage() {
                       src="/svg/instagram.svg"
                       alt="Instagram"
                       className="w-6 h-6"
-                      style={{ filter: 'invert(1)' }}
+                      style={{ filter: "invert(1)" }}
                     />
                   </div>
                   <div>
@@ -310,7 +318,7 @@ export default function ContactClientPage() {
                       src="/svg/tiktok.svg"
                       alt="TikTok"
                       className="w-6 h-6"
-                      style={{ filter: 'invert(1)' }}
+                      style={{ filter: "invert(1)" }}
                     />
                   </div>
                   <div>
@@ -320,7 +328,9 @@ export default function ContactClientPage() {
                 </a>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="font-bold text-lg mb-3 text-gray-900">¿Por qué elegirnos?</h4>
+                <h4 className="font-bold text-lg mb-3 text-gray-900">
+                  ¿Por qué elegirnos?
+                </h4>
                 <ul className="space-y-2 text-gray-700 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-primary text-lg">✓</span>

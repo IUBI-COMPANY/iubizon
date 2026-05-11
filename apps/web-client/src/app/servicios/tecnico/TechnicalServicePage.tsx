@@ -305,7 +305,7 @@ export default function TechnicalServicePage() {
               </div>
             </div>
 
-{/* Organización Card */}
+            {/* Organización Card */}
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-gray-200">
               <div className="p-8">
                 <div className="flex justify-center mb-6">
@@ -450,7 +450,9 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Wrench className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Reparación</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Reparación
+                  </h4>
                   <p className="text-gray-600 text-sm">
                     Diagnóstico gratuito y reparación de cualquier falla en tu
                     proyector
@@ -472,7 +474,9 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-purple-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Instalación</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Instalación
+                  </h4>
                   <p className="text-gray-600 text-sm">
                     Instalación profesional y configuración óptima en tu hogar u
                     oficina
@@ -569,7 +573,9 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Building2 className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Corporativo</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Corporativo
+                  </h4>
                   <p className="text-gray-600 text-sm">
                     Oficinas, salas de juntas y espacios corporativos
                   </p>
@@ -578,7 +584,9 @@ export default function TechnicalServicePage() {
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users className="w-8 h-8 text-green-600" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Educativo</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    Educativo
+                  </h4>
                   <p className="text-gray-600 text-sm">
                     Colegios, universidades y centros de capacitación
                   </p>
@@ -708,7 +716,9 @@ export default function TechnicalServicePage() {
             </div>
 
             <div className="mt-12 pt-12 border-t border-gray-200">
-              <h3 className="text-2xl font-bold mb-6 text-gray-900">Contáctanos</h3>
+              <h3 className="text-2xl font-bold mb-6 text-gray-900">
+                Contáctanos
+              </h3>
               <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
                 <a
                   href="tel:+51972300301"

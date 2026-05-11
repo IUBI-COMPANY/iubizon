@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { StepItem } from "@/components/ui/StepItem";
-import { CircleCheck, Loader2, Mail, Projector, User, Wrench } from "lucide-react";
+import {
+  CircleCheck,
+  Loader2,
+  Mail,
+  Projector,
+  User,
+  Wrench,
+} from "lucide-react";
 import Image from "next/image";
 import Confetti from "react-confetti";
 import { useRouter } from "next/navigation";
