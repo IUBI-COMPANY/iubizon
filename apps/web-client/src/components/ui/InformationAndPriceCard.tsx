@@ -68,11 +68,11 @@ export const InformationAndPriceCard = ({
     const basePrice = product.price ?? 0;
     const showIgv = product.withIgv === true;
     const igvRate = 0.18;
-    
+
     const subtotal = basePrice * quantity;
     const igv = showIgv ? +(subtotal * igvRate).toFixed(2) : 0;
     const total = +(subtotal + igv).toFixed(2);
-    
+
     return {
       subtotal,
       igv,
@@ -128,14 +128,16 @@ export const InformationAndPriceCard = ({
           </div>
 
           {/* 3. STOCK Y DISPONIBILIDAD */}
-<div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-200">
+          <div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-200">
             {product.stock <= 0 ? (
               <p className="text-xs text-red-600 font-medium">
-                Sin stock • <span className="font-semibold">Compra a pedido</span>
+                Sin stock •{" "}
+                <span className="font-semibold">Compra a pedido</span>
               </p>
             ) : (
               <p className="text-xs text-emerald-600 font-medium">
-                ✓ Stock disponible: {product.stock} unidad{product.stock !== 1 ? "es" : ""}
+                ✓ Stock disponible: {product.stock} unidad
+                {product.stock !== 1 ? "es" : ""}
               </p>
             )}
           </div>
@@ -215,32 +217,34 @@ export const InformationAndPriceCard = ({
                 )}
 
                 {product.withIgv === true && priceData.igv > 0 ? (
-                    <>
-                      <div className="flex justify-between text-sm items-center">
-                        <span className="text-gray-500 font-sfpro">SubTotal</span>
-                        <span className="font-medium text-gray-700 font-sfpro">
-                          {formatPrice(priceData.subtotal)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm items-center pb-3 border-b border-gray-200">
-                        <span className="text-gray-500 font-sfpro">IGV (18%)</span>
-                        <span className="font-medium text-gray-700 font-sfpro">
-                          {formatPrice(priceData.igv)}
-                        </span>
-                      </div>
-                    </>
-                  ) : null}
+                  <>
+                    <div className="flex justify-between text-sm items-center">
+                      <span className="text-gray-500 font-sfpro">SubTotal</span>
+                      <span className="font-medium text-gray-700 font-sfpro">
+                        {formatPrice(priceData.subtotal)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm items-center pb-3 border-b border-gray-200">
+                      <span className="text-gray-500 font-sfpro">
+                        IGV (18%)
+                      </span>
+                      <span className="font-medium text-gray-700 font-sfpro">
+                        {formatPrice(priceData.igv)}
+                      </span>
+                    </div>
+                  </>
+                ) : null}
 
-                  {/* Total destacado */}
-                  <div className="flex justify-between items-center pt-3">
-                    <span className="text-base font-bold text-gray-900 font-sfpro">
-                      Total a Pagar:
-                    </span>
-                    <span className="text-[1.4em] font-black text-primary font-sfpro">
-                      {formatPrice(priceData.total)}
-                    </span>
-                  </div>
+                {/* Total destacado */}
+                <div className="flex justify-between items-center pt-3">
+                  <span className="text-base font-bold text-gray-900 font-sfpro">
+                    Total a Pagar:
+                  </span>
+                  <span className="text-[1.4em] font-black text-primary font-sfpro">
+                    {formatPrice(priceData.total)}
+                  </span>
                 </div>
+              </div>
             </div>
           )}
 
