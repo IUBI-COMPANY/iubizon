@@ -2,7 +2,16 @@
 import React from "react";
 import Image from "next/image";
 import { Product } from "@/data-list/products";
-import { Check, Star, Building2, GraduationCap, Zap, DollarSign, Target, Monitor } from "lucide-react";
+import {
+  Check,
+  Star,
+  Building2,
+  GraduationCap,
+  Zap,
+  DollarSign,
+  Target,
+  Monitor,
+} from "lucide-react";
 
 type Props = {
   className?: string;

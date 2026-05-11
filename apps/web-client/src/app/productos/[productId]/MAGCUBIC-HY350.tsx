@@ -6,18 +6,15 @@ import Link from "next/link";
 import { getWhatsAppMessage } from "@/utils/whatsapp";
 import { Video } from "@/components/ui/Video";
 import {
-  Tag,
-  Clock,
-  Percent,
-  Star,
-  Zap,
-  Gift,
   AlertCircle,
-  Truck,
-  Shield,
   CreditCard,
-  User,
+  Shield,
   Sparkles,
+  Star,
+  Tag,
+  Truck,
+  User,
+  Zap,
 } from "lucide-react";
 
 interface SpecialProductProps {
@@ -758,7 +755,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
           {/* Beneficios adicionales */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-600/30 rounded-xl p-4 text-center">
-              <div className="mb-2"><Sparkles className="w-8 h-8 text-primary mx-auto" /></div>
+              <div className="mb-2">
+                <Sparkles className="w-8 h-8 text-primary mx-auto" />
+              </div>
               <h4 className="text-white font-bold mb-1">Ahorro Real</h4>
               <p className="text-xs text-gray-400">
                 S/ {(originalPrice - discountedPrice).toFixed(2)} de descuento
@@ -772,7 +771,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               <p className="text-xs text-gray-400">Solo por tiempo limitado</p>
             </div>
             <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 border border-gray-600/30 rounded-xl p-4 text-center">
-              <div className="mb-2"><Truck className="w-8 h-8 text-white mx-auto" /></div>
+              <div className="mb-2">
+                <Truck className="w-8 h-8 text-white mx-auto" />
+              </div>
               <h4 className="text-white font-bold mb-1">Envío Incluido</h4>
               <p className="text-xs text-gray-400">
                 Gratis en Lima Metropolitana
@@ -919,7 +920,8 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
             className="inline-flex items-center justify-center gap-2 md:gap-3 bg-white hover:bg-gray-100 text-gray-900 px-8 md:px-16 py-5 md:py-7 rounded-full text-base md:text-xl lg:text-2xl font-bold hover:shadow-2xl transition-all transform hover:scale-105 mb-6 animate-pulse w-full sm:w-auto max-w-full shadow-lg"
           >
             <span className="text-center leading-tight flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" /> SÍ, LO QUIERO CON DESCUENTO
+              <Zap className="w-5 h-5 text-primary" /> SÍ, LO QUIERO CON
+              DESCUENTO
             </span>
             <svg
               className="w-5 h-5 md:w-7 md:h-7 flex-shrink-0"
@@ -950,7 +952,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               </p>
             </div>
             <div className="bg-white/5 backdrop-blur-sm border border-gray-500/30 rounded-xl p-3 md:p-4">
-              <div className="mb-1 md:mb-2"><Shield className="w-6 h-6 text-white mx-auto" /></div>
+              <div className="mb-1 md:mb-2">
+                <Shield className="w-6 h-6 text-white mx-auto" />
+              </div>
               <h4 className="font-bold text-white mb-1 text-sm md:text-base">
                 Garantía 1 Año
               </h4>
@@ -959,7 +963,9 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
               </p>
             </div>
             <div className="bg-white/5 backdrop-blur-sm border border-gray-500/30 rounded-xl p-3 md:p-4">
-              <div className="mb-1 md:mb-2"><CreditCard className="w-6 h-6 text-white mx-auto" /></div>
+              <div className="mb-1 md:mb-2">
+                <CreditCard className="w-6 h-6 text-white mx-auto" />
+              </div>
               <h4 className="font-bold text-white mb-1 text-sm md:text-base">
                 Pago Seguro
               </h4>
@@ -992,8 +998,8 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
           </div>
 
           <p className="text-xs md:text-sm text-gray-300 mt-4 md:mt-6 px-4 leading-relaxed flex items-center justify-center gap-2 flex-wrap">
-            <Zap className="w-4 h-4 text-white" /> Soporte técnico especializado • Instalación guiada • Asesoría
-            personalizada
+            <Zap className="w-4 h-4 text-white" /> Soporte técnico especializado
+            • Instalación guiada • Asesoría personalizada
           </p>
         </div>
       </section>

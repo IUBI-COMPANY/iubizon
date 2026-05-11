@@ -36,18 +36,24 @@ export default function Brands({
               Nuestros Partners
             </span>
           </div>
-          <h2 className={`text-3xl md:text-4xl font-bold mb-4 font-sfpro ${isDark ? "text-white" : "text-gray-900"}`}>
+          <h2
+            className={`text-3xl md:text-4xl font-bold mb-4 font-sfpro ${isDark ? "text-white" : "text-gray-900"}`}
+          >
             {title}
           </h2>
           {description && (
-            <p className={`max-w-2xl mx-auto font-sfpro ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+            <p
+              className={`max-w-2xl mx-auto font-sfpro ${isDark ? "text-gray-400" : "text-gray-600"}`}
+            >
               {description}
             </p>
           )}
         </div>
       )}
 
-      <div className={`rounded-3xl p-12 max-w-6xl mx-auto ${isDark ? "bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 backdrop-blur-sm" : "bg-white border border-gray-200 shadow-lg"}`}>
+      <div
+        className={`rounded-3xl p-12 max-w-6xl mx-auto ${isDark ? "bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 backdrop-blur-sm" : "bg-white border border-gray-200 shadow-lg"}`}
+      >
         <div
           className={`grid grid-cols-2 ${gridClass} gap-12 items-center justify-items-center`}
         >

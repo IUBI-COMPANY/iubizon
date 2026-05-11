@@ -175,7 +175,9 @@ export default function PageAnOrder() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2 text-white">Sector Educativo</h3>
+                <h3 className="text-2xl font-bold mb-2 text-white">
+                  Sector Educativo
+                </h3>
                 <p className="text-sm text-gray-100">
                   Colegios, universidades e institutos. Equipamiento para aulas,
                   auditorios y laboratorios.
@@ -195,7 +197,9 @@ export default function PageAnOrder() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 className="text-2xl font-bold mb-2 text-white">Sector Empresarial</h3>
+                <h3 className="text-2xl font-bold mb-2 text-white">
+                  Sector Empresarial
+                </h3>
                 <p className="text-sm text-gray-100">
                   Salas de reuniones, capacitaciones y presentaciones
                   corporativas profesionales.
