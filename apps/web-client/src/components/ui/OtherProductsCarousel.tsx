@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Product, products as allProducts } from "../../data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
 

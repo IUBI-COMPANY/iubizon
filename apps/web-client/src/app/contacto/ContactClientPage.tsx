@@ -275,9 +275,11 @@ export default function ContactClientPage() {
                   className="flex items-center gap-4 bg-gray-100 hover:bg-gray-200 p-4 rounded-lg transition-all duration-300 group"
                 >
                   <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition-colors">
-                    <img
+                    <Image
                       src="/svg/facebook.svg"
                       alt="Facebook"
+                      width={24}
+                      height={24}
                       className="w-6 h-6"
                       style={{ filter: "invert(1)" }}
                     />
@@ -295,9 +297,11 @@ export default function ContactClientPage() {
                   className="flex items-center gap-4 bg-gray-100 hover:bg-gray-200 p-4 rounded-lg transition-all duration-300 group"
                 >
                   <div className="bg-pink-100 p-3 rounded-full group-hover:bg-pink-200 transition-colors">
-                    <img
+                    <Image
                       src="/svg/instagram.svg"
                       alt="Instagram"
+                      width={24}
+                      height={24}
                       className="w-6 h-6"
                       style={{ filter: "invert(1)" }}
                     />
@@ -314,9 +318,11 @@ export default function ContactClientPage() {
                   className="flex items-center gap-4 bg-gray-100 hover:bg-gray-200 p-4 rounded-lg transition-all duration-300 group"
                 >
                   <div className="bg-gray-200 p-3 rounded-full group-hover:bg-gray-300 transition-colors">
-                    <img
+                    <Image
                       src="/svg/tiktok.svg"
                       alt="TikTok"
+                      width={24}
+                      height={24}
                       className="w-6 h-6"
                       style={{ filter: "invert(1)" }}
                     />
