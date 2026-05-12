@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MapPin, Star, Wrench, Laptop, Monitor, Settings, Wifi } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Star,
+  Wrench,
+  Laptop,
+  Monitor,
+  Settings,
+  Wifi,
+} from "lucide-react";
 import { Button } from "@/components/ui";
 
 interface Service {
