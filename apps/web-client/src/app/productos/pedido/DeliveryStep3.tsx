@@ -10,7 +10,7 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ArrowLeft, SendIcon } from "lucide-react";

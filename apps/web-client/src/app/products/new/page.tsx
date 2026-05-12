@@ -56,12 +56,14 @@ export default function NewProductPage() {
         return;
       }
 
+      const formData = new FormData();
+      Object.entries({ ...data, price: parseFloat(data.price) }).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+
       const response = await fetch('/api/products', {
         method: 'POST',
-        body: new FormData(Object.entries({ ...data, price: parseFloat(data.price) }).reduce((acc, [key, value]) => {
-          acc.append(key, String(value));
-          return acc;
-        }, new FormData())),
+        body: formData,
       });
 
       const result = await response.json();

@@ -10,7 +10,7 @@ import {
   isValidVisitTime,
 } from "@/utils/validateDatetimeToSupportInformation";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { RadioGroup } from "@/components/ui/RadioGroup";

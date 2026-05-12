@@ -53,7 +53,7 @@ export const ProductCard = ({
             </div>
           )}
 
-          {product.isBundle && (
+          {product.is_bundle && (
             <Badge variant="default" className="absolute top-2 left-2">
               LOTE
             </Badge>
@@ -101,16 +101,16 @@ export const ProductCard = ({
             <MapPin className="w-3 h-3" />
             <span>{product.seller?.name || 'Lima'}</span>
             <span className="mx-1">•</span>
-            <span>{formatRelativeTime(product.createdAt)}</span>
+            <span>{formatRelativeTime(product.created_at)}</span>
           </div>
 
           {showSeller && product.seller && (
             <div className="mt-3 pt-3 border-t border-[#e2e8f0] flex items-center gap-2">
               <Avatar
-                src={product.seller.avatarUrl}
+                src={product.seller.avatar_url}
                 alt={product.seller.name || 'Vendedor'}
                 size="sm"
-                showProBadge={product.seller.isPro}
+                showProBadge={product.seller.is_pro}
               />
               <span className="text-xs text-[#64748b]">
                 {product.seller.name}

@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: string;
+  error?: string | boolean;
   icon?: React.ReactNode;
 }
 
@@ -30,7 +30,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
         />
-        {error && (
+        {error && typeof error === 'string' && (
           <p className="mt-1 text-xs text-[#ef4444]">{error}</p>
         )}
       </div>

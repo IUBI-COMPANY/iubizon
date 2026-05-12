@@ -550,7 +550,7 @@ const [distanceSliderValue, setDistanceSliderValue] = useState(maxDistance || 10
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold text-[#334155]">Distancia</h4>
                       <span className="text-xs font-medium text-[#f25c05] bg-[#fff7ed] px-2 py-1 rounded">
-                        {distanceSliderValue >= 100 ? 'Sin límite' : `${distanceSliderValue} km`}
+                        {Number(distanceSliderValue) >= 100 ? 'Sin límite' : `${distanceSliderValue} km`}
                       </span>
                     </div>
                     

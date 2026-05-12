@@ -64,9 +64,9 @@ export default function RegisterPage() {
       
       if (signInError) {
         setSuccess(true);
-        router.push('/auth/login?registered=true&redirect=' + encodeURIComponent(window.location.search.get('redirect') || '/'));
+        router.push('/auth/login?registered=true&redirect=' + encodeURIComponent(new URLSearchParams(window.location.search).get('redirect') || '/'));
       } else {
-        const redirectUrl = window.location.search.get('redirect') || '/';
+        const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/';
         router.push(redirectUrl);
       }
     }

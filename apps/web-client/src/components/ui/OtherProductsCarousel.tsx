@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Product, products as allProducts } from "../../data-list/products";
+import { products as allProducts } from "../../data-list/products";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { ProductCard } from "@/components/ui/ProductCard";
+import type { Product } from "@/types";
 
 interface OtherProductsCarouselProps {
   currentProduct: Product;
@@ -11,17 +12,13 @@ interface OtherProductsCarouselProps {
 export default function OtherProductsCarousel({
   currentProduct,
 }: OtherProductsCarouselProps) {
-  const products = allProducts
+  const products = (allProducts as any[])
     .filter((p) => p.id !== currentProduct.id)
     .sort((a, b) => {
-      // Segundo: Productos con special: true
       if (a.campaign && !b.campaign) return -1;
       if (!a.campaign && b.campaign) return 1;
-
-      // Tercero: Productos del mismo tipo que currentProduct
-      const aIsSameType = a.type === currentProduct.type;
-      const bIsSameType = b.type === currentProduct.type;
-
+      const aIsSameType = a.type === (currentProduct as any).type;
+      const bIsSameType = b.type === (currentProduct as any).type;
       if (aIsSameType && !bIsSameType) return -1;
       if (!aIsSameType && bIsSameType) return 1;
       return 0;
@@ -47,7 +44,7 @@ export default function OtherProductsCarousel({
       </h2>
       <div className="w-full relative">
         <div ref={sliderRef} className="keen-slider relative">
-          {products.map((product, index) => (
+          {products.map((product: any, index: number) => (
             <ProductCard product={product} key={index} />
           ))}
         </div>

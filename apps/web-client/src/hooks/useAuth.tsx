@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@/types';
 
@@ -22,7 +22,7 @@ const fetchProfile = async (supabase: ReturnType<typeof createClient>, userId: s
       .select('*')
       .eq('id', userId)
       .single();
-    
+
     if (error || !data) return null;
     return data as User;
   } catch {
@@ -33,35 +33,16 @@ const fetchProfile = async (supabase: ReturnType<typeof createClient>, userId: s
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const initialized = useRef(false);
   const supabase = createClient();
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          const profile = await fetchProfile(supabase, session.user.id);
-          if (profile) {
-            setUser(profile);
-          }
-        }
-      } catch (error) {
-        console.error('Auth init error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initAuth();
+    let mounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED_FAILED') {
+        if (!mounted) return;
+
+        if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsLoading(false);
           return;
@@ -69,15 +50,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (session?.user) {
           const profile = await fetchProfile(supabase, session.user.id);
-          if (profile) {
+          if (mounted) {
             setUser(profile);
           }
+        } else {
+          if (mounted) {
+            setUser(null);
+          }
         }
-        setIsLoading(false);
+
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [supabase]);
@@ -88,13 +77,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
       });
-      
+
       if (error) return { error };
-      
-      if (!data.user) {
-        return { error: new Error('Usuario no encontrado') };
-      }
-      
+      if (!data.user) return { error: new Error('Usuario no encontrado') };
+
       return { error: null };
     } catch (err) {
       return { error: err as Error };
@@ -106,13 +92,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        data: {
-          name,
-        },
+        data: { name },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-
     return { error };
   };
 
@@ -132,9 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, isLoading, signIn, signUp, signOut, signInWithGoogle }}
-    >
+    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

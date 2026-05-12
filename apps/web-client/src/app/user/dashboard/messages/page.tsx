@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { AuthProvider, useAuth } from '@/hooks';
+import { useAuth } from '@/hooks';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -397,9 +397,7 @@ export default function MessagesPage() {
         <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
       </div>
     }>
-      <AuthProvider>
-        <MessagesContent />
-      </AuthProvider>
+      <MessagesContent />
     </Suspense>
   );
 }

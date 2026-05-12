@@ -28,7 +28,7 @@ export const ChatWindow = ({
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const otherUser = conversation.buyerId === currentUserId
+  const otherUser = conversation.buyer_id === currentUserId
     ? conversation.seller
     : conversation.buyer;
 
@@ -54,10 +54,10 @@ export const ChatWindow = ({
     <div className="flex flex-col h-[600px] bg-white rounded-xl border border-[#e2e8f0]">
       <div className="flex items-center gap-3 p-4 border-b border-[#e2e8f0]">
         <Avatar
-          src={otherUser?.avatarUrl}
+          src={otherUser?.avatar_url}
           alt={otherUser?.name || 'Usuario'}
           size="md"
-          showProBadge={otherUser?.isPro}
+          showProBadge={otherUser?.is_pro}
         />
         <div>
           <h4 className="font-medium text-[#112237]">
@@ -73,7 +73,7 @@ export const ChatWindow = ({
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
-          const isOwn = message.senderId === currentUserId;
+          const isOwn = message.sender_id === currentUserId;
           return (
             <div
               key={message.id}
@@ -88,9 +88,9 @@ export const ChatWindow = ({
                 )}
               >
                 <p className="text-sm">{message.content}</p>
-                {message.imageUrl && (
+                {message.image_url && (
                   <img
-                    src={message.imageUrl}
+                    src={message.image_url}
                     alt="Imagen"
                     className="mt-2 rounded-lg max-w-full"
                   />
@@ -101,7 +101,7 @@ export const ChatWindow = ({
                     isOwn ? 'text-white/70' : 'text-[#94a3b8]'
                   )}
                 >
-                  {formatRelativeTime(message.createdAt)}
+                  {formatRelativeTime(message.created_at)}
                 </p>
               </div>
             </div>

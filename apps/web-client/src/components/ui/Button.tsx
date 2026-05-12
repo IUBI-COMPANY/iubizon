@@ -23,10 +23,13 @@ const buttonVariants = cva(
           'bg-[#ef4444] text-white hover:bg-[#dc2626]',
         success:
           'bg-[#10b981] text-white hover:bg-[#059669]',
+        tertiary:
+          'bg-[#112237] text-white hover:bg-[#1a3652]',
       },
       size: {
         default: 'h-10 px-4 py-2',
         sm: 'h-8 rounded-md px-3 text-xs',
+        md: 'h-10 px-4 py-2',
         lg: 'h-12 rounded-lg px-8 text-base',
         xl: 'h-14 rounded-lg px-10 text-lg',
         icon: 'h-10 w-10',

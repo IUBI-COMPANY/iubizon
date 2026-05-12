@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthProvider, useAuth } from '@/hooks';
+import { useAuth } from '@/hooks';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
@@ -108,7 +108,7 @@ function SettingsContent() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-6">
-                    <Avatar src={user.avatarUrl} alt={user.name || 'Usuario'} size="xl" />
+                    <Avatar src={user.avatar_url} alt={user.name || 'Usuario'} size="xl" />
                     <div>
                       <Button variant="outline" size="sm">
                         Cambiar foto
@@ -198,7 +198,7 @@ function SettingsContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {user.isPro ? (
+                  {user.is_pro ? (
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-[#f25c05]/10 to-[#ff7b3a]/10 rounded-lg">
                       <div>
                         <div className="flex items-center gap-2">
@@ -318,9 +318,7 @@ export default function SettingsPage() {
         <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
       </div>
     }>
-      <AuthProvider>
-        <SettingsContent />
-      </AuthProvider>
+      <SettingsContent />
     </Suspense>
   );
 }

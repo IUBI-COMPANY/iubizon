@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 export const Navbar = () => {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const { coordinates } = useGeolocation();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,7 +88,9 @@ export const Navbar = () => {
               </Button>
             </Link>
 
-            {user ? (
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
+            ) : user ? (
               <>
                 <Link href="/products/new">
                   <Button variant="ghost" className="text-white hover:bg-white/10 hidden sm:flex">

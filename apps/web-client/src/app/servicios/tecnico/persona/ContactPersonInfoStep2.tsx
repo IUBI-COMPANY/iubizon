@@ -7,7 +7,7 @@ import { Form } from "@/components/ui/Form";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useFormUtils } from "@/hooks/useFormUtils";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import countriesISO from "@/data-list/countriesISO.json";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, ArrowRight } from "lucide-react";

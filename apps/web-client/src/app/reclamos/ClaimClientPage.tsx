@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { useFormUtils } from "@/hooks/useFormUtils";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import { TextArea } from "@/components/ui/TextArea";
 import { Form } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";

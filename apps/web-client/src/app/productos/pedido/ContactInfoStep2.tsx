@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import * as yup from "yup";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import { Form } from "@/components/ui/Form";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";

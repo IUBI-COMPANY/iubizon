@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { InputNumber } from "@/components/ui/InputNumber";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { FormSelect as Select } from "@/components/ui/FormSelect";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle, GripVertical, Plus, X } from "lucide-react";
 import serviceTypes from "@/data-list/serviceTypes.json";

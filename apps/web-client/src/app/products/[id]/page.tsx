@@ -4,10 +4,11 @@ import { Footer } from '@/components/features/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { Heart, MessageCircle, MapPin, Eye } from 'lucide-react';
+import { MessageCircle, MapPin, Eye } from 'lucide-react';
 import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
 import { ChatButton } from './ChatButton';
 import { BuyButton } from './BuyButton';
+import { FavoriteButton } from './FavoriteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,11 +112,9 @@ export default async function ProductDetailPage({ params }: Props) {
 
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-[#e2e8f0] p-6">
-                <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-start justify-between gap-3 mb-4">
                   <h1 className="text-2xl font-bold text-[#112237]">{product.title}</h1>
-                  <button className="p-2 rounded-full hover:bg-[#f8fafc]">
-                    <Heart className="w-6 h-6 text-[#64748b]" />
-                  </button>
+                  <FavoriteButton productId={product.id} />
                 </div>
 
                 <p className="text-3xl font-bold text-[#f25c05] mb-4">

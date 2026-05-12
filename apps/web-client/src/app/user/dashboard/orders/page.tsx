@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AuthProvider, useAuth } from '@/hooks';
+import { useAuth } from '@/hooks';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -26,6 +26,7 @@ interface Order {
   buyerName: string;
   buyerId: string;
   sellerId: string;
+  sellerName: string;
   shippingStatus?: string;
 }
 
@@ -44,7 +45,7 @@ function OrdersContent() {
   const supabase = createClient();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [orderType, setOrderType] = useState<'purchases' | 'sales'>('purchases');
+  const [orderType, setOrderType] = useState<string>('purchases');
   const [statusTab, setStatusTab] = useState('all');
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
@@ -154,8 +155,8 @@ function OrdersContent() {
   };
 
   const filteredOrders = orders.filter((order) => {
-    const isSale = order.sellerId === user.id;
-    const isPurchase = order.buyerId === user.id;
+    const isSale = order.sellerId === user!.id;
+    const isPurchase = order.buyerId === user!.id;
     
     if (orderType === 'sales' && !isSale) return false;
     if (orderType === 'purchases' && !isPurchase) return false;
@@ -242,7 +243,7 @@ function OrdersContent() {
                                     {order.productTitle}
                                   </Link>
                                   <p className="text-sm text-[#64748b] mt-1">
-                                    {order.sellerId === user.id 
+{order.sellerId === user!.id
                                       ? `Venta a: ${order.buyerName}` 
                                       : `Compra a: ${order.sellerName || 'Vendedor'}`}
                                   </p>
@@ -357,9 +358,7 @@ export default function OrdersPage() {
         <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
       </div>
     }>
-      <AuthProvider>
-        <OrdersContent />
-      </AuthProvider>
+      <OrdersContent />
     </Suspense>
   );
 }

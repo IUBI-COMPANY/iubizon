@@ -290,6 +290,32 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ============================================
+-- TRIGGERS PARA FAVORITES COUNT
+-- ============================================
+
+CREATE OR REPLACE FUNCTION update_product_favorites_count()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE products SET favorites = favorites + 1 WHERE id = NEW.product_id;
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE products SET favorites = GREATEST(favorites - 1, 0) WHERE id = OLD.product_id;
+    RETURN OLD;
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_favorite_added
+  AFTER INSERT ON favorites
+  FOR EACH ROW EXECUTE FUNCTION update_product_favorites_count();
+
+CREATE TRIGGER on_favorite_removed
+  AFTER DELETE ON favorites
+  FOR EACH ROW EXECUTE FUNCTION update_product_favorites_count();
+
+-- ============================================
 -- CATEGORÍAS INICIALES
 -- ============================================
 
