@@ -11,7 +11,7 @@ import {
   Settings,
   Wifi,
 } from "lucide-react";
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/Button";
 
 interface Service {
   id: string;
