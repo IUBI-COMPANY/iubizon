@@ -886,7 +886,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
     condition: "reconditioned",
     description:
       "Lote de 7 proyectores Epson, ideales para aulas y oficinas. Precio especial Llevando 5 unidades a más.",
-    price: 900,
+    price: 6300,
     badge: "Lote",
     withIgv: true,
     mainImage: "/productos/lote-7-proyectores/1.jpg",
@@ -925,6 +925,9 @@ Ideales para colegios, empresas o revendedores que buscan equiparse bien sin hac
 ✔ Funcionamiento 100% verificado
 ✔ Mejor precio por llevar todo el lote
 ✔ Perfectos para equipar varios espacios o revender con buen margen
+
+- Precio al por mayor: S/ 900 soles, mínimo 3 unidades a más.
+- Precio al por menor: S/ 1300 soles + caja, accesorios y garantía 6 meses.
 
 💡 Si estabas buscando varios proyectores, esta es de esas oportunidades que no aparecen seguido…
 
