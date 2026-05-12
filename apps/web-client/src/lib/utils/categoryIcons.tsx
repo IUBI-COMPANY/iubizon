@@ -6,6 +6,8 @@ import {
   Tv,
   Cpu,
   LayoutGrid,
+  MoreHorizontal,
+  Headphones,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -16,6 +18,8 @@ const iconMap: Record<string, LucideIcon> = {
   consolas: Gamepad2,
   'tv-audio': Tv,
   electronica: Cpu,
+  accesorios: Headphones,
+  otros: MoreHorizontal,
 };
 
 export function getCategoryIcon(slug: string): LucideIcon {

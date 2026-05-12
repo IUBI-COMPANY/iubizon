@@ -10,29 +10,89 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const formData = await request.formData();
-  
-  const title = formData.get('title') as string;
-  const description = formData.get('description') as string;
-  const price = parseFloat(formData.get('price') as string);
-  const condition = formData.get('condition') as string;
-  const category_id = formData.get('category_id') as string;
+  let title: string;
+  let description: string | null;
+  let price: number;
+  let condition: string;
+  let category_id: string;
+  let availability_type: string | null;
+  let stock: number;
+  let location: string | null;
+  let latitude: number | null;
+  let longitude: number | null;
+  let delivery_preference: string | null;
+  let brand: string | null;
 
-  if (!title || !description || !price || !condition || !category_id) {
+  const contentType = request.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    const body = await request.json();
+    title = body.title;
+    description = body.description || null;
+    price = parseFloat(body.price);
+    condition = body.condition;
+    category_id = body.category_id;
+    availability_type = body.availability_type || null;
+    stock = body.stock ? parseInt(body.stock) : 1;
+    location = body.location || null;
+    latitude = body.latitude ?? null;
+    longitude = body.longitude ?? null;
+    delivery_preference = body.delivery_preference || null;
+    brand = body.brand || null;
+  } else {
+    const formData = await request.formData();
+    title = formData.get('title') as string;
+    description = (formData.get('description') as string) || null;
+    price = parseFloat(formData.get('price') as string);
+    condition = formData.get('condition') as string;
+    category_id = formData.get('category_id') as string;
+    availability_type = (formData.get('availability_type') as string) || null;
+    stock = formData.get('stock') ? parseInt(formData.get('stock') as string) : 1;
+    location = (formData.get('location') as string) || null;
+    latitude = formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : null;
+    longitude = formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null;
+    delivery_preference = (formData.get('delivery_preference') as string) || null;
+    brand = (formData.get('brand') as string) || null;
+  }
+
+  if (!title || !price || !condition || !category_id) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
   }
 
+  if (category_id === 'other') {
+    const { data: otrosCat } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', 'otros')
+      .single();
+
+    if (otrosCat) {
+      category_id = otrosCat.id;
+    } else {
+      return NextResponse.json({ error: 'Categoría "Otros" no encontrada' }, { status: 400 });
+    }
+  }
+
+  const insertData: Record<string, unknown> = {
+    title,
+    description,
+    price,
+    condition,
+    category_id,
+    seller_id: user.id,
+    status: 'active',
+    stock,
+    location: location || null,
+    latitude: latitude,
+    longitude: longitude,
+    brand: brand,
+    availability_type: availability_type || 'unique',
+    delivery_preference: delivery_preference || null,
+  };
+
   const { data, error } = await supabase
     .from('products')
-    .insert({
-      title,
-      description,
-      price,
-      condition,
-      category_id,
-      seller_id: user.id,
-      status: 'active',
-    })
+    .insert(insertData)
     .select()
     .single();
 

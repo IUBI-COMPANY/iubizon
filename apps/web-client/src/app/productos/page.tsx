@@ -62,28 +62,18 @@ export default async function ProductosPage() {
                   <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="aspect-square relative bg-[#f8fafc]">
                       {images.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-0.5 h-full w-full">
-                          {images.slice(0, 4).map((img, idx) => (
-                            <div key={idx} className="relative overflow-hidden bg-[#f1f5f9]">
-                              <Image
-                                src={img.url}
-                                alt={`${product.title} ${idx + 1}`}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          ))}
-                          {images.length > 4 && (
-                            <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded">
-                              +{images.length - 4}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-5xl">
-                          {product.category?.icon || '📦'}
-                        </div>
-                      )}
+                          <Image
+                            src={images.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))[0].url}
+                            alt={product.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-4xl">📦</span>
+                          </div>
+                        )}
                     </div>
                     <div className="p-3">
                       <h3 className="font-medium text-[#112237] line-clamp-2 text-sm">{product.title}</h3>

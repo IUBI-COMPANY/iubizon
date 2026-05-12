@@ -278,3 +278,200 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Swiper custom styles */
+.swiper-button-prev,
+.swiper-button-next {
+  color: #112237 !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.swiper-pagination-bullet {
+  width: 8px !important;
+  height: 8px !important;
+  background: #94a3b8 !important;
+  opacity: 0.5 !important;
+  transition: all 0.2s ease;
+}
+
+.swiper-pagination-bullet-active {
+  background: #f25c05 !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  border-radius: 4px !important;
+}
+
+.swiper-pagination {
+  bottom: 8px !important;
+}
+
+.swiper-slide {
+  overflow: hidden;
+}
+
+/* Tiptap Editor Styles */
+.tiptap {
+  outline: none;
+  min-height: 120px;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #94a3b8;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin: 0.5em 0 0.25em;
+}
+
+.tiptap h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.5em 0 0.25em;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap li {
+  margin: 0.15em 0;
+}
+
+.tiptap a {
+  color: #f25c05;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap a:hover {
+  color: #d94d04;
+}
+
+.tiptap mark {
+  background-color: #fef08a;
+  padding: 0.1em 0;
+  border-radius: 0.15em;
+}
+
+.tiptap p {
+  margin: 0.35em 0;
+}
+
+.tiptap p:first-child {
+  margin-top: 0;
+}
+
+.tiptap br {
+  display: block;
+  content: "";
+  margin-top: 0;
+}
+
+.tiptap {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Tiptap content rendered outside the editor */
+.tiptap-content h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin: 0.75em 0 0.25em;
+  color: #112237;
+}
+
+.tiptap-content h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0.5em 0 0.25em;
+  color: #112237;
+}
+
+.tiptap-content p {
+  margin: 0.4em 0;
+  line-height: 1.6;
+}
+
+.tiptap-content ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap-content li {
+  margin: 0.2em 0;
+}
+
+.tiptap-content a {
+  color: #f25c05;
+  text-decoration: underline;
+}
+
+.tiptap-content a:hover {
+  color: #d94d04;
+}
+
+.tiptap-content mark {
+  background-color: #fef08a;
+  padding: 0.1em 0.15em;
+  border-radius: 0.15em;
+}
+
+.tiptap-content strong {
+  font-weight: 700;
+  color: #112237;
+}
+
+.tiptap-content em {
+  font-style: italic;
+}
+
+.tiptap-content u {
+  text-decoration: underline;
+}
+
+.tiptap-content s {
+  text-decoration: line-through;
+}
+
+.tiptap-content br {
+  display: block;
+  content: "";
+  margin-top: 0;
+}
+
+.tiptap-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
