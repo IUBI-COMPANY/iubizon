@@ -888,7 +888,6 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
       "Lote de 7 proyectores Epson, ideales para aulas y oficinas. Precio especial Llevando 5 unidades a más.",
     price: 900,
     badge: "Lote",
-    note: "IGV aparte",
     withIgv: true,
     mainImage: "/productos/lote-7-proyectores/1.jpg",
     media: [
@@ -911,6 +910,31 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
     nativeResolution: "XGA",
     aspectRatio: "4:3",
     category: ["Lote", "Proyectores", "Epson"],
+    note: `🚨 OPORTUNIDAD IRREPETIBLE 🚨
+
+Lote de 7 proyectores Epson de exhibición, listos para usar desde el primer día:
+
+🔹 Modelo 980W de 3800 lúmenes (1 unidad disponible)
+🔹 Modelo 970 de 4000 lúmenes (solo 1 unidad)
+🔹 Modelo 109W de 4000 lúmenes (solo 5 unidad)
+
+Ideales para colegios, empresas o revendedores que buscan equiparse bien sin hacer una gran inversión.
+
+✨ ¿Por qué aprovechar esta oportunidad ahora?
+✔ Equipos originales Epson
+✔ Funcionamiento 100% verificado
+✔ Mejor precio por llevar todo el lote
+✔ Perfectos para equipar varios espacios o revender con buen margen
+
+💡 Si estabas buscando varios proyectores, esta es de esas oportunidades que no aparecen seguido…
+
+🇺🇸 Somos importadores directos: también podemos traerte proyectores por pedido según el modelo que necesites, siempre al mejor precio.
+
+📩 Escríbeme ahora y te paso precio por lote antes de que alguien más se adelante.
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
   },
 ];
 
