@@ -881,7 +881,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
   {
     id: "lote-7-proyectores",
     model: "Lote-7-Proyectores",
-    name: "Lote 7 Proyectores Epson 3800 Lumens - Precio por Volumen",
+    name: "Lote 7 Proyectores Epson 3800 y 4000 Lumens - Precio por Volumen",
     stock: 1,
     condition: "reconditioned",
     description:
