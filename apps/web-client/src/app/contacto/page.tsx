@@ -3,20 +3,20 @@ import ContactClientPage from "./ContactClientPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
+    title: "Contacto - iubizon | Compra y Venta de Tecnología",
     description:
-      "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras para colegios y empresas en Lima y todo Perú. Atención personalizada y respuesta rápida.",
+      "Contáctanos para comprar o vender productos tecnológicos. Proyectores, accesorios, equipos y más en Perú. Atención personalizada y respuesta rápida.",
     keywords: [
       "contacto iubizon",
-      "cotizar bundle interactivo",
-      "cotizar dúo interactivo",
-      "consultas tecnología educativa",
+      "comprar tecnología",
+      "vender tecnología",
+      "consultas productos tecnológicos",
       "atención al cliente",
       "soporte técnico",
       "Lima",
       "Perú",
-      "asesoría soluciones educativas",
-      "cotizar aulas interactivas",
+      "asesoría tecnológica",
+      "cotizar equipos",
       "iubizon",
     ],
     alternates: {
@@ -24,16 +24,16 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
+      title: "Contacto - iubizon | Compra y Venta de Tecnología",
       url: "https://www.iubizon.com/contacto",
       description:
-        "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras para colegios y empresas en Lima y todo Perú.",
+        "Contáctanos para comprar o vender productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
           width: 1200,
           height: 630,
-          alt: "Formulario de contacto iubizon - Lima, Perú",
+          alt: "Formulario de contacto iubizon - Perú",
         },
       ],
       siteName: "iubizon",
@@ -41,13 +41,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Contacto - Cotiza Bundle Interactivo y Dúo Interactivo | iubizon",
+      title: "Contacto - iubizon | Compra y Venta de Tecnología",
       description:
-        "Contáctanos para cotizar el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras en Lima y todo Perú.",
+        "Contáctanos para comprar o vender productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
-          alt: "Formulario de contacto iubizon - Lima, Perú",
+          alt: "Formulario de contacto iubizon - Perú",
         },
       ],
       site: "@iubizon",

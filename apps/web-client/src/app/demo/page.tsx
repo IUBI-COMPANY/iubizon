@@ -6,26 +6,26 @@ const DEMO_PRODUCT_IDS = ["bundle-interactivo", "duo-interactivo"];
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Solicita una Demo | iubizon",
+    title: "Solicita una Demo - Productos Tecnológicos | iubizon",
     description:
-      "Agenda una demostración gratuita y conoce en vivo el Bundle Interactivo o el D\u00fao de accesorios. Te asesoramos en todo el proceso.",
+      "Agenda una demostración gratuita de nuestros productos tecnológicos. Proyectores, accesorios y equipos. Te asesoramos en todo el proceso.",
     keywords: [
-      "demo proyectores",
-      "demostración productos",
-      "bundle interactivo",
-      "accesorios duo",
+      "demo productos tecnológicos",
+      "demostración proyectores",
+      "probar equipos",
+      "demo tecnología perú",
       "iubizon",
-      "Per\u00fa",
+      "Perú",
     ],
     alternates: {
       canonical: "https://www.iubizon.com/demo",
     },
     openGraph: {
       type: "website",
-      title: "Solicita una Demo | iubizon",
+      title: "Solicita una Demo - Productos Tecnológicos | iubizon",
       url: "https://www.iubizon.com/demo",
       description:
-        "Agenda una demostración gratuita del Bundle Interactivo o el D\u00fao de accesorios.",
+        "Agenda una demostración gratuita de productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",
@@ -39,9 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Solicita una Demo | iubizon",
+      title: "Solicita una Demo - Productos Tecnológicos | iubizon",
       description:
-        "Agenda una demostración gratuita del Bundle Interactivo o el D\u00fao de accesorios.",
+        "Agenda una demostración gratuita de productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",

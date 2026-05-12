@@ -6,19 +6,16 @@ import ProductsClientPage from "./ProductsClientPage";
 // ==========================
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Catálogo de Proyectores y Accesorios | iubizon",
+    title: "Catálogo de Productos Tecnológicos | iubizon",
     description:
-      "Explora nuestro catálogo de proyectores Epson, accesorios para Bundle Interactivo y componentes individuales. Compra online, cotiza gratis y recibe asesoría personalizada en Lima y Perú.",
+      "Explora nuestro catálogo de productos tecnológicos: proyectores, accesorios, equipos y más. Compra online, cotiza gratis y recibe asesoría personalizada en Perú.",
     keywords: [
-      "catálogo proyectores epson",
-      "accesorios bundle interactivo",
-      "touch interactivo",
-      "adaptador inalámbrico wifi",
-      "proyectores en venta",
-      "repuestos proyectores",
-      "comprar proyectores Lima",
-      "proyectores Epson",
-      "accesorios originales",
+      "catálogo productos tecnológicos",
+      "proyectores",
+      "accesorios tecnológicos",
+      "equipos tecnológicos",
+      "tecnología en venta",
+      "compra tecnología perú",
       "iubizon",
       "Perú",
     ],
@@ -27,16 +24,16 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website",
-      title: "Catálogo de Proyectores y Accesorios | iubizon",
+      title: "Catálogo de Productos Tecnológicos | iubizon",
       url: "https://www.iubizon.com/productos",
       description:
-        "Explora nuestro catálogo de proyectores Epson y accesorios para Bundle Interactivo en Lima y Perú. Compra online, cotiza gratis y recibe asesoría personalizada.",
+        "Explora nuestro catálogo de productos tecnológicos en Perú. Proyectores, accesorios, equipos y más.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",
           width: 1200,
           height: 630,
-          alt: "Catálogo de proyectores y accesorios en Lima y Perú",
+          alt: "Catálogo de productos tecnológicos en Perú",
         },
       ],
       siteName: "iubizon",
@@ -44,13 +41,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Catálogo de Proyectores y Accesorios | iubizon",
+      title: "Catálogo de Productos Tecnológicos | iubizon",
       description:
-        "Explora nuestro catálogo de proyectores Epson y accesorios para Bundle Interactivo en Lima y Perú.",
+        "Explora nuestro catálogo de productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/venta-de-proyectores.jpg",
-          alt: "Catálogo de proyectores y accesorios en Lima y Perú",
+          alt: "Catálogo de productos tecnológicos en Perú",
         },
       ],
       site: "@iubizon",

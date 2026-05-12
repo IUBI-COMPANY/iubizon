@@ -24,25 +24,25 @@ export interface HeaderNavigation {
 
 const navigation: HeaderNavigation[] = [
   { name: "Inicio", href: "/" },
-  { name: "¿Quienes somos?", href: "/quienes-somos" },
+  { name: "¿Quiénes somos?", href: "/quienes-somos" },
   {
     name: "Productos",
     href: "/productos",
     options: [
+      { name: "Ver Catálogo", href: "/productos" },
       { name: "Bundle Interactivo", href: "/productos/bundle-interactivo" },
-      { name: "Duo interactivo", href: "/productos/duo-interactivo" },
-      {
-        name: "Otros productos (proyectores,accesorios,etc.)",
-        href: "/productos/pedido",
-      },
+      { name: "Dúo Interactivo", href: "/productos/duo-interactivo" },
+      { name: "Productos a Pedido", href: "/productos/pedido" },
     ],
   },
   {
-    name: "Servicio Técnico",
-    href: "/servicios/tecnico",
+    name: "Servicios",
+    href: "/servicios",
     options: [
+      { name: "Explorar Servicios", href: "/servicios" },
+      { name: "Servicio Técnico iubizon", href: "/servicios/tecnico" },
       { name: "Para Personas", href: "/servicios/tecnico/persona" },
-      { name: "Para Organizaciónes", href: "/servicios/tecnico/organizacion" },
+      { name: "Para Organizaciones", href: "/servicios/tecnico/organizacion" },
     ],
   },
   { name: "Contacto", href: "/contacto" },

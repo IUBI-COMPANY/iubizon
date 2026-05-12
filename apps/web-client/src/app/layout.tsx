@@ -21,12 +21,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.iubizon.com"),
   title: {
-    default:
-      "iubizon - Bundle Interactivo y Dúo Interactivo | Soluciones Educativas en Lima, Perú",
-    template: "%s",
+    default: "iubizon - Compra, Venta y Servicios Tecnológicos en Perú",
+    template: "%s | iubizon",
   },
   description:
-    "Transforma tu aula o sala de reuniones con el Bundle Interactivo (Proyector Epson + Touch + Adaptador Inalámbrico WiFi) y Dúo Interactivo (Touch + Adaptador Inalámbrico WiFi). Tecnología educativa innovadora en Lima, Perú.",
+    "iubizon es la plataforma líder para comprar, vender y ofrecer servicios tecnológicos. Somos importadores directos de tecnología con precios especiales para distribuidores y mayoristas. Encuentra proyectores, accesorios y equipos al mejor precio en Perú.",
   alternates: {
     canonical: "https://www.iubizon.com",
   },
@@ -35,63 +34,39 @@ export const metadata: Metadata = {
   publisher: "iubizon",
   category: "technology",
   keywords: [
-    //Bundle Interactivo
-    "bundle interactivo",
-    "bundle interactivo perú",
-    "bundle interactivo lima",
-    "paquete interactivo educativo",
-    "solución interactiva para aulas",
-    "kit interactivo para colegios",
-    "bundle educativo epson",
-    "paquete multimedia interactivo",
-
-    //Dúo Interactivo
-    "dúo interactivo",
-    "touch interactivo",
-    "pantalla táctil interactiva",
-    "touch portátil",
-    "Adaptador Inalámbrico WiFi para educación",
-    "adaptador inalámbrico wifi",
-    "proyección inalámbrica",
-
-    //Educación y tecnología
-    "tecnología educativa",
-    "tecnología educativa perú",
-    "tecnología educativa lima",
-    "aulas interactivas",
-    "clases interactivas",
-    "educación digital",
-    "herramientas digitales educación",
-    "soluciones educativas innovadoras",
-    "transformación digital educativa",
-    "tecnología para colegios",
-    "tecnología para universidades",
-    "equipos interactivos educación",
-
-    //Aplicaciones
-    "proyector interactivo",
-    "proyector táctil",
-    "proyector para aulas",
-    "proyector para empresas",
-    "presentaciones interactivas",
-    "clases dinámicas",
-    "colaboración digital",
-    "pizarra digital",
-
-    //Marcas y modelos
-    "epson powerlite 109w",
-    "proyector epson interactivo",
-    "touch screen portátil",
-    "Adaptador Inalámbrico WiFi",
-
-    //Ubicación
-    "soluciones educativas lima",
-    "tecnología educativa san isidro",
-    "bundle interactivo miraflores",
-    "equipos educativos surco",
-    "tecnología para colegios lima",
-    "venta de equipos educativos perú",
-    "distribuidor tecnología educativa lima",
+    "iubizon",
+    "compra tecnología",
+    "venta tecnología",
+    "productos tecnológicos",
+    "tienda tecnológica perú",
+    "proyectores",
+    "accesorios tecnológicos",
+    "equipos tecnológicos",
+    "tecnología perú",
+    "comprar tecnología lima",
+    "vender tecnología perú",
+    "tienda online tecnología",
+    "equipos tecnológicos lima",
+    "accesorios epson",
+    "proyectores perú",
+    "servicios tecnológicos",
+    "servicios tech perú",
+    "marketplace tecnología",
+    "contratar servicios técnicos",
+    "reparación equipos",
+    "instalación proyectores",
+    // Distribuidores y revendedores
+    "distribuidor tecnología perú",
+    "revendedor tecnología lima",
+    "importador tecnología perú",
+    "mayorista tecnología",
+    "precios mayorista tecnología",
+    "ser distribuidor proyectores",
+    "revender productos tecnológicos",
+    "precios bajos tecnología perú",
+    "importadores directos perú",
+    "oferta mayorista tecnología",
+    "distribución tecnológica perú",
   ],
   robots: {
     index: true,
@@ -106,22 +81,21 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.iubizon.com",
-    title:
-      "iubizon - Bundle Interactivo y Dúo Interactivo | Tecnología Educativa",
+    title: "iubizon - Compra, Venta y Servicios Tecnológicos en Perú",
     description:
-      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Soluciones educativas innovadoras con proyector Epson, touch interactivo y Adaptador Inalámbrico WiFi en Lima, Perú.",
+      "Importadores directos de tecnología con precios especiales para distribuidores y mayoristas. Encuentra proyectores, accesorios y equipos al mejor precio en Perú.",
     images: [
       {
         url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
       },
     ],
-    siteName: "iubizon - Tecnología Educativa Interactiva",
+    siteName: "iubizon - Plataforma Tecnológica",
   },
   twitter: {
     card: "summary_large_image",
-    title: "iubizon - Bundle Interactivo y Dúo Interactivo",
+    title: "iubizon - Compra, Venta y Servicios Tecnológicos",
     description:
-      "Transforma tu aula con el Bundle Interactivo y Dúo Interactivo. Tecnología educativa innovadora en Lima, Perú.",
+      "Importadores directos de tecnología con precios especiales para distribuidores y mayoristas en Perú.",
     images: [
       {
         url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
@@ -146,10 +120,10 @@ export default function RootLayout({
 }>) {
   const organizationSchema = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "OnlineMarketplace",
     name: "iubizon",
     description:
-      "Empresa líder en soluciones educativas interactivas en Lima, Perú. Especialistas en Bundle Interactivo y Dúo Interactivo para transformar aulas y salas de reuniones con tecnología táctil e inalámbrica.",
+      "Importadores directos de tecnología en Perú. Ofrecemos precios especiales para distribuidores y mayoristas. Proyectores, accesorios y equipos al mejor precio.",
     url: "https://www.iubizon.com",
     logo: "https://www.iubizon.com/images/logo.png",
     image: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
@@ -196,6 +170,24 @@ export default function RootLayout({
     areaServed: {
       "@type": "Country",
       name: "Peru",
+    },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Productos y Servicios",
+      itemListElement: [
+        {
+          "@type": "OfferCatalog",
+          name: "Productos Tecnológicos",
+        },
+        {
+          "@type": "OfferCatalog",
+          name: "Servicios Técnicos",
+        },
+      ],
+    },
+    potentialAction: {
+      "@type": "BecomeDistributorAction",
+      target: "https://www.iubizon.com/contacto",
     },
   };
 

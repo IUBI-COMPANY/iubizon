@@ -6,38 +6,33 @@ import StatsGrid from "@/components/ui/StatsGrid";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title:
-      "Quiénes Somos - Expertos en Soluciones Educativas Interactivas | iubizon",
+    title: "Quiénes Somos - iubizon | Compra y Venta de Tecnología en Perú",
     description:
-      "Conoce la historia de iubizon, empresa líder en tecnología educativa interactiva en Lima. Especialistas en Bundle Interactivo y Dúo Interactivo con 5 años de experiencia transformando aulas desde 2020.",
+      "Conoce la historia de iubizon, la plataforma líder para comprar y vender productos tecnológicos en Perú. Proyectores, accesorios, equipos y más desde 2020.",
     keywords: [
       "quienes somos iubizon",
-      "empresa tecnología educativa Lima",
+      "empresa tecnología perú",
       "historia iubizon",
-      "soluciones educativas interactivas Perú",
-      "bundle interactivo empresa",
-      "especialistas tecnología educativa",
-      "distribuidores equipos interactivos",
-      "empresa aulas digitales",
-      "transformación digital educación",
-      "tecnología táctil educativa Lima",
+      "compra venta tecnología perú",
+      "tienda tecnológica lima",
+      "productos tecnológicos perú",
+      "plataforma tecnológica perú",
     ],
     alternates: {
       canonical: "https://www.iubizon.com/quienes-somos",
     },
     openGraph: {
       type: "website",
-      title:
-        "Quiénes Somos - Expertos en Soluciones Educativas Interactivas | iubizon",
+      title: "Quiénes Somos - iubizon | Compra y Venta de Tecnología",
       url: "https://www.iubizon.com/quienes-somos",
       description:
-        "Conoce la historia de iubizon, empresa líder en tecnología educativa interactiva. Especialistas en Bundle Interactivo y Dúo Interactivo desde 2020.",
+        "Conoce la historia de iubizon, la plataforma líder para comprar y vender productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
           width: 1200,
           height: 630,
-          alt: "Equipo iubizon - Expertos en tecnología educativa interactiva",
+          alt: "Equipo iubizon - Compra y venta de tecnología",
         },
       ],
       siteName: "iubizon",
@@ -45,13 +40,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Quiénes Somos - Expertos en Tecnología Educativa | iubizon",
+      title: "Quiénes Somos - iubizon | Tecnología en Perú",
       description:
-        "Conoce la historia de iubizon, empresa líder en soluciones educativas interactivas en Lima desde 2020.",
+        "Conoce la historia de iubizon, la plataforma líder para comprar y vender productos tecnológicos en Perú.",
       images: [
         {
           url: "https://www.iubizon.com/tu-mundo-multimedia.jpg",
-          alt: "Equipo iubizon - Expertos en tecnología educativa interactiva",
+          alt: "Equipo iubizon - Compra y venta de tecnología",
         },
       ],
       site: "@iubizon",

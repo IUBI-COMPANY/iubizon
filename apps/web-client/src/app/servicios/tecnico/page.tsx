@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     description:
       "Servicio técnico especializado de proyectores para personas y organizaciones en Lima y todo Perú. Atendemos empresas privadas, colegios, institutos, universidades, iglesias y centros educativos. Mantenimiento preventivo, reparación de proyectores Epson, Sony, BenQ con garantía.",
     url: "https://www.iubizon.com/servicios/tecnico",
-    siteName: "iubizon",
+    siteName: "iubizon - Productos Tecnológicos",
     images: [
       {
         url: "/images/proyectores-reparaciones.webp",

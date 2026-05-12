@@ -2,16 +2,16 @@ import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Devoluciones y Cambios - Bundle Interactivo | iubizon",
+  title: "Política de Devoluciones y Cambios | iubizon",
   description:
-    "Conoce nuestra política de devoluciones y cambios para Bundle Interactivo y productos educativos. 15 días de garantía de satisfacción y reembolso completo en Lima, Perú.",
+    "Conoce nuestra política de devoluciones y cambios para productos tecnológicos. 15 días de garantía de satisfacción y reembolso completo en Perú.",
   keywords: [
     "política de devoluciones iubizon",
-    "cambios bundle interactivo",
+    "cambios productos tecnológicos",
     "garantía de satisfacción",
-    "reembolso productos educativos",
-    "política de cambios Lima",
-    "devoluciones tecnología educativa",
+    "reembolso tecnología",
+    "política de cambios perú",
+    "devoluciones tecnología",
   ],
   alternates: {
     canonical: "https://www.iubizon.com/politica-de-devoluciones-y-cambios",
