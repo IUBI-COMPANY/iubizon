@@ -68,7 +68,7 @@ export const ProductCard = ({ product }: Props) => {
           </span>
         )}
 
-        <div className="mt-auto pt-2 border-t border-gray-100">
+        <div className="mt-auto pt-2">
           <div className="flex items-baseline gap-1">
             {hasDiscount && (
               <span className="text-[10px] text-gray-400 line-through">
