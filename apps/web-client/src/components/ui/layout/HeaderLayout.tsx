@@ -29,7 +29,7 @@ const navigation: HeaderNavigation[] = [
     name: "Productos",
     href: "/productos",
     options: [
-      { name: "Ver Catálogo", href: "/productos" },
+      { name: "Disponibles en stock", href: "/productos" },
       { name: "Bundle Interactivo", href: "/productos/bundle-interactivo" },
       { name: "Dúo Interactivo", href: "/productos/duo-interactivo" },
       { name: "Productos a Pedido", href: "/productos/pedido" },
@@ -39,8 +39,6 @@ const navigation: HeaderNavigation[] = [
     name: "Servicios",
     href: "/servicios",
     options: [
-      { name: "Explorar Servicios", href: "/servicios" },
-      { name: "Servicio Técnico iubizon", href: "/servicios/tecnico" },
       { name: "Para Personas", href: "/servicios/tecnico/persona" },
       { name: "Para Organizaciones", href: "/servicios/tecnico/organizacion" },
     ],

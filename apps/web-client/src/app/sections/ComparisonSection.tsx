@@ -4,8 +4,19 @@ import { Check, X } from "lucide-react";
 import { COMPARISON_DATA } from "@/data-list/comparisonData";
 import { products } from "@/data-list/products";
 
-export const ComparisonSection: React.FC = () => {
-  const selectedProjector = products.find((p) => (p.type = "Bundle"));
+interface ComparisonSectionProps {
+  productName?: string;
+  price?: number;
+}
+
+export const ComparisonSection: React.FC<ComparisonSectionProps> = ({
+  productName,
+  price,
+}) => {
+  const fallbackProduct = products.find((p) => p.type === "Bundle");
+  const displayName = productName || "Bundle Interactivo";
+  const displayPrice = price ?? fallbackProduct?.subTotal;
+
   return (
     <section
       id="comparacion"
@@ -15,7 +26,7 @@ export const ComparisonSection: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white">
-            ¿Por qué elegir el Bundle Interactivo?
+            ¿Por qué elegir el {displayName}?
           </h2>
           <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto">
             Descubre por qué esta es la mejor solución inteligente para
@@ -43,10 +54,10 @@ export const ComparisonSection: React.FC = () => {
                       className="px-6 md:px-8 py-6 md:py-8 text-center text-sm md:text-base font-bold text-white uppercase tracking-wider bg-primary/40 w-1/3 border-r border-primary/20"
                     >
                       <div className="flex flex-col items-center gap-3">
-                        <span className="text-base">Bundle Interactivo</span>
+                        <span className="text-base">{displayName}</span>
 
                         <span className="text-2xl md:text-3xl font-extrabold">
-                          S/ {selectedProjector?.subTotal}
+                          S/ {displayPrice?.toFixed(2)}
                         </span>
                       </div>
                     </th>

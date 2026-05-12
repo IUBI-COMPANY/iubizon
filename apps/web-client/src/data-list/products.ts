@@ -61,7 +61,7 @@ const productsData: Product[] = [
   {
     id: "bundle-interactivo",
     model: "Bundle Complete 2025",
-    name: "Bundle Interactivo Completo 2025 - Transforma Tu Proyector en Pizarra Digital",
+    name: "Bundle interactivo: Transforma tu espacio en un espacio dinámico.",
     stock: 4,
     condition: "new",
     description:
@@ -89,7 +89,7 @@ const productsData: Product[] = [
   {
     id: "duo-interactivo",
     model: "Touch y Adaptador Inalámbrico",
-    name: "Duo Interactivo - Touch + WiFi para Aulas",
+    name: "Duo Interactivo: Transforma cualquier proyector en interactivo",
     stock: 4,
     condition: "new",
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
