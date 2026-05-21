@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks';
@@ -39,7 +39,8 @@ function MessagesContent() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const convParam = searchParams.get('conversation');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -136,7 +137,6 @@ function MessagesContent() {
 
       setConversations(conversationsWithDetails);
 
-        const convParam = searchParams.get('conversation');
         if (convParam) {
           const found = conversationsWithDetails.find(c => c.id === convParam);
           if (found) setSelectedConversation(found);
@@ -149,7 +149,7 @@ function MessagesContent() {
     };
 
     fetchConversations();
-  }, [user, supabase, searchParams, authLoading]);
+  }, [user, supabase, convParam, authLoading]);
 
   useEffect(() => {
     const fetchMessages = async () => {
