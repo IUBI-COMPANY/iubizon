@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
@@ -20,6 +20,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justRegistered, setJustRegistered] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('registered') === 'true') {
+        setJustRegistered(true);
+        const newUrl = window.location.pathname + '?' + params.toString().replace(/&?registered=true/, '').replace(/^\?$/, '');
+        window.history.replaceState(null, '', newUrl || window.location.pathname);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +50,11 @@ export default function LoginPage() {
 
       if (error) {
         if (error.message.includes('Email not confirmed')) {
-          setError('Debes confirmar tu email antes de iniciar sesión');
+          setError('Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          setError('Email o contraseña incorrectos. Si acabas de registrarte, revisa tu email para confirmar tu cuenta.');
         } else {
-          setError('Email o contraseña incorrectos: ' + error.message);
+          setError(error.message);
         }
       } else {
         router.push('/user/dashboard');
@@ -74,6 +88,11 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {justRegistered && (
+              <div className="p-3 bg-[#f25c05]/10 text-[#f25c05] text-sm rounded-lg">
+                ¡Cuenta creada con éxito! Revisa tu email para confirmar tu cuenta antes de iniciar sesión.
+              </div>
+            )}
             {error && (
               <div className="p-3 bg-[#ef4444]/10 text-[#ef4444] text-sm rounded-lg">
                 {error}

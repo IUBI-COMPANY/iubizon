@@ -58,7 +58,13 @@ export default function RegisterPage() {
     const { error } = await signUp(email, password, name);
 
     if (error) {
-      setError('Error al crear la cuenta: ' + error.message);
+      if (error.message.includes('rate limit')) {
+        setError('Has excedido el límite de intentos. Espera al menos 1 hora antes de volver a intentarlo.');
+      } else if (error.message.includes('already registered') || error.message.includes('already exists')) {
+        setError('Este email ya está registrado. Inicia sesión o recupera tu contraseña.');
+      } else {
+        setError('Error al crear la cuenta: ' + error.message);
+      }
     } else {
       const { error: signInError } = await signIn(email, password);
       
