@@ -47,7 +47,10 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
     if (!error) {
-      const redirectResponse = NextResponse.redirect(`${origin}${next}`);
+      // For recovery, redirect to the reset password page so the user can set a new password
+      const redirectTo = type === 'recovery' ? '/auth/reset-password' : next;
+      const redirectUrl = next.startsWith('http') ? next : `${origin}${redirectTo}`;
+      const redirectResponse = NextResponse.redirect(redirectUrl);
       supabaseResponse.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value);
       });
