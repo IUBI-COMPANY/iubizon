@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Info, XCircle } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 import { Product } from "@/data-list/products";
 import { DetailProductCondition } from "@/data-list/productsCondition";
 import { PurchaseModal } from "./PurchaseModal";
@@ -127,22 +128,7 @@ export const InformationAndPriceCard = ({
             )}
           </div>
 
-          {/* 3. STOCK Y DISPONIBILIDAD */}
-          <div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-200">
-            {product.stock <= 0 ? (
-              <p className="text-xs text-red-600 font-medium">
-                Sin stock •{" "}
-                <span className="font-semibold">Compra a pedido</span>
-              </p>
-            ) : (
-              <p className="text-xs text-emerald-600 font-medium">
-                ✓ Stock disponible: {product.stock} unidad
-                {product.stock !== 1 ? "es" : ""}
-              </p>
-            )}
-          </div>
-
-          {/* 4. CONDICIÓN DEL PRODUCTO */}
+          {/* 3. CONDICIÓN DEL PRODUCTO */}
           {product?.condition && (
             <div className="mb-5">
               <div className="flex items-center gap-2 flex-wrap">
@@ -248,6 +234,44 @@ export const InformationAndPriceCard = ({
             </div>
           )}
 
+          {/* STOCK Y DISPONIBILIDAD */}
+          <div className="mb-4 p-3 rounded-xl bg-gray-50 border border-gray-200">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                {product.stock <= 0 ? (
+                  <span className="text-sm text-red-600 font-semibold">
+                    Sin stock • Compra a pedido
+                  </span>
+                ) : (
+                  <span className="text-sm text-gray-800 font-semibold">
+                    Stock: {product.stock} unidad
+                    {product.stock !== 1 ? "es" : ""}
+                  </span>
+                )}
+              </div>
+              {product?.availability && (
+                <span
+                  className={twMerge(
+                    "text-[11px] font-bold px-2.5 py-1 rounded-full text-white",
+                    product.availability === "inmediata"
+                      ? "bg-green-600"
+                      : "bg-blue-600",
+                  )}
+                >
+                  {product.availability === "inmediata"
+                    ? "Disponible"
+                    : "Importación"}
+                </span>
+              )}
+            </div>
+            {product?.availability === "importacion" && (
+              <p className="mt-2 text-[11px] text-blue-700 leading-relaxed">
+                Nos encargamos de toda la logística: importación, aduanas y
+                envío directo a tu dirección. Solo esperas de 10 a 13 días.
+              </p>
+            )}
+          </div>
+
           {/* SELECTOR DE CANTIDAD */}
           <div className="mb-6 flex justify-center">
             <QuantitySelector
@@ -265,6 +289,12 @@ export const InformationAndPriceCard = ({
           >
             {product.stock <= 0 ? "Comprar a pedido" : "Comprar ahora"}
           </button>
+
+          <p className="mt-3 text-center text-[11px] text-gray-500 leading-relaxed">
+            Compras con boleta o factura es + el 18% de IGV.
+            <br />
+            Pagos con tarjeta + 5%.
+          </p>
         </div>
       </section>
 

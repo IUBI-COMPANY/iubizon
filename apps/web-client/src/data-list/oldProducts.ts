@@ -38,6 +38,7 @@ export interface Product extends Price {
   classification?: Classification;
   technicalSheetUrl?: string;
   gama?: "baja" | "media" | "alta" | "muy alta";
+  availability?: "inmediata" | "importacion";
 }
 
 interface Price {

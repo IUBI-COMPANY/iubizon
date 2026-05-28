@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { twMerge } from "tailwind-merge";
 import { Product } from "@/data-list/products";
 
 interface Props {
@@ -22,6 +23,21 @@ export const ProductCard = ({ product }: Props) => {
           {product?.badge && (
             <span className="absolute top-1.5 left-1.5 z-10 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
               {product.badge}
+            </span>
+          )}
+          {product?.availability && (
+            <span
+              className={twMerge(
+                "absolute top-1.5 left-1.5 z-10 text-white text-[9px] font-bold px-1.5 py-0.5 rounded",
+                product.availability === "inmediata"
+                  ? "bg-green-600"
+                  : "bg-blue-600",
+                product?.badge && "top-7",
+              )}
+            >
+              {product.availability === "inmediata"
+                ? "Disponible"
+                : "Importación"}
             </span>
           )}
           {hasDiscount && (

@@ -40,6 +40,7 @@ export interface Product extends Price {
   technicalSheetUrlForDownload?: string;
   gama?: "baja" | "media" | "alta" | "muy alta";
   withIgv?: boolean;
+  availability?: "inmediata" | "importacion";
 }
 
 interface Price {
@@ -68,6 +69,7 @@ const productsData: Product[] = [
       "Transforma cualquier proyector en una experiencia interactiva profesional",
     price: 7490,
     badge: "Bundle",
+    availability: "inmediata",
     mainImage: "/productos/bundle/bundlepack2.png",
     media: [
       { type: "image", src: "/productos/bundle/upside109W.png" },
@@ -95,6 +97,7 @@ const productsData: Product[] = [
     description: "Touch Interactivo + Adaptador Inalámbrico en un solo paquete",
     price: 5790,
     badge: "Dúo",
+    availability: "inmediata",
     mainImage: "/productos/bundle/duo-interactivo.png",
     media: [
       { type: "image", src: "/productos/bundle/touch.png" },
@@ -118,6 +121,7 @@ const productsData: Product[] = [
     description: "Accesorio de proyección",
     price: 190.0,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/ELPAP07/Elpap07-1.jpg",
     media: [
       { type: "image", src: "/productos/ELPAP07/Elpap07-2.jpg" },
@@ -262,6 +266,7 @@ const productsData: Product[] = [
     description: "Accesorio de proyección",
     price: 350.0,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/ELPAP10/Elpap10-1.jpg",
     media: [
       { type: "image", src: "/productos/ELPAP10/Elpap10-2.jpg" },
@@ -349,6 +354,7 @@ const productsData: Product[] = [
     description: "Accesorio de proyección",
     price: 490.0,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/ELPAP11/Elpap11-1.jpg",
     media: [
       { type: "image", src: "/productos/ELPAP11/Elpap11-2.jpg" },
@@ -466,6 +472,7 @@ const productsData: Product[] = [
     description: "",
     price: 390,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/HY350/Magic.jpg",
     media: [
       { type: "image", src: "/productos/HY350/Magic-1.jpg" },
@@ -533,6 +540,7 @@ const productsData: Product[] = [
     description: "",
     price: 20,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/Cable-hdmi/Cable-hdmi.jpg",
     media: [
       { type: "image", src: "/productos/Cable-hdmi/Cable-hdmi-2.jpg" },
@@ -581,6 +589,7 @@ const productsData: Product[] = [
     description: "",
     price: 25,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/Cable-poder/Cable-poder.jpg",
     media: [
       { type: "image", src: "/productos/Cable-poder/Cable-poder-2.jpg" },
@@ -629,6 +638,7 @@ const productsData: Product[] = [
     description: "",
     price: 16,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/Cable-vga/Cable-vga.jpg",
     media: [
       { type: "image", src: "/productos/Cable-vga/Cable-vga-2.jpg" },
@@ -675,6 +685,7 @@ const productsData: Product[] = [
     description: "",
     price: 45,
     badge: "Nuevo",
+    availability: "inmediata",
     mainImage: "/productos/Control/control-epson.jpg",
     media: [
       { type: "image", src: "/productos/Control/control-epson-2.jpg" },
@@ -721,6 +732,7 @@ const productsData: Product[] = [
     price: 40,
     badge: "Nuevo",
     withIgv: true,
+    availability: "inmediata",
     mainImage: "/productos/Filtro/Filtro.jpg",
     media: [
       { type: "image", src: "/productos/Filtro/Filtro-2.jpg" },
@@ -771,6 +783,7 @@ const productsData: Product[] = [
       "Proyector de tiro largo con 2700 lumens, ideal para aulas y salas de reuniones medianas",
     price: 1200,
     badge: "Open Box",
+    availability: "inmediata",
     mainImage: "/productos/97H-open-box/1.jpg",
     media: [
       { type: "image", src: "/productos/97H-open-box/1.jpg" },
@@ -829,6 +842,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
       "Proyector de tiro corto con 2700 lumens, perfecto para espacios pequeños y pizarras interactivas",
     price: 1200,
     badge: "Open Box",
+    availability: "inmediata",
     mainImage: "/productos/520-openbox/1.jpg",
     media: [
       { type: "image", src: "/productos/520-openbox/1.jpg" },
@@ -877,46 +891,44 @@ Nos encontramos en Chorrillos, Lima
 
 WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
   },
-  // Lote 7 Proyectores
+  // Lote 20 Proyectores 97H
   {
-    id: "lote-7-proyectores",
-    model: "Lote-7-Proyectores",
-    name: "Lote 7 Proyectores Epson 3800 y 4000 Lumens - Precio por Volumen",
-    stock: 1,
+    id: "lote-97H-20unid",
+    model: "PowerLite-97H",
+    name: "Proyector Epson PowerLite 97H 3LCD 2700 Lúmenes - Lote 20 Unidades",
+    stock: 20,
     condition: "reconditioned",
     description:
-      "Lote de 7 proyectores Epson, ideales para aulas y oficinas. Precio especial Llevando 5 unidades a más.",
-    price: 6300,
+      "Proyector Epson PowerLite 97H 3LCD de 2700 lúmenes con altavoces de 16 W.",
+    price: 800,
     badge: "Lote",
     withIgv: true,
-    mainImage: "/productos/lote-7-proyectores/1.jpg",
+    availability: "importacion",
+    mainImage: "/productos/lote-97H-20unid/lote-20-97h.webp",
     media: [
-      { type: "image", src: "/productos/lote-7-proyectores/1.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/2.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/3.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/4.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/5.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/6.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/7.jpg" },
-      { type: "image", src: "/productos/lote-7-proyectores/8.jpg" },
+      { type: "image", src: "/productos/lote-97H-20unid/lote-20-97h.webp" },
+      { type: "image", src: "/productos/lote-97H-20unid/97h-1.webp" },
+      { type: "image", src: "/productos/lote-97H-20unid/97h-2.webp" },
+      { type: "image", src: "/productos/lote-97H-20unid/97h-3.webp" },
+      { type: "image", src: "/productos/lote-97H-20unid/97H-4.webp" },
     ],
     displayTechnology: "3LCD",
-    lumensANSI: 3800,
+    lumensANSI: 2700,
     brand: "Epson",
     type: "Lote",
     connectivity: "HDMI, VGA, USB",
     features:
-      "Proyectores Epson 3800-4000 lumens, Ideal para aulas y oficinas grandes",
+      "Proyector Epson PowerLite 97H 2700 lúmenes, altavoz 16W, XGA, ideal para aulas y oficinas",
     nativeResolution: "XGA",
     aspectRatio: "4:3",
     category: ["Lote", "Proyectores", "Epson"],
     note: `🚨 OPORTUNIDAD IRREPETIBLE 🚨
 
-Lote de 7 proyectores Epson de exhibición, listos para usar desde el primer día:
+Lote de 20 proyectores Epson PowerLite 97H usados, listos para usar:
 
-🔹 Modelo 980W de 3800 lúmenes (1 unidad disponible)
-🔹 Modelo 970 de 4000 lúmenes (solo 1 unidad)
-🔹 Modelo 109W de 4000 lúmenes (solo 5 unidad)
+🔹 Modelo PowerLite 97H de 2700 lúmenes con altavoz de 16 W
+🔹 20 unidades disponibles — Tecnología 3LCD
+🔹 Resolución XGA (1024x768), HDMI, VGA, USB
 
 Ideales para colegios, empresas o revendedores que buscan equiparse bien sin hacer una gran inversión.
 
@@ -926,14 +938,276 @@ Ideales para colegios, empresas o revendedores que buscan equiparse bien sin hac
 ✔ Mejor precio por llevar todo el lote
 ✔ Perfectos para equipar varios espacios o revender con buen margen
 
-- Precio al por mayor: S/ 900 soles, mínimo 3 unidades a más.
-- Precio al por menor: S/ 1300 soles + caja, accesorios y garantía 6 meses.
+- Precio por unidad: S/ 800 soles
+
+📦 Tiempo de entrega: 10 a 13 días (importación directa)
 
 💡 Si estabas buscando varios proyectores, esta es de esas oportunidades que no aparecen seguido…
 
 🇺🇸 Somos importadores directos: también podemos traerte proyectores por pedido según el modelo que necesites, siempre al mejor precio.
 
 📩 Escríbeme ahora y te paso precio por lote antes de que alguien más se adelante.
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // Lote 30 Proyectores 99W
+  {
+    id: "99W-lote-30unid",
+    model: "H578A",
+    name: "Proyector Epson 99W - H578A WXGA 3000 Lúmenes - Lote 30 Unidades",
+    stock: 30,
+    condition: "reconditioned",
+    description:
+      "Proyector Epson H578A WXGA de 3000 lúmenes. Precio especial por volumen.",
+    price: 850,
+    badge: "Lote",
+    withIgv: true,
+    availability: "importacion",
+    mainImage: "/productos/99W-lote-30unid/99W-lote-30unid.webp",
+    media: [
+      { type: "image", src: "/productos/99W-lote-30unid/99W-lote-30unid.webp" },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-2.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-3.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-4.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-5.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-6.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-7.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-8.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-9.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-10.webp",
+      },
+      {
+        type: "image",
+        src: "/productos/99W-lote-30unid/99W-lote-30unid-11.webp",
+      },
+    ],
+    displayTechnology: "3LCD",
+    lumensANSI: 3000,
+    brand: "Epson",
+    type: "Lote",
+    connectivity: "HDMI, VGA, USB",
+    features:
+      "Proyector Epson H578A WXGA 3000 lúmenes, ideal para aulas y oficinas",
+    nativeResolution: "WXGA",
+    aspectRatio: "16:10",
+    category: ["Lote", "Proyectores", "Epson"],
+    note: `🚨 OPORTUNIDAD IRREPETIBLE 🚨
+
+Lote de 30 proyectores Epson H578A usados, listos para usar:
+
+🔹 Modelo H578A WXGA de 3000 lúmenes
+🔹 30 unidades disponibles — Tecnología 3LCD
+🔹 Resolución WXGA (1280x800), HDMI, VGA, USB
+
+Ideales para colegios, empresas o revendedores que buscan equiparse bien sin hacer una gran inversión.
+
+✨ ¿Por qué aprovechar esta oportunidad ahora?
+✔ Equipos originales Epson
+✔ Funcionamiento 100% verificado
+✔ Mejor precio por llevar todo el lote
+✔ Perfectos para equipar varios espacios o revender con buen margen
+
+- Precio por unidad: S/ 850 soles
+
+📦 Tiempo de entrega: 10 a 13 días (importación directa)
+
+💡 Si estabas buscando varios proyectores, esta es de esas oportunidades que no aparecen seguido…
+
+🇺🇸 Somos importadores directos: también podemos traerte proyectores por pedido según el modelo que necesites, siempre al mejor precio.
+
+📩 Escríbeme ahora y te paso precio por lote antes de que alguien más se adelante.
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // NEC VT695 Open Box (en caja)
+  {
+    id: "nec-vt695",
+    model: "VT695",
+    name: "Proyector NEC VT695 + Convertidor VGA a HDMI y Accesorios (en Caja)",
+    stock: 2,
+    condition: "new",
+    badge: "Open Box",
+    description:
+      "Proyector NEC VT695 en caja con todos sus accesorios. Incluye convertidor VGA a HDMI, cable VGA, cable de poder, control remoto, pilas y rack para montaje.",
+    price: 550,
+    withIgv: true,
+    availability: "inmediata",
+    mainImage: "/productos/NEC-en-caja/foto-1.jpg",
+    media: [
+      { type: "image", src: "/productos/NEC-en-caja/foto-1.jpg" },
+      { type: "image", src: "/productos/NEC-en-caja/foto-2.jpg" },
+      { type: "image", src: "/productos/NEC-en-caja/foto-3.jpg" },
+      { type: "image", src: "/productos/NEC-en-caja/foto-4.jpg" },
+      { type: "image", src: "/productos/NEC-en-caja/foto-5.jpg" },
+    ],
+    displayTechnology: "LCD",
+    lumensANSI: 2500,
+    brand: "NEC",
+    type: "Proyector",
+    connectivity: "VGA, RCA, S-Video",
+    features:
+      "Proyector NEC VT695 en caja con rack de montaje y todos los accesorios incluidos.",
+    nativeResolution: "XGA",
+    aspectRatio: "4:3",
+    category: ["Proyectores", "NEC"],
+    note: `Proyector NEC VT695 en caja, en perfecto estado de funcionamiento. Open Box: equipo de exhibición con muy poco uso.
+
+🔹 Modelo NEC VT695 — resolución XGA (1024x768)
+🔹 2500 lúmenes — ideal para salas de reuniones y aulas
+🔹 Conexiones: VGA, RCA, S-Video
+
+📦 ACCESORIOS INCLUIDOS:
+✔ Cable VGA
+✔ Convertidor VGA a HDMI
+✔ Cable de poder
+✔ Control remoto
+✔ Pilas
+✔ Rack de montaje (solo versión en caja)
+
+✅ Garantía: 6 meses
+✅ Disponibilidad inmediata
+✅ Equipo probado y 100% funcional
+
+📩 Escríbeme para coordinar la entrega.
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // NEC VT695 Open Box (en bolso)
+  {
+    id: "nec-vt695-bolso",
+    model: "VT695",
+    name: "Proyector NEC VT695 + Convertidor VGA a HDMI y Accesorios (en Bolso)",
+    stock: 1,
+    condition: "new",
+    badge: "Open Box",
+    description:
+      "Proyector NEC VT695 en bolso de transporte con todos sus accesorios. Incluye convertidor VGA a HDMI, cable VGA, cable de poder, control remoto y pilas.",
+    price: 500,
+    withIgv: true,
+    availability: "inmediata",
+    mainImage: "/productos/NEC-en-bolso/IMG_20260527_112617.jpg",
+    media: [
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112617.jpg" },
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112635.jpg" },
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112654.jpg" },
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112707.jpg" },
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112724.jpg" },
+      { type: "image", src: "/productos/NEC-en-bolso/IMG_20260527_112822.jpg" },
+    ],
+    displayTechnology: "LCD",
+    lumensANSI: 2500,
+    brand: "NEC",
+    type: "Proyector",
+    connectivity: "VGA, RCA, S-Video",
+    features:
+      "Proyector NEC VT695 en bolso de transporte con todos los accesorios incluidos.",
+    nativeResolution: "XGA",
+    aspectRatio: "4:3",
+    category: ["Proyectores", "NEC"],
+    note: `Proyector NEC VT695 en bolso de transporte, en perfecto estado de funcionamiento. Open Box: equipo de exhibición con muy poco uso.
+
+🔹 Modelo NEC VT695 — resolución XGA (1024x768)
+🔹 2500 lúmenes — ideal para salas de reuniones y aulas
+🔹 Conexiones: VGA, RCA, S-Video
+
+📦 ACCESORIOS INCLUIDOS:
+✔ Cable VGA
+✔ Convertidor VGA a HDMI
+✔ Cable de poder
+✔ Control remoto
+✔ Pilas
+✔ Bolso de transporte
+
+✅ Garantía: 6 meses
+✅ Disponibilidad inmediata
+✅ Equipo probado y 100% funcional
+
+📩 Escríbeme para coordinar la entrega.
+
+Nos encontramos en Chorrillos, Lima
+
+WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
+  },
+  // Lámpara ELPLP88
+  {
+    id: "elplp88-lamp",
+    model: "ELPLP88",
+    name: "Lámpara de Repuesto ELPLP88 Compatible para Proyectores Epson",
+    stock: 17,
+    condition: "new",
+    badge: "Premiun",
+    description:
+      "Lámpara de repuesto compatible ELPLP88 para proyectores Epson. Nueva, alto brillo y larga vida útil. La mejor alternativa calidad-precio después de la original.",
+    price: 270,
+    withIgv: true,
+    availability: "inmediata",
+    mainImage: "/productos/elplp88-lamp/elplp88-1.webp",
+    media: [
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-1.webp" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-2.webp" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-3.png" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-4.png" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-5.png" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-6.png" },
+      { type: "image", src: "/productos/elplp88-lamp/elplp88-7.png" },
+    ],
+    brand: "Epson",
+    type: "Repuesto",
+    features:
+      "Lámpara ELPLP88 compatible, nueva. Alto brillo, larga duración. Mejor alternativa a la original.",
+    category: ["Repuestos", "Lámparas", "Epson"],
+    note: `Lámpara de repuesto compatible ELPLP88 para proyectores Epson. Nueva, sin uso.
+
+🔹 La mejor opción después de la original epson
+🔹 Funciona perfectamente, mismo brillo y calidad de imagen
+🔹 Vida útil estimada: 4000-5000 horas (modo eco)
+🔹 Instalación sencilla — viene lista para colocar
+
+📋 COMPATIBLE CON PROYECTORES EPSON:
+PowerLite 97H, 98H, 99W, S9, 82c, 83c, 83+, 822p, 823p, 824p, 825p
+PowerLite 84, 84+, 85, 85+, 822+, 823+
+PowerLite 420, 430, 435W, 450W
+BrightLink 450Wi, 455Wi, 460Wi
+
+✅ 0 horas de uso
+✅ Producto probado y verificado
+✅ Disponibilidad inmediata
+
+📦 Incluye: Lámpara ELPLP88 lista para instalar
+
+📩 Consulta por compatibilidad con otros modelos. Si no estás seguro, escríbeme y te ayudo a verificar.
 
 Nos encontramos en Chorrillos, Lima
 
