@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import Image from "next/image";
 import { productsCondition } from "@/data-list/productsCondition";
 import { products } from "@/data-list/products";
-import { Filter, Package, ShoppingCart, Star } from "lucide-react";
+import { Filter, Package, ShoppingCart, Star, Zap } from "lucide-react";
 
 export default function ProductsClientPage() {
   const breadcrumbData = {
@@ -35,10 +35,24 @@ export default function ProductsClientPage() {
   };
 
   const productsByCondition = {
+    innovadores: {
+      name: "Innovadores",
+      description:
+        "Productos tecnológicos que transforman la experiencia de proyección.",
+      products: sortProductsBySpecial(
+        products.filter((p) =>
+          ["bundle-interactivo", "duo-interactivo"].includes(p.id),
+        ),
+      ),
+    },
     new: {
       ...productsCondition.new,
       products: sortProductsBySpecial(
-        products.filter((product) => product.condition === "new"),
+        products.filter(
+          (product) =>
+            product.condition === "new" &&
+            !["bundle-interactivo", "duo-interactivo"].includes(product.id),
+        ),
       ),
     },
     reconditioned: {
@@ -51,7 +65,14 @@ export default function ProductsClientPage() {
 
   const stats = {
     total: products.length,
-    new: products.filter((p) => p.condition === "new").length,
+    innovadores: products.filter((p) =>
+      ["bundle-interactivo", "duo-interactivo"].includes(p.id),
+    ).length,
+    new: products.filter(
+      (p) =>
+        p.condition === "new" &&
+        !["bundle-interactivo", "duo-interactivo"].includes(p.id),
+    ).length,
     reconditioned: products.filter((p) => p.condition === "reconditioned")
       .length,
     totalStock: products.reduce((acc, p) => acc + p.stock, 0),
@@ -133,6 +154,45 @@ export default function ProductsClientPage() {
 
         {/* Products Section */}
         <main className="max-w-[1370px] mx-auto px-4 py-10">
+          {/* Innovadores */}
+          {productsByCondition.innovadores.products.length > 0 && (
+            <section className="mb-16 relative">
+              <div className="bg-gradient-to-br from-white to-purple-50/30 rounded-2xl p-8 shadow-sm border-2 border-purple-100/50">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <Zap className="w-8 h-8 text-purple-500" />
+                          <div className="absolute inset-0 w-8 h-8 text-purple-500 blur-sm"></div>
+                        </div>
+                        <h2 className="text-3xl font-bold text-purple-700">
+                          {productsByCondition.innovadores.name}
+                        </h2>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mt-2 max-w-2xl">
+                      {productsByCondition.innovadores.description}
+                    </p>
+                    <div className="mt-3 inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md">
+                      <span>
+                        Tecnología de punta para potenciar tu experiencia
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-6 flex-wrap">
+                  {productsByCondition.innovadores.products.map((product) => (
+                    <div key={product.id} className="w-full sm:w-[calc(50%-12px)] lg:max-w-[320px]">
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* New Products */}
           {productsByCondition.new.products.length > 0 && (
             <section className="mb-16 relative">

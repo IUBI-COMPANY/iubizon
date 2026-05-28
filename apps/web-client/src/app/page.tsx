@@ -26,6 +26,16 @@ export default function Home() {
   };
 
   const productsByCondition = {
+    innovadores: {
+      name: "Innovadores",
+      description:
+        "Productos tecnológicos que transforman la experiencia de proyección.",
+      products: sortProductsBySpecial(
+        products.filter((p) =>
+          ["bundle-interactivo", "duo-interactivo"].includes(p.id),
+        ),
+      ),
+    },
     "gama-alta": {
       ...productsCondition["gama-alta"],
       products: sortProductsBySpecial(
@@ -37,7 +47,9 @@ export default function Home() {
       products: sortProductsBySpecial(
         products.filter(
           (products) =>
-            products.condition === "new" && products.gama !== "alta",
+            products.condition === "new" &&
+            products.gama !== "alta" &&
+            !["bundle-interactivo", "duo-interactivo"].includes(products.id),
         ),
       ),
     },
@@ -54,6 +66,35 @@ export default function Home() {
       <BannerSlider banners={BANNERS} autoPlay autoPlayInterval={7000} />
       <div className="min-h-screen h-auto w-full bg-slate-50">
         <main id="lista" className="mx-auto max-w-[1370px] px-6 py-10">
+          {productsByCondition.innovadores.products.length > 0 && (
+            <div className="!mt-6 !mb-[3em]">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-2xl font-bold text-purple-600">
+                      {productsByCondition.innovadores.name}
+                    </h2>
+                  </div>
+                  <p className="text-sm text-secondary/70 max-w-[60em]">
+                    {productsByCondition.innovadores.description}
+                  </p>
+                  <p className="text-purple-600 text-[.8em] mt-2 font-medium">
+                    Tecnología de punta para potenciar tu experiencia.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-center gap-3 flex-wrap">
+                {productsByCondition.innovadores.products.map(
+                  (product, index) => (
+                    <div key={index} className="w-full sm:w-[calc(50%-6px)] lg:max-w-[320px]">
+                      <ProductCard product={product} />
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+
           {productsByCondition["gama-alta"].products.length > 0 && (
             <div className="!mt-6 !mb-[3em]">
               <div className="mb-4 flex items-start justify-between gap-4">
