@@ -1,6 +1,7 @@
 import React from "react";
 import { products } from "@/data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { InnovadorCard } from "@/components/ui/InnovadorCard";
 import { productsCondition } from "@/data-list/productsCondition";
 import Link from "next/link";
 import BannerSlider from "@/components/ui/BannerSlider";
@@ -71,23 +72,23 @@ export default function Home() {
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-2xl font-bold text-purple-600">
+                    <h2 className="text-2xl font-bold text-secondary">
                       {productsByCondition.innovadores.name}
                     </h2>
                   </div>
                   <p className="text-sm text-secondary/70 max-w-[60em]">
                     {productsByCondition.innovadores.description}
                   </p>
-                  <p className="text-purple-600 text-[.8em] mt-2 font-medium">
+                  <p className="text-secondary text-[.8em] mt-2 font-medium">
                     Tecnología de punta para potenciar tu experiencia.
                   </p>
                 </div>
               </div>
-              <div className="flex justify-center gap-3 flex-wrap">
+              <div className="flex flex-col lg:flex-row gap-4">
                 {productsByCondition.innovadores.products.map(
                   (product, index) => (
-                    <div key={index} className="w-full sm:w-[calc(50%-6px)] lg:max-w-[320px]">
-                      <ProductCard product={product} />
+                    <div key={index} className="flex-1">
+                      <InnovadorCard product={product} />
                     </div>
                   ),
                 )}

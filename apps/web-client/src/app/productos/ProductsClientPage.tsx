@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { InnovadorCard } from "@/components/ui/InnovadorCard";
 import Image from "next/image";
 import { productsCondition } from "@/data-list/productsCondition";
 import { products } from "@/data-list/products";
@@ -157,16 +158,16 @@ export default function ProductsClientPage() {
           {/* Innovadores */}
           {productsByCondition.innovadores.products.length > 0 && (
             <section className="mb-16 relative">
-              <div className="bg-gradient-to-br from-white to-purple-50/30 rounded-2xl p-8 shadow-sm border-2 border-purple-100/50">
+              <div className="bg-gradient-to-br from-white to-blue-50/30 rounded-2xl p-8 shadow-sm border-2 border-secondary/20">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3 flex-wrap">
                       <div className="flex items-center gap-3">
                         <div className="relative">
-                          <Zap className="w-8 h-8 text-purple-500" />
-                          <div className="absolute inset-0 w-8 h-8 text-purple-500 blur-sm"></div>
+                          <Zap className="w-8 h-8 text-secondary" />
+                          <div className="absolute inset-0 w-8 h-8 text-secondary blur-sm"></div>
                         </div>
-                        <h2 className="text-3xl font-bold text-purple-700">
+                        <h2 className="text-3xl font-bold text-secondary">
                           {productsByCondition.innovadores.name}
                         </h2>
                       </div>
@@ -174,7 +175,7 @@ export default function ProductsClientPage() {
                     <p className="text-gray-600 mt-2 max-w-2xl">
                       {productsByCondition.innovadores.description}
                     </p>
-                    <div className="mt-3 inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md">
+                    <div className="mt-3 inline-flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md">
                       <span>
                         Tecnología de punta para potenciar tu experiencia
                       </span>
@@ -182,10 +183,10 @@ export default function ProductsClientPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-center gap-6 flex-wrap">
+                <div className="flex flex-col lg:flex-row gap-6">
                   {productsByCondition.innovadores.products.map((product) => (
-                    <div key={product.id} className="w-full sm:w-[calc(50%-12px)] lg:max-w-[320px]">
-                      <ProductCard product={product} />
+                    <div key={product.id} className="flex-1">
+                      <InnovadorCard product={product} />
                     </div>
                   ))}
                 </div>
