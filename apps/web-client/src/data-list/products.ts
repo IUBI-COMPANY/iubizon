@@ -1089,6 +1089,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
 📦 ACCESORIOS INCLUIDOS:
 ✔ Cable VGA
 ✔ Convertidor VGA a HDMI
+✔ Cable HDMI
 ✔ Cable de poder
 ✔ Control remoto
 ✔ Pilas
@@ -1145,6 +1146,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
 📦 ACCESORIOS INCLUIDOS:
 ✔ Cable VGA
 ✔ Convertidor VGA a HDMI
+✔ Cable HDMI
 ✔ Cable de poder
 ✔ Control remoto
 ✔ Pilas

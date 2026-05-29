@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Product, products as allProducts } from "../../data-list/products";
 import { ProductCard } from "@/components/ui/ProductCard";
 
@@ -24,9 +24,25 @@ export default function OtherProductsCarousel({
     });
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [itemsPerView, setItemsPerView] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
-  const itemsPerView = 4;
+
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      setItemsPerView(window.innerWidth < 640 ? 2 : 4);
+    };
+    updateItemsPerView();
+    window.addEventListener("resize", updateItemsPerView);
+    return () => window.removeEventListener("resize", updateItemsPerView);
+  }, []);
+
   const totalSlides = Math.ceil(products.length / itemsPerView);
+
+  useEffect(() => {
+    if (currentIndex >= totalSlides) {
+      setCurrentIndex(Math.max(0, totalSlides - 1));
+    }
+  }, [itemsPerView, currentIndex, totalSlides]);
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
@@ -55,7 +71,7 @@ export default function OtherProductsCarousel({
             {products.map((product, index) => (
               <div
                 key={index}
-                className="w-[25%] flex-shrink-0 px-2"
+                className="flex-shrink-0 px-2"
                 style={{ width: `${100 / itemsPerView}%` }}
               >
                 <ProductCard product={product} />
