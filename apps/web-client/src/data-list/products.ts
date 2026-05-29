@@ -810,7 +810,7 @@ const productsData: Product[] = [
 
 Este proyector de tiro largo Epson 97H es ideal para lograr una imagen potente y clara en aulas, salas o negocios 🔥
 
-💰 Llévatelo hoy por solo S/ 1,200
+💰 Llévatelo hoy por solo S/ 1,100
 
 ✅ Imagen grande desde mayor distancia
 ✅ Perfecto para espacios amplios
@@ -840,7 +840,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
     condition: "new",
     description:
       "Proyector de tiro corto con 2700 lumens, perfecto para espacios pequeños y pizarras interactivas",
-    price: 1200,
+    price: 1000,
     badge: "Open Box",
     availability: "inmediata",
     mainImage: "/productos/520-openbox/1.jpg",
@@ -872,7 +872,7 @@ WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
 
 Exclusivo para areas pequeñas, se usa pegado a la pared.
 
-Proyector de tiro corto tipo educativo/profesional por solo S/ 1,200 😱
+Proyector de tiro corto tipo educativo/profesional por solo S/ 1,000 😱
 
 ✅ Imagen grande incluso en espacios pequeños
 ✅ Ideal para clases, presentaciones o negocios
