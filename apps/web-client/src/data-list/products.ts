@@ -472,6 +472,7 @@ const productsData: Product[] = [
     description: "",
     price: 390,
     badge: "Nuevo",
+    withIgv: true,
     availability: "inmediata",
     mainImage: "/productos/HY350/Magic.jpg",
     media: [
@@ -1333,7 +1334,6 @@ export const products: Product[] = orderBy(
         }),
         ...calcProductPricesDetails(product),
         campaign: "Tecnología interactiva",
-        withIgv: false,
       }) as Product,
   ),
   ["type", "stock"],

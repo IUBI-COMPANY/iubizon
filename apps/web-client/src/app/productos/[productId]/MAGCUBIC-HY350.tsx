@@ -521,6 +521,67 @@ export const MAGCUBICHY350 = ({ product }: SpecialProductProps) => {
         </div>
       </section>
 
+      {/* Xuper TV Section */}
+      <section className="py-20 md:py-32 px-4 bg-black relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+          <h2 className="text-[15vw] md:text-[10vw] font-black bg-gradient-to-r from-orange-400/10 via-amber-400/10 to-orange-400/10 bg-clip-text text-transparent whitespace-nowrap rotate-[-3deg] absolute top-1/4 -left-10">
+            XUPER
+          </h2>
+        </div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3">
+            Disponible con
+            <span className="block mt-2 bg-gradient-to-r from-yellow-200 via-orange-400 to-amber-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(251,146,60,0.5)]">
+              Xuper TV
+            </span>
+          </h2>
+          <p className="text-center text-gray-400 mb-12 md:mb-16 text-sm md:text-base max-w-2xl mx-auto">
+            A petición del cliente, el proyector puede venir con la app Xuper TV
+            preinstalada para acceder a contenido premium.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+            <div className="relative rounded-2xl overflow-hidden bg-gray-900 group ring-2 ring-orange-400/20 hover:ring-orange-400/50 transition-all duration-500">
+              <Image
+                src="/productos/HY350/xuper-1.webp"
+                alt="Xuper TV - Pantalla principal"
+                width={800}
+                height={600}
+                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-900 group ring-2 ring-orange-400/20 hover:ring-orange-400/50 transition-all duration-500">
+              <Image
+                src="/productos/HY350/xuper-2.webp"
+                alt="Xuper TV - Contenido disponible"
+                width={800}
+                height={600}
+                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-900 group ring-2 ring-orange-400/20 hover:ring-orange-400/50 transition-all duration-500">
+              <Image
+                src="/productos/HY350/xuper-3.webp"
+                alt="Xuper TV - Navegación"
+                width={800}
+                height={600}
+                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+            <div className="relative rounded-2xl overflow-hidden bg-gray-900 group ring-2 ring-orange-400/20 hover:ring-orange-400/50 transition-all duration-500">
+              <Image
+                src="/productos/HY350/xuper-4.webp"
+                alt="Xuper TV - Reproducción"
+                width={800}
+                height={600}
+                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Tech Specs Section */}
       <section
         id="especificaciones"
