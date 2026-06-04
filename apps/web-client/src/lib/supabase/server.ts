@@ -1,10 +1,5 @@
 import { createServerClient as createServerClientSSR, type CookieOptions } from '@supabase/ssr';
 
-interface CookieStore {
-  getAll(): Array<{ name: string; value: string }>;
-  setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>): void;
-}
-
 export const createServerClient = async () => {
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
@@ -17,13 +12,14 @@ export const createServerClient = async () => {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Called from Server Component
+            // Server Components can't set cookies — this is expected.
+            // Session refresh is handled by middleware.ts on every navigation.
           }
         },
       },
@@ -43,7 +39,7 @@ export async function getActiveProducts() {
 
   if (error) {
     console.error('Error fetching products:', error);
-    return [];
+    throw new Error('No se pueden cargar los productos en este momento. El servicio está en mantenimiento.');
   }
 
   const productsWithOrderedImages = data?.map(product => ({

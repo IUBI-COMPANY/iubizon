@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { createAuthClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -20,8 +20,8 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
     setError(null);
 
-    const supabaseAuth = createAuthClient();
-    const { error } = await supabaseAuth.auth.resetPasswordForEmail(email.trim(), {
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
 

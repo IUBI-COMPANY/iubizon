@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>) {
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
@@ -25,31 +25,36 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  let user = null;
-  try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-  } catch {
-    // Supabase unreachable — treat as unauthenticated, don't crash
+  // getClaims() cryptographically verifies the JWT and triggers session refresh
+  const { data, error } = await supabase.auth.getClaims();
+  const isAuthenticated = !error && !!data;
+
+  if (error) {
+    // Supabase unreachable — allow the request through,
+    // individual pages handle their own auth checks
+    return supabaseResponse;
   }
 
   const pathname = request.nextUrl.pathname;
+
   const isAuthPage = pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register');
-  const isProtectedPage = pathname.startsWith('/user/dashboard') ||
+  const isProtectedPage =
+    pathname.startsWith('/user/dashboard') ||
     pathname.startsWith('/user/profile') ||
     pathname.startsWith('/favorites') ||
     pathname.startsWith('/products/new') ||
     pathname.startsWith('/products/edit') ||
-    pathname.startsWith('/cart');
+    pathname.startsWith('/cart') ||
+    pathname.startsWith('/checkout');
 
-  if (!user && isProtectedPage) {
+  if (!isAuthenticated && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/login';
     redirectUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (user && isAuthPage) {
+  if (isAuthenticated && isAuthPage) {
     return NextResponse.redirect(new URL('/user/dashboard', request.url));
   }
 
@@ -58,6 +63,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - Static assets: svg, png, jpg, jpeg, gif, webp
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

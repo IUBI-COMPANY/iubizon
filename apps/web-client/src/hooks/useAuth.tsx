@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { createClient, createAuthClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -41,10 +41,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const supabase = useMemo(() => createClient(), []);
-  const supabaseAuth = useMemo(() => createAuthClient(), []);
 
   useEffect(() => {
     let mounted = true;
+    let resolved = false;
+
+    const resolveAuth = async (session: { user: { id: string } } | null) => {
+      if (resolved || !mounted) return;
+      resolved = true;
+
+      if (session?.user) {
+        const profile = await fetchProfile(supabase, session.user.id);
+        if (mounted) setUser(profile);
+      } else {
+        if (mounted) setUser(null);
+      }
+
+      if (mounted) setIsLoading(false);
+    };
+
+    // Proactively fetch the session on mount — don't wait for the listener
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      resolveAuth(session);
+    });
+
+    // Safety timeout: force isLoading off after 3 seconds if nothing resolved
+    const safetyTimer = setTimeout(() => {
+      if (mounted && !resolved) {
+        resolveAuth(null);
+      }
+    }, 3000);
 
     const {
       data: { subscription },
@@ -53,47 +79,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (event === "SIGNED_OUT") {
         setUser(null);
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
+        resolved = true;
         return;
       }
 
-      if (session?.user) {
-        const profile = await fetchProfile(supabase, session.user.id);
-        if (mounted) {
-          setUser(profile);
-        }
-      } else {
-        if (mounted) {
-          setUser(null);
-        }
-      }
-
-      if (mounted) {
-        setIsLoading(false);
-      }
+      await resolveAuth(session);
     });
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, [supabase]);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabaseAuth.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (error) return { error };
       if (!data.session || !data.user) return { error: new Error("Usuario no encontrado") };
-
-      // Sync session to SSR client so cookies are set for middleware
-      await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token,
-      });
 
       return { error: null };
     } catch (err) {
@@ -102,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabaseAuth.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -114,13 +123,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabaseAuth.auth.signOut();
     await supabase.auth.signOut();
     setUser(null);
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabaseAuth.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,

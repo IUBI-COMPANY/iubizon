@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { createAuthClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const supabaseAuth = useMemo(() => createAuthClient(), []);
+  const supabase = useMemo(() => createClient(), []);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,14 +25,14 @@ export default function ResetPasswordPage() {
     // detectSessionInUrl auto-processes the access_token from the hash
     // Then we check if a session was established
     const checkSession = async () => {
-      const { data } = await supabaseAuth.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       if (data.session) {
         setHasSession(true);
       }
       setCheckingSession(false);
     };
     checkSession();
-  }, [supabaseAuth]);
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export default function ResetPasswordPage() {
     setIsLoading(true);
     setError(null);
 
-    const { error } = await supabaseAuth.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       password,
     });
 

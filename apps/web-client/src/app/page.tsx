@@ -5,20 +5,50 @@ import { CategoryCarousel } from "@/components/features/categories/CategoryCarou
 import { Footer } from "@/components/features/layout/Footer";
 import { HeroSection } from "@/components/features/home/HeroSection";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { Alert } from "@/components/ui/Alert";
+import type { Product, Category } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+interface CategoryWithStats extends Category {
+  product_count: number;
+  sales_count: number;
+}
+
 export default async function MarketplaceHomePage() {
-  const [products, popularCategories] = await Promise.all([
-    getActiveProducts(),
-    getPopularCategories(6),
-  ]);
+  let products: Product[] = [];
+  let popularCategories: CategoryWithStats[] = [];
+  let maintenanceError: string | null = null;
+
+  try {
+    products = await getActiveProducts();
+  } catch (error) {
+    console.error('Failed to load products:', error);
+    maintenanceError =
+      'Estamos realizando tareas de mantenimiento. Algunos datos pueden no estar disponibles.';
+  }
+
+  try {
+    popularCategories = await getPopularCategories(6);
+  } catch (error) {
+    console.error('Failed to load categories:', error);
+    if (!maintenanceError) {
+      maintenanceError =
+        'Estamos realizando tareas de mantenimiento. Algunos datos pueden no estar disponibles.';
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <main className="grow">
         <HeroSection />
+
+        {maintenanceError && (
+          <div className="container mx-auto px-4 mt-6">
+            <Alert type="warning" message={maintenanceError} />
+          </div>
+        )}
 
         {/* Categorías Populares */}
         {popularCategories.length > 0 && (

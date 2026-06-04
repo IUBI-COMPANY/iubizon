@@ -57,7 +57,10 @@ export async function getPopularCategories(limit = 6): Promise<CategoryWithStats
     .in('slug', techSlugs)
     .order('sort_order', { ascending: true });
 
-  if (error || !categories) return [];
+  if (error || !categories) {
+    console.error('Error fetching categories:', error);
+    throw new Error('No se pueden cargar las categorías en este momento. El servicio está en mantenimiento.');
+  }
 
   const categoriesWithStats = await Promise.all(
     categories.map(async (category) => {
