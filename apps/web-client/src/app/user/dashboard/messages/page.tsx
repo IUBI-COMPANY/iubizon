@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { createClient } from '@/lib/supabase/client';
 import { formatRelativeTime } from '@/lib/utils';
-import { MessageCircle, Send, Search, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, Search, ArrowLeft, AlertCircle } from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -41,31 +41,40 @@ function MessagesContent() {
   const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
   const convParam = searchParams.get('conversation');
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
 
+  // Ref to auto-scroll to the latest message
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom whenever messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/auth/login?redirect=/user/dashboard/messages');
     }
   }, [user, authLoading, router]);
 
+  // ─── Fetch conversations ───────────────────────────────────────────────────
   useEffect(() => {
     const fetchConversations = async () => {
       if (authLoading) return;
-      
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
+      if (!user) return;
 
       setIsLoading(true);
+      const loadingTimeout = setTimeout(() => setIsLoading(false), 10_000);
 
       try {
         const { data: convs, error: convError } = await supabase
@@ -76,74 +85,77 @@ function MessagesContent() {
 
         if (convError) {
           console.error('Error fetching conversations:', convError);
-          setIsLoading(false);
           return;
         }
 
         if (!convs || convs.length === 0) {
           setConversations([]);
-          setIsLoading(false);
           return;
         }
 
-      const conversationsWithDetails = await Promise.all(
-        convs.map(async (conv) => {
-          const otherUserId = conv.buyer_id === user.id ? conv.seller_id : conv.buyer_id;
+        const conversationsWithDetails = (await Promise.all(
+          convs.map(async (conv) => {
+            try {
+              const otherUserId = conv.buyer_id === user.id ? conv.seller_id : conv.buyer_id;
 
-          const [userRes, productRes, lastMsgRes, unreadRes] = await Promise.all([
-            supabase.from('profiles').select('name, avatar_url').eq('id', otherUserId).maybeSingle(),
-            supabase.from('products').select('title').eq('id', conv.product_id).maybeSingle(),
-            supabase
-              .from('messages')
-              .select('content, created_at')
-              .eq('conversation_id', conv.id)
-              .order('created_at', { ascending: false })
-              .limit(1),
-            supabase
-              .from('messages')
-              .select('id', { count: 'exact' })
-              .eq('conversation_id', conv.id)
-              .neq('sender_id', user.id)
-              .is('read_at', null),
-          ]);
+              const [userRes, productRes, lastMsgRes, unreadRes] = await Promise.all([
+                supabase.from('profiles').select('name, avatar_url').eq('id', otherUserId).maybeSingle(),
+                supabase.from('products').select('title').eq('id', conv.product_id).maybeSingle(),
+                supabase
+                  .from('messages')
+                  .select('content, created_at')
+                  .eq('conversation_id', conv.id)
+                  .order('created_at', { ascending: false })
+                  .limit(1),
+                supabase
+                  .from('messages')
+                  .select('id', { count: 'exact' })
+                  .eq('conversation_id', conv.id)
+                  .neq('sender_id', user.id)
+                  .is('read_at', null),
+              ]);
 
-          const productImagesRes = await supabase
-            .from('product_images')
-            .select('url')
-            .eq('product_id', conv.product_id)
-            .order('position', { ascending: true })
-            .limit(1);
+              const productImagesRes = await supabase
+                .from('product_images')
+                .select('url')
+                .eq('product_id', conv.product_id)
+                .order('position', { ascending: true })
+                .limit(1);
 
-          const productTitle = productRes?.data?.title || 'Producto';
-          const productImage = productImagesRes.data && productImagesRes.data.length > 0 
-            ? productImagesRes.data[0].url 
-            : '';
-          const lastMsg = lastMsgRes.data && lastMsgRes.data.length > 0 ? lastMsgRes.data[0] : null;
-          
-          return {
-            id: conv.id,
-            productId: conv.product_id,
-            productTitle: productTitle,
-            productImage: productImage,
-            otherUserId,
-            otherUserName: userRes.data?.name || 'Usuario',
-            otherUserAvatar: userRes.data?.avatar_url || '',
-            lastMessage: lastMsg?.content || 'Sin mensajes',
-            lastMessageAt: lastMsg?.created_at || conv.created_at,
-            unreadCount: unreadRes.count || 0,
-          };
-        })
-      );
+              const lastMsg = lastMsgRes.data && lastMsgRes.data.length > 0 ? lastMsgRes.data[0] : null;
 
-      setConversations(conversationsWithDetails);
+              return {
+                id: conv.id,
+                productId: conv.product_id,
+                productTitle: productRes?.data?.title || 'Producto',
+                productImage:
+                  productImagesRes.data && productImagesRes.data.length > 0
+                    ? productImagesRes.data[0].url
+                    : '',
+                otherUserId,
+                otherUserName: userRes.data?.name || 'Usuario',
+                otherUserAvatar: userRes.data?.avatar_url || '',
+                lastMessage: lastMsg?.content || 'Sin mensajes',
+                lastMessageAt: lastMsg?.created_at || conv.created_at,
+                unreadCount: unreadRes.count || 0,
+              };
+            } catch (err) {
+              console.error(`[fetchConversations] Error details for conv ${conv.id}:`, err);
+              return null;
+            }
+          })
+        )).filter(Boolean) as Conversation[];
+
+        setConversations(conversationsWithDetails);
 
         if (convParam) {
-          const found = conversationsWithDetails.find(c => c.id === convParam);
+          const found = conversationsWithDetails.find((c) => c.id === convParam);
           if (found) setSelectedConversation(found);
         }
       } catch (err) {
         console.error('Error in fetchConversations:', err);
       } finally {
+        clearTimeout(loadingTimeout);
         setIsLoading(false);
       }
     };
@@ -151,59 +163,105 @@ function MessagesContent() {
     fetchConversations();
   }, [user, supabase, convParam, authLoading]);
 
+  // ─── Fetch messages for selected conversation ──────────────────────────────
   useEffect(() => {
+    // Clear previous messages and error when switching conversations
+    setMessages([]);
+    setMessagesError(null);
+
+    if (!selectedConversation) return;
+
     const fetchMessages = async () => {
-      if (!selectedConversation) return;
-
       setIsLoadingMessages(true);
-      const { data } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', selectedConversation.id)
-        .order('created_at', { ascending: true });
+      setMessagesError(null);
 
-      setMessages(data || []);
-      setIsLoadingMessages(false);
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', selectedConversation.id)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching messages:', error);
+          setMessagesError('No se pudieron cargar los mensajes. Intenta de nuevo.');
+          return;
+        }
+
+        setMessages(data || []);
+      } catch (err) {
+        console.error('Unexpected error fetching messages:', err);
+        setMessagesError('Error inesperado al cargar mensajes.');
+      } finally {
+        // ALWAYS turn off loading — this is the fix for the infinite spinner
+        setIsLoadingMessages(false);
+      }
     };
 
     fetchMessages();
   }, [selectedConversation, supabase]);
 
+  // ─── Send message ──────────────────────────────────────────────────────────
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
 
+    const messageContent = newMessage.trim();
     setIsSending(true);
-    try {
-      await supabase.from('messages').insert({
-        conversation_id: selectedConversation.id,
-        sender_id: user.id,
-        content: newMessage.trim(),
-      });
 
+    // Optimistic update — show message immediately
+    const optimisticMsg: Message = {
+      id: `optimistic-${Date.now()}`,
+      content: messageContent,
+      sender_id: user.id,
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setNewMessage('');
+
+    try {
+      const { data: insertedMsg, error: insertError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: selectedConversation.id,
+          sender_id: user.id,
+          content: messageContent,
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error sending message:', insertError);
+        // Remove optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        setNewMessage(messageContent);
+        alert('Error al enviar mensaje. Intenta de nuevo.');
+        return;
+      }
+
+      // Replace optimistic message with real one from DB
+      if (insertedMsg) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === optimisticMsg.id ? insertedMsg : m))
+        );
+      }
+
+      // Update conversation's updated_at and lastMessage preview
       await supabase
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', selectedConversation.id);
 
-      setNewMessage('');
-      
-      const newMsg: Message = {
-        id: Date.now().toString(),
-        content: newMessage.trim(),
-        sender_id: user.id,
-        created_at: new Date().toISOString(),
-      };
-      setMessages([...messages, newMsg]);
-      
-      const updatedConvs = conversations.map(c => 
-        c.id === selectedConversation.id 
-          ? { ...c, lastMessage: newMessage.trim(), lastMessageAt: new Date().toISOString() }
-          : c
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === selectedConversation.id
+            ? { ...c, lastMessage: messageContent, lastMessageAt: new Date().toISOString() }
+            : c
+        )
       );
-      setConversations(updatedConvs);
     } catch (err) {
-      console.error('Error sending message:', err);
-      alert('Error al enviar mensaje');
+      console.error('Unexpected error sending message:', err);
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      setNewMessage(messageContent);
     } finally {
       setIsSending(false);
     }
@@ -215,7 +273,8 @@ function MessagesContent() {
       c.productTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (authLoading || isLoading) {
+  // Auth loading — brief full-page spinner
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
@@ -241,6 +300,7 @@ function MessagesContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* ── Conversation list ── */}
             <Card className="md:col-span-1">
               <CardHeader>
                 <div className="relative">
@@ -255,13 +315,17 @@ function MessagesContent() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-[#e2e8f0]">
-                  {filteredConversations.length > 0 ? (
+                  {isLoading ? (
+                    <div className="p-8 flex justify-center">
+                      <div className="animate-spin w-6 h-6 border-2 border-[#f25c05] border-t-transparent rounded-full" />
+                    </div>
+                  ) : filteredConversations.length > 0 ? (
                     filteredConversations.map((conv) => (
                       <button
                         key={conv.id}
                         onClick={() => setSelectedConversation(conv)}
                         className={`w-full p-4 text-left hover:bg-[#f8fafc] transition-colors ${
-                          selectedConversation?.id === conv.id ? 'bg-[#f8fafc]' : ''
+                          selectedConversation?.id === conv.id ? 'bg-[#f0f9ff] border-l-2 border-[#f25c05]' : ''
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -269,6 +333,7 @@ function MessagesContent() {
                             src={conv.otherUserAvatar}
                             alt={conv.otherUserName}
                             size="md"
+                            fallback={conv.otherUserName?.[0] || 'U'}
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
@@ -276,14 +341,12 @@ function MessagesContent() {
                                 {conv.otherUserName}
                               </p>
                               {conv.unreadCount > 0 && (
-                                <Badge variant="default" className="shrink-0">
+                                <Badge variant="default" className="shrink-0 bg-[#f25c05]">
                                   {conv.unreadCount}
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-[#64748b] truncate">
-                              {conv.productTitle}
-                            </p>
+                            <p className="text-sm text-[#64748b] truncate">{conv.productTitle}</p>
                             <p className="text-xs text-[#94a3b8] mt-1">
                               {formatRelativeTime(conv.lastMessageAt)}
                             </p>
@@ -301,12 +364,18 @@ function MessagesContent() {
               </CardContent>
             </Card>
 
+            {/* ── Message panel ── */}
             <Card className="md:col-span-2">
               <CardContent className="p-6 h-[500px] flex flex-col">
                 {selectedConversation ? (
                   <>
-                    <div className="flex items-center gap-4 pb-4 border-b border-[#e2e8f0] mb-4">
-                      <Avatar src={selectedConversation.otherUserAvatar} size="md" />
+                    {/* Header */}
+                    <div className="flex items-center gap-4 pb-4 border-b border-[#e2e8f0] mb-4 shrink-0">
+                      <Avatar
+                        src={selectedConversation.otherUserAvatar}
+                        size="md"
+                        fallback={selectedConversation.otherUserName?.[0] || 'U'}
+                      />
                       <div>
                         <p className="font-medium text-[#112237]">
                           {selectedConversation.otherUserName}
@@ -317,50 +386,85 @@ function MessagesContent() {
                       </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto space-y-4 p-4">
+                    {/* Messages area */}
+                    <div className="flex-1 overflow-y-auto space-y-3 pr-1">
                       {isLoadingMessages ? (
-                        <div className="flex justify-center py-8">
-                          <div className="animate-spin w-6 h-6 border-2 border-[#f25c05] border-t-transparent rounded-full" />
+                        <div className="flex justify-center items-center h-full">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="animate-spin w-6 h-6 border-2 border-[#f25c05] border-t-transparent rounded-full" />
+                            <p className="text-sm text-[#94a3b8]">Cargando mensajes...</p>
+                          </div>
+                        </div>
+                      ) : messagesError ? (
+                        <div className="flex flex-col items-center justify-center h-full gap-3">
+                          <AlertCircle className="w-8 h-8 text-[#ef4444]" />
+                          <p className="text-sm text-[#64748b] text-center">{messagesError}</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedConversation({ ...selectedConversation })}
+                          >
+                            Reintentar
+                          </Button>
                         </div>
                       ) : messages.length > 0 ? (
-                        messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
-                          >
+                        <>
+                          {messages.map((msg) => (
                             <div
-                              className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                                msg.sender_id === user?.id
-                                  ? 'bg-[#f25c05] text-white'
-                                  : 'bg-[#f1f5f9] text-[#112237]'
-                              }`}
+                              key={msg.id}
+                              className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                             >
-                              <p className="text-sm">{msg.content}</p>
-                              <p className={`text-xs mt-1 ${msg.sender_id === user?.id ? 'text-white/70' : 'text-[#94a3b8]'}`}>
-                                {formatRelativeTime(msg.created_at)}
-                              </p>
+                              <div
+                                className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                                  msg.sender_id === user?.id
+                                    ? 'bg-[#f25c05] text-white rounded-br-sm'
+                                    : 'bg-[#f1f5f9] text-[#112237] rounded-bl-sm'
+                                } ${msg.id.startsWith('optimistic-') ? 'opacity-70' : ''}`}
+                              >
+                                <p className="text-sm leading-relaxed">{msg.content}</p>
+                                <p
+                                  className={`text-xs mt-1 ${
+                                    msg.sender_id === user?.id ? 'text-white/60' : 'text-[#94a3b8]'
+                                  }`}
+                                >
+                                  {formatRelativeTime(msg.created_at)}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))
+                          ))}
+                          {/* Scroll anchor */}
+                          <div ref={messagesEndRef} />
+                        </>
                       ) : (
-                        <div className="text-center text-[#64748b] py-8">
+                        <div className="flex flex-col items-center justify-center h-full text-center">
                           <MessageCircle className="w-10 h-10 mx-auto mb-2 text-[#94a3b8]" />
-                          <p className="text-sm">No hay mensajes aún</p>
-                          <p className="text-xs">¡Inicia la conversación!</p>
+                          <p className="text-sm text-[#64748b]">No hay mensajes aún</p>
+                          <p className="text-xs text-[#94a3b8]">¡Inicia la conversación!</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="pt-4 border-t border-[#e2e8f0]">
+                    {/* Input */}
+                    <div className="pt-4 border-t border-[#e2e8f0] shrink-0">
                       <div className="flex gap-2">
                         <Input
                           placeholder="Escribe un mensaje..."
                           className="flex-1"
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              sendMessage();
+                            }
+                          }}
+                          disabled={isSending}
                         />
-                        <Button onClick={sendMessage} disabled={isSending || !newMessage.trim()}>
+                        <Button
+                          onClick={sendMessage}
+                          disabled={isSending || !newMessage.trim()}
+                          className="bg-[#f25c05] hover:bg-[#d94d04]"
+                        >
                           <Send className="w-4 h-4" />
                         </Button>
                       </div>
@@ -392,11 +496,13 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
+        </div>
+      }
+    >
       <MessagesContent />
     </Suspense>
   );

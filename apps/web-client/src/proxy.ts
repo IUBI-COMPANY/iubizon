@@ -1,6 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+/**
+ * SUPABASE SSR PROXY (Next.js 16 equivalent of middleware)
+ *
+ * This proxy is REQUIRED by @supabase/ssr to:
+ *  1. Refresh the session token on every request (prevents session loss on refresh)
+ *  2. Write updated cookies back to the browser response
+ *  3. Protect authenticated routes by redirecting unauthenticated users
+ */
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -13,10 +21,13 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+          // Write cookies to the request so downstream server components can read them
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
+          // Rebuild response with updated request so cookies propagate correctly
           supabaseResponse = NextResponse.next({ request });
+          // Write refreshed cookies to the response so the browser stores them
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options);
           });
@@ -25,19 +36,24 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // getClaims() cryptographically verifies the JWT and triggers session refresh
-  const { data, error } = await supabase.auth.getClaims();
-  const isAuthenticated = !error && !!data;
+  // getUser() validates the JWT with Supabase Auth AND triggers a refresh if needed.
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (error) {
-    // Supabase unreachable — allow the request through,
-    // individual pages handle their own auth checks
+  // If Supabase is unreachable, allow request through
+  if (error && error.message !== 'Auth session missing!') {
     return supabaseResponse;
   }
 
-  const pathname = request.nextUrl.pathname;
+  const isAuthenticated = !!user;
+  const { pathname } = request.nextUrl;
 
-  const isAuthPage = pathname.startsWith('/auth/login') || pathname.startsWith('/auth/register');
+  const isAuthPage =
+    pathname.startsWith('/auth/login') ||
+    pathname.startsWith('/auth/register');
+
   const isProtectedPage =
     pathname.startsWith('/user/dashboard') ||
     pathname.startsWith('/user/profile') ||
@@ -47,6 +63,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/cart') ||
     pathname.startsWith('/checkout');
 
+  // Unauthenticated user trying to access a protected route → redirect to login
   if (!isAuthenticated && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/login';
@@ -54,6 +71,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Authenticated user trying to access login/register → redirect to dashboard
   if (isAuthenticated && isAuthPage) {
     return NextResponse.redirect(new URL('/user/dashboard', request.url));
   }
@@ -67,9 +85,10 @@ export const config = {
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - Static assets: svg, png, jpg, jpeg, gif, webp
+     * - favicon.ico, favicon.png (favicon files)
+     * - manifest.json, robots.txt, sitemap.xml (SEO files)
+     * - Static assets: svg, png, jpg, jpeg, gif, webp, ico, otf, ttf, woff
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|manifest\\.json|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|otf|ttf|woff2?)$).*)',
   ],
 };
