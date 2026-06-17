@@ -308,7 +308,7 @@ export default function ClaimClientPage() {
             </div>
             <div>
               <p className="text-gray-600 font-semibold">Correo:</p>
-              <p className="text-secondary">contacto@iubizon.com</p>
+              <p className="text-secondary">iubizon.company@gmail.com</p>
             </div>
             <div>
               <p className="text-gray-600 font-semibold">Horario:</p>

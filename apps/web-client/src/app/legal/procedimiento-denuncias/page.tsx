@@ -140,7 +140,7 @@ export default function ProcedimientoDenunciasPage() {
                 Envíe su denuncia a:
               </p>
               <p className="font-bold text-amber-700 text-sm">
-                denuncias@iubizon.com
+                iubizon.company@gmail.com
               </p>
               <p className="text-gray-700 text-sm mt-2">
                 Incluya descripción detallada de los hechos, fecha, personas

@@ -178,7 +178,7 @@ export default function ContactClientPage() {
               </div>
             </a>
 
-            <a href="mailto:ventas@iubizon.com" className="group relative">
+            <a href="mailto:iubizon.company@gmail.com" className="group relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-0 group-hover:opacity-100"></div>
               <div className="relative bg-white p-6 rounded-3xl border border-gray-200 hover:border-primary/30 transition-all duration-300">
                 <div className="flex flex-col items-center text-center">

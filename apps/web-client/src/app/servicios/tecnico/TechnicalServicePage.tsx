@@ -728,11 +728,11 @@ export default function TechnicalServicePage() {
                   +51 972 300 301
                 </a>
                 <a
-                  href="mailto:info@iubizon.com"
+                  href="mailto:iubizon.company@gmail.com"
                   className="flex items-center text-gray-700 hover:text-primary transition-colors"
                 >
                   <Mail className="w-5 h-5 mr-2" />
-                  info@iubizon.com
+                  iubizon.company@gmail.com
                 </a>
                 <div className="flex items-center text-gray-700">
                   <MapPin className="w-5 h-5 mr-2" />

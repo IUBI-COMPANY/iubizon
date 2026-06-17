@@ -260,6 +260,14 @@ export const FooterLayout = () => {
       </div>
        <div className="mt-4 text-center text-xs text-blue-200">
          <Link
+           href="/legal"
+           className="hover:text-primary"
+         >
+           Documentos Legales
+         </Link>
+       </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link
            href="/legal/politica-de-devoluciones-y-cambios"
            className="hover:text-primary"
          >

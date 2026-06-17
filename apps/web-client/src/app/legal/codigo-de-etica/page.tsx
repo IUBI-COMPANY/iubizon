@@ -355,7 +355,7 @@ export default function CodigoDeEticaPage() {
           </p>
           <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
             <p className="text-gray-700 font-semibold">Gerencia de Dirección</p>
-            <p className="text-gray-700">📧 gerencia@iubizon.com</p>
+            <p className="text-gray-700">📧 iubizon.company@gmail.com</p>
             <p className="text-gray-700">📞 972 300 301</p>
             <p className="text-gray-700 mt-2 text-sm">
               Los reportes serán tratados con confidencialidad. No se permitirán

@@ -468,7 +468,7 @@ export default function PoliticaAntisobornoPage() {
           </p>
           <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded mb-4">
             <p className="text-gray-700 font-semibold">Gerencia de Dirección</p>
-            <p className="text-gray-700">📧 gerencia@iubizon.com</p>
+            <p className="text-gray-700">📧 iubizon.company@gmail.com</p>
             <p className="text-gray-700">📞 972 300 301</p>
           </div>
           <p className="text-gray-700 leading-relaxed mb-3">
