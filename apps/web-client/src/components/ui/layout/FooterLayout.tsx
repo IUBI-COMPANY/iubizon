@@ -271,6 +271,31 @@ export const FooterLayout = () => {
            Garantía
          </Link>
        </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link href="/legal/codigo-de-etica" className="hover:text-primary">
+           Código de Ética
+         </Link>
+       </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link href="/legal/politica-antisoborno-anticorrupcion" className="hover:text-primary">
+           Política Antisoborno
+         </Link>
+       </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link href="/legal/manual-prevencion-soborno" className="hover:text-primary">
+           Manual de Prevención
+         </Link>
+       </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link href="/legal/procedimiento-denuncias" className="hover:text-primary">
+           Procedimiento de Denuncias
+         </Link>
+       </div>
+       <div className="mt-2 text-center text-xs text-blue-200">
+         <Link href="/legal/acta-designacion-oficial-cumplimiento" className="hover:text-primary">
+           Oficial de Cumplimiento
+         </Link>
+       </div>
       <div className="mt-8 text-center text-xs text-blue-200">
         &copy; {new Date().getFullYear()} iubizon. Todos los derechos
         reservados.

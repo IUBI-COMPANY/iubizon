@@ -48,6 +48,31 @@ const nextConfig: NextConfig = {
         destination: "/legal/politica-de-devoluciones-y-cambios",
         permanent: true,
       },
+      {
+        source: "/codigo-de-etica",
+        destination: "/legal/codigo-de-etica",
+        permanent: true,
+      },
+      {
+        source: "/politica-antisoborno-anticorrupcion",
+        destination: "/legal/politica-antisoborno-anticorrupcion",
+        permanent: true,
+      },
+      {
+        source: "/manual-prevencion-soborno",
+        destination: "/legal/manual-prevencion-soborno",
+        permanent: true,
+      },
+      {
+        source: "/procedimiento-denuncias",
+        destination: "/legal/procedimiento-denuncias",
+        permanent: true,
+      },
+      {
+        source: "/acta-designacion-oficial-cumplimiento",
+        destination: "/legal/acta-designacion-oficial-cumplimiento",
+        permanent: true,
+      },
     ];
   },
   images: {
