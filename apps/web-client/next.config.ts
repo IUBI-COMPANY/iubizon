@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
         destination: "/contacto/exitoso",
         permanent: true,
       },
+      {
+        source: "/garantia",
+        destination: "/legal/garantia",
+        permanent: true,
+      },
+      {
+        source: "/politica-de-devoluciones-y-cambios",
+        destination: "/legal/politica-de-devoluciones-y-cambios",
+        permanent: true,
+      },
     ];
   },
   images: {
