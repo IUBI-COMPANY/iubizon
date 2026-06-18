@@ -778,7 +778,7 @@ const productsData: Product[] = [
     id: "97H-open-box",
     model: "97H-OpenBox",
     name: "Proyector Epson 97H - Tiro Largo 2700 Lumens",
-    stock: 9,
+    stock: 8,
     condition: "new",
     description:
       "Proyector de tiro largo con 2700 lumens, ideal para aulas y salas de reuniones medianas",
@@ -818,7 +818,7 @@ Este proyector de tiro largo Epson 97H es ideal para lograr una imagen potente y
 ✅ Ideal para clases, capacitaciones o presentaciones
 ✅ Incluye caja y accesorios originales (Cable poder, hdmi, control, pilas, manual)
 ✅ Estado 10/10, OpenBox
-✅ Incluye 6 meses de garantía 🔒
+✅ Incluye 12 meses de garantía 🔒
 
 💡 Recomendado para:
 ✔ Salones grandes
@@ -827,8 +827,6 @@ Este proyector de tiro largo Epson 97H es ideal para lograr una imagen potente y
 ✔ Eventos y capacitaciones
 
 Nos encontramos en Chorrillos, Lima
-
-⚡ Stock limitado – 3 unidades
 
 WSP: 9️⃣ 7️⃣ 2️⃣ 3️⃣ 0️⃣ 0️⃣ 3️⃣ 0️⃣ 1️⃣`,
   },
@@ -880,7 +878,7 @@ Proyector de tiro corto tipo educativo/profesional por solo S/ 1,000 😱
 ✅ Ahorra espacio (se instala cerca de la pared)
 ✅ Incluye caja y accesorios originales (Cable poder, hdmi, control, pilas, manual)
 ✅ Estado 10/10, OpenBox
-✅ Incluye 6 meses de garantía 🔒
+✅ Incluye 12 meses de garantía 🔒
 
 💡 Perfecto para:
 ✔ Colegios
