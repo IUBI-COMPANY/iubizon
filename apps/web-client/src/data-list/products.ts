@@ -779,6 +779,7 @@ const productsData: Product[] = [
     model: "97H-OpenBox",
     name: "Proyector Epson 97H - Tiro Largo 2700 Lumens",
     stock: 8,
+    oldStock: 9,
     condition: "new",
     description:
       "Proyector de tiro largo con 2700 lumens, ideal para aulas y salas de reuniones medianas",
