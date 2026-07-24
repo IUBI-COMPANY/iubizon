@@ -94,10 +94,11 @@ export default async function ProductDetailPage({ params }: Props) {
   const condition = conditionConfig[product.condition];
   const CategoryIcon = product.category ? getCategoryIcon(product.category.slug) : null;
 
-  const deliveryPrefs = (product.delivery_preference || '')
-    .split(',')
-    .filter(Boolean)
-    .map((p: string) => p.trim());
+  const deliveryPrefs: string[] = Array.isArray(product.delivery_preference)
+    ? product.delivery_preference
+    : typeof product.delivery_preference === 'string'
+    ? product.delivery_preference.split(',').filter(Boolean).map((p: string) => p.trim())
+    : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -160,7 +161,7 @@ export default async function ProductDetailPage({ params }: Props) {
                       <div>
                         <p className="text-xs text-[#64748b]">Categoría</p>
                         <Link
-                          href={`/categories/${product.category.slug}`}
+                          href={`/search?category_id=${product.category.id}`}
                           className="text-sm font-medium text-[#f25c05] hover:underline"
                         >
                           {product.category.name}

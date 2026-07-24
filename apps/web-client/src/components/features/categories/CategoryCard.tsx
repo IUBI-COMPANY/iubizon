@@ -11,7 +11,7 @@ interface CategoryCardProps {
 
 export const CategoryCard = ({ category, productCount }: CategoryCardProps) => {
   return (
-    <Link href={`/categories/${category.slug}`}>
+    <Link href={`/search?category_id=${category.id}`}>
       <Card className="flex flex-col items-center justify-center p-4 hover:border-[#f25c05] hover:shadow-md transition-all cursor-pointer">
         <div className="text-4xl mb-2">
           {category.icon || '📁'}

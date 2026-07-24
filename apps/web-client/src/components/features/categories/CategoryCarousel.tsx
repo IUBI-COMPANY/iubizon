@@ -15,10 +15,11 @@ interface Category {
 
 interface CategoryCarouselProps {
   categories: Category[];
+  activeCategoryId?: string;
   activeSlug?: string;
 }
 
-export function CategoryCarousel({ categories, activeSlug }: CategoryCarouselProps) {
+export function CategoryCarousel({ categories, activeCategoryId, activeSlug }: CategoryCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -79,11 +80,17 @@ export function CategoryCarousel({ categories, activeSlug }: CategoryCarouselPro
         style={{ scrollSnapType: 'x mandatory' }}
       >
         {allCategories.map((category, index) => {
-          const isActive =
-            activeSlug === category.slug || (!activeSlug && category.slug === '');
+          const isActive = category.id === 'all'
+            ? (!activeCategoryId && !activeSlug)
+            : (category.id === activeCategoryId || category.slug === activeSlug);
+
           const Icon = category.slug === ''
             ? LayoutGrid
             : getCategoryIcon(category.slug);
+
+          const linkHref = category.id === 'all'
+            ? '/search'
+            : `/search?category_id=${category.id}`;
 
           return (
             <motion.div
@@ -96,7 +103,7 @@ export function CategoryCarousel({ categories, activeSlug }: CategoryCarouselPro
               style={{ scrollSnapAlign: 'start' }}
             >
               <Link
-                href={category.slug ? `/categories/${category.slug}` : '/'}
+                href={linkHref}
                 className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 ${
                   isActive
                     ? 'bg-[#f25c05] text-white shadow-md shadow-[#f25c05]/25'

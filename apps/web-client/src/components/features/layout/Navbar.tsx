@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   Heart,
   LogOut,
@@ -65,11 +66,15 @@ export const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-[#f25c05] rounded-lg flex items-center justify-center font-bold text-white">
-              i
-            </div>
-            <span className="font-bold text-xl hidden sm:block">iubizon</span>
+          <Link href="/" className="flex items-center flex-shrink-0">
+            <Image
+              src="/images/logo.png"
+              alt="iubizon"
+              width={140}
+              height={36}
+              className="h-9 w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Search Bar */}

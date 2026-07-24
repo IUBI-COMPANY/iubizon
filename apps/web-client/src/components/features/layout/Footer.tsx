@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Heart, Facebook, Instagram, Phone, Mail, MapPin } from 'lucide-react';
 
 export const Footer = () => {
@@ -8,10 +9,10 @@ export const Footer = () => {
 
   const footerLinks = {
     comprar: [
-      { label: 'Todas las categorías', href: '/categories' },
-      { label: 'Electrónica', href: '/categories/electronica' },
-      { label: 'Hogar', href: '/categories/hogar' },
-      { label: 'Herramientas', href: '/categories/herramientas' },
+      { label: 'Todas las categorías', href: '/search' },
+      { label: 'Electrónica', href: '/search?keywords=electronica' },
+      { label: 'Hogar', href: '/search?keywords=hogar' },
+      { label: 'Herramientas', href: '/search?keywords=herramientas' },
     ],
     vender: [
       { label: 'Publicar producto', href: '/products/new' },
@@ -36,11 +37,14 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-[#f25c05] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">I</span>
-              </div>
-              <span className="text-xl font-bold">iubizon</span>
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/images/logo.png"
+                alt="iubizon"
+                width={150}
+                height={40}
+                className="h-10 w-auto object-contain"
+              />
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">
               El marketplace de confianza en Perú. Compra y vende de forma segura.
