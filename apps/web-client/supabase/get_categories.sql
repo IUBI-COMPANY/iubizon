@@ -1,1 +1,0 @@
-SELECT id, slug, name FROM categories WHERE slug IN ('electronica', 'proyectores', 'laptops', 'moviles', 'consolas', 'tv-audio');

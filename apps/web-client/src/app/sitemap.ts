@@ -1,56 +1,59 @@
-import { MetadataRoute } from "next";
-import { products } from "@/data-list/products";
+import { MetadataRoute } from 'next';
+import { prisma } from '@/lib/prisma';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.iubizon.com";
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.iubizon.com';
   const currentDate = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: currentDate,
-      changeFrequency: "daily",
+      changeFrequency: 'daily',
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/fichas-tecnicas`,
+      url: `${baseUrl}/products`,
       lastModified: currentDate,
-      changeFrequency: "weekly",
+      changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/contacto`,
+      url: `${baseUrl}/search`,
       lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/quienes-somos`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
+      changeFrequency: 'daily',
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/productos`,
+      url: `${baseUrl}/auth/login`,
       lastModified: currentDate,
-      changeFrequency: "daily",
-      priority: 0.7,
+      changeFrequency: 'monthly',
+      priority: 0.5,
     },
     {
-      url: `${baseUrl}/servicios/tecnico`,
+      url: `${baseUrl}/auth/register`,
       lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: 0.6,
+      changeFrequency: 'monthly',
+      priority: 0.5,
     },
   ];
 
-  // Páginas dinámicas de productos
-  const productPages: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${baseUrl}/productos/${product.id}`,
-    lastModified: currentDate,
-    changeFrequency: "weekly" as const,
-    priority: 0.5,
-  }));
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: 'active' },
+      select: { id: true, updated_at: true },
+    });
 
-  return [...staticPages, ...productPages];
+    const productPages: MetadataRoute.Sitemap = products.map((product) => ({
+      url: `${baseUrl}/products/${product.id}`,
+      lastModified: product.updated_at || currentDate,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+
+    return [...staticPages, ...productPages];
+  } catch (error) {
+    console.error('[Sitemap] Error fetching products with Prisma:', error);
+    return staticPages;
+  }
 }

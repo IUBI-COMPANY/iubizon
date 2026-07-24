@@ -1,5 +1,7 @@
 export { useAuth, AuthProvider } from './useAuth';
-export { useProducts, useProduct, useRelatedProducts } from './useProducts';
-export { useCategories, useCategory } from './useCategories';
-export { useFavorites } from './useFavorites';
+export { useCategories } from './useCategories';
 export { FavoritesProvider, useFavoritesContext } from './useFavoritesContext';
+export { useCart, CartProvider } from './useCart';
+export { useGeolocation } from './useGeolocation';
+export { useFormUtils } from './useFormUtils';
+export { useIntersectionObserver } from './useIntersectionObserver';

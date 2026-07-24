@@ -3,6 +3,8 @@ import { FieldErrors } from "react-hook-form";
 import * as yup from "yup";
 import { get, isEmpty, isString } from "lodash";
 
+type ObjectType = Record<string, any>;
+
 interface Props<FormData extends ObjectType> {
   errors?: FieldErrors<FormData>;
   schema: yup.AnyObjectSchema;

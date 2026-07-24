@@ -1,6 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/features/layout/Navbar';
-import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
 
@@ -32,7 +31,6 @@ export default async function ProductsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <CategoryNav />
       
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container mx-auto px-4 py-6">

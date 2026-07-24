@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { ClientLayout } from "@/components/providers/ClientLayout";
+import { ClientLayout } from "@/app/providers/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +21,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.iubizon.com"),
   title: {
-    default: "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
+    default:
+      "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
     template: "%s | iubizon",
   },
   description:
@@ -62,7 +63,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://www.iubizon.com",
-    title: "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
+    title:
+      "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
     description:
       "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas.",
     images: [
@@ -219,9 +221,7 @@ export default function RootLayout({
             alt="facebook pixel"
           />
         </noscript>
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

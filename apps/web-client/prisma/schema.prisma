@@ -1,0 +1,136 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id               String    @id @db.Uuid
+  email            String
+  name             String?
+  avatar_url       String?
+  phone            String?
+  bio              String?
+  location         String?
+  is_pro           Boolean?  @default(false)
+  rating           Decimal?  @default(0) @db.Decimal(3, 2)
+  total_sales      Int?      @default(0)
+  positive_reviews Int?      @default(0)
+  response_time    String?
+  created_at       DateTime? @default(now()) @db.Timestamptz
+  updated_at       DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  products      Product[]
+  ordersAsBuyer Order[]   @relation("BuyerOrders")
+  ordersAsSeller Order[]  @relation("SellerOrders")
+  reviews       Review[]
+
+  @@map("profiles")
+}
+
+model Category {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  slug       String     @unique
+  icon       String?
+  parent_id  String?    @db.Uuid
+  sort_order Int?       @default(0)
+  created_at DateTime?  @default(now()) @db.Timestamptz
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  seller_id     String    @db.Uuid
+  category_id   String    @db.Uuid
+  title         String
+  description   String?
+  price         Decimal   @db.Decimal(10, 2)
+  condition     String
+  status        String    @default("active")
+  is_bundle     Boolean?  @default(false)
+  stock         Int?      @default(1)
+  views         Int?      @default(0)
+  favorites     Int?      @default(0)
+  specifications Json?    @default("{}")
+  created_at    DateTime? @default(now()) @db.Timestamptz
+  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  seller   Profile        @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  category Category       @relation(fields: [category_id], references: [id])
+  images   ProductImage[]
+  bundles  ProductBundle[]
+  orders   Order[]
+  reviews  Review[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id String    @db.Uuid
+  url        String
+  position   Int?      @default(0)
+  created_at DateTime? @default(now()) @db.Timestamptz
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model ProductBundle {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id     String    @db.Uuid
+  quantity       Int
+  price_per_unit Decimal   @db.Decimal(10, 2)
+  total_price    Decimal   @db.Decimal(10, 2)
+  created_at     DateTime? @default(now()) @db.Timestamptz
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("product_bundles")
+}
+
+model Order {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id     String    @db.Uuid
+  buyer_id       String    @db.Uuid
+  seller_id      String    @db.Uuid
+  amount         Decimal   @db.Decimal(10, 2)
+  commission     Decimal?  @default(0) @db.Decimal(10, 2)
+  status         String    @default("pending")
+  payment_method String?
+  payment_id     String?
+  created_at     DateTime? @default(now()) @db.Timestamptz
+  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  product Product @relation(fields: [product_id], references: [id])
+  buyer   Profile @relation("BuyerOrders", fields: [buyer_id], references: [id])
+  seller  Profile @relation("SellerOrders", fields: [seller_id], references: [id])
+  reviews Review[]
+
+  @@map("orders")
+}
+
+model Review {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id String    @db.Uuid
+  buyer_id   String    @db.Uuid
+  order_id   String?   @db.Uuid
+  rating     Int
+  comment    String?
+  created_at DateTime? @default(now()) @db.Timestamptz
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  buyer   Profile @relation(fields: [buyer_id], references: [id])
+  order   Order?  @relation(fields: [order_id], references: [id])
+
+  @@map("reviews")
+}

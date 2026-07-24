@@ -27,8 +27,6 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('registered') === 'true') {
         setJustRegistered(true);
-        const newUrl = window.location.pathname + '?' + params.toString().replace(/&?registered=true/, '').replace(/^\?$/, '');
-        window.history.replaceState(null, '', newUrl || window.location.pathname);
       }
     }
   }, []);
@@ -38,33 +36,19 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-      setError('Tiempo de espera agotado. Intenta de nuevo.');
-    }, 15000);
+    const { error } = await signIn(email, password);
 
-    try {
-      const { error } = await signIn(email, password);
-
-      clearTimeout(timeoutId);
-
-      if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          setError('Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada.');
-        } else if (error.message.includes('Invalid login credentials')) {
-          setError('Email o contraseña incorrectos. Si acabas de registrarte, revisa tu email para confirmar tu cuenta.');
-        } else {
-          setError(error.message);
-        }
+    if (error) {
+      if (error.message.includes('Email not confirmed')) {
+        setError('Debes confirmar tu email antes de iniciar sesión.');
+      } else if (error.message.includes('Invalid login credentials')) {
+        setError('Email o contraseña incorrectos.');
       } else {
-        router.push('/user/dashboard');
+        setError(error.message);
       }
-    } catch (err) {
-      clearTimeout(timeoutId);
-      setError('Error de conexión. Intenta de nuevo.');
-      console.error('Login error:', err);
-    } finally {
       setIsLoading(false);
+    } else {
+      router.push('/user/dashboard');
     }
   };
 
@@ -82,9 +66,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Bienvenido de nuevo</CardTitle>
-          <CardDescription>
-            Inicia sesión para continuar en Iubizon
-          </CardDescription>
+          <CardDescription>Inicia sesión para continuar en Iubizon</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -139,10 +121,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex justify-end">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-[#f25c05] hover:underline"
-              >
+              <Link href="/auth/forgot-password" className="text-sm text-[#f25c05] hover:underline">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/TextArea';
 import { Navbar } from '@/components/features/layout/Navbar';
-import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 
@@ -86,7 +85,6 @@ export default function ProfileEditPage() {
     try {
       let avatarUrl = avatarPreview;
 
-      // Upload new avatar if selected
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
@@ -106,7 +104,6 @@ export default function ProfileEditPage() {
         avatarUrl = urlData.publicUrl;
       }
 
-      // Update profile
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -138,7 +135,6 @@ export default function ProfileEditPage() {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <CategoryNav />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
         </div>
@@ -149,7 +145,6 @@ export default function ProfileEditPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <CategoryNav />
       
       <div className="flex-1 px-4 py-6">
         <div className="max-w-2xl mx-auto">
@@ -174,7 +169,6 @@ export default function ProfileEditPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Avatar */}
             <div className="flex flex-col items-center">
               <div className="relative">
                 <div className="w-28 h-28 rounded-full overflow-hidden bg-[#f8fafc] border-4 border-white shadow-lg">
@@ -204,7 +198,6 @@ export default function ProfileEditPage() {
               <p className="text-sm text-[#64748b] mt-2">Cambiar foto de perfil</p>
             </div>
 
-            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-[#334155] mb-2">
                 <User className="w-4 h-4 inline mr-2" />
@@ -219,7 +212,6 @@ export default function ProfileEditPage() {
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-[#334155] mb-2">
                 <Phone className="w-4 h-4 inline mr-2" />
@@ -234,7 +226,6 @@ export default function ProfileEditPage() {
               <p className="text-xs text-[#94a3b8] mt-1">Este número se mostrará a los compradores interesados</p>
             </div>
 
-            {/* Location */}
             <div>
               <label className="block text-sm font-medium text-[#334155] mb-2">
                 <MapPin className="w-4 h-4 inline mr-2" />
@@ -248,7 +239,6 @@ export default function ProfileEditPage() {
               />
             </div>
 
-            {/* Bio */}
             <div>
               <label className="block text-sm font-medium text-[#334155] mb-2">
                 Descripción
@@ -263,7 +253,6 @@ export default function ProfileEditPage() {
               <p className="text-xs text-[#94a3b8] mt-1">{formData.bio.length}/500 caracteres</p>
             </div>
 
-            {/* Save Button */}
             <Button 
               type="submit" 
               className="w-full bg-[#f25c05] hover:bg-[#e55100]"

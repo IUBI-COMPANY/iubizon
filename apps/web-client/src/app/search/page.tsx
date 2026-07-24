@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Navbar } from "@/components/features/layout/Navbar";
-import { CategoryNav } from "@/components/features/categories/CategoryNav";
 import { createClient } from "@/lib/supabase/client";
 import type { ProductCondition } from "@/types";
 
@@ -449,7 +448,6 @@ function SearchContent() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <CategoryNav />
       <div className="container mx-auto px-4 py-6 flex-1">
         <div className="flex gap-8">
           <aside className="w-64 flex-shrink-0">

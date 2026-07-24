@@ -1,6 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/features/layout/Navbar';
-import { CategoryNav } from '@/components/features/categories/CategoryNav';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -44,7 +43,6 @@ export default async function UserProfilePage({ params }: Props) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <CategoryNav />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-[#112237] mb-2">Usuario no encontrado</h2>
@@ -61,7 +59,6 @@ export default async function UserProfilePage({ params }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <CategoryNav />
       
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container mx-auto px-4 py-8">

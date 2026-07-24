@@ -23,7 +23,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const passwordRequirements = [
     { label: 'Al menos 8 caracteres', met: password.length >= 8 },
@@ -36,21 +35,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!isPasswordValid) {
-      setError('La contraseña no cumple los requisitos');
-      return;
-    }
 
-    if (!doPasswordsMatch) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-
-    if (!agreedToTerms) {
-      setError('Debes aceptar los términos y condiciones');
-      return;
-    }
+    if (!isPasswordValid) return setError('La contraseña no cumple los requisitos');
+    if (!doPasswordsMatch) return setError('Las contraseñas no coinciden');
+    if (!agreedToTerms) return setError('Debes aceptar los términos y condiciones');
 
     setIsLoading(true);
     setError(null);
@@ -59,25 +47,22 @@ export default function RegisterPage() {
 
     if (error) {
       if (error.message.includes('rate limit')) {
-        setError('Has excedido el límite de intentos. Espera al menos 1 hora antes de volver a intentarlo.');
+        setError('Límite de intentos alcanzado. Intenta más tarde.');
       } else if (error.message.includes('already registered') || error.message.includes('already exists')) {
-        setError('Este email ya está registrado. Inicia sesión o recupera tu contraseña.');
+        setError('Este email ya está registrado.');
       } else {
-        setError('Error al crear la cuenta: ' + error.message);
+        setError(error.message);
       }
-    } else {
-      const { error: signInError } = await signIn(email, password);
-      
-      if (signInError) {
-        setSuccess(true);
-        router.push('/auth/login?registered=true&redirect=' + encodeURIComponent(new URLSearchParams(window.location.search).get('redirect') || '/'));
-      } else {
-        const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/';
-        router.push(redirectUrl);
-      }
+      setIsLoading(false);
+      return;
     }
 
-    setIsLoading(false);
+    const { error: signInError } = await signIn(email, password);
+    if (signInError) {
+      router.push('/auth/login?registered=true');
+    } else {
+      router.push('/');
+    }
   };
 
   return (
@@ -85,17 +70,10 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Crear cuenta</CardTitle>
-          <CardDescription>
-            Únete a Iubizon y empieza a comprar o vender
-          </CardDescription>
+          <CardDescription>Únete a Iubizon y empieza a comprar o vender</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {success && (
-              <div className="p-4 bg-[#10b981]/10 text-[#10b981] text-sm rounded-lg">
-                ¡Cuenta creada! Por favor verifica tu email para activar tu cuenta.
-              </div>
-            )}
             {error && (
               <div className="p-3 bg-[#ef4444]/10 text-[#ef4444] text-sm rounded-lg">
                 {error}
