@@ -1,30 +1,36 @@
-import { createServerClient } from '@/lib/supabase/server';
-import type { Order } from '@/types';
+import { prisma } from '@/lib/prisma';
+
+const orderInclude = {
+  product: {
+    include: {
+      images: { orderBy: { position: 'asc' as const } },
+      category: true,
+      seller: true,
+    },
+  },
+  buyer: true,
+  seller: true,
+  shipping: true,
+};
 
 export async function getUserOrders(userId: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, product:products(*, images:product_images(*)), buyer:profiles(*), seller:profiles(*), shipping:shippings(*)')
-    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Order[];
+  return prisma.order.findMany({
+    where: {
+      OR: [
+        { buyer_id: userId },
+        { seller_id: userId },
+      ],
+    },
+    include: orderInclude,
+    orderBy: { created_at: 'desc' },
+  });
 }
 
 export async function getOrderById(orderId: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, product:products(*, images:product_images(*), category:categories(*), seller:profiles(*)), buyer:profiles(*), seller:profiles(*), shipping:shippings(*)')
-    .eq('id', orderId)
-    .single();
-
-  if (error) throw error;
-  return data as Order;
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: orderInclude,
+  });
 }
 
 export async function createOrder(orderData: {
@@ -34,28 +40,22 @@ export async function createOrder(orderData: {
   amount: number;
   payment_method: string;
 }) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('orders')
-    .insert(orderData)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Order;
+  return prisma.order.create({
+    data: {
+      product_id: orderData.product_id,
+      buyer_id: orderData.buyer_id,
+      seller_id: orderData.seller_id,
+      amount: orderData.amount,
+      payment_method: orderData.payment_method,
+    },
+    include: orderInclude,
+  });
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', orderId)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Order;
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { status },
+    include: orderInclude,
+  });
 }

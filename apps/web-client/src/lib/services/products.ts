@@ -1,4 +1,5 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 import type { Product, SearchFilters } from '@/types';
 
 interface GetProductsOptions {
@@ -7,125 +8,142 @@ interface GetProductsOptions {
   filters?: SearchFilters;
 }
 
+const productInclude = {
+  category: true,
+  seller: true,
+  images: { orderBy: { position: 'asc' as const } },
+};
+
 export async function getProducts(options: GetProductsOptions = {}) {
   const { limit = 20, offset = 0, filters } = options;
-  const supabase = await createServerClient();
 
-  let query = supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*)', {
-      count: 'exact',
-    })
-    .eq('status', 'active');
+  const where: Prisma.ProductWhereInput = { status: 'active' };
 
   if (filters?.query) {
-    query = query.ilike('title', `%${filters.query}%`);
+    where.title = { contains: filters.query, mode: 'insensitive' };
   }
 
   if (filters?.categoryId) {
-    query = query.eq('category_id', filters.categoryId);
+    where.category_id = filters.categoryId;
   }
 
-  if (filters?.minPrice) {
-    query = query.gte('price', filters.minPrice);
-  }
-
-  if (filters?.maxPrice) {
-    query = query.lte('price', filters.maxPrice);
+  if (filters?.minPrice || filters?.maxPrice) {
+    where.price = {};
+    if (filters.minPrice) where.price.gte = filters.minPrice;
+    if (filters.maxPrice) where.price.lte = filters.maxPrice;
   }
 
   if (filters?.condition && filters.condition.length > 0) {
-    query = query.in('condition', filters.condition);
+    where.condition = { in: filters.condition };
   }
 
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: 'desc' };
   if (filters?.sortBy === 'price_asc') {
-    query = query.order('price', { ascending: true });
+    orderBy = { price: 'asc' };
   } else if (filters?.sortBy === 'price_desc') {
-    query = query.order('price', { ascending: false });
+    orderBy = { price: 'desc' };
   } else if (filters?.sortBy === 'popular') {
-    query = query.order('favorites', { ascending: false });
-  } else {
-    query = query.order('created_at', { ascending: false });
+    orderBy = { favorites_count: 'desc' };
   }
 
-  const { data, error, count } = await query.range(offset, offset + limit - 1);
-
-  if (error) throw error;
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: productInclude,
+      orderBy,
+      skip: offset,
+      take: limit,
+    }),
+    prisma.product.count({ where }),
+  ]);
 
   return {
-    products: data as Product[],
-    total: count || 0,
-    hasMore: (count || 0) > offset + limit,
+    products,
+    total,
+    hasMore: total > offset + limit,
   };
+}
+
+export async function getActiveProducts(limit = 20): Promise<Product[]> {
+  const { products } = await getProducts({ limit });
+  return products.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    is_bundle: false,
+    favorites: p.favorites_count ?? 0,
+    location: p.seller?.location ?? null,
+    latitude: null,
+    longitude: null,
+    created_at: p.created_at?.toISOString() || new Date().toISOString(),
+    updated_at: p.updated_at?.toISOString() || new Date().toISOString(),
+    category: p.category
+      ? {
+          ...p.category,
+          icon: p.category.icon ?? '',
+          sort_order: p.category.sort_order ?? 0,
+        }
+      : undefined,
+    seller: p.seller
+      ? {
+          ...p.seller,
+          rating: Number(p.seller.rating || 0),
+          is_pro: p.seller.is_pro ?? false,
+          total_sales: p.seller.total_sales ?? 0,
+          positive_reviews: p.seller.positive_reviews ?? 0,
+        }
+      : undefined,
+  })) as unknown as Product[];
 }
 
 export async function getProductById(id: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*), bundle:product_bundles(*)')
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data as Product;
+  return prisma.product.findUnique({
+    where: { id },
+    include: productInclude,
+  });
 }
 
 export async function getProductsByCategory(categorySlug: string, limit = 20) {
-  const supabase = await createServerClient();
-
-  const { data: category } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', categorySlug)
-    .single();
+  const category = await prisma.category.findUnique({
+    where: { slug: categorySlug },
+  });
 
   if (!category) return { products: [], total: 0 };
 
-  const { data, error, count } = await supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*)', {
-      count: 'exact',
-    })
-    .eq('category_id', category.id)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  const where: Prisma.ProductWhereInput = { category_id: category.id, status: 'active' };
 
-  if (error) throw error;
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: productInclude,
+      orderBy: { created_at: 'desc' },
+      take: limit,
+    }),
+    prisma.product.count({ where }),
+  ]);
 
-  return {
-    products: data as Product[],
-    total: count || 0,
-  };
+  return { products, total };
 }
 
 export async function getRelatedProducts(productId: string, categoryId: string, limit = 4) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*)')
-    .eq('category_id', categoryId)
-    .neq('id', productId)
-    .eq('status', 'active')
-    .order('favorites', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data as Product[];
+  return prisma.product.findMany({
+    where: {
+      category_id: categoryId,
+      id: { not: productId },
+      status: 'active',
+    },
+    include: productInclude,
+    orderBy: { favorites_count: 'desc' },
+    take: limit,
+  });
 }
 
 export async function getUserProducts(userId: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, category:categories(*), images:product_images(*)')
-    .eq('seller_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Product[];
+  return prisma.product.findMany({
+    where: { seller_id: userId },
+    include: {
+      category: true,
+      images: { orderBy: { position: 'asc' } },
+    },
+    orderBy: { created_at: 'desc' },
+  });
 }

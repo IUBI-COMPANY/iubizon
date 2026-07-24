@@ -1,4 +1,4 @@
-import { getActiveProducts } from "@/lib/supabase/server";
+import { getActiveProducts } from "@/lib/services/products";
 import { getPopularCategories } from "@/lib/services/categories";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { CategoryCarousel } from "@/components/features/categories/CategoryCarousel";

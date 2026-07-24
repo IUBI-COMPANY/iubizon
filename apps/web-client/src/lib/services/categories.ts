@@ -1,84 +1,41 @@
-import { createServerClient } from '@/lib/supabase/server';
-import type { Category } from '@/types';
+import { prisma } from '@/lib/prisma';
 
 export async function getCategories() {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
-  if (error) throw error;
-  return data as Category[];
+  return prisma.category.findMany({
+    orderBy: { sort_order: 'asc' },
+  });
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-
-  if (error) throw error;
-  return data as Category;
+  return prisma.category.findUnique({
+    where: { slug },
+  });
 }
 
 export async function getTechCategories() {
-  const supabase = await createServerClient();
-
   const techSlugs = ['electronica', 'laptops', 'proyectores', 'moviles', 'consolas', 'tv-audio'];
-
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .in('slug', techSlugs)
-    .order('sort_order', { ascending: true });
-
-  if (error) throw error;
-  return data as Category[];
+  return prisma.category.findMany({
+    where: { slug: { in: techSlugs } },
+    orderBy: { sort_order: 'asc' },
+  });
 }
 
-interface CategoryWithStats extends Category {
-  product_count: number;
-  sales_count: number;
-}
+export async function getPopularCategories(limit = 6) {
+  const categories = await prisma.category.findMany({
+    include: {
+      _count: {
+        select: { products: { where: { status: 'active' } } },
+      },
+    },
+    orderBy: { sort_order: 'asc' },
+    take: limit,
+  });
 
-export async function getPopularCategories(limit = 6): Promise<CategoryWithStats[]> {
-  const supabase = await createServerClient();
-
-  const techSlugs = ['electronica', 'laptops', 'proyectores', 'moviles', 'consolas', 'tv-audio'];
-
-  const { data: categories, error } = await supabase
-    .from('categories')
-    .select('*')
-    .in('slug', techSlugs)
-    .order('sort_order', { ascending: true });
-
-  if (error || !categories) {
-    console.error('Error fetching categories:', error);
-    throw new Error('No se pueden cargar las categorías en este momento. El servicio está en mantenimiento.');
-  }
-
-  const categoriesWithStats = await Promise.all(
-    categories.map(async (category) => {
-      const { count: productCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('category_id', category.id)
-        .eq('status', 'active');
-
-      return {
-        ...category,
-        product_count: productCount || 0,
-        sales_count: 0,
-      } as CategoryWithStats;
-    })
-  );
-
-  return categoriesWithStats
-    .sort((a, b) => b.product_count - a.product_count)
-    .slice(0, limit);
+  return categories.map((cat) => ({
+    ...cat,
+    sort_order: cat.sort_order ?? 0,
+    icon: cat.icon ?? '',
+    product_count: cat._count.products,
+    sales_count: 0,
+  }));
 }

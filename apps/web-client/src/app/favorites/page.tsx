@@ -1,4 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
@@ -6,20 +7,23 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 async function getFavorites(userId: string) {
-  const supabase = await createServerClient();
-  
-  const { data, error } = await supabase
-    .from('favorites')
-    .select('*, product:products(*, category:categories(*), images:product_images(*))')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
+  try {
+    return await prisma.favorite.findMany({
+      where: { user_id: userId },
+      include: {
+        product: {
+          include: {
+            category: true,
+            images: { orderBy: { position: 'asc' } },
+          },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+  } catch (error) {
     console.error('Error fetching favorites:', error);
     return [];
   }
-
-  return data || [];
 }
 
 export default async function FavoritesPage() {
@@ -63,7 +67,7 @@ export default async function FavoritesPage() {
                       📦
                     </div>
                     <h3 className="font-medium text-[#112237] truncate">{fav.product?.title}</h3>
-                    <p className="text-[#f25c05] font-bold">S/ {fav.product?.price}</p>
+                    <p className="text-[#f25c05] font-bold">S/ {Number(fav.product?.price || 0).toFixed(2)}</p>
                   </div>
                 </Link>
               ))}

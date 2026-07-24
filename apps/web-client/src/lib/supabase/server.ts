@@ -19,33 +19,9 @@ export const createServerClient = async () => {
             });
           } catch {
             // Server Components can't set cookies — this is expected.
-            // Session refresh is handled by middleware.ts on every navigation.
           }
         },
       },
     }
   );
 };
-
-export async function getActiveProducts() {
-  const supabase = await createServerClient();
-  
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*), bundle:product_bundles(*)')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(20);
-
-  if (error) {
-    console.error('Error fetching products:', error);
-    throw new Error('No se pueden cargar los productos en este momento. El servicio está en mantenimiento.');
-  }
-
-  const productsWithOrderedImages = data?.map(product => ({
-    ...product,
-    images: product.images?.sort((a: any, b: any) => a.position - b.position) || [],
-  })) || [];
-
-  return productsWithOrderedImages;
-}

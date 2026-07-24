@@ -192,165 +192,25 @@ function SearchContent() {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const supabase = createClient();
+        const params = new URLSearchParams();
+        if (keywords) params.set("keywords", keywords);
+        if (effectiveCategoryId) params.set("category_id", effectiveCategoryId);
+        if (minPrice) params.set("min_price", minPrice);
+        if (maxPrice) params.set("max_price", maxPrice);
+        if (conditions.length > 0) params.set("condition", conditions.join(","));
+        if (orderBy) params.set("order_by", orderBy);
+        params.set("page", page.toString());
+        params.set("limit", limit.toString());
 
-        let queryBuilder = supabase
-          .from("products")
-          .select(
-            "*, category:categories(*), seller:profiles(*), images:product_images(*)",
-            {
-              count: "exact",
-            },
-          );
-
-        if (keywords) {
-          const keywordLower = keywords.toLowerCase();
-          const fullKeywordCategoryId = categorySlugToId[keywordLower];
-
-          // If the full keyword matches a category slug exactly, filter by that category
-          if (fullKeywordCategoryId) {
-            queryBuilder = queryBuilder.eq("category_id", fullKeywordCategoryId);
-          } else {
-            // Split into individual words
-            const words = keywordLower.split(/\s+/).filter(Boolean);
-            let matchedCategoryId: string | null = null;
-            const searchTerms: string[] = [];
-
-            for (const word of words) {
-              const catId = categorySlugToId[word];
-              if (catId && !matchedCategoryId) {
-                matchedCategoryId = catId;
-              }
-              if (!catId) {
-                searchTerms.push(word);
-              }
-            }
-
-            // IMPORTANT: never combine .eq() with .or() — use only one approach
-            if (matchedCategoryId && searchTerms.length === 0) {
-              // Only category filter, no text search needed
-              queryBuilder = queryBuilder.eq("category_id", matchedCategoryId);
-            } else if (searchTerms.length > 0) {
-              // Only text search — search the original keywords as a phrase
-              // (includes both category-matching words and search words)
-              queryBuilder = queryBuilder.or(
-                `title.ilike.%${keywordLower}%,description.ilike.%${keywordLower}%`
-              );
-            }
-          }
-        } else if (effectiveCategoryId) {
-          queryBuilder = queryBuilder.eq("category_id", effectiveCategoryId);
-        }
-
-        if (minPrice) {
-          queryBuilder = queryBuilder.gte("price", parseFloat(minPrice));
-        }
-        if (maxPrice) {
-          queryBuilder = queryBuilder.lte("price", parseFloat(maxPrice));
-        }
-
-        if (conditions.length > 0) {
-          queryBuilder = queryBuilder.in("condition", conditions);
-        }
-
-        if (locationFilter) {
-          queryBuilder = queryBuilder.ilike("location", `%${locationFilter}%`);
-        }
-
-        // Filtros de especificaciones para proyectores
-        if (resolutionSpecs.length > 0) {
-          queryBuilder = queryBuilder.or(
-            resolutionSpecs
-              .map((r) => `specifications->resolution.eq.${r}`)
-              .join(","),
-          );
-        }
-        if (lumensSpecs.length > 0) {
-          queryBuilder = queryBuilder.or(
-            lumensSpecs.map((l) => `specifications->lumens.eq.${l}`).join(","),
-          );
-        }
-        if (technologySpecs.length > 0) {
-          queryBuilder = queryBuilder.or(
-            technologySpecs
-              .map((t) => `specifications->technology.eq.${t}`)
-              .join(","),
-          );
-        }
-        if (brandSpecs.length > 0) {
-          queryBuilder = queryBuilder.or(
-            brandSpecs.map((b) => `specifications->brand.eq.${b}`).join(","),
-          );
-        }
-
-        const offset = (page - 1) * limit;
-        const { data, count } = await queryBuilder.range(
-          offset,
-          offset + limit - 1,
-        );
+        const res = await fetch(`/api/products/search?${params.toString()}`);
+        const { products: data, total: totalCount } = await res.json();
 
         if (mounted && data) {
-          let sortedProducts = [...data];
-
-          // Filter by distance
-          if (maxDistance && urlCoords) {
-            const maxKm = parseFloat(maxDistance);
-            sortedProducts = sortedProducts
-              .map((p) => ({
-                ...p,
-                distance:
-                  p.latitude && p.longitude
-                    ? Math.sqrt(
-                        Math.pow(urlCoords.latitude - p.latitude, 2) +
-                          Math.pow(urlCoords.longitude - p.longitude, 2),
-                      ) * 111 // Approx km
-                    : null,
-              }))
-              .filter((p) => p.distance === null || p.distance <= maxKm);
-          }
-
-          // Sorting
-          if (orderBy === "nearest" && urlCoords) {
-            // Sort products with coordinates first, then by distance
-            sortedProducts.sort((a, b) => {
-              const aHasCoords = a.latitude && a.longitude;
-              const bHasCoords = b.latitude && b.longitude;
-
-              if (aHasCoords && !bHasCoords) return -1;
-              if (!aHasCoords && bHasCoords) return 1;
-              if (!aHasCoords && !bHasCoords) return 0;
-
-              const distA = Math.sqrt(
-                Math.pow(urlCoords.latitude - a.latitude, 2) +
-                  Math.pow(urlCoords.longitude - a.longitude, 2),
-              );
-              const distB = Math.sqrt(
-                Math.pow(urlCoords.latitude - b.latitude, 2) +
-                  Math.pow(urlCoords.longitude - b.longitude, 2),
-              );
-              return distA - distB;
-            });
-          } else if (orderBy === "most_recent") {
-            sortedProducts.sort(
-              (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime(),
-            );
-          } else if (orderBy === "price_low") {
-            sortedProducts.sort((a, b) => a.price - b.price);
-          } else if (orderBy === "price_high") {
-            sortedProducts.sort((a, b) => b.price - a.price);
-          } else {
-            sortedProducts.sort(
-              (a, b) => (b.favorites || 0) - (a.favorites || 0),
-            );
-          }
-
-          setProducts(sortedProducts);
-          setTotal(count || 0);
+          setProducts(data);
+          setTotal(totalCount || 0);
         }
       } catch (err) {
-        console.error("Error fetching products:", err);
+        console.error("Error searching products:", err);
       } finally {
         if (mounted) setIsLoading(false);
       }

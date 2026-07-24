@@ -258,17 +258,6 @@ function SettingsContent() {
                         className="w-5 h-5 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-[#112237]">Mensajes de compradores</p>
-                        <p className="text-sm text-[#64748b]">Notificaciones de nuevos mensajes</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        defaultChecked
-                        className="w-5 h-5 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
-                      />
-                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -1,10 +1,9 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
-import { cookies } from 'next/headers';
-import { MapPin, Calendar, Package } from 'lucide-react';
+import { Calendar, Package } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,30 +12,25 @@ interface Props {
 }
 
 async function getProfileData(profileId: string) {
-  const supabase = await createServerClient();
-  
-  const [profileRes, productsRes] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', profileId).single(),
-    supabase.from('products')
-      .select('*, images:product_images(*)')
-      .eq('seller_id', profileId)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(20),
-  ]);
-
-  return {
-    profile: profileRes.data,
-    products: productsRes.data || [],
-  };
+  try {
+    const [profile, products] = await Promise.all([
+      prisma.profile.findUnique({ where: { id: profileId } }),
+      prisma.product.findMany({
+        where: { seller_id: profileId, status: 'active' },
+        include: { images: { orderBy: { position: 'asc' } } },
+        orderBy: { created_at: 'desc' },
+        take: 20,
+      }),
+    ]);
+    return { profile, products };
+  } catch (error) {
+    console.error('Error fetching profile data with Prisma:', error);
+    return { profile: null, products: [] };
+  }
 }
 
 export default async function UserProfilePage({ params }: Props) {
   const { id } = await params;
-  const cookieStore = cookies();
-  const supabase = await createServerClient();
-  
-  const { data: { user: currentUser } } = await supabase.auth.getUser();
   const { profile, products } = await getProfileData(id);
 
   if (!profile) {
@@ -98,29 +92,20 @@ export default async function UserProfilePage({ params }: Props) {
                 <div className="flex flex-wrap gap-4 text-sm text-[#64748b]">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    <span>Joined {new Date(profile.created_at).toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })}</span>
+                    <span>Unido en {profile.created_at ? new Date(profile.created_at).toLocaleDateString('es-PE', { month: 'long', year: 'numeric' }) : '2026'}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Package className="w-4 h-4" />
                     <span>{products.length} productos</span>
                   </div>
-                  {profile.rating > 0 && (
+                  {(Number(profile.rating) || 0) > 0 && (
                     <div className="flex items-center gap-1">
                       <span className="text-yellow-500">★</span>
-                      <span>{profile.rating.toFixed(1)} ({profile.positive_reviews} reseñas)</span>
+                      <span>{Number(profile.rating).toFixed(1)} ({profile.positive_reviews} reseñas)</span>
                     </div>
                   )}
                 </div>
               </div>
-
-              {currentUser && currentUser.id !== id && (
-                <Link 
-                  href={`/messages?user=${id}`}
-                  className="bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]"
-                >
-                  Enviar mensaje
-                </Link>
-              )}
             </div>
           </div>
 
@@ -131,8 +116,7 @@ export default async function UserProfilePage({ params }: Props) {
             {products.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {products.map(product => {
-                  const images = [...(product.images || [])].sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0));
-                  const firstImage = images[0]?.url;
+                  const firstImage = product.images?.[0]?.url;
                   
                   return (
                     <Link key={product.id} href={`/products/${product.id}`} className="block">
@@ -153,7 +137,7 @@ export default async function UserProfilePage({ params }: Props) {
                         </div>
                         <div className="p-3">
                           <h3 className="font-medium text-[#112237] truncate text-sm">{product.title}</h3>
-                          <p className="text-[#f25c05] font-bold">S/ {product.price}</p>
+                          <p className="text-[#f25c05] font-bold">S/ {Number(product.price).toFixed(2)}</p>
                         </div>
                       </div>
                     </Link>

@@ -2,19 +2,17 @@ import { createServerClient } from '@/lib/supabase/server';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
-import { Package, ShoppingCart, MessageCircle, Eye, Heart, Plus } from 'lucide-react';
+import { Package, ShoppingCart, Eye, Heart, Plus } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
 async function getDashboardStats(userId: string) {
   const supabase = await createServerClient();
   
-  const [productsRes, ordersRes, favoritesRes, viewsRes] = await Promise.all([
+  const [productsRes, ordersRes, favoritesRes] = await Promise.all([
     supabase.from('products').select('id, status, views, favorites', { count: 'exact' }).eq('seller_id', userId),
     supabase.from('orders').select('id, status', { count: 'exact' }).eq('seller_id', userId),
     supabase.from('favorites').select('id', { count: 'exact' }).eq('user_id', userId),
-    supabase.from('products').select('views').eq('seller_id', userId),
   ]);
 
   const products = productsRes.data || [];
@@ -44,7 +42,6 @@ async function getRecentProducts(userId: string) {
 }
 
 export default async function DashboardPage() {
-  const cookieStore = cookies();
   const supabase = await createServerClient();
   
   const { data: { user } } = await supabase.auth.getUser();
@@ -136,7 +133,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Quick Links */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <Link href="/user/dashboard/products" className="bg-white rounded-xl p-6 border border-[#e2e8f0] hover:shadow-lg transition-shadow">
               <h3 className="font-semibold text-[#112237] mb-2">Mis Productos</h3>
               <p className="text-sm text-[#64748b]">Gestiona tus publicaciones</p>
@@ -144,10 +141,6 @@ export default async function DashboardPage() {
             <Link href="/user/dashboard/orders" className="bg-white rounded-xl p-6 border border-[#e2e8f0] hover:shadow-lg transition-shadow">
               <h3 className="font-semibold text-[#112237] mb-2">Mis Pedidos</h3>
               <p className="text-sm text-[#64748b]">Ver estado de ventas</p>
-            </Link>
-            <Link href="/user/dashboard/messages" className="bg-white rounded-xl p-6 border border-[#e2e8f0] hover:shadow-lg transition-shadow">
-              <h3 className="font-semibold text-[#112237] mb-2">Mensajes</h3>
-              <p className="text-sm text-[#64748b]">Chats con compradores</p>
             </Link>
           </div>
 

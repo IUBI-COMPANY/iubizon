@@ -53,7 +53,6 @@ export interface Product {
   seller?: User;
   category?: Category;
   images?: ProductImage[];
-  bundle?: ProductBundle;
 }
 
 export interface ProductImage {
@@ -61,14 +60,6 @@ export interface ProductImage {
   product_id: string;
   url: string;
   position: number;
-}
-
-export interface ProductBundle {
-  id: string;
-  product_id: string;
-  quantity: number;
-  price_per_unit: number;
-  total_price: number;
 }
 
 export interface Review {
@@ -82,30 +73,6 @@ export interface Review {
   buyer?: User;
 }
 
-export interface Conversation {
-  id: string;
-  product_id: string;
-  buyer_id: string;
-  seller_id: string;
-  created_at: string;
-  updated_at: string;
-  product?: Product;
-  buyer?: User;
-  seller?: User;
-  messages?: Message[];
-  last_message?: Message;
-  unread_count?: number;
-}
-
-export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  image_url: string | null;
-  read_at: string | null;
-  created_at: string;
-}
 
 export interface Order {
   id: string;

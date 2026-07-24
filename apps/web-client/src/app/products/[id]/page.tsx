@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
@@ -30,16 +30,29 @@ interface Props {
 }
 
 async function getProduct(id: string) {
-  const supabase = await createServerClient();
-  
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, seller:profiles(*), category:categories(*), images:product_images(*), bundle:product_bundles(*)')
-    .eq('id', id)
-    .single();
+  try {
+    const raw = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        seller: true,
+        category: true,
+        images: { orderBy: { position: 'asc' } },
+      },
+    });
 
-  if (error || !data) return null;
-  return data;
+    if (!raw) return null;
+
+    return {
+      ...raw,
+      price: Number(raw.price),
+      location: raw.seller?.location ?? null,
+      delivery_preference: ['pickup', 'delivery'],
+      availability_type: (raw.stock ?? 1) > 0 ? 'available' : 'on_order',
+    } as any;
+  } catch (error) {
+    console.error('Error fetching product with Prisma:', error);
+    return null;
+  }
 }
 
 const conditionConfig: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {

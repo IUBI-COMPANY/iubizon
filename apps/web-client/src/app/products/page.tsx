@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import Link from 'next/link';
@@ -6,23 +6,25 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 async function getProducts(limit = 20) {
-  const supabase = await createServerClient();
-  
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, category:categories(*), seller:profiles(*), images:product_images(*), bundle:product_bundles(*)', {
-      count: 'exact',
-    })
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
+  try {
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: { status: 'active' },
+        include: {
+          category: true,
+          seller: true,
+          images: { orderBy: { position: 'asc' } },
+        },
+        orderBy: { created_at: 'desc' },
+        take: limit,
+      }),
+      prisma.product.count({ where: { status: 'active' } }),
+    ]);
+    return { products, total };
+  } catch (error) {
     console.error('Error fetching products:', error);
     return { products: [], total: 0 };
   }
-
-  return { products: data || [], total: data?.length || 0 };
 }
 
 export default async function ProductsPage() {
@@ -53,7 +55,7 @@ export default async function ProductsPage() {
                       📦
                     </div>
                     <h3 className="font-medium text-[#112237] truncate">{product.title}</h3>
-                    <p className="text-[#f25c05] font-bold">S/ {product.price}</p>
+                    <p className="text-[#f25c05] font-bold">S/ {Number(product.price).toFixed(2)}</p>
                     <span className="text-xs text-[#64748b] capitalize">
                       {(product.condition || '').replace('_', ' ')}
                     </span>

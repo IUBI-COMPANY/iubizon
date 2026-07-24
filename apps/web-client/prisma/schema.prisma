@@ -23,9 +23,10 @@ model Profile {
   updated_at       DateTime? @default(now()) @updatedAt @db.Timestamptz
 
   products      Product[]
-  ordersAsBuyer Order[]   @relation("BuyerOrders")
-  ordersAsSeller Order[]  @relation("SellerOrders")
+  ordersAsBuyer Order[]    @relation("BuyerOrders")
+  ordersAsSeller Order[]   @relation("SellerOrders")
   reviews       Review[]
+  favorites     Favorite[]
 
   @@map("profiles")
 }
@@ -55,20 +56,19 @@ model Product {
   price         Decimal   @db.Decimal(10, 2)
   condition     String
   status        String    @default("active")
-  is_bundle     Boolean?  @default(false)
   stock         Int?      @default(1)
   views         Int?      @default(0)
-  favorites     Int?      @default(0)
+  favorites_count Int?    @default(0) @map("favorites")
   specifications Json?    @default("{}")
   created_at    DateTime? @default(now()) @db.Timestamptz
   updated_at    DateTime? @default(now()) @updatedAt @db.Timestamptz
 
-  seller   Profile        @relation(fields: [seller_id], references: [id], onDelete: Cascade)
-  category Category       @relation(fields: [category_id], references: [id])
-  images   ProductImage[]
-  bundles  ProductBundle[]
-  orders   Order[]
-  reviews  Review[]
+  seller    Profile        @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  category  Category       @relation(fields: [category_id], references: [id])
+  images    ProductImage[]
+  orders    Order[]
+  reviews   Review[]
+  favorites Favorite[]
 
   @@map("products")
 }
@@ -85,17 +85,17 @@ model ProductImage {
   @@map("product_images")
 }
 
-model ProductBundle {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  product_id     String    @db.Uuid
-  quantity       Int
-  price_per_unit Decimal   @db.Decimal(10, 2)
-  total_price    Decimal   @db.Decimal(10, 2)
-  created_at     DateTime? @default(now()) @db.Timestamptz
+model Favorite {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  product_id String    @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz
 
+  user    Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
-  @@map("product_bundles")
+  @@unique([user_id, product_id])
+  @@map("favorites")
 }
 
 model Order {
@@ -111,12 +111,29 @@ model Order {
   created_at     DateTime? @default(now()) @db.Timestamptz
   updated_at     DateTime? @default(now()) @updatedAt @db.Timestamptz
 
-  product Product @relation(fields: [product_id], references: [id])
-  buyer   Profile @relation("BuyerOrders", fields: [buyer_id], references: [id])
-  seller  Profile @relation("SellerOrders", fields: [seller_id], references: [id])
-  reviews Review[]
+  product  Product    @relation(fields: [product_id], references: [id])
+  buyer    Profile    @relation("BuyerOrders", fields: [buyer_id], references: [id])
+  seller   Profile    @relation("SellerOrders", fields: [seller_id], references: [id])
+  reviews  Review[]
+  shipping Shipping?
 
   @@map("orders")
+}
+
+model Shipping {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id        String    @unique @db.Uuid
+  address         String
+  city            String?
+  state           String?
+  postal_code     String?
+  tracking_number String?
+  status          String?   @default("pending")
+  created_at      DateTime? @default(now()) @db.Timestamptz
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("shippings")
 }
 
 model Review {
