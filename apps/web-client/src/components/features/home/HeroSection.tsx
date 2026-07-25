@@ -14,15 +14,24 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: "Encuentra lo que necesitas en iubizon.com",
-    subtitle: "La plataforma de productos multimedia para empresas y colegios.",
+    title: "Encuentra todo en un solo lugar",
+    subtitle:
+      "La plataforma de productos y servicios para empresas y colegios.",
     bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
   },
   {
     id: 2,
-    title: "Proyectores y Equipos Multimedia",
-    subtitle: "Soluciones de tecnología audiovisual de alta calidad al mejor precio de Perú.",
+    title: "Proveedores y distribuidores verificados",
+    subtitle:
+      "Conecta con proveedores confiables y encuentra los productos que necesitas.",
     bgGradient: "from-[#0f172a] via-[#1e293b] to-[#0284c7]",
+  },
+  {
+    id: 3,
+    title: "Arma tus kits de productos y servicios",
+    subtitle:
+      "Crea paquetes personalizados de productos y servicios para tus necesidades específicas.",
+    bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
   },
 ];
 
@@ -45,7 +54,8 @@ export const HeroSection = () => {
   const [[page, direction], setPage] = useState([0, 0]);
   const [isHovered, setIsHovered] = useState(false);
 
-  const currentSlideIndex = ((page % slides.length) + slides.length) % slides.length;
+  const currentSlideIndex =
+    ((page % slides.length) + slides.length) % slides.length;
 
   const paginate = useCallback((newDirection: number) => {
     setPage(([prevPage]) => [prevPage + newDirection, newDirection]);

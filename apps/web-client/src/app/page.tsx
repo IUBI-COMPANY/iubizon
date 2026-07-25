@@ -6,7 +6,7 @@ import { Footer } from "@/components/features/layout/Footer";
 import { HeroSection } from "@/components/features/home/HeroSection";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Alert } from "@/components/ui/Alert";
-import type { Product, Category } from "@/types";
+import type { Category } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,27 +16,19 @@ interface CategoryWithStats extends Category {
 }
 
 export default async function MarketplaceHomePage() {
-  let products: Product[] = [];
-  let popularCategories: CategoryWithStats[] = [];
-  let maintenanceError: string | null = null;
+  const [productsRes, categoriesRes] = await Promise.allSettled([
+    getActiveProducts(),
+    getPopularCategories(6),
+  ]);
 
-  try {
-    products = await getActiveProducts();
-  } catch (error) {
-    console.error('Failed to load products:', error);
-    maintenanceError =
-      'Estamos realizando tareas de mantenimiento. Algunos datos pueden no estar disponibles.';
-  }
+  const products = productsRes.status === "fulfilled" ? productsRes.value : [];
+  const popularCategories: CategoryWithStats[] =
+    categoriesRes.status === "fulfilled" ? (categoriesRes.value as CategoryWithStats[]) : [];
 
-  try {
-    popularCategories = await getPopularCategories(6);
-  } catch (error) {
-    console.error('Failed to load categories:', error);
-    if (!maintenanceError) {
-      maintenanceError =
-        'Estamos realizando tareas de mantenimiento. Algunos datos pueden no estar disponibles.';
-    }
-  }
+  const maintenanceError =
+    productsRes.status === "rejected" || categoriesRes.status === "rejected"
+      ? "Estamos realizando tareas de mantenimiento. Algunos datos pueden no estar disponibles."
+      : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
