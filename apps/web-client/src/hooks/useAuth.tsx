@@ -23,7 +23,7 @@ interface AuthContextType {
     name: string,
   ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithGoogle: (redirectPath?: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,7 +88,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const user: User | null = useMemo(() => {
     if (!supabaseUser) return null;
-    if (profile) return profile;
+
+    const googleAvatar =
+      supabaseUser.user_metadata?.avatar_url ??
+      supabaseUser.user_metadata?.picture ??
+      null;
+
+    if (profile) {
+      return {
+        ...profile,
+        avatar_url: profile.avatar_url || googleAvatar,
+      };
+    }
 
     return {
       id: supabaseUser.id,
@@ -97,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         supabaseUser.user_metadata?.name ??
         supabaseUser.email?.split("@")[0] ??
         null,
-      avatar_url: supabaseUser.user_metadata?.avatar_url ?? null,
+      avatar_url: googleAvatar,
       phone: null,
       bio: null,
       is_pro: false,
@@ -139,10 +150,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setProfile(null);
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectPath?: string) => {
+    const target = redirectPath && redirectPath.startsWith('/') && !redirectPath.startsWith('//') ? redirectPath : '/user/dashboard';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(target)}`,
+      },
     });
     return { error: error ? new Error(error.message) : null };
   };

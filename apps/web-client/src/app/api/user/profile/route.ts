@@ -22,6 +22,11 @@ export async function GET() {
           where: { id: supabaseUser.id },
         });
 
+        const googleAvatar =
+          supabaseUser.user_metadata?.avatar_url ??
+          supabaseUser.user_metadata?.picture ??
+          null;
+
         if (!profile) {
           profile = await prisma.profile.create({
             data: {
@@ -31,8 +36,13 @@ export async function GET() {
                 supabaseUser.user_metadata?.name ??
                 supabaseUser.email?.split('@')[0] ??
                 'Usuario',
-              avatar_url: supabaseUser.user_metadata?.avatar_url ?? null,
+              avatar_url: googleAvatar,
             },
+          });
+        } else if (!profile.avatar_url && googleAvatar) {
+          profile = await prisma.profile.update({
+            where: { id: supabaseUser.id },
+            data: { avatar_url: googleAvatar },
           });
         }
       } catch (prismaErr) {

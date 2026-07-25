@@ -63,7 +63,7 @@ function LoginForm() {
     setIsLoading(true);
     setError(null);
 
-    const { error: googleError } = await signInWithGoogle();
+    const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
       setError('Error al conectar con Google. Intenta nuevamente.');
       setIsLoading(false);
