@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { Heart, MapPin, Badge as BadgeType } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Avatar } from '@/components/ui/Avatar';
-import { formatPrice, formatRelativeTime, cn } from '@/lib/utils';
-import type { Product } from '@/types';
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, MapPin } from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
+import { cn, formatPrice, formatRelativeTime } from "@/lib/utils";
+import type { Product } from "@/types";
 
 interface ProductCardProps {
   product: Product;
@@ -16,21 +16,14 @@ interface ProductCardProps {
   showSeller?: boolean;
 }
 
-const conditionLabels: Record<string, string> = {
-  new: 'Nuevo',
-  like_new: 'Como nuevo',
-  good: 'Buen estado',
-  fair: 'Aceptable',
-};
-
 export const ProductCard = ({
   product,
   isFavorite = false,
   onToggleFavorite,
   showSeller = false,
 }: ProductCardProps) => {
-  const sortedImages = [...(product.images || [])].sort((a, b) => 
-    (a.position ?? 0) - (b.position ?? 0)
+  const sortedImages = [...(product.images || [])].sort(
+    (a, b) => (a.position ?? 0) - (b.position ?? 0),
   );
   const mainImage = sortedImages[0]?.url;
   const hasMultipleImages = sortedImages.length > 1;
@@ -59,7 +52,7 @@ export const ProductCard = ({
             </Badge>
           )}
 
-          {product.condition === 'new' && (
+          {product.condition === "new" && (
             <Badge variant="success" className="absolute top-2 right-2">
               NUEVO
             </Badge>
@@ -77,12 +70,14 @@ export const ProductCard = ({
               onToggleFavorite?.(product.id);
             }}
             className={cn(
-              'absolute top-2 right-2 p-2 rounded-full transition-all',
-              'bg-white/90 hover:bg-white',
-              isFavorite ? 'text-[#ef4444]' : 'text-[#64748b] hover:text-[#ef4444]'
+              "absolute top-2 right-2 p-2 rounded-full transition-all",
+              "bg-white/90 hover:bg-white",
+              isFavorite
+                ? "text-[#ef4444]"
+                : "text-[#64748b] hover:text-[#ef4444]",
             )}
           >
-            <Heart className={cn('w-4 h-4', isFavorite && 'fill-current')} />
+            <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
           </button>
         </div>
 
@@ -99,7 +94,7 @@ export const ProductCard = ({
 
           <div className="flex items-center gap-2 text-xs text-[#64748b]">
             <MapPin className="w-3 h-3" />
-            <span>{product.seller?.name || 'Lima'}</span>
+            <span>{product.seller?.name || "Lima"}</span>
             <span className="mx-1">•</span>
             <span>{formatRelativeTime(product.created_at)}</span>
           </div>
@@ -108,16 +103,16 @@ export const ProductCard = ({
             <div className="mt-3 pt-3 border-t border-[#e2e8f0] flex items-center gap-2">
               <Avatar
                 src={product.seller.avatar_url}
-                alt={product.seller.name || 'Vendedor'}
+                alt={product.seller.name || "Vendedor"}
                 size="sm"
-                showProBadge={product.seller.is_pro}
+                showProBadge={!!product.seller.is_pro}
               />
               <span className="text-xs text-[#64748b]">
                 {product.seller.name}
               </span>
-              {product.seller.rating > 0 && (
+              {(product.seller.rating || 0) > 0 && (
                 <span className="text-xs text-[#f59e0b]">
-                  ★ {product.seller.rating.toFixed(1)}
+                  ★ {Number(product.seller.rating || 0).toFixed(1)}
                 </span>
               )}
             </div>

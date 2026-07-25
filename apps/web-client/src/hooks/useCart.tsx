@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect, createContext, useContext, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import type { Product } from "@/types";
 
 interface CartItem {
   id: string;
@@ -15,7 +21,17 @@ interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: any) => void;
+  addItem: (
+    product:
+      | Product
+      | {
+          id: string;
+          title: string;
+          price: number;
+          seller_id: string;
+          images?: { url: string }[];
+        },
+  ) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -32,12 +48,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem('iubizon_cart');
+    const savedCart = localStorage.getItem("iubizon_cart");
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
       } catch (e) {
-        console.error('Error parsing cart:', e);
+        console.error("Error parsing cart:", e);
       }
     }
     setIsLoading(false);
@@ -46,73 +62,94 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save to localStorage whenever items change
   useEffect(() => {
     if (!isLoading) {
-      localStorage.setItem('iubizon_cart', JSON.stringify(items));
+      localStorage.setItem("iubizon_cart", JSON.stringify(items));
     }
   }, [items, isLoading]);
 
-  const addItem = useCallback((product: any) => {
-    setItems(prev => {
-      const existingItem = prev.find(item => item.product_id === product.id);
-      
-      if (existingItem) {
-        return prev.map(item => 
-          item.product_id === product.id 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+  const addItem = useCallback(
+    (
+      product:
+        | Product
+        | {
+            id: string;
+            title: string;
+            price: number;
+            seller_id: string;
+            images?: { url: string }[];
+          },
+    ) => {
+      setItems((prev) => {
+        const existingItem = prev.find(
+          (item) => item.product_id === product.id,
         );
-      }
-      
-      const newItem: CartItem = {
-        id: `cart-${product.id}-${Date.now()}`,
-        product_id: product.id,
-        title: product.title,
-        price: product.price,
-        image_url: product.images?.[0]?.url || product.images?.[0],
-        quantity: 1,
-        seller_id: product.seller_id,
-      };
-      
-      return [...prev, newItem];
-    });
-  }, []);
+
+        if (existingItem) {
+          return prev.map((item) =>
+            item.product_id === product.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item,
+          );
+        }
+
+        const newItem: CartItem = {
+          id: `cart-${product.id}-${Date.now()}`,
+          product_id: product.id,
+          title: product.title,
+          price: product.price,
+          image_url:
+            typeof product.images?.[0] === "string"
+              ? product.images[0]
+              : product.images?.[0]?.url,
+          quantity: 1,
+          seller_id: product.seller_id,
+        };
+
+        return [...prev, newItem];
+      });
+    },
+    [],
+  );
 
   const removeItem = useCallback((productId: string) => {
-    setItems(prev => prev.filter(item => item.product_id !== productId));
+    setItems((prev) => prev.filter((item) => item.product_id !== productId));
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems(prev => prev.filter(item => item.product_id !== productId));
+      setItems((prev) => prev.filter((item) => item.product_id !== productId));
     } else {
-      setItems(prev => 
-        prev.map(item => 
-          item.product_id === productId 
-            ? { ...item, quantity }
-            : item
-        )
+      setItems((prev) =>
+        prev.map((item) =>
+          item.product_id === productId ? { ...item, quantity } : item,
+        ),
       );
     }
   }, []);
 
   const clearCart = useCallback(() => {
     setItems([]);
-    localStorage.removeItem('iubizon_cart');
+    localStorage.removeItem("iubizon_cart");
   }, []);
 
-  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ 
-      items, 
-      addItem, 
-      removeItem, 
-      updateQuantity, 
-      clearCart, 
-      total, 
-      itemCount,
-      isLoading 
-    }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart,
+        total,
+        itemCount,
+        isLoading,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
@@ -121,7 +158,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 }

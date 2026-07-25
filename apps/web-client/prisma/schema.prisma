@@ -48,20 +48,24 @@ model Category {
 }
 
 model Product {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  seller_id     String    @db.Uuid
-  category_id   String    @db.Uuid
-  title         String
-  description   String?
-  price         Decimal   @db.Decimal(10, 2)
-  condition     String
-  status        String    @default("active")
-  stock         Int?      @default(1)
-  views         Int?      @default(0)
-  favorites_count Int?    @default(0) @map("favorites")
-  specifications Json?    @default("{}")
-  created_at    DateTime? @default(now()) @db.Timestamptz
-  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamptz
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  seller_id           String    @db.Uuid
+  category_id         String    @db.Uuid
+  title               String
+  description         String?
+  price               Decimal   @db.Decimal(10, 2)
+  condition           String
+  status              String    @default("active")
+  stock               Int?      @default(1)
+  views               Int?      @default(0)
+  favorites_count     Int?      @default(0) @map("favorites")
+  is_bundle           Boolean?  @default(false)
+  location            String?
+  delivery_preference String?
+  availability_type   String?
+  specifications      Json?     @default("{}")
+  created_at          DateTime? @default(now()) @db.Timestamptz
+  updated_at          DateTime? @default(now()) @updatedAt @db.Timestamptz
 
   seller    Profile        @relation(fields: [seller_id], references: [id], onDelete: Cascade)
   category  Category       @relation(fields: [category_id], references: [id])
