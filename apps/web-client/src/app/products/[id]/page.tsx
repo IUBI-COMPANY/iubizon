@@ -104,7 +104,7 @@ export default async function ProductDetailPage({ params }: Props) {
       <Navbar />
       
       <div className="flex-1 bg-[#f8fafc]">
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="container py-6">
           <nav className="mb-6">
             <Link href="/products" className="text-[#64748b] hover:text-[#f25c05] transition-colors text-sm">
               ← Volver a productos

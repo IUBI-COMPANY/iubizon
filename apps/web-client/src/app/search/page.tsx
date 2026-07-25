@@ -308,7 +308,7 @@ function SearchContent() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <div className="container mx-auto px-4 py-6 flex-1">
+      <div className="container py-6 flex-1">
         <div className="flex gap-8">
           <aside className="w-64 flex-shrink-0">
             <div className="bg-white rounded-lg border border-[#e2e8f0] p-4 sticky top-24 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-hide">

@@ -37,15 +37,15 @@ export default async function MarketplaceHomePage() {
         <HeroSection />
 
         {maintenanceError && (
-          <div className="container mx-auto px-4 mt-6">
+          <div className="container mt-6">
             <Alert type="warning" message={maintenanceError} />
           </div>
         )}
 
         {/* Categorías Populares */}
         {popularCategories.length > 0 && (
-          <section className="py-6 bg-[#f8fafc]">
-            <div className="container mx-auto px-4">
+          <section className="py-6">
+            <div className="container">
               <h2 className="text-lg font-bold text-[#112237] mb-4">
                 Categorías populares
               </h2>
@@ -55,7 +55,7 @@ export default async function MarketplaceHomePage() {
         )}
 
         <section className="py-8">
-          <div className="container mx-auto px-4">
+          <div className="container">
             <h2 className="text-xl font-bold text-[#112237] mb-6">
               Últimos productos publicados
             </h2>

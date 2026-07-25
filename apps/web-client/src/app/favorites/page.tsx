@@ -55,7 +55,7 @@ export default async function FavoritesPage() {
       <Navbar />
       
       <div className="flex-1 bg-[#f8fafc]">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container py-6">
           <h1 className="text-2xl font-bold text-[#112237] mb-6">Mis favoritos</h1>
 
           {favorites.length > 0 ? (

@@ -35,7 +35,7 @@ export default async function ProductsPage() {
       <Navbar />
       
       <div className="flex-1 bg-[#f8fafc]">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-[#112237]">Todos los productos</h1>

@@ -34,7 +34,7 @@ export const Footer = () => {
 
   return (
     <footer className="bg-[#112237] text-white">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link href="/" className="inline-block mb-4">
