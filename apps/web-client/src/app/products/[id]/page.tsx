@@ -18,8 +18,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
-import { ChatButton } from './ChatButton';
-import { BuyButton } from './BuyButton';
+import { AddToCartButton } from './AddToCartButton';
 import { FavoriteButton } from './FavoriteButton';
 import { getCategoryIcon } from '@/lib/utils/categoryIcons';
 
@@ -288,19 +287,13 @@ export default async function ProductDetailPage({ params }: Props) {
 
                 <div className="space-y-3">
                   {product.seller && (
-                    <>
-                      <BuyButton 
-                        productId={product.id}
-                        productTitle={product.title}
-                        productPrice={product.price}
-                        sellerId={product.seller.id}
-                      />
-                      <ChatButton 
-                        sellerId={product.seller.id}
-                        productId={product.id}
-                        productTitle={product.title}
-                      />
-                    </>
+                    <AddToCartButton
+                      productId={product.id}
+                      productTitle={product.title}
+                      productPrice={Number(product.price)}
+                      sellerId={product.seller.id}
+                      images={product.images}
+                    />
                   )}
                 </div>
               </div>
