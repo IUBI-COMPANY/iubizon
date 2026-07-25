@@ -97,20 +97,13 @@ function SettingsContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-[#112237]">Contraseña</p>
-                    <p className="text-sm text-[#64748b]">Último cambio: hace 30 días</p>
+                    <p className="text-sm text-[#64748b]">Cambia o actualiza tu contraseña de acceso</p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Cambiar contraseña
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-[#112237]">Autenticación en dos pasos</p>
-                    <p className="text-sm text-[#64748b]">Añade una capa extra de seguridad</p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Activar
-                  </Button>
+                  <Link href="/auth/forgot-password">
+                    <Button variant="outline" size="sm">
+                      Cambiar contraseña
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

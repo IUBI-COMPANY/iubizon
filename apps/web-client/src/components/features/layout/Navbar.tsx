@@ -157,42 +157,24 @@ export const Navbar = () => {
                     </div>
 
                     <Link
-                      href="/user/dashboard"
-                      className="flex items-center gap-3 px-4 py-2 text-[#475569] hover:bg-[#f8fafc]"
+                      href="/user/profile"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[#334155] hover:bg-[#f8fafc] hover:text-[#112237] font-medium text-sm transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
-                      <UserIcon className="w-4 h-4" />
+                      <UserIcon className="w-4 h-4 text-[#f25c05]" />
                       Mi perfil
                     </Link>
 
                     <Link
-                      href="/user/dashboard/products"
-                      className="flex items-center gap-3 px-4 py-2 text-[#475569] hover:bg-[#f8fafc]"
+                      href="/user/dashboard"
+                      className="flex items-center gap-3 px-4 py-2.5 text-[#334155] hover:bg-[#f8fafc] hover:text-[#112237] font-medium text-sm transition-colors"
                       onClick={() => setShowUserMenu(false)}
                     >
-                      <Package className="w-4 h-4" />
-                      Mis productos
+                      <Package className="w-4 h-4 text-[#112237]" />
+                      Panel (dashboard)
                     </Link>
 
-                    <Link
-                      href="/user/profile/edit"
-                      className="flex items-center gap-3 px-4 py-2 text-[#475569] hover:bg-[#f8fafc]"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <UserIcon className="w-4 h-4" />
-                      Editar perfil
-                    </Link>
-
-                    <Link
-                      href="/user/dashboard/settings"
-                      className="flex items-center gap-3 px-4 py-2 text-[#475569] hover:bg-[#f8fafc]"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Settings className="w-4 h-4" />
-                      Configuración
-                    </Link>
-
-                    <div className="border-t border-[#e2e8f0] mt-2 pt-2">
+                    <div className="border-t border-[#e2e8f0] mt-1 pt-1">
                       <button
                         onClick={async () => {
                           await signOut();
@@ -200,7 +182,7 @@ export const Navbar = () => {
                           router.push("/");
                           router.refresh();
                         }}
-                        className="flex items-center gap-3 px-4 py-2 text-[#ef4444] hover:bg-red-50 w-full"
+                        className="flex items-center gap-3 px-4 py-2.5 text-[#ef4444] hover:bg-red-50 w-full text-left font-medium text-sm transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         Cerrar sesión
