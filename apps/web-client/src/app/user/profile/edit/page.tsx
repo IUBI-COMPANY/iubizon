@@ -178,6 +178,7 @@ export default function ProfileEditPage() {
                       alt="Avatar"
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl text-[#94a3b8]">

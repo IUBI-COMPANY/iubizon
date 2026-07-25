@@ -36,6 +36,7 @@ const Avatar = React.forwardRef<
         src={src || undefined}
         alt={alt}
         className="aspect-square h-full w-full object-cover"
+        referrerPolicy="no-referrer"
       />
       <AvatarPrimitive.Fallback
         className="flex h-full w-full items-center justify-center rounded-full bg-[#f8fafc] text-[#64748b] font-medium"

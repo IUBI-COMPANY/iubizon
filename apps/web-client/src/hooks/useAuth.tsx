@@ -92,6 +92,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const googleAvatar =
       supabaseUser.user_metadata?.avatar_url ??
       supabaseUser.user_metadata?.picture ??
+      (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.avatar_url ??
+      (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.picture ??
       null;
 
     if (profile) {

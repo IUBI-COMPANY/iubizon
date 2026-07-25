@@ -45,6 +45,9 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+      { protocol: "https", hostname: "*.supabase.co" },
       { protocol: "https", hostname: "paperlux.cl" },
       { protocol: "https", hostname: "mediaserver.goepson.com" },
       { protocol: "https", hostname: "svmrptsbmhcwciggsnkd.supabase.co" },
