@@ -3,23 +3,24 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { PasswordInput, validatePasswordStrict } from '@/components/ui/PasswordInput';
 import { createClient } from '@/lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+
+  const isPasswordValid = validatePasswordStrict(password);
+  const doPasswordsMatch = password === confirmPassword && password.length > 0;
 
   useEffect(() => {
     // detectSessionInUrl auto-processes the access_token from the hash
@@ -37,8 +38,13 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (!isPasswordValid) {
+      setError('La contraseña no cumple con los requisitos mínimos de seguridad.');
+      return;
+    }
+
+    if (!doPasswordsMatch) {
+      setError('Las contraseñas no coinciden.');
       return;
     }
 
@@ -63,9 +69,9 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border border-[#e2e8f0]">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-2xl font-bold text-[#112237]">
             {success ? '¡Contraseña actualizada!' : checkingSession ? 'Verificando...' : hasSession ? 'Nueva contraseña' : 'Enlace inválido'}
           </CardTitle>
           <CardDescription>
@@ -85,7 +91,7 @@ export default function ResetPasswordPage() {
             </div>
           ) : success ? (
             <div className="text-center space-y-4">
-              <div className="p-3 bg-[#10b981]/10 text-[#10b981] text-sm rounded-lg">
+              <div className="p-3 bg-[#10b981]/10 text-[#10b981] text-sm font-medium rounded-lg">
                 Tu contraseña ha sido actualizada correctamente.
               </div>
             </div>
@@ -97,32 +103,29 @@ export default function ResetPasswordPage() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Nueva contraseña</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#112237]"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <p className="text-xs text-[#94a3b8]">Mínimo 6 caracteres</p>
-              </div>
+              <PasswordInput
+                label="Nueva contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                showRequirements
+                disabled={isLoading}
+                required
+              />
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <PasswordInput
+                label="Confirmar nueva contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                confirmValue={password}
+                disabled={isLoading}
+                required
+              />
+
+              <Button
+                type="submit"
+                className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg"
+                disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
+              >
                 {isLoading ? 'Actualizando...' : 'Actualizar contraseña'}
               </Button>
             </form>

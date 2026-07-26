@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
+import { PasswordInput, validatePasswordStrict } from '@/components/ui/PasswordInput';
 import { useAuth } from '@/hooks/useAuth';
 
 export const dynamic = 'force-dynamic';
@@ -28,20 +29,13 @@ function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const redirectTarget = getSanitizedRedirect(searchParams.get('redirect'));
 
-  const passwordRequirements = [
-    { label: 'Al menos 8 caracteres', met: password.length >= 8 },
-    { label: 'Una letra mayúscula', met: /[A-Z]/.test(password) },
-    { label: 'Un número', met: /\d/.test(password) },
-  ];
-
-  const isPasswordValid = passwordRequirements.every((req) => req.met);
+  const isPasswordValid = validatePasswordStrict(password);
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,65 +136,23 @@ function RegisterForm() {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Contraseña</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10 text-sm"
-                required
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-[#112237]"
-                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+          <PasswordInput
+            label="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            showRequirements
+            disabled={isLoading}
+            required
+          />
 
-            {password && (
-              <div className="space-y-1 mt-2">
-                {passwordRequirements.map((req, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
-                    <span className={req.met ? 'text-[#10b981]' : 'text-[#94a3b8]'}>
-                      {req.met ? '✓' : '○'}
-                    </span>
-                    <span className={req.met ? 'text-[#10b981]' : 'text-[#94a3b8]'}>
-                      {req.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
-              <Input
-                id="confirmPassword"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="pl-10 text-sm"
-                required
-                disabled={isLoading}
-              />
-              {doPasswordsMatch && (
-                <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#10b981]" />
-              )}
-            </div>
-          </div>
+          <PasswordInput
+            label="Confirmar contraseña"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            confirmValue={password}
+            disabled={isLoading}
+            required
+          />
 
           <div className="flex items-start gap-2 pt-1">
             <input
