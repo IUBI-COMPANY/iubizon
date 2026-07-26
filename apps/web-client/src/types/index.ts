@@ -7,6 +7,8 @@ import type {
   Shipping as PrismaShipping,
   Review as PrismaReview,
   Favorite as PrismaFavorite,
+  Company as PrismaCompany,
+  CompanyMember as PrismaCompanyMember,
 } from "@prisma/client";
 
 // ==========================================
@@ -109,3 +111,15 @@ export type Order = JsonEntity<
 
 /** Favoritos */
 export type Favorite = JsonEntity<PrismaFavorite, { product?: Product }>;
+
+/** Empresa / Proveedor B2B */
+export type Company = JsonEntity<
+  PrismaCompany,
+  { members?: CompanyMember[]; products?: Product[] }
+>;
+
+/** Miembro de Equipo de Empresa */
+export type CompanyMember = JsonEntity<
+  PrismaCompanyMember,
+  { company?: Company; user?: User }
+>;
