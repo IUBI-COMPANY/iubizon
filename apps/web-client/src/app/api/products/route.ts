@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
   }
 
-  // Validar membresía de empresa si se envía company_id
+  // Validar membresía de empresa o autodetectar la empresa activa del usuario
   if (company_id) {
     const { data: memberData } = await supabase
       .from('company_members')
@@ -73,6 +73,29 @@ export async function POST(request: Request) {
 
     if (!memberData) {
       company_id = null; // Si no es miembro, no vincula a la empresa por seguridad
+    }
+  }
+
+  if (!company_id) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('last_active_company_id')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.last_active_company_id) {
+      company_id = profile.last_active_company_id;
+    } else {
+      const { data: firstMember } = await supabase
+        .from('company_members')
+        .select('company_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (firstMember?.company_id) {
+        company_id = firstMember.company_id;
+      }
     }
   }
 

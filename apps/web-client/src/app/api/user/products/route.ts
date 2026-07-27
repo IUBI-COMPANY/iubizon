@@ -14,7 +14,26 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("company_id");
+    let companyId = searchParams.get("company_id");
+
+    if (!companyId) {
+      const profile = await prisma.profile.findUnique({
+        where: { id: user.id },
+        select: { last_active_company_id: true },
+      });
+
+      if (profile?.last_active_company_id) {
+        companyId = profile.last_active_company_id;
+      } else {
+        const firstMember = await prisma.companyMember.findFirst({
+          where: { user_id: user.id },
+          select: { company_id: true },
+        });
+        if (firstMember) {
+          companyId = firstMember.company_id;
+        }
+      }
+    }
 
     let isCompanyMode = false;
     let targetCompany = null;
@@ -31,6 +50,17 @@ export async function GET(req: Request) {
       if (membership) {
         isCompanyMode = true;
         targetCompany = membership.company;
+
+        // Auto-vincular cualquier producto sin empresa del usuario a su empresa activa
+        await prisma.product.updateMany({
+          where: {
+            seller_id: user.id,
+            company_id: null,
+          },
+          data: {
+            company_id: companyId,
+          },
+        });
       }
     }
 

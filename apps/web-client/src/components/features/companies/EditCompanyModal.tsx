@@ -70,6 +70,18 @@ export const EditCompanyModal = ({
     try {
       setUploadingLogo(true);
       setError(null);
+
+      // 1. Convertir inmediatamente a Data URL para guardado garantizado
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      setFormData((prev) => ({ ...prev, logo_url: dataUrl }));
+
+      // 2. Intentar subir al Storage publico
       const supabase = createClient();
       const fileExt = file.name.split(".").pop();
       const filePath = `company-logos/${company.id}-${Date.now()}.${fileExt}`;
@@ -78,24 +90,17 @@ export const EditCompanyModal = ({
         .from("products")
         .upload(filePath, file, { upsert: true });
 
-      if (uploadError) {
-        // Fallback a Base64 si el bucket de storage no tiene politica de escritura libre
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData((prev) => ({ ...prev, logo_url: reader.result as string }));
-          setUploadingLogo(false);
-        };
-        reader.readAsDataURL(file);
-        return;
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage
+          .from("products")
+          .getPublicUrl(filePath);
+
+        if (urlData?.publicUrl) {
+          setFormData((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
+        }
       }
-
-      const { data: urlData } = supabase.storage
-        .from("products")
-        .getPublicUrl(filePath);
-
-      setFormData((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
     } catch {
-      setError("Error al subir la imagen del logotipo.");
+      setError("Error al procesar la imagen del logotipo.");
     } finally {
       setUploadingLogo(false);
     }

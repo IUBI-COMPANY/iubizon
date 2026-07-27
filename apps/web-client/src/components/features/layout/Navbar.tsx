@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
+  Building2,
   Heart,
   LogOut,
   Menu,
@@ -13,6 +14,7 @@ import {
   Search,
   ShoppingCart,
   User as UserIcon,
+  Users,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -29,7 +31,7 @@ export const Navbar = () => {
   const { user, isLoading, signOut } = useAuth();
   const { itemCount } = useCart();
   const { coordinates } = useGeolocation();
-  const { activeCompany } = useCompany();
+  const { companies, activeCompany, setActiveCompanyId } = useCompany();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,29 +73,32 @@ export const Navbar = () => {
 
   return (
     <header className="bg-[#112237] text-white sticky top-0 z-50 shadow-md">
-      <div className="container">
-        {/* Top Header Row (Tiendamia Style) */}
-        <div className="flex items-center justify-between h-14 md:h-16 gap-3">
-          {/* Mobile Menu Toggle (Left) */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-1.5 rounded-lg hover:bg-white/10 text-white md:hidden"
-            aria-label="Abrir menú"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+      <div className="container px-3 sm:px-4">
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between h-14 md:h-16 gap-2 sm:gap-3">
+          {/* Left Block: Menu Toggle & Logo */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Mobile Menu Toggle (Left) */}
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white md:hidden"
+              aria-label="Abrir menú"
+            >
+              <Menu className="w-5.5 h-5.5" />
+            </button>
 
-          {/* Logo (Center on mobile, Left on desktop) */}
-          <Link href="/" className="flex items-center shrink-0 mx-auto md:mx-0">
-            <Image
-              src="/images/logo.png"
-              alt="iubizon"
-              width={140}
-              height={36}
-              className="h-7 md:h-9 w-auto object-contain"
-              priority
-            />
-          </Link>
+            {/* Logo */}
+            <Link href="/" className="flex items-center shrink-0">
+              <Image
+                src="/images/logo.png"
+                alt="iubizon"
+                width={130}
+                height={34}
+                className="h-6 sm:h-7 md:h-9 w-auto object-contain"
+                priority
+              />
+            </Link>
+          </div>
 
           {/* Search Bar - Desktop Inline */}
           <form
@@ -117,7 +122,7 @@ export const Navbar = () => {
             </div>
           </form>
 
-          {/* Actions (Cart, Favorites, Auth - Right) */}
+          {/* Actions (Cart, Publicar, CompanySwitcher, User Avatar - Right) */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href="/favorites" className="hidden sm:flex">
               <Button
@@ -132,11 +137,11 @@ export const Navbar = () => {
             <Link href="/user/dashboard" className="relative">
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/10 p-2"
+                className="text-white hover:bg-white/10 p-1.5 sm:p-2"
               >
-                <ShoppingCart className="w-5.5 h-5.5" />
+                <ShoppingCart className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#f25c05] text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-[#112237]">
+                  <span className="absolute -top-1 -right-1 bg-[#f25c05] text-white text-[10px] font-bold w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full flex items-center justify-center border-2 border-[#112237]">
                     {itemCount}
                   </span>
                 )}
@@ -145,28 +150,28 @@ export const Navbar = () => {
 
             {/* BOTÓN "+ PUBLICAR" */}
             <Link href="/products/new">
-              <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl shadow-md transition-all flex items-center gap-1">
-                <Plus className="w-4 h-4" />
+              <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-[11px] sm:text-xs font-semibold px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl shadow-md transition-all flex items-center gap-1 shrink-0">
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Publicar</span>
               </Button>
             </Link>
 
-            {/* BOTÓN SWITCHER DE EMPRESA */}
-            {user && <CompanySwitcher />}
+            {/* BOTÓN SWITCHER DE EMPRESA (Solo Desktop) */}
+            <div className="hidden md:block">{user && <CompanySwitcher />}</div>
 
             {/* AVATAR PROPIO DEL USUARIO (EXTREMO DERECHO) */}
             {isLoading ? (
-              <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 animate-pulse" />
             ) : user ? (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative shrink-0" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 text-white hover:bg-white/10 p-1.5 rounded-xl transition-colors"
+                  className="flex items-center text-white hover:bg-white/10 p-1 rounded-xl transition-colors"
                 >
                   <Avatar
                     src={user.avatar_url}
                     fallback={user.name?.[0] || "U"}
-                    className="w-8 h-8 border border-white/20"
+                    className="w-7 h-7 sm:w-8 sm:h-8 border border-white/20"
                   />
                 </button>
 
@@ -266,72 +271,129 @@ export const Navbar = () => {
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setIsMenuOpen(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-[#112237] text-white h-full p-5 flex flex-col z-10 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div className="relative w-[85vw] max-w-sm bg-[#112237] text-white h-full p-6 flex flex-col z-10 shadow-2xl overflow-y-auto">
+            <div className="flex items-center justify-between pb-5 border-b border-white/10">
               <Image
                 src="/images/logo.png"
                 alt="iubizon"
-                width={120}
-                height={30}
+                width={130}
+                height={34}
                 className="h-7 w-auto object-contain"
               />
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-white"
+                className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
                 aria-label="Cerrar menú"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="py-4 space-y-3 flex-1 overflow-y-auto">
-              <Link
-                href="/products"
-                className="block px-3 py-2 rounded-lg hover:bg-white/10 font-medium text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Todas las Categorías
-              </Link>
-              <Link
-                href="/favorites"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 font-medium text-sm"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Heart className="w-4.5 h-4.5 text-[#f25c05]" />
-                Mis Favoritos
-              </Link>
+            <div className="py-5 space-y-4 flex-1">
+              {/* Módulo de Empresa Activa (Mobile Sidebar) */}
+              {user && activeCompany && (
+                <div className="bg-white/10 rounded-2xl p-4 border border-white/15 shadow-md space-y-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-10 h-10 rounded-full bg-[#f25c05] text-white flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden shadow-md border border-white/30">
+                      {activeCompany.logo_url ? (
+                        <Image
+                          src={activeCompany.logo_url}
+                          alt={activeCompany.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span>{activeCompany.name?.[0]?.toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-slate-300 font-extrabold uppercase tracking-wider">
+                        Empresa Activa
+                      </p>
+                      <p className="font-bold text-sm text-white truncate mt-0.5">
+                        {activeCompany.name}
+                      </p>
+                    </div>
+                  </div>
 
-              {user ? (
-                <>
-                  <Link
-                    href="/user/dashboard"
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 font-medium text-sm"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <UserIcon className="w-4.5 h-4.5 text-gray-300" />
-                    Mi Perfil
-                  </Link>
-                  <Link
-                    href="/user/dashboard/products"
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 font-medium text-sm"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Package className="w-4.5 h-4.5 text-gray-300" />
-                    Mis Productos
-                  </Link>
-                </>
-              ) : (
-                <Link
-                  href="/auth/login"
-                  className="block text-center bg-[#f25c05] hover:bg-[#e55100] text-white font-semibold py-2.5 rounded-lg mt-4 text-sm"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Iniciar sesión
-                </Link>
+                  {companies.length > 1 && (
+                    <div className="pt-2 border-t border-white/10">
+                      <label className="text-[11px] text-slate-300 font-medium block mb-1.5">
+                        Cambiar de Empresa:
+                      </label>
+                      <select
+                        value={activeCompany.id}
+                        onChange={(e) => {
+                          setActiveCompanyId(e.target.value);
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full bg-[#0d1b2d] text-white text-xs font-semibold p-2.5 rounded-xl border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#f25c05]"
+                      >
+                        {companies.map((comp) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name} {comp.id === activeCompany.id ? "(Activa)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
+                    <Link
+                      href={`/user/dashboard?view=company&company_id=${activeCompany.id}`}
+                      className="text-[#f25c05] hover:bg-orange-500/10 p-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Building2 className="w-4 h-4 text-[#f25c05]" />
+                      Panel de {activeCompany.name}
+                    </Link>
+                  </div>
+                </div>
               )}
+
+              {/* Sección Cuenta / Usuario */}
+              <div className="pt-3 border-t border-white/10 space-y-1">
+                {user ? (
+                  <>
+                    <Link
+                      href="/user/dashboard?view=personal"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 font-semibold text-sm text-white transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserIcon className="w-5 h-5 text-emerald-400" />
+                      Mi Perfil (Mis Compras)
+                    </Link>
+                    <Link
+                      href="/favorites"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 font-semibold text-sm text-white transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Heart className="w-5 h-5 text-[#f25c05]" />
+                      Mis Favoritos
+                    </Link>
+                    <Link
+                      href="/user/companies/new"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 font-bold text-sm text-[#f25c05] transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Plus className="w-5 h-5" />
+                      Registrar otra Empresa
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href="/auth/login"
+                    className="block text-center bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold py-3 rounded-xl mt-4 text-sm shadow-md transition-all"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Iniciar sesión
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>

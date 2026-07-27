@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Building2, ChevronDown, Plus, Users } from "lucide-react";
+import { Building2, ChevronDown, Plus } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 
 export const CompanySwitcher = () => {
@@ -49,10 +49,10 @@ export const CompanySwitcher = () => {
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-white/15 transition-all max-w-[180px] focus:outline-none focus:ring-2 focus:ring-[#f25c05]"
+        className="flex items-center gap-1.5 sm:gap-2 bg-white/10 hover:bg-white/20 text-white text-[11px] sm:text-xs font-semibold px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border border-white/15 transition-all max-w-[110px] sm:max-w-[180px] focus:outline-none focus:ring-2 focus:ring-[#f25c05] shrink-0"
         title={`Empresa Activa: ${activeCompany.name}`}
       >
-        <div className="relative w-6 h-6 rounded-full bg-[#f25c05] border border-white/30 text-white flex items-center justify-center shrink-0 overflow-hidden text-xs font-bold shadow-sm">
+        <div className="relative w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#f25c05] border border-white/30 text-white flex items-center justify-center shrink-0 overflow-hidden text-[10px] sm:text-xs font-bold shadow-sm">
           {activeCompany.logo_url ? (
             <Image
               src={activeCompany.logo_url}
@@ -64,14 +64,14 @@ export const CompanySwitcher = () => {
           ) : (
             <span>
               {activeCompany.name?.[0]?.toUpperCase() || (
-                <Building2 className="w-3.5 h-3.5 text-white" />
+                <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
               )}
             </span>
           )}
         </div>
-        <span className="truncate max-w-[95px]">{activeCompany.name}</span>
+        <span className="truncate max-w-[45px] sm:max-w-[95px]">{activeCompany.name}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-300 shrink-0 transition-transform duration-200 ${
+          className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-300 shrink-0 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -167,14 +167,6 @@ export const CompanySwitcher = () => {
             >
               <Building2 className="w-4 h-4 text-[#f25c05]" />
               <span>Panel de {activeCompany.name}</span>
-            </Link>
-            <Link
-              href={`/user/companies/${activeCompany.id}/members`}
-              className="flex items-center gap-3 px-4 py-2 text-[#334155] hover:bg-[#f8fafc] text-xs font-medium transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Users className="w-4 h-4 text-[#112237]" />
-              Gestionar Equipo
             </Link>
             <Link
               href="/user/companies/new"

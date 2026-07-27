@@ -87,6 +87,10 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           });
         } catch (err) {
           console.error("Error al persistir empresa activa en BD:", err);
+        } finally {
+          if (typeof window !== "undefined") {
+            window.location.reload();
+          }
         }
       }
     },

@@ -51,7 +51,7 @@ function DashboardContent() {
     (viewMode !== "personal" && Boolean(activeCompany?.id));
 
   const targetCompanyId = isCompanyView
-    ? paramCompanyId || activeCompany?.id
+    ? activeCompany?.id || paramCompanyId
     : null;
 
   const [data, setData] = useState<DashboardData | null>(null);

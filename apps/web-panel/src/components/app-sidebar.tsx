@@ -1,14 +1,8 @@
 import * as React from "react";
-import {
-  IconDashboard,
-  IconListDetails,
-  IconSettings,
-  IconPackage,
-  IconFolders,
-} from "@tabler/icons-react";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import {IconDashboard, IconFolders, IconListDetails, IconPackage, IconSettings,} from "@tabler/icons-react";
+import {NavMain} from "@/components/nav-main";
+import {NavSecondary} from "@/components/nav-secondary";
+import {NavUser} from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useTheme } from "@/components/theme-provider.tsx";
+import {useTheme} from "@/components/theme-provider.tsx";
 
 const data = {
   user: {

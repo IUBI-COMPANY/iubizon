@@ -54,6 +54,22 @@ export default function NewCompanyPage() {
     setError(null);
 
     try {
+      // 1. Convertir inmediatamente a Data URL para guardado garantizado
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      setFormData((prev) => ({ ...prev, logo_url: dataUrl }));
+
+      // Resetear valor del input de archivo para poder volver a seleccionar
+      if (e.target) {
+        e.target.value = "";
+      }
+
+      // 2. Intentar subir al Storage publico
       const supabase = createClient();
       const fileName = `company-logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
@@ -61,25 +77,16 @@ export default function NewCompanyPage() {
         .from("products")
         .upload(fileName, file, { upsert: true });
 
-      if (uploadErr) {
-        // Fallback: usar vista previa Base64
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFormData((prev) => ({
-            ...prev,
-            logo_url: reader.result as string,
-          }));
-        };
-        reader.readAsDataURL(file);
-      } else {
+      if (!uploadErr) {
         const { data: publicUrlData } = supabase.storage
           .from("products")
           .getPublicUrl(fileName);
-        setFormData((prev) => ({ ...prev, logo_url: publicUrlData.publicUrl }));
+        if (publicUrlData?.publicUrl) {
+          setFormData((prev) => ({ ...prev, logo_url: publicUrlData.publicUrl }));
+        }
       }
     } catch (err: unknown) {
-      console.error("Error al subir logo:", err);
-      setError("No se pudo subir la imagen del logo.");
+      console.error("Error al procesar logo:", err);
     } finally {
       setIsUploadingLogo(false);
     }
@@ -170,8 +177,12 @@ export default function NewCompanyPage() {
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Logotipo de la Empresa */}
-              <div className="flex flex-col items-center justify-center p-5 border border-dashed border-[#cbd5e1] rounded-2xl bg-[#f8fafc]">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[#f25c05] bg-white flex items-center justify-center shadow-sm mb-3">
+              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#cbd5e1] hover:border-[#f25c05] rounded-3xl bg-[#f8fafc] transition-all">
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white ring-4 ring-[#f25c05]/20 bg-white flex items-center justify-center shadow-md mb-3 cursor-pointer group hover:scale-105 transition-all"
+                  title="Haz clic para seleccionar o cambiar el logotipo"
+                >
                   {formData.logo_url ? (
                     <Image
                       src={formData.logo_url}
@@ -181,11 +192,11 @@ export default function NewCompanyPage() {
                       unoptimized
                     />
                   ) : (
-                    <Building2 className="w-10 h-10 text-[#94a3b8]" />
+                    <Building2 className="w-10 h-10 text-[#94a3b8] group-hover:text-[#f25c05] transition-colors" />
                   )}
                   {isUploadingLogo && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-white" />
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
+                      <Loader2 className="w-7 h-7 animate-spin" />
                     </div>
                   )}
                 </div>
@@ -203,17 +214,24 @@ export default function NewCompanyPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-semibold border-[#e2e8f0] flex items-center gap-1.5"
+                  className="text-xs font-bold border-[#e2e8f0] flex items-center gap-2 rounded-xl py-2 px-4 shadow-sm"
                   disabled={isUploadingLogo}
                 >
-                  <Upload className="w-3.5 h-3.5 text-[#f25c05]" />
+                  <Upload className="w-4 h-4 text-[#f25c05]" />
                   {formData.logo_url
-                    ? "Cambiar Logotipo"
+                    ? "Cambiar Logotipo de Empresa"
                     : "Subir Logotipo de Empresa"}
                 </Button>
-                <p className="text-[11px] text-[#94a3b8] mt-1.5">
-                  Formato recomendado: PNG, JPG o WEBP cuadradas (500x500px)
-                </p>
+
+                {formData.logo_url ? (
+                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 mt-2">
+                    ✓ Logotipo listo para guardar
+                  </span>
+                ) : (
+                  <p className="text-[11px] text-[#94a3b8] mt-2">
+                    Formato recomendado: PNG, JPG o WEBP cuadradas (500x500px)
+                  </p>
+                )}
               </div>
 
               {/* Nombre Comercial */}
