@@ -9,16 +9,11 @@ import {
   LogOut,
   Menu,
   Package,
-  Search,
-  Settings,
-  User as UserIcon,
-  ShoppingCart,
-  X,
-  Building2,
-  ChevronDown,
-  Store,
   Plus,
-  Users,
+  Search,
+  ShoppingCart,
+  User as UserIcon,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -101,7 +96,10 @@ export const Navbar = () => {
           </Link>
 
           {/* Search Bar - Desktop Inline */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl mx-4">
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:flex flex-1 max-w-xl mx-4"
+          >
             <div className="relative w-full">
               <Input
                 value={searchQuery}
@@ -122,14 +120,20 @@ export const Navbar = () => {
           {/* Actions (Cart, Favorites, Auth - Right) */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Link href="/favorites" className="hidden sm:flex">
-              <Button variant="ghost" className="text-white hover:bg-white/10 p-2">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10 p-2"
+              >
                 <Heart className="w-5 h-5" />
               </Button>
             </Link>
 
             {/* Shopping Cart Icon with Badge */}
             <Link href="/user/dashboard" className="relative">
-              <Button variant="ghost" className="text-white hover:bg-white/10 p-2">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/10 p-2"
+              >
                 <ShoppingCart className="w-5.5 h-5.5" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#f25c05] text-white text-[10px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-[#112237]">
