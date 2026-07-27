@@ -74,25 +74,27 @@ export const CompanyDashboard = ({
               </span>
             </div>
             <p className="text-xs text-[#64748b] mt-0.5">
-              {activeCompany.tax_id || "Empresa / Marca Registrada"} • Panel de Gestión Comercial & Catálogo
+              {activeCompany.tax_id || "Empresa / Marca Registrada"} • Panel de
+              Gestión Comercial & Catálogo
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+          <Link
+            href={`/companies/${activeCompany.slug || activeCompany.id}`}
+            target="_blank"
+            className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#f8fafc] text-[#334155] border border-[#e2e8f0] font-semibold px-3.5 py-2.5 rounded-xl transition-all text-xs shadow-sm flex-1 sm:flex-initial"
+          >
+            <Building2 className="w-4 h-4 text-[#f25c05]" />
+            Ver perfil de empresa
+          </Link>
           <Link
             href={`/user/companies/${activeCompany.id}/members`}
             className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#f8fafc] text-[#334155] border border-[#e2e8f0] font-semibold px-3.5 py-2.5 rounded-xl transition-all text-xs shadow-sm flex-1 sm:flex-initial"
           >
             <Users className="w-4 h-4 text-[#112237]" />
             Equipo
-          </Link>
-          <Link
-            href="/products/new"
-            className="flex items-center justify-center gap-1.5 bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all text-xs flex-1 sm:flex-initial"
-          >
-            <Plus className="w-4 h-4" />
-            Publicar producto
           </Link>
         </div>
       </div>
@@ -174,7 +176,8 @@ export const CompanyDashboard = ({
             Catálogo de Productos de {activeCompany.name}
           </h3>
           <p className="text-xs text-[#64748b]">
-            Gestionar, editar stock o cambiar estado de las publicaciones comerciales
+            Gestionar, editar stock o cambiar estado de las publicaciones
+            comerciales
           </p>
         </Link>
 

@@ -34,18 +34,13 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
               Mi Cuenta & Mis Compras
             </h1>
             <p className="text-xs text-[#64748b] mt-0.5">
-              Bienvenido de nuevo, <span className="font-semibold text-[#112237]">{user.name || user.email}</span>
+              Bienvenido de nuevo,{" "}
+              <span className="font-semibold text-[#112237]">
+                {user.name || user.email}
+              </span>
             </p>
           </div>
         </div>
-
-        <Link
-          href="/user/companies/new"
-          className="flex items-center gap-2 bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar mi Empresa
-        </Link>
       </div>
 
       {/* Banner de Invitación a Vender */}
@@ -59,7 +54,8 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
               ¿Deseas vender tus productos o servicios en iubizon?
             </h3>
             <p className="text-xs text-slate-300">
-              Crea tu perfil de empresa con RUC 20, RUC 10 o DNI y accede al panel de ventas, catálogo y colaboradores.
+              Crea tu perfil de empresa con RUC 20, RUC 10 o DNI y accede al
+              panel de ventas, catálogo y colaboradores.
             </p>
           </div>
         </div>

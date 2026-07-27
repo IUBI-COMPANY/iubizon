@@ -34,6 +34,7 @@ async function getProduct(id: string) {
       where: { id },
       include: {
         seller: true,
+        company: true,
         category: true,
         images: { orderBy: { position: 'asc' } },
       },
@@ -298,7 +299,34 @@ export default async function ProductDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {product.seller && (
+              {product.company ? (
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+                  <h3 className="text-sm font-medium text-[#64748b] mb-3">Vendido por</h3>
+                  <Link href={`/companies/${product.company.slug || product.company.id}`}>
+                    <div className="flex items-center gap-3 hover:bg-[#f8fafc] -m-2 p-2 rounded-xl transition-colors">
+                      <div className="relative w-11 h-11 rounded-full bg-[#f25c05] text-white flex items-center justify-center text-base font-bold overflow-hidden shrink-0 shadow-sm">
+                        {product.company.logo_url ? (
+                          <img
+                            src={product.company.logo_url}
+                            alt={product.company.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{product.company.name?.[0]?.toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#112237] text-sm">
+                          {product.company.name}
+                        </p>
+                        <p className="text-xs text-[#f25c05] font-semibold">
+                          Ver tienda oficial ↗
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ) : product.seller ? (
                 <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
                   <h3 className="text-sm font-medium text-[#64748b] mb-3">Vendido por</h3>
                   <Link href={`/user/profile/${product.seller.id}`}>
@@ -317,7 +345,7 @@ export default async function ProductDetailPage({ params }: Props) {
                     </div>
                   </Link>
                 </div>
-              )}
+              ) : null}
 
               <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
                 <div className="flex items-center gap-3 text-sm text-[#64748b]">

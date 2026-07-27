@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/utils";
 
 export async function createCompany(
   data: {
@@ -11,11 +12,8 @@ export async function createCompany(
   },
   userId: string,
 ) {
-  // Generar un slug único basado en el nombre (ej: "mi-empresa-123")
-  const baseSlug = data.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
+  // Generar un slug único basado en el nombre (ej: "mi-empresa-1234")
+  const baseSlug = slugify(data.name);
   const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
   return prisma.$transaction(async (tx) => {
@@ -107,6 +105,30 @@ export async function getCompanyById(companyId: string) {
       },
     },
   });
+}
+
+export async function getPublicCompanyBySlugOrId(identifier: string) {
+  // Intentar buscar por slug primero, luego por id
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      identifier,
+    );
+
+  const company = await prisma.company.findFirst({
+    where: isUuid ? { OR: [{ id: identifier }, { slug: identifier }] } : { slug: identifier },
+    include: {
+      products: {
+        where: { status: "active" },
+        include: {
+          images: { orderBy: { position: "asc" } },
+          category: true,
+        },
+        orderBy: { created_at: "desc" },
+      },
+    },
+  });
+
+  return company;
 }
 
 export async function addCompanyMember(
