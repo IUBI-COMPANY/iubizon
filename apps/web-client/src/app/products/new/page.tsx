@@ -60,6 +60,7 @@ import {
   Building2,
 } from 'lucide-react';
 
+import { CreateCompanyStep } from '@/components/features/products/CreateCompanyStep';
 import type { Category } from '@/types';
 
 const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: string; color: string }> = {
@@ -184,8 +185,10 @@ function SortableImage({
 export default function PublishProductPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { activeCompany } = useCompany();
+  const { companies, isLoadingCompanies, activeCompany, refreshCompanies } = useCompany();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [wizardStep, setWizardStep] = useState<1 | 2>(1);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -462,6 +465,21 @@ export default function PublishProductPage() {
     }
   };
 
+  const hasNoCompanies = !isLoadingCompanies && companies.length === 0;
+  const currentStep = hasNoCompanies && wizardStep === 1 ? 1 : 2;
+
+  if (isLoadingCompanies) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <Navbar />
@@ -470,27 +488,85 @@ export default function PublishProductPage() {
         <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-[#64748b] hover:text-[#112237] transition-colors mb-6"
+            className="flex items-center gap-2 text-[#64748b] hover:text-[#112237] transition-colors mb-6 text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver
           </button>
 
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#f25c05] to-[#d94d04] rounded-2xl flex items-center justify-center shadow-lg shadow-[#f25c05]/20">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[#112237]">Publicar producto</h1>
-              <p className="text-sm text-[#64748b]">Agrega fotos y detalles para vender más rápido</p>
-              {activeCompany && (
-                <div className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-orange-50 border border-orange-200 text-[#f25c05] text-xs font-semibold rounded-full shadow-sm">
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Publicando a nombre de: {activeCompany.name}</span>
+          {/* Stepper por Pasos si el usuario no tiene empresas */}
+          {hasNoCompanies && (
+            <div className="flex items-center justify-center gap-4 mb-8 bg-white p-4 rounded-2xl border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs transition-all ${
+                    currentStep === 1
+                      ? 'bg-[#f25c05] text-white shadow-md'
+                      : 'bg-emerald-500 text-white'
+                  }`}
+                >
+                  {currentStep === 1 ? '1' : '✓'}
                 </div>
-              )}
+                <span
+                  className={`text-xs font-bold ${
+                    currentStep === 1 ? 'text-[#f25c05]' : 'text-emerald-700'
+                  }`}
+                >
+                  1. Registrar Empresa
+                </span>
+              </div>
+
+              <div className="w-12 h-0.5 bg-[#e2e8f0]" />
+
+              <div
+                className={`flex items-center gap-2 ${
+                  currentStep === 2 ? 'opacity-100' : 'opacity-40'
+                }`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
+                    currentStep === 2
+                      ? 'bg-[#f25c05] text-white shadow-md'
+                      : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  2
+                </div>
+                <span
+                  className={`text-xs font-bold ${
+                    currentStep === 2 ? 'text-[#f25c05]' : 'text-[#64748b]'
+                  }`}
+                >
+                  2. Publicar Producto
+                </span>
+              </div>
             </div>
-          </div>
+          )}
+
+          {currentStep === 1 ? (
+            <CreateCompanyStep
+              onCompanyCreated={async () => {
+                await refreshCompanies();
+                setWizardStep(2);
+              }}
+            />
+          ) : (
+            <>
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#f25c05] to-[#d94d04] rounded-2xl flex items-center justify-center shadow-lg shadow-[#f25c05]/20">
+                  <Package className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-[#112237]">Publicar producto</h1>
+                  <p className="text-sm text-[#64748b]">Agrega fotos y detalles para vender más rápido</p>
+                  {activeCompany && (
+                    <div className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-orange-50 border border-orange-200 text-[#f25c05] text-xs font-semibold rounded-full shadow-sm">
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>Publicando a nombre de: {activeCompany.name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
           <AnimatePresence>
             {error && (
@@ -895,8 +971,10 @@ export default function PublishProductPage() {
               </div>
             </div>
           </form>
-        </div>
-      </div>
+        </>
+      )}
+    </div>
+  </div>
 
       <Footer />
     </div>
