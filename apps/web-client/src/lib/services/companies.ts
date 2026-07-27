@@ -5,7 +5,6 @@ export async function createCompany(
     name: string;
     tax_id?: string;
     description?: string;
-    website?: string;
     phone?: string;
     email?: string;
     location?: string;
@@ -26,7 +25,6 @@ export async function createCompany(
         slug,
         tax_id: data.tax_id,
         description: data.description,
-        website: data.website,
         phone: data.phone,
         email: data.email,
         location: data.location,
@@ -86,7 +84,10 @@ export async function getUserCompanies(userId: string) {
   };
 }
 
-export async function updateUserActiveCompany(userId: string, companyId: string) {
+export async function updateUserActiveCompany(
+  userId: string,
+  companyId: string,
+) {
   return prisma.profile.update({
     where: { id: userId },
     data: { last_active_company_id: companyId },

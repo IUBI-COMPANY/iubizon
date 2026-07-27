@@ -71,24 +71,27 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     fetchCompanies();
   }, [fetchCompanies]);
 
-  const handleSetActiveCompanyId = async (companyId: string) => {
-    const target = companies.find((c) => c.id === companyId);
-    if (target) {
-      setActiveCompany(target);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(COMPANY_STORAGE_KEY, companyId);
+  const handleSetActiveCompanyId = useCallback(
+    async (companyId: string) => {
+      const target = companies.find((c) => c.id === companyId);
+      if (target) {
+        setActiveCompany(target);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(COMPANY_STORAGE_KEY, companyId);
+        }
+        try {
+          await fetch("/api/companies", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ companyId }),
+          });
+        } catch (err) {
+          console.error("Error al persistir empresa activa en BD:", err);
+        }
       }
-      try {
-        await fetch('/api/companies', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyId }),
-        });
-      } catch (err) {
-        console.error('Error al persistir empresa activa en BD:', err);
-      }
-    }
-  };
+    },
+    [companies],
+  );
 
   const contextValue = useMemo(
     () => ({
@@ -98,7 +101,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       setActiveCompanyId: handleSetActiveCompanyId,
       refreshCompanies: fetchCompanies,
     }),
-    [companies, activeCompany, isLoadingCompanies, fetchCompanies],
+    [companies, activeCompany, isLoadingCompanies, handleSetActiveCompanyId, fetchCompanies],
   );
 
   return (

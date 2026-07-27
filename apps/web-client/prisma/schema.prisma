@@ -100,7 +100,6 @@ model Company {
   tax_id         String?
   logo_url       String?
   description    String?
-  website        String?
   phone          String?
   email          String?
   location       String?

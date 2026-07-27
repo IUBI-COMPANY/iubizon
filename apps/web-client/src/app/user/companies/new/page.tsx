@@ -31,7 +31,6 @@ export default function NewCompanyPage() {
     phone: "",
     email: "",
     location: "",
-    website: "",
     description: "",
   });
 
@@ -111,7 +110,6 @@ export default function NewCompanyPage() {
           phone: formData.phone.trim() || null,
           email: formData.email.trim() || null,
           location: formData.location.trim() || null,
-          website: formData.website.trim() || null,
           description: formData.description.trim() || null,
         }),
       });
@@ -322,20 +320,6 @@ export default function NewCompanyPage() {
                     value={formData.location}
                     onChange={(e) => handleInputChange("location", e.target.value)}
                     placeholder="Lima, Perú"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="website"
-                    className="block text-sm font-medium text-[#334155] mb-1"
-                  >
-                    Sitio Web
-                  </label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange("website", e.target.value)}
-                    placeholder="https://miempresa.com"
                   />
                 </div>
               </div>
