@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompany } from '@/context/CompanyContext';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -180,9 +181,10 @@ function SortableImage({
   );
 }
 
-export default function NewProductPage() {
+export default function PublishProductPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { activeCompany } = useCompany();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState('');
@@ -437,6 +439,7 @@ export default function NewProductPage() {
           latitude,
           longitude,
           delivery_preference: deliveryPreferences.join(','),
+          company_id: activeCompany?.id || null,
         }),
       });
 
@@ -480,6 +483,12 @@ export default function NewProductPage() {
             <div>
               <h1 className="text-2xl font-bold text-[#112237]">Publicar producto</h1>
               <p className="text-sm text-[#64748b]">Agrega fotos y detalles para vender más rápido</p>
+              {activeCompany && (
+                <div className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-orange-50 border border-orange-200 text-[#f25c05] text-xs font-semibold rounded-full shadow-sm">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Publicando a nombre de: {activeCompany.name}</span>
+                </div>
+              )}
             </div>
           </div>
 

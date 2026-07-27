@@ -1,188 +1,165 @@
-import { createServerClient } from '@/lib/supabase/server';
-import { Navbar } from '@/components/features/layout/Navbar';
-import { Footer } from '@/components/features/layout/Footer';
-import Link from 'next/link';
-import { Package, ShoppingCart, Eye, Heart, Plus } from 'lucide-react';
+"use client";
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState, useCallback, Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Loader2, User as UserIcon } from "lucide-react";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import { BuyerDashboard } from "@/components/features/dashboard/BuyerDashboard";
+import { CompanyDashboard } from "@/components/features/dashboard/CompanyDashboard";
+import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
 
-async function getDashboardStats(userId: string) {
-  const supabase = await createServerClient();
-  
-  const [productsRes, ordersRes, favoritesRes] = await Promise.all([
-    supabase.from('products').select('id, status, views, favorites', { count: 'exact' }).eq('seller_id', userId),
-    supabase.from('orders').select('id, status', { count: 'exact' }).eq('seller_id', userId),
-    supabase.from('favorites').select('id', { count: 'exact' }).eq('user_id', userId),
-  ]);
-
-  const products = productsRes.data || [];
-  const orders = ordersRes.data || [];
-
-  return {
-    totalProducts: productsRes.count || 0,
-    activeProducts: products.filter(p => p.status === 'active').length,
-    totalOrders: ordersRes.count || 0,
-    pendingOrders: orders.filter(o => o.status === 'pending').length,
-    favoritesCount: favoritesRes.count || 0,
-    totalViews: products.reduce((sum, p) => sum + (p.views || 0), 0),
+interface DashboardData {
+  isCompanyMode: boolean;
+  company: {
+    id: string;
+    name: string;
+    tax_id: string | null;
+    logo_url: string | null;
+  } | null;
+  stats: {
+    totalProducts: number;
+    activeProducts: number;
+    totalOrders: number;
+    pendingOrders: number;
+    favoritesCount: number;
+    totalViews: number;
   };
+  recentProducts: Array<{
+    id: string;
+    title: string;
+    price: number;
+    status: string;
+    views: number;
+    image: string | null;
+    created_at: string;
+  }>;
 }
 
-async function getRecentProducts(userId: string) {
-  const supabase = await createServerClient();
-  
-  const { data } = await supabase
-    .from('products')
-    .select('id, title, price, status, views, created_at')
-    .eq('seller_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(5);
+function DashboardContent() {
+  const { user, isLoading: authLoading } = useAuth();
+  const { activeCompany, isLoadingCompanies } = useCompany();
+  const searchParams = useSearchParams();
 
-  return data || [];
-}
+  const viewMode = searchParams.get("view"); // 'personal' | 'company' | null
+  const paramCompanyId = searchParams.get("company_id");
 
-export default async function DashboardPage() {
-  const supabase = await createServerClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+  const isCompanyView =
+    viewMode === "company" ||
+    (viewMode !== "personal" && Boolean(activeCompany?.id));
 
-  if (!user) {
+  const targetCompanyId = isCompanyView
+    ? paramCompanyId || activeCompany?.id
+    : null;
+
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardData = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const url = targetCompanyId
+        ? `/api/user/dashboard?company_id=${targetCompanyId}`
+        : `/api/user/dashboard`;
+
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (res.ok) {
+        setData(json);
+      }
+    } catch (err) {
+      console.error("Error al cargar dashboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, targetCompanyId]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user, targetCompanyId, fetchDashboardData]);
+
+  if (authLoading || isLoadingCompanies) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-[#112237] mb-4">Inicia sesión para ver tu dashboard</h2>
-            <Link href="/auth/login?redirect=/user/dashboard" className="bg-[#f25c05] text-white px-6 py-3 rounded-lg hover:bg-[#d94d04]">
-              Iniciar sesión
-            </Link>
-          </div>
-        </div>
-        <Footer />
+      <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
       </div>
     );
   }
 
-  const [stats, recentProducts] = await Promise.all([
-    getDashboardStats(user.id),
-    getRecentProducts(user.id),
-  ]);
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <div className="flex-1 bg-[#f8fafc]">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-[#112237]">Mi Dashboard</h1>
-              <p className="text-[#64748b]">Bienvenido de nuevo</p>
-            </div>
-            <Link href="/products/new" className="flex items-center gap-2 bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]">
-              <Plus className="w-4 h-4" />
-              Publicar producto
-            </Link>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-[#f25c05]/10 rounded-lg">
-                  <Package className="w-5 h-5 text-[#f25c05]" />
-                </div>
-                <span className="text-sm text-[#64748b]">Productos</span>
-              </div>
-              <p className="text-2xl font-bold text-[#112237]">{stats.totalProducts}</p>
-              <p className="text-xs text-[#64748b]">{stats.activeProducts} activos</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <ShoppingCart className="w-5 h-5 text-blue-500" />
-                </div>
-                <span className="text-sm text-[#64748b]">Pedidos</span>
-              </div>
-              <p className="text-2xl font-bold text-[#112237]">{stats.totalOrders}</p>
-              <p className="text-xs text-[#64748b]">{stats.pendingOrders} pendientes</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <Eye className="w-5 h-5 text-green-500" />
-                </div>
-                <span className="text-sm text-[#64748b]">Vistas</span>
-              </div>
-              <p className="text-2xl font-bold text-[#112237]">{stats.totalViews}</p>
-              <p className="text-xs text-[#64748b]">total</p>
-            </div>
-
-            <div className="bg-white rounded-xl p-6 border border-[#e2e8f0]">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-red-500/10 rounded-lg">
-                  <Heart className="w-5 h-5 text-red-500" />
-                </div>
-                <span className="text-sm text-[#64748b]">Favoritos</span>
-              </div>
-              <p className="text-2xl font-bold text-[#112237]">{stats.favoritesCount}</p>
-              <p className="text-xs text-[#64748b]">recibidos</p>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            <Link href="/user/dashboard/products" className="bg-white rounded-xl p-6 border border-[#e2e8f0] hover:shadow-lg transition-shadow">
-              <h3 className="font-semibold text-[#112237] mb-2">Mis Productos</h3>
-              <p className="text-sm text-[#64748b]">Gestiona tus publicaciones</p>
-            </Link>
-            <Link href="/user/dashboard/orders" className="bg-white rounded-xl p-6 border border-[#e2e8f0] hover:shadow-lg transition-shadow">
-              <h3 className="font-semibold text-[#112237] mb-2">Mis Pedidos</h3>
-              <p className="text-sm text-[#64748b]">Ver estado de ventas</p>
-            </Link>
-          </div>
-
-          {/* Recent Products */}
-          <div className="bg-white rounded-xl border border-[#e2e8f0]">
-            <div className="p-6 border-b border-[#e2e8f0] flex items-center justify-between">
-              <h2 className="font-semibold text-[#112237]">Productos recientes</h2>
-              <Link href="/user/dashboard/products" className="text-sm text-[#f25c05] hover:underline">
-                Ver todos
-              </Link>
-            </div>
-            
-            {recentProducts.length > 0 ? (
-              <div className="divide-y divide-[#e2e8f0]">
-                {recentProducts.map(product => (
-                  <Link key={product.id} href={`/products/edit/${product.id}`} className="flex items-center justify-between p-4 hover:bg-[#f8fafc]">
-                    <div>
-                      <p className="font-medium text-[#112237]">{product.title}</p>
-                      <p className="text-sm text-[#64748b]">S/ {product.price}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs ${
-                      product.status === 'active' ? 'bg-green-100 text-green-700' :
-                      product.status === 'sold' ? 'bg-gray-100 text-gray-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {product.status === 'active' ? 'Activo' : product.status === 'sold' ? 'Vendido' : 'Pendiente'}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 text-center text-[#64748b]">
-                <p>No tienes productos publicados</p>
-                <Link href="/products/new" className="text-[#f25c05] hover:underline mt-2 inline-block">
-                  Publicar tu primer producto
-                </Link>
-              </div>
-            )}
-          </div>
+  if (!user) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="text-center bg-white p-8 rounded-2xl border border-[#e2e8f0] shadow-sm max-w-md w-full">
+          <UserIcon className="w-12 h-12 text-[#94a3b8] mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-[#112237] mb-2">
+            Inicia sesión
+          </h2>
+          <p className="text-sm text-[#64748b] mb-6">
+            Para ingresar al panel de control de tu cuenta o empresa.
+          </p>
+          <Link
+            href="/auth/login?redirect=/user/dashboard"
+            className="inline-block bg-[#f25c05] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#d94d04] transition-all shadow-md w-full text-center"
+          >
+            Iniciar sesión
+          </Link>
         </div>
       </div>
+    );
+  }
 
+  const stats = data?.stats || {
+    totalProducts: 0,
+    activeProducts: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    favoritesCount: 0,
+    totalViews: 0,
+  };
+
+  return (
+    <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
+      {isCompanyView && activeCompany ? (
+        <CompanyDashboard
+          activeCompany={activeCompany}
+          stats={stats}
+          recentProducts={data?.recentProducts || []}
+          loading={loading}
+        />
+      ) : (
+        <BuyerDashboard
+          user={user}
+          stats={{
+            totalPurchases: stats.totalOrders,
+            pendingDeliveries: stats.pendingOrders,
+            favoritesCount: stats.favoritesCount,
+          }}
+        />
+      )}
+    </main>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+      <Navbar />
+      <Suspense
+        fallback={
+          <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+          </div>
+        }
+      >
+        <DashboardContent />
+      </Suspense>
       <Footer />
     </div>
   );

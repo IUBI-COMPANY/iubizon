@@ -161,6 +161,14 @@ export const CompanySwitcher = () => {
           {/* Actions */}
           <div className="py-1">
             <Link
+              href={`/user/dashboard?view=company&company_id=${activeCompany.id}`}
+              className="flex items-center gap-3 px-4 py-2 text-[#f25c05] font-bold hover:bg-orange-50/60 text-xs transition-colors"
+              onClick={() => setIsOpen(false)}
+            >
+              <Building2 className="w-4 h-4 text-[#f25c05]" />
+              <span>Panel de {activeCompany.name}</span>
+            </Link>
+            <Link
               href={`/user/companies/${activeCompany.id}/members`}
               className="flex items-center gap-3 px-4 py-2 text-[#334155] hover:bg-[#f8fafc] text-xs font-medium transition-colors"
               onClick={() => setIsOpen(false)}

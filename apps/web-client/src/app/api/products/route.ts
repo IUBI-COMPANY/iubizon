@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   let longitude: number | null;
   let delivery_preference: string | null;
   let brand: string | null;
+  let company_id: string | null = null;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
     longitude = body.longitude ?? null;
     delivery_preference = body.delivery_preference || null;
     brand = body.brand || null;
+    company_id = body.company_id || null;
   } else {
     const formData = await request.formData();
     title = formData.get('title') as string;
@@ -53,10 +55,25 @@ export async function POST(request: Request) {
     longitude = formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null;
     delivery_preference = (formData.get('delivery_preference') as string) || null;
     brand = (formData.get('brand') as string) || null;
+    company_id = (formData.get('company_id') as string) || null;
   }
 
   if (!title || !price || !condition || !category_id) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
+  }
+
+  // Validar membresía de empresa si se envía company_id
+  if (company_id) {
+    const { data: memberData } = await supabase
+      .from('company_members')
+      .select('id')
+      .eq('company_id', company_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (!memberData) {
+      company_id = null; // Si no es miembro, no vincula a la empresa por seguridad
+    }
   }
 
   if (category_id === 'other') {
@@ -80,6 +97,7 @@ export async function POST(request: Request) {
     condition,
     category_id,
     seller_id: user.id,
+    company_id: company_id || null,
     status: 'active',
     stock,
     location: location || null,

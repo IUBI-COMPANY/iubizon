@@ -201,12 +201,12 @@ export const Navbar = () => {
                       </Link>
 
                       <Link
-                        href="/user/dashboard"
+                        href="/user/dashboard?view=personal"
                         className="flex items-center gap-3 px-4 py-2 text-[#334155] hover:bg-[#f8fafc] text-xs font-medium"
                         onClick={() => setShowUserMenu(false)}
                       >
                         <Package className="w-4 h-4 text-[#112237]" />
-                        Panel (dashboard)
+                        Mi Dashboard (Mis Compras)
                       </Link>
 
                       <div className="border-t border-[#e2e8f0] mt-1 pt-1">
