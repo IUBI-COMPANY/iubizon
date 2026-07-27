@@ -115,7 +115,12 @@ export type Favorite = JsonEntity<PrismaFavorite, { product?: Product }>;
 /** Empresa / Proveedor B2B */
 export type Company = JsonEntity<
   PrismaCompany,
-  { members?: CompanyMember[]; products?: Product[] }
+  {
+    role?: string;
+    members?: CompanyMember[];
+    companyMembers?: CompanyMember[];
+    products?: Product[];
+  }
 >;
 
 /** Miembro de Equipo de Empresa */
