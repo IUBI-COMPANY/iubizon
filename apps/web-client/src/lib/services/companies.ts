@@ -18,50 +18,79 @@ export async function createCompany(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
   const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
-  return prisma.company.create({
-    data: {
-      name: data.name,
-      slug,
-      tax_id: data.tax_id,
-      description: data.description,
-      website: data.website,
-      phone: data.phone,
-      email: data.email,
-      location: data.location,
-      companyMembers: {
-        create: {
-          user_id: userId,
-          role: "owner",
+
+  return prisma.$transaction(async (tx) => {
+    const company = await tx.company.create({
+      data: {
+        name: data.name,
+        slug,
+        tax_id: data.tax_id,
+        description: data.description,
+        website: data.website,
+        phone: data.phone,
+        email: data.email,
+        location: data.location,
+        companyMembers: {
+          create: {
+            user_id: userId,
+            role: "owner",
+          },
         },
       },
-    },
-    include: {
-      companyMembers: {
-        include: { user: true },
+      include: {
+        companyMembers: {
+          include: { user: true },
+        },
       },
-    },
+    });
+
+    // Establecer como empresa activa por defecto en el perfil dentro de la misma transacción
+    await tx.profile.update({
+      where: { id: userId },
+      data: { last_active_company_id: company.id },
+    });
+
+    return company;
   });
 }
 
 export async function getUserCompanies(userId: string) {
-  const memberships = await prisma.companyMember.findMany({
-    where: { user_id: userId },
-    include: {
-      company: {
-        include: {
-          companyMembers: {
-            include: { user: true },
+  const [memberships, profile] = await Promise.all([
+    prisma.companyMember.findMany({
+      where: { user_id: userId },
+      include: {
+        company: {
+          include: {
+            companyMembers: {
+              include: { user: true },
+            },
           },
         },
       },
-    },
-    orderBy: { created_at: "desc" },
-  });
+      orderBy: { created_at: "desc" },
+    }),
+    prisma.profile.findUnique({
+      where: { id: userId },
+      select: { last_active_company_id: true },
+    }),
+  ]);
 
-  return memberships.map((m) => ({
-    ...m,
+  const companies = memberships.map((m) => ({
+    ...m.company,
     role: m.role,
   }));
+
+  return {
+    companies,
+    last_active_company_id: profile?.last_active_company_id ?? null,
+  };
+}
+
+export async function updateUserActiveCompany(userId: string, companyId: string) {
+  return prisma.profile.update({
+    where: { id: userId },
+    data: { last_active_company_id: companyId },
+  });
 }
 
 export async function getCompanyById(companyId: string) {

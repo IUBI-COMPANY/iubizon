@@ -14,6 +14,11 @@ import {
   User as UserIcon,
   ShoppingCart,
   X,
+  Building2,
+  ChevronDown,
+  Store,
+  Plus,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -21,16 +26,20 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useGeolocation } from "@/hooks/useGeolocation";
+import { useCompany } from "@/context/CompanyContext";
+import { CompanySwitcher } from "@/components/features/companies/CompanySwitcher";
 
 export const Navbar = () => {
   const router = useRouter();
   const { user, isLoading, signOut } = useAuth();
   const { itemCount } = useCart();
   const { coordinates } = useGeolocation();
+  const { activeCompany } = useCompany();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,63 +139,86 @@ export const Navbar = () => {
               </Button>
             </Link>
 
+            {/* BOTÓN "+ PUBLICAR" */}
+            <Link href="/products/new">
+              <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs sm:text-sm font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl shadow-md transition-all flex items-center gap-1">
+                <Plus className="w-4 h-4" />
+                <span>Publicar</span>
+              </Button>
+            </Link>
+
+            {/* BOTÓN SWITCHER DE EMPRESA */}
+            {user && <CompanySwitcher />}
+
+            {/* AVATAR PROPIO DEL USUARIO (EXTREMO DERECHO) */}
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
             ) : user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 text-white hover:bg-white/10 p-1.5 rounded-lg"
+                  className="flex items-center gap-2 text-white hover:bg-white/10 p-1.5 rounded-xl transition-colors"
                 >
                   <Avatar
                     src={user.avatar_url}
                     fallback={user.name?.[0] || "U"}
-                    className="w-8 h-8"
+                    className="w-8 h-8 border border-white/20"
                   />
                 </button>
 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-[#e2e8f0] py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-[#e2e8f0] py-2 z-50 text-[#112237]">
                     <div className="px-4 py-2 border-b border-[#e2e8f0]">
-                      <p className="font-medium text-[#112237] truncate">
+                      <p className="font-bold text-[#112237] text-sm truncate">
                         {user.name || "Usuario"}
                       </p>
                       <p className="text-xs text-[#64748b] truncate">
                         {user.email}
                       </p>
+                      {!activeCompany && (
+                        <Link
+                          href="/user/companies/new"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#f25c05] hover:underline mt-1"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          + Registrar mi Empresa / Marca
+                        </Link>
+                      )}
                     </div>
 
-                    <Link
-                      href="/user/profile"
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#334155] hover:bg-[#f8fafc] hover:text-[#112237] font-medium text-sm transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <UserIcon className="w-4 h-4 text-[#f25c05]" />
-                      Mi perfil
-                    </Link>
-
-                    <Link
-                      href="/user/dashboard"
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#334155] hover:bg-[#f8fafc] hover:text-[#112237] font-medium text-sm transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Package className="w-4 h-4 text-[#112237]" />
-                      Panel (dashboard)
-                    </Link>
-
-                    <div className="border-t border-[#e2e8f0] mt-1 pt-1">
-                      <button
-                        onClick={async () => {
-                          await signOut();
-                          setShowUserMenu(false);
-                          router.push("/");
-                          router.refresh();
-                        }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[#ef4444] hover:bg-red-50 w-full text-left font-medium text-sm transition-colors"
+                    <div className="py-1">
+                      <Link
+                        href="/user/profile"
+                        className="flex items-center gap-3 px-4 py-2 text-[#334155] hover:bg-[#f8fafc] text-xs font-medium"
+                        onClick={() => setShowUserMenu(false)}
                       >
-                        <LogOut className="w-4 h-4" />
-                        Cerrar sesión
-                      </button>
+                        <UserIcon className="w-4 h-4 text-[#f25c05]" />
+                        Mi perfil
+                      </Link>
+
+                      <Link
+                        href="/user/dashboard"
+                        className="flex items-center gap-3 px-4 py-2 text-[#334155] hover:bg-[#f8fafc] text-xs font-medium"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <Package className="w-4 h-4 text-[#112237]" />
+                        Panel (dashboard)
+                      </Link>
+
+                      <div className="border-t border-[#e2e8f0] mt-1 pt-1">
+                        <button
+                          onClick={async () => {
+                            await signOut();
+                            setShowUserMenu(false);
+                            router.push("/");
+                            router.refresh();
+                          }}
+                          className="flex items-center gap-3 px-4 py-2 text-[#ef4444] hover:bg-red-50 w-full text-left text-xs font-medium"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Cerrar sesión
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

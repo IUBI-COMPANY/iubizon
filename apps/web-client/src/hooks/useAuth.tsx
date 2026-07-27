@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       response_time: null,
       location: null,
       latitude: null,
-      longitude: null,
+      last_active_company_id: null,
       created_at: supabaseUser.created_at,
       updated_at: supabaseUser.updated_at ?? supabaseUser.created_at,
     };
