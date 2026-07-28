@@ -1,5 +1,6 @@
 "use client";
 
+import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -101,12 +102,15 @@ export const CompanyDashboard = ({
 
       {/* Indicadores Comerciales (KPIs) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm">
+        <Link
+          href="/user/dashboard/products"
+          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
+        >
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-[#f25c05]/10 rounded-xl">
-              <Package className="w-5 h-5 text-[#f25c05]" />
+            <div className="p-2.5 bg-[#f25c05]/10 rounded-xl group-hover:bg-[#f25c05] group-hover:text-white transition-colors">
+              <Package className="w-5 h-5 text-[#f25c05] group-hover:text-white transition-colors" />
             </div>
-            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider group-hover:text-[#f25c05] transition-colors">
               Productos
             </span>
           </div>
@@ -116,14 +120,17 @@ export const CompanyDashboard = ({
           <p className="text-xs text-[#64748b] mt-1">
             {stats.activeProducts} activos en tienda
           </p>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm">
+        <Link
+          href="/user/dashboard/orders"
+          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
+        >
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-blue-500/10 rounded-xl">
-              <ShoppingCart className="w-5 h-5 text-blue-500" />
+            <div className="p-2.5 bg-blue-500/10 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-colors">
+              <ShoppingCart className="w-5 h-5 text-blue-500 group-hover:text-white transition-colors" />
             </div>
-            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider group-hover:text-blue-500 transition-colors">
               Ventas / Pedidos
             </span>
           </div>
@@ -133,7 +140,7 @@ export const CompanyDashboard = ({
           <p className="text-xs text-[#64748b] mt-1">
             {stats.pendingOrders} por despachar
           </p>
-        </div>
+        </Link>
 
         <div className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm">
           <div className="flex items-center gap-3 mb-2">
@@ -166,34 +173,6 @@ export const CompanyDashboard = ({
         </div>
       </div>
 
-      {/* Módulos Principales de Gestión Comercial */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link
-          href="/user/dashboard/products"
-          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
-        >
-          <h3 className="font-bold text-base text-[#112237] group-hover:text-[#f25c05] transition-colors mb-1">
-            Catálogo de Productos de {activeCompany.name}
-          </h3>
-          <p className="text-xs text-[#64748b]">
-            Gestionar, editar stock o cambiar estado de las publicaciones
-            comerciales
-          </p>
-        </Link>
-
-        <Link
-          href="/user/dashboard/orders"
-          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
-        >
-          <h3 className="font-bold text-base text-[#112237] group-hover:text-[#f25c05] transition-colors mb-1">
-            Gestión de Ventas y Despachos
-          </h3>
-          <p className="text-xs text-[#64748b]">
-            Revisar pedidos recibidos y actualizar estados de envío
-          </p>
-        </Link>
-      </div>
-
       {/* Publicaciones Recientes de la Empresa */}
       <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
         <div className="p-6 border-b border-[#f1f5f9] flex items-center justify-between">
@@ -214,9 +193,19 @@ export const CompanyDashboard = ({
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-[#94a3b8]">
-            <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#f25c05]" />
-            <p className="text-xs">Cargando publicaciones...</p>
+          <div className="p-4 space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center justify-between p-2">
+                <div className="flex items-center gap-3">
+                  <Skeleton width={48} height={48} borderRadius={12} />
+                  <div className="space-y-1.5">
+                    <Skeleton width={180} height={14} />
+                    <Skeleton width={80} height={12} />
+                  </div>
+                </div>
+                <Skeleton width={60} height={24} borderRadius={12} />
+              </div>
+            ))}
           </div>
         ) : recentProducts.length > 0 ? (
           <div className="divide-y divide-[#f1f5f9]">

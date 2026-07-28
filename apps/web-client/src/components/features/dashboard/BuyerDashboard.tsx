@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   User as UserIcon,
 } from "lucide-react";
+import { useCompany } from "@/context/CompanyContext";
 import type { User } from "@/types";
 
 interface BuyerDashboardProps {
@@ -21,6 +22,9 @@ interface BuyerDashboardProps {
 }
 
 export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
+  const { companies } = useCompany();
+  const hasNoCompanies = companies.length === 0;
+
   return (
     <div className="space-y-8">
       {/* Cabecera del Comprador */}
@@ -43,30 +47,32 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
         </div>
       </div>
 
-      {/* Banner de Invitación a Vender */}
-      <div className="bg-gradient-to-r from-[#112237] to-[#1e3a5f] rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/10 rounded-2xl shrink-0 border border-white/10">
-            <Building2 className="w-8 h-8 text-[#f25c05]" />
+      {/* Banner de Invitación a Vender (Solo visible para usuarios nuevos sin empresas) */}
+      {hasNoCompanies && (
+        <div className="bg-gradient-to-r from-[#112237] to-[#1e3a5f] rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/10 rounded-2xl shrink-0 border border-white/10">
+              <Building2 className="w-8 h-8 text-[#f25c05]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-white mb-1">
+                ¿Deseas vender tus productos o servicios en iubizon?
+              </h3>
+              <p className="text-xs text-slate-300">
+                Crea tu perfil de empresa con RUC 20, RUC 10 o DNI y accede al
+                panel de ventas, catálogo y colaboradores.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-lg text-white mb-1">
-              ¿Deseas vender tus productos o servicios en iubizon?
-            </h3>
-            <p className="text-xs text-slate-300">
-              Crea tu perfil de empresa con RUC 20, RUC 10 o DNI y accede al
-              panel de ventas, catálogo y colaboradores.
-            </p>
-          </div>
+          <Link
+            href="/user/companies/new"
+            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Crear perfil de vendedor
+          </Link>
         </div>
-        <Link
-          href="/user/companies/new"
-          className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Crear perfil de vendedor
-        </Link>
-      </div>
+      )}
 
       {/* Indicadores para Compradores (KPIs) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -126,39 +132,6 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
             {user.email}
           </p>
           <p className="text-xs text-[#64748b] mt-1">Editar datos personales</p>
-        </Link>
-      </div>
-
-      {/* Módulos de Acceso Rápido para Compradores */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link
-          href="/user/orders"
-          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
-        >
-          <div>
-            <h3 className="font-bold text-base text-[#112237] group-hover:text-[#f25c05] transition-colors mb-1">
-              Seguimiento de Mis Compras
-            </h3>
-            <p className="text-xs text-[#64748b]">
-              Revisa el estado de entrega y comprobantes de tus pedidos
-            </p>
-          </div>
-          <ShoppingBag className="w-8 h-8 text-[#cbd5e1] group-hover:text-[#f25c05] transition-colors shrink-0" />
-        </Link>
-
-        <Link
-          href="/favorites"
-          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
-        >
-          <div>
-            <h3 className="font-bold text-base text-[#112237] group-hover:text-[#f25c05] transition-colors mb-1">
-              Mis Productos Favoritos
-            </h3>
-            <p className="text-xs text-[#64748b]">
-              Accede a tus artículos guardados para comprar más tarde
-            </p>
-          </div>
-          <Heart className="w-8 h-8 text-[#cbd5e1] group-hover:text-rose-500 transition-colors shrink-0" />
         </Link>
       </div>
     </div>

@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
+import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -87,9 +88,33 @@ export default function UserOrdersPage() {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center min-h-[50vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
-        </div>
+        <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton width={200} height={28} />
+            <Skeleton width={120} height={36} borderRadius={12} />
+          </div>
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-3xl border border-[#e2e8f0] p-6 space-y-4 shadow-sm"
+            >
+              <div className="flex justify-between items-center pb-3 border-b border-[#f1f5f9]">
+                <Skeleton width={120} height={20} borderRadius={8} />
+                <Skeleton width={100} height={24} borderRadius={20} />
+              </div>
+              <div className="flex items-center gap-4">
+                <Skeleton width={64} height={64} borderRadius={16} />
+                <div className="space-y-2 flex-1">
+                  <Skeleton width={220} height={16} />
+                  <Skeleton width={120} height={14} />
+                </div>
+              </div>
+              <div className="pt-2">
+                <Skeleton height={50} borderRadius={16} />
+              </div>
+            </div>
+          ))}
+        </main>
         <Footer />
       </div>
     );

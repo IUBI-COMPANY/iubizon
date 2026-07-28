@@ -251,27 +251,79 @@ export default async function ProductDetailPage({ params }: Props) {
 
             {/* Right column - Sidebar */}
             <div className="lg:col-span-2 space-y-5">
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 sticky top-4">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h1 className="text-xl font-bold text-[#112237] leading-tight">{product.title}</h1>
+              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 sticky top-4 space-y-4 shadow-sm">
+                {/* Vendedor / Empresa */}
+                {product.company ? (
+                  <Link
+                    href={`/companies/${product.company.slug || product.company.id}`}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-all group"
+                  >
+                    <div className="relative w-9 h-9 rounded-full bg-[#f25c05] text-white flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 shadow-sm">
+                      {product.company.logo_url ? (
+                        <img
+                          src={product.company.logo_url}
+                          alt={product.company.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{product.company.name?.[0]?.toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
+                        Tienda Oficial
+                      </p>
+                      <p className="font-bold text-xs text-[#112237] group-hover:text-[#f25c05] truncate transition-colors">
+                        {product.company.name}
+                      </p>
+                    </div>
+                  </Link>
+                ) : product.seller ? (
+                  <Link
+                    href={`/user/profile/${product.seller.id}`}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-all group"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-[#f25c05]/10 flex items-center justify-center text-xs font-bold text-[#f25c05] shrink-0">
+                      {product.seller.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
+                        Vendedor
+                      </p>
+                      <p className="font-bold text-xs text-[#112237] group-hover:text-[#f25c05] truncate transition-colors">
+                        {product.seller.name || "Usuario"}
+                      </p>
+                    </div>
+                  </Link>
+                ) : null}
+
+                {/* Título del Producto */}
+                <div className="flex items-start justify-between gap-3">
+                  <h1 className="text-xl font-bold text-[#112237] leading-tight">
+                    {product.title}
+                  </h1>
                   <FavoriteButton productId={product.id} />
                 </div>
 
-                <p className="text-3xl font-bold text-[#f25c05] mb-4">
-                  S/ {Number(product.price).toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-                </p>
+                {/* Bloque de Precio */}
+                <div className="py-1">
+                  <p className="text-3xl font-black text-[#f25c05] leading-none">
+                    S/ {Number(product.price).toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
 
+                {/* Badges de Estado y Disponibilidad */}
                 {condition && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2">
                     <span
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
                       style={{ backgroundColor: condition.bg, color: condition.color }}
                     >
                       <condition.icon className="w-3.5 h-3.5" />
                       {condition.label}
                     </span>
-                    {product.availability_type === 'available' && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-[#3b82f6]/10 text-[#3b82f6]">
+                    {product.availability_type === "available" && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#3b82f6]/10 text-[#3b82f6]">
                         <PackageCheck className="w-3.5 h-3.5" />
                         Disponible
                       </span>
@@ -279,14 +331,16 @@ export default async function ProductDetailPage({ params }: Props) {
                   </div>
                 )}
 
+                {/* Ubicación */}
                 {product.location && (
-                  <div className="flex items-center gap-2 text-sm text-[#64748b] mb-5 pb-5 border-b border-[#e2e8f0]">
+                  <div className="flex items-center gap-2 text-xs text-[#64748b] pt-2 border-t border-[#e2e8f0]">
                     <MapPin className="w-4 h-4 text-[#f25c05] shrink-0" />
                     <span>{product.location}</span>
                   </div>
                 )}
 
-                <div className="space-y-3">
+                {/* Botón de Agregar al Carrito */}
+                <div className="pt-2">
                   {product.seller && (
                     <AddToCartButton
                       productId={product.id}
@@ -299,55 +353,8 @@ export default async function ProductDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {product.company ? (
-                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
-                  <h3 className="text-sm font-medium text-[#64748b] mb-3">Vendido por</h3>
-                  <Link href={`/companies/${product.company.slug || product.company.id}`}>
-                    <div className="flex items-center gap-3 hover:bg-[#f8fafc] -m-2 p-2 rounded-xl transition-colors">
-                      <div className="relative w-11 h-11 rounded-full bg-[#f25c05] text-white flex items-center justify-center text-base font-bold overflow-hidden shrink-0 shadow-sm">
-                        {product.company.logo_url ? (
-                          <img
-                            src={product.company.logo_url}
-                            alt={product.company.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span>{product.company.name?.[0]?.toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-bold text-[#112237] text-sm">
-                          {product.company.name}
-                        </p>
-                        <p className="text-xs text-[#f25c05] font-semibold">
-                          Ver tienda oficial ↗
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              ) : product.seller ? (
-                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
-                  <h3 className="text-sm font-medium text-[#64748b] mb-3">Vendido por</h3>
-                  <Link href={`/user/profile/${product.seller.id}`}>
-                    <div className="flex items-center gap-3 hover:bg-[#f8fafc] -m-2 p-2 rounded-xl transition-colors">
-                      <div className="w-11 h-11 rounded-full bg-[#f25c05]/10 flex items-center justify-center text-lg font-semibold text-[#f25c05]">
-                        {product.seller.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div>
-                        <p className="font-medium text-[#112237]">
-                          {product.seller.name || 'Usuario'}
-                        </p>
-                        <p className="text-xs text-[#64748b]">
-                          {product.seller.total_sales || 0} ventas
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              ) : null}
-
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
+              {/* Compra Segura */}
+              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
                 <div className="flex items-center gap-3 text-sm text-[#64748b]">
                   <div className="w-10 h-10 bg-[#10b981]/10 rounded-xl flex items-center justify-center shrink-0">
                     <ShieldCheck className="w-5 h-5 text-[#10b981]" />

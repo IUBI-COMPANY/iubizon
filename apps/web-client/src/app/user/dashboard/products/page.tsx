@@ -13,6 +13,7 @@ import {
   Plus,
   User as UserIcon,
 } from "lucide-react";
+import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -138,9 +139,22 @@ export default function ProductsManagementPage() {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-2xl border border-[#e2e8f0] p-12 text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#f25c05] mb-3" />
-            <p className="text-xs text-[#64748b]">Cargando catálogo...</p>
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 space-y-4 shadow-sm">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b border-[#f1f5f9] last:border-0">
+                <div className="flex items-center gap-3">
+                  <Skeleton width={56} height={56} borderRadius={12} />
+                  <div className="space-y-1.5">
+                    <Skeleton width={200} height={16} />
+                    <Skeleton width={90} height={12} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Skeleton width={70} height={24} borderRadius={12} />
+                  <Skeleton width={80} height={32} borderRadius={8} />
+                </div>
+              </div>
+            ))}
           </div>
         ) : products.length > 0 ? (
           <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
