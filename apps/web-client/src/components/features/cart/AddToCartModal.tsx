@@ -14,11 +14,17 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Monitor,
   Laptop,
-  Armchair,
-  Presentation,
+  Projector,
+  Smartphone,
+  Cpu,
+  Headphones,
+  Monitor,
   Volume2,
+  Armchair,
+  Wifi,
+  Pencil,
+  MoreHorizontal,
   Layers,
   Search,
 } from "lucide-react";
@@ -37,36 +43,17 @@ interface AddedProductInfo {
 }
 
 const CATEGORY_CAROUSEL_ITEMS = [
-  {
-    id: "proyectores",
-    name: "Proyectores y Multimedia",
-    slug: "proyectores",
-    icon: Monitor,
-  },
-  {
-    id: "laptops",
-    name: "Cómputo y Laptops",
-    slug: "laptops",
-    icon: Laptop,
-  },
-  {
-    id: "mobiliario",
-    name: "Mobiliario Educativo / Oficina",
-    slug: "electronica",
-    icon: Armchair,
-  },
-  {
-    id: "pizarras",
-    name: "Pizarras e Interactividad",
-    slug: "electronica",
-    icon: Presentation,
-  },
-  {
-    id: "audio",
-    name: "Audio y Conferencias",
-    slug: "tv-audio",
-    icon: Volume2,
-  },
+  { id: "proyectores", name: "Proyectores y Ecrams", slug: "proyectores", icon: Projector },
+  { id: "laptops", name: "Laptops y Computadoras", slug: "laptops", icon: Laptop },
+  { id: "pantallas-interactivas", name: "Pantallas Interactivas", slug: "pantallas-interactivas", icon: Monitor },
+  { id: "moviles", name: "Celulares y Tablets", slug: "moviles", icon: Smartphone },
+  { id: "audio", name: "Audio y Conferencia", slug: "audio", icon: Volume2 },
+  { id: "mobiliario", name: "Mobiliario Escolar y Oficina", slug: "mobiliario", icon: Armchair },
+  { id: "redes", name: "Redes y Conectividad", slug: "redes", icon: Wifi },
+  { id: "electronica", name: "Electrónica e Impresión", slug: "electronica", icon: Cpu },
+  { id: "accesorios", name: "Accesorios y Periféricos", slug: "accesorios", icon: Headphones },
+  { id: "utiles-suministros", name: "Útiles y Suministros", slug: "utiles-suministros", icon: Pencil },
+  { id: "otros", name: "Otros", slug: "otros", icon: MoreHorizontal },
 ];
 
 interface AddToCartModalProps {

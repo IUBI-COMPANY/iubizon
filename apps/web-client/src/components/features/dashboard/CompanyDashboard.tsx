@@ -267,7 +267,7 @@ export const CompanyDashboard = ({
               Comienza a publicar catálogo oficial para {activeCompany.name}
             </p>
             <Link
-              href="/products/new"
+              href="/products/new?from=dashboard"
               className="inline-flex items-center gap-1.5 bg-[#f25c05] text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-[#d94d04] transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" />

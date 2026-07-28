@@ -60,11 +60,8 @@ function OrdersContent() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const initialTab = searchParams.get("tab") || "sales"; // Priorizar "Mis ventas" por defecto
-
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [orderType, setOrderType] = useState<string>(initialTab);
   const [statusTab, setStatusTab] = useState("all");
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
@@ -179,10 +176,7 @@ function OrdersContent() {
 
   const filteredOrders = orders.filter((order) => {
     const isSale = order.sellerId === user!.id;
-    const isPurchase = order.buyerId === user!.id;
-
-    if (orderType === "sales" && !isSale) return false;
-    if (orderType === "purchases" && !isPurchase) return false;
+    if (!isSale) return false;
 
     if (statusTab === "all") return true;
     if (statusTab === "pending") return order.status === "pending";
@@ -219,22 +213,15 @@ function OrdersContent() {
           </h1>
         </div>
 
-        <Tabs value={orderType} onValueChange={setOrderType}>
+        <Tabs value={statusTab} onValueChange={setStatusTab}>
           <TabsList className="mb-4">
-            <TabsTrigger value="sales">Mis ventas</TabsTrigger>
-            <TabsTrigger value="purchases">Mis compras</TabsTrigger>
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="pending">Pendientes</TabsTrigger>
+            <TabsTrigger value="in_progress">En proceso</TabsTrigger>
+            <TabsTrigger value="completed">Completados</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={orderType}>
-            <Tabs value={statusTab} onValueChange={setStatusTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="pending">Pendientes</TabsTrigger>
-                <TabsTrigger value="in_progress">En proceso</TabsTrigger>
-                <TabsTrigger value="completed">Completados</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={statusTab}>
+          <TabsContent value={statusTab}>
                 {filteredOrders.length > 0 ? (
                   <div className="space-y-4">
                     {filteredOrders.map((order) => {
@@ -389,9 +376,7 @@ function OrdersContent() {
                       No tienes registros en esta sección
                     </h2>
                     <p className="text-xs text-[#64748b] mb-6">
-                      {orderType === "sales"
-                        ? "Las ventas de tus productos aparecerán aquí."
-                        : "Tus compras aparecerán aquí."}
+                      Las ventas de tus productos aparecerán aquí.
                     </p>
                     <Link href="/search">
                       <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white">
@@ -402,8 +387,6 @@ function OrdersContent() {
                 )}
               </TabsContent>
             </Tabs>
-          </TabsContent>
-        </Tabs>
       </div>
 
       <Footer />

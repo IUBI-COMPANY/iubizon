@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompany } from '@/context/CompanyContext';
+import { useToast } from '@/context/ToastContext';
 import { Navbar } from '@/components/features/layout/Navbar';
 import { Footer } from '@/components/features/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -47,7 +48,6 @@ import {
   ThumbsUp,
   Wrench,
   MoreHorizontal,
-  MapPin,
   Truck,
   PackageCheck,
   Handshake,
@@ -56,7 +56,6 @@ import {
   Plus,
   ImagePlus,
   Info,
-  Navigation,
   Building2,
 } from 'lucide-react';
 
@@ -70,7 +69,19 @@ const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: 
   fair: { icon: Wrench, label: 'Aceptable', desc: 'Marcas visibles, completamente funcional', color: '#ef4444' },
 };
 
-const techCategorySlugs = ['electronica', 'laptops', 'proyectores', 'moviles', 'consolas', 'tv-audio', 'accesorios'];
+const techCategorySlugs = [
+  'proyectores',
+  'laptops',
+  'pantallas-interactivas',
+  'moviles',
+  'audio',
+  'mobiliario',
+  'redes',
+  'electronica',
+  'accesorios',
+  'utiles-suministros',
+  'otros',
+];
 
 interface UploadedImage {
   id: string;
@@ -171,11 +182,22 @@ function SortableImage({
   );
 }
 
-export default function PublishProductPage() {
+function PublishProductForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
   const { user } = useAuth();
   const { companies, isLoadingCompanies, activeCompany, refreshCompanies } = useCompany();
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBack = () => {
+    if (from === 'dashboard') {
+      router.push('/user/dashboard/products');
+    } else {
+      router.back();
+    }
+  };
 
   const [wizardStep, setWizardStep] = useState<1 | 2>(1);
 
@@ -186,9 +208,6 @@ export default function PublishProductPage() {
   const [categoryId, setCategoryId] = useState('');
   const [brand, setBrand] = useState('');
   const [stock, setStock] = useState('1');
-  const [location, setLocation] = useState('');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -196,101 +215,11 @@ export default function PublishProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [dragId, setDragId] = useState<string | null>(null);
-  const [geoLoading, setGeoLoading] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  const handleGeolocate = async () => {
-    setGeoLoading(true);
-    setFieldErrors((prev) => {
-      const { location: _, ...rest } = prev;
-      return rest;
-    });
-
-    if (!navigator.geolocation) {
-      setFieldErrors((prev) => ({ ...prev, location: 'Tu navegador no soporta geolocalización.' }));
-      setGeoLoading(false);
-      return;
-    }
-
-    const isSecure = window.isSecureContext;
-    if (!isSecure) {
-      console.warn('Geolocation may not work on insecure contexts (HTTP). Use HTTPS for production.');
-    }
-
-    const getPosition = (): Promise<GeolocationPosition> => {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false,
-          timeout: 15000,
-          maximumAge: 300000,
-        });
-      });
-    };
-
-    try {
-      const position = await getPosition();
-      const { latitude, longitude } = position.coords;
-
-      let locationName = '';
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=es&zoom=10`,
-          {
-            headers: {
-              'User-Agent': 'IubizonMarketplace/1.0',
-            },
-            signal: AbortSignal.timeout(8000),
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const city =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            data.address?.city_district ||
-            data.address?.suburb ||
-            data.address?.county ||
-            '';
-          const state = data.address?.state || data.address?.region || '';
-          const country = data.address?.country || '';
-          const parts = [city, state, country].filter(Boolean);
-          if (parts.length > 0) {
-            locationName = parts.join(', ');
-          } else if (data.display_name) {
-            locationName = data.display_name.split(',').slice(0, 3).join(',').trim();
-          }
-        }
-      } catch {
-        // Nominatim failed, use coordinates
-      }
-
-      if (!locationName) {
-        locationName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-      }
-
-      setLocation(locationName);
-      setLatitude(latitude);
-      setLongitude(longitude);
-    } catch (err: any) {
-      const code = err?.code;
-      const msgs: Record<number, string> = {
-        1: 'Permiso denegado. Habilita el acceso a ubicación en tu navegador y vuelve a intentarlo.',
-        2: 'No se pudo determinar tu ubicación. Escríbela manualmente.',
-        3: 'Tiempo de espera agotado. Intenta de nuevo o escribe tu ubicación.',
-      };
-      setFieldErrors((prev) => ({
-        ...prev,
-        location: msgs[code] || 'No se pudo obtener tu ubicación. Escribe tu ubicación manualmente.',
-      }));
-    } finally {
-      setGeoLoading(false);
-    }
-  };
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -395,14 +324,16 @@ export default function PublishProductPage() {
     if (!categoryId) errors.category_id = 'Selecciona una categoría';
     if (!condition) errors.condition = 'Selecciona el estado de tu producto';
     if (!stock || parseInt(stock) < 1) errors.stock = 'Ingresa una cantidad de stock válida (mínimo 1)';
-    if (!location.trim()) errors.location = 'Agrega una ubicación';
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      toast.error('Por favor completa todos los campos obligatorios.', 'Datos incompletos');
+      return;
+    }
 
     if (!user) {
       router.push('/auth/login?redirect=/products/new');
@@ -426,9 +357,9 @@ export default function PublishProductPage() {
           brand: brand.trim() || null,
           availability_type: parsedStock > 1 ? 'available' : 'unique',
           stock: parsedStock,
-          location: location.trim(),
-          latitude,
-          longitude,
+          location: activeCompany?.location || 'Lima, Perú',
+          latitude: null,
+          longitude: null,
           company_id: activeCompany?.id || null,
         }),
       });
@@ -436,7 +367,9 @@ export default function PublishProductPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || 'Error al crear el producto');
+        const errorMsg = result.error || 'Error al crear el producto';
+        setError(errorMsg);
+        toast.error(errorMsg, 'Error al guardar');
         setLoading(false);
         return;
       }
@@ -445,9 +378,17 @@ export default function PublishProductPage() {
         await uploadImages(result.product.id);
       }
 
-      router.push(`/products/${result.product.id}`);
+      toast.success('Producto publicado exitosamente.', '¡Guardado!');
+
+      if (from === 'dashboard') {
+        router.push('/user/dashboard/products');
+      } else {
+        router.push(`/products/${result.product.id}`);
+      }
     } catch {
-      setError('Error de conexión. Intenta de nuevo.');
+      const connErr = 'Error de conexión. Intenta de nuevo.';
+      setError(connErr);
+      toast.error(connErr, 'Error de red');
       setLoading(false);
     }
   };
@@ -474,7 +415,7 @@ export default function PublishProductPage() {
       <div className="flex-1">
         <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="flex items-center gap-2 text-[#64748b] hover:text-[#112237] transition-colors mb-6 text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -555,19 +496,7 @@ export default function PublishProductPage() {
                 </div>
               </div>
 
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2"
-              >
-                <Info className="w-4 h-4 shrink-0" />
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
+
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Photos - Drag & Drop */}
@@ -700,20 +629,6 @@ export default function PublishProductPage() {
                           </button>
                         );
                       })}
-                    <button
-                      type="button"
-                      onClick={() => { setCategoryId('other'); setFieldErrors((prev) => ({ ...prev, category_id: '' })); }}
-                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200 ${
-                        categoryId === 'other'
-                          ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-sm'
-                          : 'border-[#e2e8f0] hover:border-[#f25c05]/40 hover:bg-[#f8fafc]'
-                      }`}
-                    >
-                      <MoreHorizontal className={`w-5 h-5 ${categoryId === 'other' ? 'text-[#f25c05]' : 'text-[#64748b]'}`} />
-                      <span className={`text-xs font-medium ${categoryId === 'other' ? 'text-[#f25c05]' : 'text-[#64748b]'}`}>
-                        Otros
-                      </span>
-                    </button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center py-4">
@@ -820,40 +735,7 @@ export default function PublishProductPage() {
               </div>
             </div>
 
-            {/* Ubicación */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Ubicación <span className="text-[#f25c05]">*</span>
-                </Label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Ej: Lima, Miraflores"
-                      icon={<MapPin className="w-4 h-4" />}
-                      value={location}
-                      onChange={(e) => { setLocation(e.target.value); setLatitude(null); setLongitude(null); setFieldErrors((prev) => ({ ...prev, location: '' })); }}
-                      error={fieldErrors.location}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleGeolocate}
-                    disabled={geoLoading}
-                    className="h-11 px-3 rounded-lg border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] hover:border-[#f25c05]/40 transition-all flex items-center gap-1.5 text-sm font-medium text-[#64748b] hover:text-[#f25c05] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Usar mi ubicación"
-                  >
-                    {geoLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Navigation className="w-4 h-4" />
-                    )}
-                    <span className="hidden sm:inline">{geoLoading ? 'Localizando...' : 'Mi ubicación'}</span>
-                  </button>
-                </div>
-                <p className="text-[10px] text-[#94a3b8]">Los compradores verán tu ubicación general</p>
-              </div>
-            </div>
+
 
             {/* Submit */}
             <div className="sticky bottom-0 bg-[#f8fafc] pt-3 pb-4 -mx-4 px-4 border-t border-[#e2e8f0]">
@@ -862,7 +744,7 @@ export default function PublishProductPage() {
                   type="button"
                   variant="outline"
                   className="flex-1 h-12"
-                  onClick={() => router.back()}
+                  onClick={handleBack}
                   disabled={loading}
                 >
                   Cancelar
@@ -889,5 +771,19 @@ export default function PublishProductPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PublishProductPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+          <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+        </div>
+      }
+    >
+      <PublishProductForm />
+    </Suspense>
   );
 }

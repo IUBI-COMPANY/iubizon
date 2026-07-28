@@ -48,6 +48,8 @@ export async function createCompany(
     phone?: string;
     email?: string;
     location?: string;
+    latitude?: number | null;
+    longitude?: number | null;
   },
   userId: string,
 ) {
@@ -64,6 +66,8 @@ export async function createCompany(
         phone: data.phone,
         email: data.email,
         location: data.location,
+        latitude: data.latitude,
+        longitude: data.longitude,
         companyMembers: {
           create: {
             user_id: userId,

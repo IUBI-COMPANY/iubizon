@@ -163,7 +163,7 @@ export default function ProductsManagementPage() {
             </p>
           </div>
 
-          <Link href="/products/new">
+          <Link href="/products/new?from=dashboard">
             <button className="flex items-center gap-2 bg-[#f25c05] text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-[#d94d04] transition-all shadow-sm">
               <Plus className="w-4 h-4" />
               Nuevo producto
@@ -321,7 +321,7 @@ export default function ProductsManagementPage() {
                 : "Aún no tienes publicaciones como vendedor personal"}
             </p>
             <Link
-              href="/products/new"
+              href="/products/new?from=dashboard"
               className="inline-flex items-center gap-2 bg-[#f25c05] text-white text-xs font-semibold px-5 py-2.5 rounded-xl hover:bg-[#d94d04] transition-all shadow-md"
             >
               <Plus className="w-4 h-4" />

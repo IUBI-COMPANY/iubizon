@@ -4,7 +4,7 @@ import { useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Building2, Loader2, Save, Upload } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, Navigation, Save, Upload } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -19,6 +19,7 @@ export default function NewCompanyPage() {
   const { refreshCompanies, setActiveCompanyId } = useCompany();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -31,15 +32,96 @@ export default function NewCompanyPage() {
     phone: "",
     email: "",
     location: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
     description: "",
   });
 
   const handleInputChange = useCallback(
-    (field: keyof typeof formData, value: string) => {
+    (field: keyof typeof formData, value: any) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
     },
     [],
   );
+
+  const handleGeolocate = async () => {
+    setGeoLoading(true);
+    setError(null);
+
+    if (!navigator.geolocation) {
+      setError("Tu navegador no soporta geolocalización.");
+      setGeoLoading(false);
+      return;
+    }
+
+    const getPosition = (): Promise<GeolocationPosition> => {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true, // Forzar GPS de alta precisión
+          timeout: 15000,
+          maximumAge: 0,
+        });
+      });
+    };
+
+    try {
+      const position = await getPosition();
+      const { latitude, longitude } = position.coords;
+
+      let locationName = "";
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=es&zoom=18`,
+          {
+            headers: {
+              "User-Agent": "IubizonMarketplace/1.0",
+            },
+            signal: AbortSignal.timeout(8000),
+          }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const road = data.address?.road || data.address?.pedestrian || "";
+          const district =
+            data.address?.suburb ||
+            data.address?.neighbourhood ||
+            data.address?.city_district ||
+            "";
+          const city =
+            data.address?.city ||
+            data.address?.town ||
+            data.address?.village ||
+            data.address?.county ||
+            "";
+          const state = data.address?.state || "";
+
+          const parts = [road, district, city || state].filter(Boolean);
+          if (parts.length > 0) {
+            locationName = parts.join(", ");
+          } else if (data.display_name) {
+            locationName = data.display_name.split(",").slice(0, 3).join(",").trim();
+          }
+        }
+      } catch {
+        // Fallback
+      }
+
+      if (!locationName) {
+        locationName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        location: locationName,
+        latitude,
+        longitude,
+      }));
+    } catch {
+      setError("No se pudo obtener la ubicación automáticamente. Por favor escríbela manualmente.");
+    } finally {
+      setGeoLoading(false);
+    }
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -324,21 +406,37 @@ export default function NewCompanyPage() {
                 </div>
               </div>
 
-              {/* Ubicación y Sitio Web */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="location"
-                    className="block text-sm font-medium text-[#334155] mb-1"
+              {/* Ubicación */}
+              <div>
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-[#334155] mb-1"
+                >
+                  Ubicación / Ciudad
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Input
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => handleInputChange("location", e.target.value)}
+                      placeholder="Lima, Perú"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGeolocate}
+                    disabled={geoLoading}
+                    className="h-10 px-3 rounded-xl border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] hover:border-[#f25c05]/40 transition-all flex items-center gap-1.5 text-xs font-semibold text-[#64748b] hover:text-[#f25c05] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                    title="Obtener ubicación actual por GPS"
                   >
-                    Ubicación / Ciudad
-                  </label>
-                  <Input
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange("location", e.target.value)}
-                    placeholder="Lima, Perú"
-                  />
+                    {geoLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#f25c05]" />
+                    ) : (
+                      <Navigation className="w-3.5 h-3.5 text-[#f25c05]" />
+                    )}
+                    <span>{geoLoading ? "Localizando..." : "Mi ubicación"}</span>
+                  </button>
                 </div>
               </div>
 

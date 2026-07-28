@@ -103,6 +103,8 @@ model Company {
   phone          String?
   email          String?
   location       String?
+  latitude       Float?
+  longitude      Float?
   is_verified    Boolean?        @default(false)
   created_at     DateTime?       @default(now()) @db.Timestamptz
   updated_at     DateTime?       @default(now()) @updatedAt @db.Timestamptz

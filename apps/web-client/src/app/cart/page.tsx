@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,9 +9,7 @@ import {
   ArrowRight,
   CreditCard,
   Loader2,
-  Minus,
   Package,
-  Plus,
   ShieldCheck,
   ShoppingCart,
   Trash2,
@@ -167,8 +165,15 @@ export default function CartCheckoutPage() {
       return;
     }
 
-    if (!shippingForm.name.trim() || !shippingForm.phone.trim() || !shippingForm.address.trim()) {
-      toast.error("Por favor completa los datos de envío obligatorios (Nombre, Teléfono y Dirección).", "Datos incompletos");
+    if (
+      !shippingForm.name.trim() ||
+      !shippingForm.phone.trim() ||
+      !shippingForm.address.trim()
+    ) {
+      toast.error(
+        "Por favor completa los datos de envío obligatorios (Nombre, Teléfono y Dirección).",
+        "Datos incompletos",
+      );
       handleStepChange(2);
       return;
     }
@@ -207,7 +212,7 @@ export default function CartCheckoutPage() {
         err instanceof Error
           ? err.message
           : "Error inesperado al procesar tu pedido.",
-        "Error al procesar pedido"
+        "Error al procesar pedido",
       );
     } finally {
       setIsSubmitting(false);
@@ -238,7 +243,6 @@ export default function CartCheckoutPage() {
             canGoToStep3={items.length > 0 && Boolean(shippingForm.address)}
           />
         </div>
-
 
         {/* PASO 1: CARRITO Y ORDER BUMPS */}
         {step === 1 && (
@@ -576,8 +580,15 @@ export default function CartCheckoutPage() {
 
                   <Button
                     onClick={() => {
-                      if (!shippingForm.name || !shippingForm.phone || !shippingForm.address) {
-                        toast.error("Completa Nombre, Teléfono y Dirección para continuar.", "Datos incompletos");
+                      if (
+                        !shippingForm.name ||
+                        !shippingForm.phone ||
+                        !shippingForm.address
+                      ) {
+                        toast.error(
+                          "Completa Nombre, Teléfono y Dirección para continuar.",
+                          "Datos incompletos",
+                        );
                         return;
                       }
                       handleStepChange(3);

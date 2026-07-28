@@ -113,6 +113,24 @@ export async function POST(request: Request) {
     }
   }
 
+  if (!location) {
+    if (company_id) {
+      const { data: comp } = await supabase
+        .from('companies')
+        .select('location')
+        .eq('id', company_id)
+        .maybeSingle();
+      location = comp?.location || 'Lima, Perú';
+    } else {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('location')
+        .eq('id', user.id)
+        .maybeSingle();
+      location = prof?.location || 'Lima, Perú';
+    }
+  }
+
   const insertData: Record<string, unknown> = {
     title,
     description,
