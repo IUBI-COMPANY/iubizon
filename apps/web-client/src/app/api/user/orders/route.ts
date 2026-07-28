@@ -105,23 +105,26 @@ export async function GET(req: Request) {
       const pkg = packageMap.get(code)!;
       const itemPrice = Number(order.amount);
       pkg.subtotal += itemPrice;
-      pkg.totalAmount = pkg.subtotal + pkg.shippingCost;
+      const taxAmount = pkg.subtotal * 0.18;
+      pkg.totalAmount = pkg.subtotal + taxAmount + pkg.shippingCost;
 
-      pkg.items.push({
-        id: order.id,
-        productId: order.product.id,
-        title: order.product.title,
-        price: itemPrice,
-        image: order.product.images[0]?.url || null,
-        company: order.company
-          ? {
-              id: order.company.id,
-              name: order.company.name,
-              logoUrl: order.company.logo_url,
-              slug: order.company.slug,
-            }
-          : null,
-      });
+      if (order.product) {
+        pkg.items.push({
+          id: order.id,
+          productId: order.product.id,
+          title: order.product.title,
+          price: itemPrice,
+          image: order.product.images?.[0]?.url || null,
+          company: order.company
+            ? {
+                id: order.company.id,
+                name: order.company.name,
+                logoUrl: order.company.logo_url,
+                slug: order.company.slug,
+              }
+            : null,
+        });
+      }
     }
 
     const packages = Array.from(packageMap.values());

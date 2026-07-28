@@ -14,36 +14,17 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    let companyId = searchParams.get("company_id");
-
-    // Si no se envio company_id en params, consultar la empresa activa del perfil del usuario
-    if (!companyId) {
-      const profile = await prisma.profile.findUnique({
-        where: { id: user.id },
-        select: { last_active_company_id: true },
-      });
-
-      if (profile?.last_active_company_id) {
-        companyId = profile.last_active_company_id;
-      } else {
-        const firstMember = await prisma.companyMember.findFirst({
-          where: { user_id: user.id },
-          select: { company_id: true },
-        });
-        if (firstMember) {
-          companyId = firstMember.company_id;
-        }
-      }
-    }
+    const companyIdParam = searchParams.get("company_id");
 
     let isCompanyMode = false;
     let targetCompany = null;
+    let companyId: string | null = null;
 
-    if (companyId) {
-      // Verificar que el usuario pertenece a la empresa
+    if (companyIdParam) {
+      // Verificar que el usuario pertenece a la empresa enviada
       const membership = await prisma.companyMember.findFirst({
         where: {
-          company_id: companyId,
+          company_id: companyIdParam,
           user_id: user.id,
         },
         include: { company: true },
@@ -51,6 +32,7 @@ export async function GET(req: Request) {
 
       if (membership) {
         isCompanyMode = true;
+        companyId = companyIdParam;
         targetCompany = membership.company;
 
         // Auto-vincular cualquier producto del usuario sin company_id a su empresa activa

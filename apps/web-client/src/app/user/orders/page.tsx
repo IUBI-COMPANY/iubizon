@@ -266,7 +266,10 @@ export default function UserOrdersPage() {
                 <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 text-xs">
                     <p className="text-[#334155]">
-                      <strong className="text-[#112237]">Subtotal Productos:</strong> S/ {pkg.subtotal.toFixed(2)}
+                      <strong className="text-[#112237]">Subtotal (sin IGV):</strong> S/ {pkg.subtotal.toFixed(2)}
+                    </p>
+                    <p className="text-[#334155]">
+                      <strong className="text-[#112237]">IGV (18%):</strong> S/ {(pkg.subtotal * 0.18).toFixed(2)}
                     </p>
                     <p className="text-[#334155]">
                       <strong className="text-[#112237]">Envío de Paquete:</strong> S/ {pkg.shippingCost.toFixed(2)}
