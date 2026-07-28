@@ -9,22 +9,21 @@ import { Footer } from '@/components/features/layout/Footer';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import { ImageUploader } from '@/components/features/products/ImageUploader';
+import { MediaUploader, UploadedImage } from '@/components/features/products/MediaUploader';
+import { detectForbiddenContactInfo } from '@/lib/utils/contactDetector';
+import { uploadProductVideoClient } from '@/lib/services/mediaUpload';
+import { useToast } from '@/context/ToastContext';
 import {
   Loader2,
   ArrowLeft,
   Package,
-  DollarSign,
+  Banknote,
   Tag,
   CheckCircle2,
   AlertCircle,
   Layers,
-  Sparkles,
-  ShieldCheck,
-  ThumbsUp,
-  Wrench,
-  Building2,
 } from 'lucide-react';
 
 interface Props {
@@ -33,6 +32,7 @@ interface Props {
 
 export default function EditProductPage({ params }: Props) {
   const router = useRouter();
+  const toast = useToast();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -50,7 +50,11 @@ export default function EditProductPage({ params }: Props) {
     status: 'active',
     stock: '1',
   });
-  const [images, setImages] = useState<Array<{ id: string; url: string; position: number }>>([]);
+
+  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [initialImageIds, setInitialImageIds] = useState<string[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -68,7 +72,7 @@ export default function EditProductPage({ params }: Props) {
         if (!mounted) return;
 
         if (!user) {
-          router.push('/auth/login');
+          router.push('/auth/login?redirect=/products/edit/' + id);
           return;
         }
 
@@ -106,7 +110,17 @@ export default function EditProductPage({ params }: Props) {
         });
 
         if (Array.isArray(data.images)) {
-          setImages(data.images);
+          const loadedImages = data.images.map((img: { id: string; url: string; position: number }) => ({
+            id: img.id,
+            url: img.url,
+            position: img.position,
+          }));
+          setImages(loadedImages);
+          setInitialImageIds(loadedImages.map((img: { id: string }) => img.id));
+        }
+
+        if (data.video_url) {
+          setVideoPreview(data.video_url);
         }
       } catch (err) {
         console.error('Error al cargar producto:', err);
@@ -125,14 +139,85 @@ export default function EditProductPage({ params }: Props) {
     return () => {
       mounted = false;
     };
-  }, [params]);
+  }, [params, supabase]);
+
+  const parseResponseJson = async (res: Response) => {
+    try {
+      const text = await res.text();
+      return text && text.trim() ? JSON.parse(text) : {};
+    } catch {
+      return { error: `Respuesta no válida del servidor (${res.status})` };
+    }
+  };
+
+  const uploadNewMedia = async (targetProductId: string): Promise<{ videoUrl: string | null }> => {
+    // 1. Eliminar de la base de datos las fotos que el usuario quitó de la interfaz
+    const currentIds = new Set(images.map((i) => i.id));
+    const toDelete = initialImageIds.filter((id) => !currentIds.has(id));
+    for (const deleteId of toDelete) {
+      try {
+        await fetch(`/api/products/images?id=${deleteId}`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.warn('Error al eliminar foto:', deleteId, err);
+      }
+    }
+
+    // 2. Subir fotos nuevas que tengan campo 'file'
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
+      if (img.file) {
+        const formDataImg = new FormData();
+        formDataImg.append('file', img.file);
+        formDataImg.append('product_id', targetProductId);
+        formDataImg.append('position', String(i));
+        const imgRes = await fetch('/api/products/images', {
+          method: 'POST',
+          body: formDataImg,
+        });
+        if (!imgRes.ok) {
+          const imgErr = await parseResponseJson(imgRes);
+          console.warn('Advertencia al subir imagen:', imgErr.error);
+        }
+      }
+    }
+
+    // 2. Subir video nuevo si se seleccionó un archivo nuevo
+    let uploadedVideoUrl: string | null = videoPreview || null;
+    if (videoFile) {
+      try {
+        uploadedVideoUrl = await uploadProductVideoClient(videoFile, targetProductId);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Error al subir el video demostrativo';
+        throw new Error(msg);
+      }
+    }
+
+    return { videoUrl: uploadedVideoUrl };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar restricción de datos de contacto
+    if (formData.description.trim()) {
+      const contactCheck = detectForbiddenContactInfo(formData.description);
+      if (contactCheck.hasViolation) {
+        const reason = contactCheck.reason || 'Información de contacto no permitida';
+        setError(reason);
+        toast.error(reason, 'Revisa la descripción');
+        return;
+      }
+    }
+
     setSaving(true);
     setError(null);
 
     try {
+      // Subir archivos multimedia nuevos si corresponde
+      const { videoUrl } = await uploadNewMedia(productId);
+
       const parsedStock = parseInt(formData.stock) || 1;
       const response = await fetch(`/api/products/${productId}`, {
         method: 'PUT',
@@ -147,10 +232,11 @@ export default function EditProductPage({ params }: Props) {
           status: formData.status,
           stock: parsedStock,
           availability_type: parsedStock > 1 ? 'available' : 'unique',
+          video_url: videoUrl,
         }),
       });
 
-      const result = await response.json();
+      const result = await parseResponseJson(response);
 
       if (!response.ok) {
         setError(result.error || 'Error al guardar los cambios');
@@ -159,13 +245,15 @@ export default function EditProductPage({ params }: Props) {
       }
 
       setSuccess(true);
+      toast.success('Publicación actualizada correctamente', '¡Éxito!');
       setTimeout(() => {
         router.push('/user/dashboard/products');
         router.refresh();
       }, 1000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setError('Error de conexión al guardar los cambios');
+      const msg = err instanceof Error ? err.message : 'Error de conexión al guardar los cambios';
+      setError(msg);
     } finally {
       setSaving(false);
     }
@@ -224,7 +312,7 @@ export default function EditProductPage({ params }: Props) {
           </Link>
           <h1 className="text-2xl font-bold text-[#112237]">Editar publicación</h1>
           <p className="text-xs text-[#64748b]">
-            Modifica los detalles, precio, stock e imágenes de tu producto
+            Modifica los detalles, precio, fotos y video de tu producto
           </p>
         </div>
 
@@ -243,6 +331,21 @@ export default function EditProductPage({ params }: Props) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* CARD MULTIMEDIA: Fotos + Video unificados */}
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm">
+            <MediaUploader
+              mode="both"
+              maxImages={10}
+              images={images}
+              onImagesChange={setImages}
+              videoPreview={videoPreview}
+              onVideoChange={(file, prev) => {
+                setVideoFile(file);
+                setVideoPreview(prev);
+              }}
+            />
+          </div>
+
           {/* CARD 1: Información Básica */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4">
             <h2 className="text-sm font-bold text-[#112237] uppercase tracking-wider text-xs border-b border-[#f1f5f9] pb-3 flex items-center gap-2">
@@ -312,27 +415,22 @@ export default function EditProductPage({ params }: Props) {
           {/* CARD 2: Precio y Stock */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4">
             <h2 className="text-sm font-bold text-[#112237] uppercase tracking-wider text-xs border-b border-[#f1f5f9] pb-3 flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-[#f25c05]" />
+              <Banknote className="w-4 h-4 text-[#f25c05]" />
               Precio, Stock y Visibilidad
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-xs font-semibold text-[#112237]">
-                  Precio de venta (S/) <span className="text-[#f25c05]">*</span>
+                <Label htmlFor="price" className="text-xs font-semibold text-[#112237] mb-1 block">
+                  Precio de venta <span className="text-[#f25c05]">*</span>
                 </Label>
-                <Input
+                <CurrencyInput
                   id="price"
                   name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  icon={<DollarSign className="w-4 h-4 text-[#64748b]" />}
+                  currency="PEN"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, price: val })}
                   required
-                  className="mt-1"
                 />
               </div>
 
@@ -387,22 +485,6 @@ export default function EditProductPage({ params }: Props) {
               onChange={(newDesc) => setFormData({ ...formData, description: newDesc })}
               placeholder="Describe las características principales, garantía, qué incluye el paquete..."
               maxLength={2000}
-            />
-          </div>
-
-          {/* CARD 4: Imágenes del Producto */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-[#112237] uppercase tracking-wider text-xs border-b border-[#f1f5f9] pb-3 flex items-center gap-2">
-              <Tag className="w-4 h-4 text-[#f25c05]" />
-              Galería de Imágenes
-            </h2>
-            <p className="text-xs text-[#64748b]">
-              Administra o reemplaza las fotografías de la publicación. La primera imagen será la principal.
-            </p>
-            <ImageUploader
-              productId={productId}
-              images={images}
-              onImagesChange={setImages}
             />
           </div>
 

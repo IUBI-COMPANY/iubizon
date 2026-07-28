@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   const supabase = await createServerClient();
@@ -39,12 +40,12 @@ export async function POST(request: Request) {
     .from('product-images')
     .upload(fileName, arrayBuffer, {
       contentType: file.type,
-      upsert: false,
+      upsert: true,
     });
 
   if (uploadError) {
     console.error('Upload video error:', uploadError);
-    return NextResponse.json({ error: 'Error al subir el video' }, { status: 500 });
+    return NextResponse.json({ error: `Error en almacenamiento de video: ${uploadError.message}` }, { status: 500 });
   }
 
   // Obtener URL pública
@@ -52,12 +53,16 @@ export async function POST(request: Request) {
     .from('product-images')
     .getPublicUrl(fileName);
 
-  // Si ya existe productId, actualizar video_url directamente
+  // Si ya existe productId, actualizar video_url en la BD via Prisma
   if (productId) {
-    await supabase
-      .from('products')
-      .update({ video_url: publicUrl })
-      .eq('id', productId);
+    try {
+      await prisma.product.update({
+        where: { id: productId },
+        data: { video_url: publicUrl, updated_at: new Date() },
+      });
+    } catch (dbErr) {
+      console.warn('No se pudo actualizar la columna video_url directamente:', dbErr);
+    }
   }
 
   return NextResponse.json({ url: publicUrl, success: true });

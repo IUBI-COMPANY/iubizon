@@ -102,7 +102,16 @@ export async function PUT(
       category_id,
       status,
       stock,
+      video_url,
     } = body;
+
+    if (description) {
+      const { detectForbiddenContactInfo } = await import('@/lib/utils/contactDetector');
+      const contactCheck = detectForbiddenContactInfo(description);
+      if (contactCheck.hasViolation) {
+        return NextResponse.json({ error: contactCheck.reason }, { status: 400 });
+      }
+    }
 
     const parsedPrice = price !== undefined ? parseFloat(price) : undefined;
     const parsedStock = stock !== undefined ? parseInt(stock) : undefined;
@@ -121,10 +130,11 @@ export async function PUT(
         ...(description !== undefined && { description: description?.trim() || null }),
         ...(parsedPrice !== undefined && !isNaN(parsedPrice) && { price: parsedPrice }),
         ...(condition && { condition }),
-        ...(category_id && { category_id }),
+        ...(category_id && { category: { connect: { id: category_id } } }),
         ...(status && { status }),
         ...(parsedStock !== undefined && !isNaN(parsedStock) && { stock: Math.max(0, parsedStock) }),
         ...(availabilityType && { availability_type: availabilityType }),
+        ...(video_url !== undefined && { video_url }),
         updated_at: new Date(),
       },
     });

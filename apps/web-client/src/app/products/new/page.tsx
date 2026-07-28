@@ -63,7 +63,9 @@ import {
 
 import { CreateCompanyStep } from '@/components/features/products/CreateCompanyStep';
 import { MediaUploader } from '@/components/features/products/MediaUploader';
+import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { detectForbiddenContactInfo } from '@/lib/utils/contactDetector';
+import { uploadProductVideoClient } from '@/lib/services/mediaUpload';
 import type { Category } from '@/types';
 
 const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: string; color: string }> = {
@@ -248,18 +250,10 @@ function PublishProductForm() {
 
   const uploadVideo = async (productId: string): Promise<string | null> => {
     if (!videoFile) return null;
-    const formData = new FormData();
-    formData.append('file', videoFile);
-    formData.append('product_id', productId);
-
     try {
-      const response = await fetch('/api/products/video', {
-        method: 'POST',
-        body: formData,
-      });
-      const result = await response.json();
-      return result.url || null;
-    } catch {
+      return await uploadProductVideoClient(videoFile, productId);
+    } catch (err) {
+      console.error('Error al subir video:', err);
       return null;
     }
   };
@@ -563,19 +557,12 @@ function PublishProductForm() {
                 <Label className="text-sm font-semibold text-[#112237]">
                   Precio <span className="text-[#f25c05]">*</span>
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#112237] text-sm font-semibold">S/</span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    className="pl-10"
-                    value={price}
-                    onChange={(e) => { setPrice(e.target.value); setFieldErrors((prev) => ({ ...prev, price: '' })); }}
-                    error={fieldErrors.price}
-                  />
-                </div>
+                <CurrencyInput
+                  currency="PEN"
+                  value={price}
+                  onChange={(val) => { setPrice(val); setFieldErrors((prev) => ({ ...prev, price: '' })); }}
+                  error={fieldErrors.price}
+                />
                 {price && parseFloat(price) > 0 && (
                   <p className="text-sm font-medium text-[#10b981]">{formatPrice(parseFloat(price))}</p>
                 )}

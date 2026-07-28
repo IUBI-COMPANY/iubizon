@@ -22,14 +22,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'ID de producto requerido' }, { status: 400 });
   }
 
-  // Verify ownership
+  // Verify ownership or company membership
   const { data: product, error: productError } = await supabase
     .from('products')
-    .select('seller_id')
+    .select('seller_id, company_id')
     .eq('id', productId)
     .single();
 
-  if (productError || product.seller_id !== user.id) {
+  if (productError || !product) {
+    return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
+  }
+
+  let isAuthorized = product.seller_id === user.id;
+
+  if (!isAuthorized && product.company_id) {
+    const { data: memberData } = await supabase
+      .from('company_members')
+      .select('id')
+      .eq('company_id', product.company_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (memberData) {
+      isAuthorized = true;
+    }
+  }
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
@@ -108,14 +127,33 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'ID de imagen requerido' }, { status: 400 });
   }
 
-  // Get image info and verify ownership
+  // Get image info and verify ownership or company membership
   const { data: image, error: imageError } = await supabase
     .from('product_images')
-    .select('*, product:products(seller_id)')
+    .select('*, product:products(seller_id, company_id)')
     .eq('id', imageId)
     .single();
 
-  if (imageError || image.product.seller_id !== user.id) {
+  if (imageError || !image || !image.product) {
+    return NextResponse.json({ error: 'Imagen no encontrada' }, { status: 404 });
+  }
+
+  let isAuthorized = image.product.seller_id === user.id;
+
+  if (!isAuthorized && image.product.company_id) {
+    const { data: memberData } = await supabase
+      .from('company_members')
+      .select('id')
+      .eq('company_id', image.product.company_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (memberData) {
+      isAuthorized = true;
+    }
+  }
+
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
