@@ -7,7 +7,6 @@ interface CartSummarySidebarProps {
   step: number;
   subtotal: number;
   shippingCost: number;
-  taxAmount: number;
   grandTotal: number;
   itemCount: number;
   onNextStep?: () => void;
@@ -18,7 +17,6 @@ export const CartSummarySidebar = ({
   step,
   subtotal,
   shippingCost,
-  taxAmount,
   grandTotal,
   itemCount,
   onNextStep,
@@ -55,15 +53,9 @@ export const CartSummarySidebar = ({
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span>IGV (18% desglosado):</span>
-          <span className="font-semibold text-[#64748b]">
-            S/ {taxAmount.toFixed(2)}
-          </span>
-        </div>
 
         <div className="pt-2 border-t border-[#f1f5f9] flex justify-between items-center text-sm font-extrabold text-[#112237]">
-          <span>{step === 3 ? "Total a Pagar al Recibir:" : "Total a Pagar:"}</span>
+          <span>Total a Pagar:</span>
           <span className="text-lg sm:text-xl text-[#f25c05]">
             S/ {grandTotal.toFixed(2)}
           </span>

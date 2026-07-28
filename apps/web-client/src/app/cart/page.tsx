@@ -23,11 +23,15 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
+import { useToast } from "@/context/ToastContext";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { CartStepIndicator } from "@/components/features/cart/CartStepIndicator";
-import { CartOrderBumps, type OrderBump } from "@/components/features/cart/CartOrderBumps";
+import {
+  CartOrderBumps,
+  type OrderBump,
+} from "@/components/features/cart/CartOrderBumps";
 import { CartSummarySidebar } from "@/components/features/cart/CartSummarySidebar";
 
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
@@ -45,7 +49,10 @@ export default function CartCheckoutPage() {
   const [recsPage, setRecsPage] = useState<number>(1);
   const [recsHasMore, setRecsHasMore] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">(
+    "progressive",
+  );
 
   // Formulario de envío con Auto-Guardado en LocalStorage
   const [shippingForm, setShippingForm] = useState({
@@ -109,33 +116,35 @@ export default function CartCheckoutPage() {
   };
 
   // Cargar productos complementarios (Order Bumps) con Paginación
-  const fetchRecommendations = useCallback(async (pageToFetch = 1) => {
-    try {
-      setLoadingRecs(true);
-      const excludeIds = items.map((i) => i.product_id).join(",");
-      const res = await fetch(
-        `/api/products/recommendations?exclude=${excludeIds}&page=${pageToFetch}&limit=6`,
-      );
-      const data = await res.json();
-      if (Array.isArray(data.recommendations)) {
-        setRecommendations(data.recommendations);
-        setRecsHasMore(!!data.pagination?.hasMore);
-        setRecsPage(pageToFetch);
+  const fetchRecommendations = useCallback(
+    async (pageToFetch = 1) => {
+      try {
+        setLoadingRecs(true);
+        const excludeIds = items.map((i) => i.product_id).join(",");
+        const res = await fetch(
+          `/api/products/recommendations?exclude=${excludeIds}&page=${pageToFetch}&limit=6`,
+        );
+        const data = await res.json();
+        if (Array.isArray(data.recommendations)) {
+          setRecommendations(data.recommendations);
+          setRecsHasMore(!!data.pagination?.hasMore);
+          setRecsPage(pageToFetch);
+        }
+      } catch (err) {
+        console.error("Error al cargar recomendaciones afines:", err);
+      } finally {
+        setLoadingRecs(false);
       }
-    } catch (err) {
-      console.error("Error al cargar recomendaciones afines:", err);
-    } finally {
-      setLoadingRecs(false);
-    }
-  }, [items]);
+    },
+    [items],
+  );
 
   useEffect(() => {
     fetchRecommendations(1);
   }, [items, fetchRecommendations]);
 
-  // Cálculos Financieros Detallados
+  // Cálculos Financieros
   const shippingCost = items.length > 0 ? 50.0 : 0.0;
-  const taxAmount = total * 0.18;
   const grandTotal = total + shippingCost;
 
   // Añadir un Order Bump al carrito de 1 solo clic
@@ -157,14 +166,13 @@ export default function CartCheckoutPage() {
     }
 
     if (!shippingForm.name.trim() || !shippingForm.phone.trim() || !shippingForm.address.trim()) {
-      setError("Por favor completa los datos de envío obligatorios (Nombre, Teléfono y Dirección).");
+      toast.error("Por favor completa los datos de envío obligatorios (Nombre, Teléfono y Dirección).", "Datos incompletos");
       handleStepChange(2);
       return;
     }
 
     try {
       setIsSubmitting(true);
-      setError(null);
 
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -173,6 +181,7 @@ export default function CartCheckoutPage() {
           items,
           shipping: shippingForm,
           payment_method: "cash_on_delivery",
+          delivery_type: deliveryType,
         }),
       });
 
@@ -192,10 +201,11 @@ export default function CartCheckoutPage() {
       // Redirigir a pantalla de confirmación exitosa en plataforma
       router.push(`/cart/success?order_code=${data.orderCode}`);
     } catch (err: unknown) {
-      setError(
+      toast.error(
         err instanceof Error
           ? err.message
           : "Error inesperado al procesar tu pedido.",
+        "Error al procesar pedido"
       );
     } finally {
       setIsSubmitting(false);
@@ -227,11 +237,6 @@ export default function CartCheckoutPage() {
           />
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-2xl">
-            {error}
-          </div>
-        )}
 
         {/* PASO 1: CARRITO Y ORDER BUMPS */}
         {step === 1 && (
@@ -315,7 +320,11 @@ export default function CartCheckoutPage() {
                             onChange={(newQty) =>
                               updateQuantity(item.product_id, newQty)
                             }
-                            max={typeof item.stock === "number" && item.stock > 0 ? item.stock : 99}
+                            max={
+                              typeof item.stock === "number" && item.stock > 0
+                                ? item.stock
+                                : 99
+                            }
                             size="sm"
                             showLimitWarning={true}
                           />
@@ -351,7 +360,6 @@ export default function CartCheckoutPage() {
                 step={1}
                 subtotal={total}
                 shippingCost={shippingCost}
-                taxAmount={taxAmount}
                 grandTotal={grandTotal}
                 itemCount={items.length}
                 onNextStep={() => handleStepChange(2)}
@@ -363,7 +371,106 @@ export default function CartCheckoutPage() {
         {/* PASO 2: DATOS DE CONTACTO Y ENVÍO */}
         {step === 2 && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 space-y-4">
+              {/* SELECTOR TIPO DE ENTREGA */}
+              <div className="bg-white rounded-3xl border border-[#e2e8f0] px-6 py-5 shadow-sm">
+                <p className="text-xs font-semibold text-[#64748b] uppercase tracking-wide mb-3">
+                  Tipo de entrega
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("progressive")}
+                    className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                      deliveryType === "progressive"
+                        ? "border-[#f25c05] bg-orange-50"
+                        : "border-[#e2e8f0] hover:border-[#f25c05]/40"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-[#112237]">
+                        Entrega Progresiva
+                      </p>
+                      <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                        Más rápido
+                      </p>
+                      <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                        Conforme esté listo
+                      </p>
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                        deliveryType === "progressive"
+                          ? "border-[#f25c05] bg-[#f25c05]"
+                          : "border-[#cbd5e1]"
+                      }`}
+                    >
+                      {deliveryType === "progressive" && (
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryType("complete")}
+                    className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                      deliveryType === "complete"
+                        ? "border-[#112237] bg-slate-50"
+                        : "border-[#e2e8f0] hover:border-[#112237]/40"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-[#112237]">
+                        Entrega Completa
+                      </p>
+                      <p className="text-[11px] text-[#94a3b8] font-medium mt-0.5">
+                        Una sola entrega
+                      </p>
+                      <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                        Puede demorar más días
+                      </p>
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                        deliveryType === "complete"
+                          ? "border-[#112237] bg-[#112237]"
+                          : "border-[#cbd5e1]"
+                      }`}
+                    >
+                      {deliveryType === "complete" && (
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* FORMULARIO DE DATOS */}
               <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 sm:p-8 shadow-sm space-y-5">
                 <div className="border-b border-[#f1f5f9] pb-4">
                   <h2 className="font-bold text-[#112237] text-base flex items-center gap-2">
@@ -391,7 +498,9 @@ export default function CartCheckoutPage() {
                     </label>
                     <Input
                       value={shippingForm.phone}
-                      onChange={(e) => handleFormChange("phone", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("phone", e.target.value)
+                      }
                       placeholder="+51 999 999 999"
                       required
                     />
@@ -406,7 +515,9 @@ export default function CartCheckoutPage() {
                     <Input
                       type="email"
                       value={shippingForm.email}
-                      onChange={(e) => handleFormChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("email", e.target.value)
+                      }
                       placeholder="ejemplo@correo.com"
                     />
                   </div>
@@ -430,7 +541,9 @@ export default function CartCheckoutPage() {
                   </label>
                   <Input
                     value={shippingForm.address}
-                    onChange={(e) => handleFormChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleFormChange("address", e.target.value)
+                    }
                     placeholder="Av. Larco 1234, Dpto 501"
                     required
                   />
@@ -461,10 +574,9 @@ export default function CartCheckoutPage() {
                   <Button
                     onClick={() => {
                       if (!shippingForm.name || !shippingForm.phone || !shippingForm.address) {
-                        setError("Completa Nombre, Teléfono y Dirección para continuar.");
+                        toast.error("Completa Nombre, Teléfono y Dirección para continuar.", "Datos incompletos");
                         return;
                       }
-                      setError(null);
                       handleStepChange(3);
                     }}
                     className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2"
@@ -482,7 +594,6 @@ export default function CartCheckoutPage() {
                 step={2}
                 subtotal={total}
                 shippingCost={shippingCost}
-                taxAmount={taxAmount}
                 grandTotal={grandTotal}
                 itemCount={items.length}
               />
@@ -502,7 +613,8 @@ export default function CartCheckoutPage() {
                     <span>Selecciona el Método de Pago</span>
                   </h2>
                   <p className="text-xs text-[#64748b] mt-0.5">
-                    Pago 100% seguro con garantía de entrega directamente en tu puerta.
+                    Pago 100% seguro con garantía de entrega directamente en tu
+                    puerta.
                   </p>
                 </div>
 
@@ -617,7 +729,6 @@ export default function CartCheckoutPage() {
                 step={3}
                 subtotal={total}
                 shippingCost={shippingCost}
-                taxAmount={taxAmount}
                 grandTotal={grandTotal}
                 itemCount={items.length}
               />

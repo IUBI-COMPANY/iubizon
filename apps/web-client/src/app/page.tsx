@@ -38,7 +38,7 @@ export default async function MarketplaceHomePage() {
 
         {maintenanceError && (
           <div className="container mt-6">
-            <Alert type="warning" message={maintenanceError} />
+            <Alert variant="warning" message={maintenanceError} />
           </div>
         )}
 

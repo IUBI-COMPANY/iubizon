@@ -17,7 +17,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { items, shipping, payment_method } = body;
+    const { items, shipping, payment_method, delivery_type } = body;
+
+    // Dirección de destino según tipo de entrega elegida por el comprador
+    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
+    const isCompleteDelivery = delivery_type === "complete";
+    const supplierDestination = isCompleteDelivery
+      ? IUBIZON_WAREHOUSE
+      : `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -161,8 +168,8 @@ export async function POST(req: Request) {
             payment_method: payment_method || "cash_on_delivery",
             shipping: {
               create: {
-                origin_address: "Almacén Principal iubizon / Vendedor",
-                destination_address: `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`,
+                origin_address: "Almacén / Proveedor",
+                destination_address: supplierDestination,
                 courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone}`,
                 tracking_number: finalOrderCode,
                 status: "pending",
