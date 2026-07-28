@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { Loader2, Package, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export interface OrderBump {
@@ -34,12 +40,11 @@ export const CartOrderBumps = ({
     <div className="bg-gradient-to-br from-[#112237] to-[#1e3a5f] text-white rounded-3xl p-6 shadow-md">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-5 h-5 text-[#f25c05]" />
-        <h3 className="font-bold text-base">
-          Complementa tu paquete
-        </h3>
+        <h3 className="font-bold text-base">Complementa tu paquete</h3>
       </div>
       <p className="text-xs text-slate-300 mb-4">
-        Añade estos productos unicos con un solo clic antes de finalizar tu compra:
+        Añade estos productos unicos con un solo clic antes de finalizar tu
+        compra:
       </p>
 
       {loading ? (
