@@ -144,8 +144,10 @@ export default function CartCheckoutPage() {
   }, [items, fetchRecommendations]);
 
   // Cálculos Financieros
+  const subtotal = total;
+  const taxAmount = subtotal * 0.18;
   const shippingCost = items.length > 0 ? 50.0 : 0.0;
-  const grandTotal = total + shippingCost;
+  const grandTotal = subtotal + taxAmount + shippingCost;
 
   // Añadir un Order Bump al carrito de 1 solo clic
   const handleAddBump = (bump: OrderBump) => {
@@ -359,6 +361,7 @@ export default function CartCheckoutPage() {
               <CartSummarySidebar
                 step={1}
                 subtotal={total}
+                taxAmount={taxAmount}
                 shippingCost={shippingCost}
                 grandTotal={grandTotal}
                 itemCount={items.length}
@@ -593,6 +596,7 @@ export default function CartCheckoutPage() {
               <CartSummarySidebar
                 step={2}
                 subtotal={total}
+                taxAmount={taxAmount}
                 shippingCost={shippingCost}
                 grandTotal={grandTotal}
                 itemCount={items.length}
@@ -728,6 +732,7 @@ export default function CartCheckoutPage() {
               <CartSummarySidebar
                 step={3}
                 subtotal={total}
+                taxAmount={taxAmount}
                 shippingCost={shippingCost}
                 grandTotal={grandTotal}
                 itemCount={items.length}

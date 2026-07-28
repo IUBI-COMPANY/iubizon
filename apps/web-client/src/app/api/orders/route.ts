@@ -201,9 +201,9 @@ export async function POST(req: Request) {
       0,
     );
     const shippingCost = 50.0;
-    const totalAmount = subtotal + shippingCost;
-    const totalCommission = subtotal * 0.1;
     const totalTax = subtotal * 0.18;
+    const totalAmount = subtotal + totalTax + shippingCost;
+    const totalCommission = subtotal * 0.1;
     const totalSellerEarnings = subtotal - totalCommission;
 
     return NextResponse.json({
