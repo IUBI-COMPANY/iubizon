@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, ZoomIn, Expand } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn, Expand, Play } from 'lucide-react';
 
 import 'swiper/swiper-bundle.css';
 
@@ -19,27 +19,34 @@ interface ProductImage {
 interface ProductImageGalleryProps {
   images: ProductImage[];
   title: string;
+  videoUrl?: string | null;
 }
 
-export function ProductImageGallery({ images, title }: ProductImageGalleryProps) {
+export function ProductImageGallery({ images, title, videoUrl }: ProductImageGalleryProps) {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  if (images.length === 0) {
+  const sortedImages = [...images].sort((a, b) => (a.position || 0) - (b.position || 0));
+
+  // Combinar imágenes y video
+  const mediaItems: Array<{ id: string; url: string; isVideo?: boolean; position?: number }> = [
+    ...sortedImages,
+    ...(videoUrl ? [{ id: 'product-video', url: videoUrl, isVideo: true }] : []),
+  ];
+
+  if (mediaItems.length === 0) {
     return (
       <div className="aspect-square bg-[#f8fafc] rounded-xl flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-[#e2e8f0] rounded-2xl flex items-center justify-center mx-auto mb-2">
             <Expand className="w-6 h-6 text-[#94a3b8]" />
           </div>
-          <p className="text-sm text-[#94a3b8]">Sin imágenes</p>
+          <p className="text-sm text-[#94a3b8]">Sin imágenes ni video</p>
         </div>
       </div>
     );
   }
-
-  const sortedImages = [...images].sort((a, b) => (a.position || 0) - (b.position || 0));
 
   return (
     <div className="space-y-3">
@@ -56,24 +63,33 @@ export function ProductImageGallery({ images, title }: ProductImageGalleryProps)
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
           className="aspect-square rounded-xl overflow-hidden bg-[#f8fafc]"
         >
-          {sortedImages.map((img, idx) => (
-            <SwiperSlide key={img.id || idx}>
-              <div className="relative w-full h-full bg-[#f8fafc]">
-                <Image
-                  src={img.url}
-                  alt={`${title} - Imagen ${idx + 1}`}
-                  fill
-                  className="object-contain"
-                  priority={idx === 0}
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                />
+          {mediaItems.map((item, idx) => (
+            <SwiperSlide key={item.id || idx}>
+              <div className="relative w-full h-full bg-[#f8fafc] flex items-center justify-center">
+                {item.isVideo ? (
+                  <video
+                    src={item.url}
+                    controls
+                    playsInline
+                    className="w-full h-full object-contain bg-black"
+                  />
+                ) : (
+                  <Image
+                    src={item.url}
+                    alt={`${title} - Imagen ${idx + 1}`}
+                    fill
+                    className="object-contain"
+                    priority={idx === 0}
+                    sizes="(max-width: 768px) 100vw, 60vw"
+                  />
+                )}
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
 
         {/* Navigation Arrows */}
-        {sortedImages.length > 1 && (
+        {mediaItems.length > 1 && (
           <>
             <button className="gallery-prev absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-md rounded-full p-2 hover:bg-white transition-all opacity-0 group-hover/main:opacity-100">
               <ChevronLeft className="w-5 h-5 text-[#112237]" />
@@ -95,21 +111,21 @@ export function ProductImageGallery({ images, title }: ProductImageGalleryProps)
         {/* Image counter */}
         <div className="absolute bottom-3 right-3 z-10 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm flex items-center gap-1">
           <ZoomIn className="w-3 h-3" />
-          {activeIndex + 1} / {sortedImages.length}
+          {activeIndex + 1} / {mediaItems.length}
         </div>
       </div>
 
       {/* Thumbnail Strip */}
-      {sortedImages.length > 1 && (
+      {mediaItems.length > 1 && (
         <Swiper
           onSwiper={setThumbsSwiper}
           watchSlidesProgress={true}
-          slidesPerView={Math.min(sortedImages.length, 6)}
+          slidesPerView={Math.min(mediaItems.length, 6)}
           spaceBetween={8}
           className="h-20"
         >
-          {sortedImages.map((img, idx) => (
-            <SwiperSlide key={img.id || idx}>
+          {mediaItems.map((item, idx) => (
+            <SwiperSlide key={item.id || idx}>
               <button
                 className={`relative w-full h-full rounded-lg overflow-hidden border-2 transition-all ${
                   idx === activeIndex
@@ -117,14 +133,21 @@ export function ProductImageGallery({ images, title }: ProductImageGalleryProps)
                     : 'border-[#e2e8f0] hover:border-[#f25c05]/50'
                 }`}
               >
-                <Image
-                  src={img.url}
-                  alt={`${title} - Miniatura ${idx + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="100px"
-                />
-                {idx === 0 && (
+                {item.isVideo ? (
+                  <div className="w-full h-full bg-[#112237] flex flex-col items-center justify-center text-white p-1">
+                    <Play className="w-5 h-5 text-[#f25c05] fill-[#f25c05]" />
+                    <span className="text-[9px] font-semibold mt-0.5">Video</span>
+                  </div>
+                ) : (
+                  <Image
+                    src={item.url}
+                    alt={`${title} - Miniatura ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="100px"
+                  />
+                )}
+                {idx === 0 && !item.isVideo && (
                   <span className="absolute top-0.5 left-0.5 bg-[#f25c05] text-white text-[9px] font-medium px-1 py-0 leading-4 rounded">
                     Principal
                   </span>

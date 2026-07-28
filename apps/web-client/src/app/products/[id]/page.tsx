@@ -108,6 +108,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 <ProductImageGallery 
                   images={images.map((img: any) => ({ id: img.id, url: img.url }))}
                   title={product.title}
+                  videoUrl={product.video_url}
                 />
               </div>
 

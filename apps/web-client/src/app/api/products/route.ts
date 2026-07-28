@@ -23,6 +23,7 @@ export async function POST(request: Request) {
   let delivery_preference: string | null;
   let brand: string | null;
   let company_id: string | null = null;
+  let video_url: string | null = null;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
     delivery_preference = body.delivery_preference || null;
     brand = body.brand || null;
     company_id = body.company_id || null;
+    video_url = body.video_url || null;
   } else {
     const formData = await request.formData();
     title = formData.get('title') as string;
@@ -56,6 +58,7 @@ export async function POST(request: Request) {
     delivery_preference = (formData.get('delivery_preference') as string) || null;
     brand = (formData.get('brand') as string) || null;
     company_id = (formData.get('company_id') as string) || null;
+    video_url = (formData.get('video_url') as string) || null;
   }
 
   if (!title || !price || !condition || !category_id) {
@@ -147,6 +150,7 @@ export async function POST(request: Request) {
     brand: brand,
     availability_type: availability_type || 'unique',
     delivery_preference: delivery_preference || null,
+    video_url: video_url || null,
   };
 
   const { data, error } = await supabase

@@ -57,9 +57,12 @@ import {
   ImagePlus,
   Info,
   Building2,
+  Video,
+  Trash2,
 } from 'lucide-react';
 
 import { CreateCompanyStep } from '@/components/features/products/CreateCompanyStep';
+import { MediaUploader } from '@/components/features/products/MediaUploader';
 import type { Category } from '@/types';
 
 const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: string; color: string }> = {
@@ -216,6 +219,50 @@ function PublishProductForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [dragId, setDragId] = useState<string | null>(null);
 
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [videoDragOver, setVideoDragOver] = useState(false);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoSelect = (file: File) => {
+    if (!file.type.startsWith('video/')) {
+      toast.error('Por favor selecciona un archivo de video válido (MP4, WEBM, MOV).', 'Formato no soportado');
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('El video no debe superar los 25 MB.', 'Archivo muy pesado');
+      return;
+    }
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
+  const removeVideo = () => {
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(null);
+    setVideoPreview(null);
+    if (videoInputRef.current) videoInputRef.current.value = '';
+  };
+
+  const uploadVideo = async (productId: string): Promise<string | null> => {
+    if (!videoFile) return null;
+    const formData = new FormData();
+    formData.append('file', videoFile);
+    formData.append('product_id', productId);
+
+    try {
+      const response = await fetch('/api/products/video', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      return result.url || null;
+    } catch {
+      return null;
+    }
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -234,44 +281,7 @@ function PublishProductForm() {
     loadCategories();
   }, []);
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
 
-    const remaining = 8 - images.length;
-    const filesToAdd = Array.from(files).slice(0, remaining);
-
-    const newImages: UploadedImage[] = filesToAdd.map((file, idx) => ({
-      id: `temp-${Date.now()}-${idx}`,
-      url: '',
-      position: images.length + idx,
-      file,
-      preview: URL.createObjectURL(file),
-      uploading: false,
-    }));
-
-    setImages((prev) => [...prev, ...newImages]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeImage = (imageId: string) => {
-    setImages((prev) => {
-      const img = prev.find((i) => i.id === imageId);
-      if (img?.preview) URL.revokeObjectURL(img.preview);
-      return prev.filter((i) => i.id !== imageId);
-    });
-  };
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    setImages((prev) => {
-      const oldIndex = prev.findIndex((i) => i.id === active.id);
-      const newIndex = prev.findIndex((i) => i.id === over.id);
-      return arrayMove(prev, oldIndex, newIndex);
-    });
-  }, []);
 
   const uploadImages = async (productId: string): Promise<string[]> => {
     const uploadedUrls: string[] = [];
@@ -376,6 +386,10 @@ function PublishProductForm() {
 
       if (images.length > 0) {
         await uploadImages(result.product.id);
+      }
+
+      if (videoFile) {
+        await uploadVideo(result.product.id);
       }
 
       toast.success('Producto publicado exitosamente.', '¡Guardado!');
@@ -499,58 +513,18 @@ function PublishProductForm() {
 
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Photos - Drag & Drop */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-base font-semibold text-[#112237]">Fotos</h2>
-                <span className="text-xs text-[#94a3b8]">{images.length}/8</span>
-              </div>
-              <p className="text-xs text-[#64748b] mb-4">
-                Arrastra para reordenar. La primera foto será la imagen principal.
-              </p>
-
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext items={images.map((i) => i.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {images.map((img, index) => (
-                      <SortableImage
-                        key={img.id}
-                        image={img}
-                        index={index}
-                        onRemove={removeImage}
-                        isMain={index === 0}
-                      />
-                    ))}
-                    {images.length < 8 && (
-                      <label className="aspect-square rounded-xl border-2 border-dashed border-[#e2e8f0] flex flex-col items-center justify-center cursor-pointer hover:border-[#f25c05] hover:bg-[#f25c05]/5 transition-all duration-200 group">
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          multiple
-                          onChange={handleImageSelect}
-                          className="hidden"
-                        />
-                        <div className="w-10 h-10 rounded-full bg-[#f8fafc] group-hover:bg-[#f25c05]/10 flex items-center justify-center transition-colors">
-                          <ImagePlus className="w-5 h-5 text-[#94a3b8] group-hover:text-[#f25c05] transition-colors" />
-                        </div>
-                        <span className="text-[10px] text-[#94a3b8] mt-1 group-hover:text-[#f25c05] transition-colors">Agregar</span>
-                      </label>
-                    )}
-                  </div>
-                </SortableContext>
-              </DndContext>
-
-              {images.length === 0 && (
-                <p className="text-xs text-[#94a3b8] mt-3 text-center">
-                  Los productos con fotos se venden 5x más rápido
-                </p>
-              )}
-            </div>
+            {/* Componente Unificado MediaUploader (Fotos + Video) */}
+            <MediaUploader
+              mode="both"
+              maxImages={10}
+              images={images}
+              onImagesChange={setImages}
+              videoPreview={videoPreview}
+              onVideoChange={(file, prev) => {
+                setVideoFile(file);
+                setVideoPreview(prev);
+              }}
+            />
 
             {/* Title */}
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
