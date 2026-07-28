@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompany } from '@/context/CompanyContext';
@@ -15,57 +14,23 @@ import { Label } from '@/components/ui/Label';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { getCategoryIcon } from '@/lib/utils/categoryIcons';
 import { formatPrice } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  rectSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import {
   Loader2,
   ArrowLeft,
   Package,
-  DollarSign,
-  Tag,
-  Camera,
-  X,
-  Check,
   Sparkles,
-  ChevronDown,
   ShieldCheck,
   ThumbsUp,
   Wrench,
-  MoreHorizontal,
-  Truck,
-  PackageCheck,
-  Handshake,
   type LucideIcon,
-  GripVertical,
-  Plus,
-  ImagePlus,
-  Info,
   Building2,
-  Video,
-  Trash2,
 } from 'lucide-react';
 
 import { CreateCompanyStep } from '@/components/features/products/CreateCompanyStep';
-import { MediaUploader } from '@/components/features/products/MediaUploader';
+import { MediaUploader, UploadedImage } from '@/components/features/products/MediaUploader';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { detectForbiddenContactInfo } from '@/lib/utils/contactDetector';
-import { uploadProductVideoClient } from '@/lib/services/mediaUpload';
+import { syncProductMedia } from '@/lib/services/mediaUpload';
 import type { Category } from '@/types';
 
 const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: string; color: string }> = {
@@ -89,105 +54,6 @@ const techCategorySlugs = [
   'otros',
 ];
 
-interface UploadedImage {
-  id: string;
-  url: string;
-  position: number;
-  file?: File;
-  preview?: string;
-  uploading?: boolean;
-}
-
-function SortableImage({
-  image,
-  index,
-  onRemove,
-  isMain,
-}: {
-  image: UploadedImage;
-  index: number;
-  onRemove: (id: string) => void;
-  isMain: boolean;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: image.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 10 : 0,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative group">
-      <div
-        className={`aspect-square rounded-xl overflow-hidden relative ${
-          isMain ? 'ring-2 ring-[#f25c05] ring-offset-2' : 'ring-1 ring-[#e2e8f0]'
-        }`}
-      >
-        {image.preview ? (
-          <Image
-            src={image.preview}
-            alt={`Foto ${index + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
-        ) : image.url ? (
-          <Image
-            src={image.url}
-            alt={`Foto ${index + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
-        ) : null}
-        {image.uploading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-xl">
-            <Loader2 className="w-6 h-6 text-white animate-spin" />
-          </div>
-        )}
-        {isMain && !image.uploading && (
-          <div className="absolute top-2 left-2 bg-[#f25c05] text-white text-[10px] font-semibold px-2 py-0.5 rounded-md shadow-sm">
-            Principal
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200" />
-        <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onRemove(image.id); }}
-            className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg"
-            title="Eliminar"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div
-          {...attributes}
-          {...listeners}
-          className="absolute top-2 right-2 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <div className="bg-black/40 backdrop-blur-sm text-white p-1 rounded-md hover:bg-black/60">
-            <GripVertical className="w-3.5 h-3.5" />
-          </div>
-        </div>
-        {!isMain && !image.uploading && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ right: image.uploading ? undefined : '28px' }}>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function PublishProductForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -195,7 +61,6 @@ function PublishProductForm() {
   const { user } = useAuth();
   const { companies, isLoadingCompanies, activeCompany, refreshCompanies } = useCompany();
   const toast = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleBack = () => {
     if (from === 'dashboard') {
@@ -220,48 +85,9 @@ function PublishProductForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [dragId, setDragId] = useState<string | null>(null);
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
-  const [videoDragOver, setVideoDragOver] = useState(false);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-
-  const handleVideoSelect = (file: File) => {
-    if (!file.type.startsWith('video/')) {
-      toast.error('Por favor selecciona un archivo de video válido (MP4, WEBM, MOV).', 'Formato no soportado');
-      return;
-    }
-    if (file.size > 25 * 1024 * 1024) {
-      toast.error('El video no debe superar los 25 MB.', 'Archivo muy pesado');
-      return;
-    }
-    if (videoPreview) URL.revokeObjectURL(videoPreview);
-    setVideoFile(file);
-    setVideoPreview(URL.createObjectURL(file));
-  };
-
-  const removeVideo = () => {
-    if (videoPreview) URL.revokeObjectURL(videoPreview);
-    setVideoFile(null);
-    setVideoPreview(null);
-    if (videoInputRef.current) videoInputRef.current.value = '';
-  };
-
-  const uploadVideo = async (productId: string): Promise<string | null> => {
-    if (!videoFile) return null;
-    try {
-      return await uploadProductVideoClient(videoFile, productId);
-    } catch (err) {
-      console.error('Error al subir video:', err);
-      return null;
-    }
-  };
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -275,52 +101,6 @@ function PublishProductForm() {
     };
     loadCategories();
   }, []);
-
-
-
-  const uploadImages = async (productId: string): Promise<string[]> => {
-    const uploadedUrls: string[] = [];
-
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      if (!img.file) {
-        if (img.url) uploadedUrls.push(img.url);
-        continue;
-      }
-
-      setImages((prev) =>
-        prev.map((item, idx) =>
-          idx === i ? { ...item, uploading: true } : item
-        )
-      );
-
-      const formData = new FormData();
-      formData.append('file', img.file);
-      formData.append('product_id', productId);
-      formData.append('position', String(i));
-
-      try {
-        const response = await fetch('/api/products/images', {
-          method: 'POST',
-          body: formData,
-        });
-        const result = await response.json();
-
-        if (result.success) {
-          uploadedUrls.push(result.url);
-          setImages((prev) =>
-            prev.map((item, idx) =>
-              idx === i ? { ...item, id: result.image.id, url: result.url, uploading: false } : item
-            )
-          );
-        }
-      } catch {
-        // Skip failed uploads
-      }
-    }
-
-    return uploadedUrls;
-  };
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -389,13 +169,12 @@ function PublishProductForm() {
         return;
       }
 
-      if (images.length > 0) {
-        await uploadImages(result.product.id);
-      }
-
-      if (videoFile) {
-        await uploadVideo(result.product.id);
-      }
+      await syncProductMedia({
+        productId: result.product.id,
+        images,
+        videoFile,
+        videoPreview,
+      });
 
       toast.success('Producto publicado exitosamente.', '¡Guardado!');
 
@@ -515,243 +294,235 @@ function PublishProductForm() {
                 </div>
               </div>
 
-
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Componente Unificado MediaUploader (Fotos + Video) */}
-            <MediaUploader
-              mode="both"
-              maxImages={10}
-              images={images}
-              onImagesChange={setImages}
-              videoPreview={videoPreview}
-              onVideoChange={(file, prev) => {
-                setVideoFile(file);
-                setVideoPreview(prev);
-              }}
-            />
-
-            {/* Title */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Título <span className="text-[#f25c05]">*</span>
-                </Label>
-                <Input
-                  placeholder="Ej: iPhone 14 Pro Max 256GB"
-                  icon={<Tag className="w-4 h-4" />}
-                  value={title}
-                  onChange={(e) => { setTitle(e.target.value); setFieldErrors((prev) => ({ ...prev, title: '' })); }}
-                  error={fieldErrors.title}
-                  maxLength={100}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Componente Unificado MediaUploader (Fotos + Video) */}
+                <MediaUploader
+                  mode="both"
+                  maxImages={10}
+                  images={images}
+                  onImagesChange={setImages}
+                  videoPreview={videoPreview}
+                  onVideoChange={(file, prev) => {
+                    setVideoFile(file);
+                    setVideoPreview(prev);
+                  }}
                 />
-                <div className="flex justify-end">
-                  <span className="text-[10px] text-[#94a3b8]">{title.length}/100</span>
+
+                {/* Title */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Título <span className="text-[#f25c05]">*</span>
+                    </Label>
+                    <Input
+                      placeholder="Ej: iPhone 14 Pro Max 256GB"
+                      value={title}
+                      onChange={(e) => { setTitle(e.target.value); setFieldErrors((prev) => ({ ...prev, title: '' })); }}
+                      error={fieldErrors.title}
+                      maxLength={100}
+                    />
+                    <div className="flex justify-end">
+                      <span className="text-[10px] text-[#94a3b8]">{title.length}/100</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Price */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Precio <span className="text-[#f25c05]">*</span>
-                </Label>
-                <CurrencyInput
-                  currency="PEN"
-                  value={price}
-                  onChange={(val) => { setPrice(val); setFieldErrors((prev) => ({ ...prev, price: '' })); }}
-                  error={fieldErrors.price}
-                />
-                {price && parseFloat(price) > 0 && (
-                  <p className="text-sm font-medium text-[#10b981]">{formatPrice(parseFloat(price))}</p>
-                )}
-              </div>
-            </div>
+                {/* Price */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Precio <span className="text-[#f25c05]">*</span>
+                    </Label>
+                    <CurrencyInput
+                      currency="PEN"
+                      value={price}
+                      onChange={(val) => { setPrice(val); setFieldErrors((prev) => ({ ...prev, price: '' })); }}
+                      error={fieldErrors.price}
+                    />
+                    {price && parseFloat(price) > 0 && (
+                      <p className="text-sm font-medium text-[#10b981]">{formatPrice(parseFloat(price))}</p>
+                    )}
+                  </div>
+                </div>
 
-            {/* Category */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Categoría <span className="text-[#f25c05]">*</span>
-                </Label>
-                {categoriesLoaded ? (
-                  <div className="grid grid-cols-3 gap-2">
-                    {categories
-                      .filter((cat) => techCategorySlugs.includes(cat.slug))
-                      .sort((a, b) => techCategorySlugs.indexOf(a.slug) - techCategorySlugs.indexOf(b.slug))
-                      .map((cat) => {
-                        const Icon = getCategoryIcon(cat.slug);
-                        const isSelected = categoryId === cat.id;
+                {/* Category */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Categoría <span className="text-[#f25c05]">*</span>
+                    </Label>
+                    {categoriesLoaded ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        {categories
+                          .filter((cat) => techCategorySlugs.includes(cat.slug))
+                          .sort((a, b) => techCategorySlugs.indexOf(a.slug) - techCategorySlugs.indexOf(b.slug))
+                          .map((cat) => {
+                            const Icon = getCategoryIcon(cat.slug);
+                            const isSelected = categoryId === cat.id;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => {
+                                  setCategoryId(cat.id);
+                                  setFieldErrors((prev) => ({ ...prev, category_id: '' }));
+                                }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
+                                  isSelected
+                                    ? 'border-[#f25c05] bg-[#f25c05]/5 text-[#f25c05] shadow-xs'
+                                    : 'border-[#e2e8f0] hover:border-[#cbd5e1] text-[#64748b] hover:text-[#112237]'
+                                }`}
+                              >
+                                <Icon className="w-5 h-5 mb-1.5" />
+                                <span className="text-xs font-semibold line-clamp-1">{cat.name}</span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center py-6">
+                        <Loader2 className="w-5 h-5 animate-spin text-[#f25c05]" />
+                      </div>
+                    )}
+                    {fieldErrors.category_id && (
+                      <p className="text-xs text-[#ef4444]">{fieldErrors.category_id}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Condition */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Estado del producto <span className="text-[#f25c05]">*</span>
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {Object.entries(conditionOptions).map(([key, opt]) => {
+                        const Icon = opt.icon;
+                        const isSelected = condition === key;
                         return (
                           <button
-                            key={cat.id}
+                            key={key}
                             type="button"
-                            onClick={() => { setCategoryId(cat.id); setFieldErrors((prev) => ({ ...prev, category_id: '' })); }}
-                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200 ${
+                            onClick={() => {
+                              setCondition(key);
+                              setFieldErrors((prev) => ({ ...prev, condition: '' }));
+                            }}
+                            className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
                               isSelected
-                                ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-sm'
-                                : 'border-[#e2e8f0] hover:border-[#f25c05]/40 hover:bg-[#f8fafc]'
+                                ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-xs'
+                                : 'border-[#e2e8f0] hover:border-[#cbd5e1]'
                             }`}
                           >
-                            <Icon className={`w-5 h-5 ${isSelected ? 'text-[#f25c05]' : 'text-[#64748b]'}`} />
-                            <span className={`text-xs font-medium ${isSelected ? 'text-[#f25c05]' : 'text-[#64748b]'}`}>
-                              {cat.name}
-                            </span>
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                              style={{ backgroundColor: `${opt.color}15`, color: opt.color }}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold text-[#112237]">{opt.label}</p>
+                              <p className="text-[10px] text-[#64748b] line-clamp-1">{opt.desc}</p>
+                            </div>
                           </button>
                         );
                       })}
+                    </div>
+                    {fieldErrors.condition && (
+                      <p className="text-xs text-[#ef4444]">{fieldErrors.condition}</p>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-5 h-5 animate-spin text-[#64748b]" />
+                </div>
+
+                {/* Stock */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Stock disponible <span className="text-[#f25c05]">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      value={stock}
+                      onChange={(e) => { setStock(e.target.value); setFieldErrors((prev) => ({ ...prev, stock: '' })); }}
+                      error={fieldErrors.stock}
+                    />
+                    <p className="text-[11px] text-[#64748b]">
+                      Indica la cantidad de unidades disponibles para la venta.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Description (optional) */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-semibold text-[#112237]">
+                      Descripción
+                      <span className="text-[#94a3b8] font-normal ml-1.5">(opcional)</span>
+                    </Label>
+                    <RichTextEditor
+                      content={description}
+                      onChange={setDescription}
+                      placeholder="Describe tu producto: estado, accesorios incluidos, razón de venta..."
+                      maxLength={2000}
+                    />
+                  </div>
+                </div>
+
+                {/* Error Banner */}
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-medium">
+                    {error}
                   </div>
                 )}
-                {fieldErrors.category_id && <p className="text-xs text-[#ef4444]">{fieldErrors.category_id}</p>}
-              </div>
-            </div>
 
-            {/* Condition */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Estado <span className="text-[#f25c05]">*</span>
-                </Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(conditionOptions).map(([value, { icon: Icon, label, desc, color }]) => {
-                    const isSelected = condition === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => { setCondition(value); setFieldErrors((prev) => ({ ...prev, condition: '' })); }}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all duration-200 text-left ${
-                          isSelected
-                            ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-sm'
-                            : 'border-[#e2e8f0] hover:border-[#f25c05]/40 hover:bg-[#f8fafc]'
-                        }`}
-                      >
-                        <div
-                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: isSelected ? `${color}15` : '#f8fafc' }}
-                        >
-                          <Icon className="w-4.5 h-4.5" style={{ color: isSelected ? color : '#94a3b8' }} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className={`text-sm font-medium ${isSelected ? 'text-[#112237]' : 'text-[#64748b]'}`}>
-                            {label}
-                          </p>
-                          <p className="text-[10px] text-[#94a3b8] truncate">{desc}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                {/* Form Actions */}
+                <div className="pt-2 flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1 h-12 rounded-xl border-[#e2e8f0]"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 h-12 bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold rounded-xl shadow-lg shadow-[#f25c05]/20"
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Publicando...</span>
+                      </div>
+                    ) : (
+                      'Publicar producto'
+                    )}
+                  </Button>
                 </div>
-                {fieldErrors.condition && <p className="text-xs text-[#ef4444]">{fieldErrors.condition}</p>}
-              </div>
-            </div>
-
-            {/* Brand */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Marca
-                  <span className="text-[#94a3b8] font-normal ml-1.5">(opcional)</span>
-                </Label>
-                <Input
-                  placeholder="Ej: Apple, Samsung, Sony..."
-                  icon={<Building2 className="w-4 h-4" />}
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Description (optional) */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Descripción
-                  <span className="text-[#94a3b8] font-normal ml-1.5">(opcional)</span>
-                </Label>
-                <RichTextEditor
-                  content={description}
-                  onChange={setDescription}
-                  placeholder="Describe tu producto: estado, accesorios incluidos, razón de venta..."
-                  maxLength={2000}
-                />
-              </div>
-            </div>
-
-            {/* Stock disponible */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Stock disponible <span className="text-[#f25c05]">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="Ej: 10"
-                  icon={<Package className="w-4 h-4 text-[#64748b]" />}
-                  value={stock}
-                  onChange={(e) => {
-                    setStock(e.target.value);
-                    setFieldErrors((prev) => ({ ...prev, stock: '' }));
-                  }}
-                  error={fieldErrors.stock}
-                />
-                <p className="text-[10px] text-[#94a3b8]">
-                  Cantidad de unidades disponibles para venta
-                </p>
-              </div>
-            </div>
-
-
-
-            {/* Submit */}
-            <div className="sticky bottom-0 bg-[#f8fafc] pt-3 pb-4 -mx-4 px-4 border-t border-[#e2e8f0]">
-              <div className="flex gap-3 max-w-2xl mx-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 h-12"
-                  onClick={handleBack}
-                  disabled={loading}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 h-12"
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Publicando...
-                    </span>
-                  ) : 'Publicar producto'}
-                </Button>
-              </div>
-            </div>
-          </form>
-        </>
-      )}
-    </div>
-  </div>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
 
       <Footer />
     </div>
   );
 }
 
-export default function PublishProductPage() {
+export default function NewProductPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+        <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+          <Navbar />
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+          </div>
+          <Footer />
         </div>
       }
     >

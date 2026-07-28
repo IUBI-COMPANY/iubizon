@@ -1,30 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { Navbar } from '@/components/features/layout/Navbar';
-import { Footer } from '@/components/features/layout/Footer';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { CurrencyInput } from '@/components/ui/CurrencyInput';
-import { RichTextEditor } from '@/components/ui/RichTextEditor';
-import { MediaUploader, UploadedImage } from '@/components/features/products/MediaUploader';
-import { detectForbiddenContactInfo } from '@/lib/utils/contactDetector';
-import { uploadProductVideoClient } from '@/lib/services/mediaUpload';
-import { useToast } from '@/context/ToastContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import {
-  Loader2,
-  ArrowLeft,
-  Package,
-  Banknote,
-  Tag,
-  CheckCircle2,
+  MediaUploader,
+  UploadedImage,
+} from "@/components/features/products/MediaUploader";
+import { detectForbiddenContactInfo } from "@/lib/utils/contactDetector";
+import { syncProductMedia } from "@/lib/services/mediaUpload";
+import { useToast } from "@/context/ToastContext";
+import {
   AlertCircle,
+  ArrowLeft,
+  Banknote,
+  CheckCircle2,
   Layers,
-} from 'lucide-react';
+  Loader2,
+  Package,
+} from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -38,17 +40,19 @@ export default function EditProductPage({ params }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [productId, setProductId] = useState<string>('');
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
+  const [productId, setProductId] = useState<string>("");
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    price: '',
-    condition: '',
-    category_id: '',
-    status: 'active',
-    stock: '1',
+    title: "",
+    description: "",
+    price: "",
+    condition: "",
+    category_id: "",
+    status: "active",
+    stock: "1",
   });
 
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -72,15 +76,15 @@ export default function EditProductPage({ params }: Props) {
         if (!mounted) return;
 
         if (!user) {
-          router.push('/auth/login?redirect=/products/edit/' + id);
+          router.push("/auth/login?redirect=/products/edit/" + id);
           return;
         }
 
         // Cargar Categorías
         const { data: catsData } = await supabase
-          .from('categories')
-          .select('id, name')
-          .order('name');
+          .from("categories")
+          .select("id, name")
+          .order("name");
         if (mounted && catsData) {
           setCategories(catsData);
         }
@@ -92,7 +96,7 @@ export default function EditProductPage({ params }: Props) {
         if (!mounted) return;
 
         if (!prodRes.ok || !prodResult.product) {
-          setError(prodResult.error || 'Producto no encontrado');
+          setError(prodResult.error || "Producto no encontrado");
           setLoading(false);
           return;
         }
@@ -100,21 +104,26 @@ export default function EditProductPage({ params }: Props) {
         const data = prodResult.product;
 
         setFormData({
-          title: data.title || '',
-          description: data.description || '',
-          price: data.price ? data.price.toString() : '0',
-          condition: data.condition || 'good',
-          category_id: data.category_id || '',
-          status: data.status || 'active',
-          stock: data.stock !== undefined && data.stock !== null ? data.stock.toString() : '1',
+          title: data.title || "",
+          description: data.description || "",
+          price: data.price ? data.price.toString() : "0",
+          condition: data.condition || "good",
+          category_id: data.category_id || "",
+          status: data.status || "active",
+          stock:
+            data.stock !== undefined && data.stock !== null
+              ? data.stock.toString()
+              : "1",
         });
 
         if (Array.isArray(data.images)) {
-          const loadedImages = data.images.map((img: { id: string; url: string; position: number }) => ({
-            id: img.id,
-            url: img.url,
-            position: img.position,
-          }));
+          const loadedImages = data.images.map(
+            (img: { id: string; url: string; position: number }) => ({
+              id: img.id,
+              url: img.url,
+              position: img.position,
+            }),
+          );
           setImages(loadedImages);
           setInitialImageIds(loadedImages.map((img: { id: string }) => img.id));
         }
@@ -123,9 +132,9 @@ export default function EditProductPage({ params }: Props) {
           setVideoPreview(data.video_url);
         }
       } catch (err) {
-        console.error('Error al cargar producto:', err);
+        console.error("Error al cargar producto:", err);
         if (mounted) {
-          setError('Error de conexión al cargar la publicación');
+          setError("Error de conexión al cargar la publicación");
         }
       } finally {
         if (mounted) {
@@ -150,53 +159,6 @@ export default function EditProductPage({ params }: Props) {
     }
   };
 
-  const uploadNewMedia = async (targetProductId: string): Promise<{ videoUrl: string | null }> => {
-    // 1. Eliminar de la base de datos las fotos que el usuario quitó de la interfaz
-    const currentIds = new Set(images.map((i) => i.id));
-    const toDelete = initialImageIds.filter((id) => !currentIds.has(id));
-    for (const deleteId of toDelete) {
-      try {
-        await fetch(`/api/products/images?id=${deleteId}`, {
-          method: 'DELETE',
-        });
-      } catch (err) {
-        console.warn('Error al eliminar foto:', deleteId, err);
-      }
-    }
-
-    // 2. Subir fotos nuevas que tengan campo 'file'
-    for (let i = 0; i < images.length; i++) {
-      const img = images[i];
-      if (img.file) {
-        const formDataImg = new FormData();
-        formDataImg.append('file', img.file);
-        formDataImg.append('product_id', targetProductId);
-        formDataImg.append('position', String(i));
-        const imgRes = await fetch('/api/products/images', {
-          method: 'POST',
-          body: formDataImg,
-        });
-        if (!imgRes.ok) {
-          const imgErr = await parseResponseJson(imgRes);
-          console.warn('Advertencia al subir imagen:', imgErr.error);
-        }
-      }
-    }
-
-    // 2. Subir video nuevo si se seleccionó un archivo nuevo
-    let uploadedVideoUrl: string | null = videoPreview || null;
-    if (videoFile) {
-      try {
-        uploadedVideoUrl = await uploadProductVideoClient(videoFile, targetProductId);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Error al subir el video demostrativo';
-        throw new Error(msg);
-      }
-    }
-
-    return { videoUrl: uploadedVideoUrl };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -204,9 +166,10 @@ export default function EditProductPage({ params }: Props) {
     if (formData.description.trim()) {
       const contactCheck = detectForbiddenContactInfo(formData.description);
       if (contactCheck.hasViolation) {
-        const reason = contactCheck.reason || 'Información de contacto no permitida';
+        const reason =
+          contactCheck.reason || "Información de contacto no permitida";
         setError(reason);
-        toast.error(reason, 'Revisa la descripción');
+        toast.error(reason, "Revisa la descripción");
         return;
       }
     }
@@ -215,13 +178,19 @@ export default function EditProductPage({ params }: Props) {
     setError(null);
 
     try {
-      // Subir archivos multimedia nuevos si corresponde
-      const { videoUrl } = await uploadNewMedia(productId);
+      // Sincronizar imágenes y video de forma unificada
+      const { videoUrl } = await syncProductMedia({
+        productId,
+        images,
+        initialImageIds,
+        videoFile,
+        videoPreview,
+      });
 
       const parsedStock = parseInt(formData.stock) || 1;
       const response = await fetch(`/api/products/${productId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: productId,
           title: formData.title,
@@ -231,7 +200,7 @@ export default function EditProductPage({ params }: Props) {
           category_id: formData.category_id,
           status: formData.status,
           stock: parsedStock,
-          availability_type: parsedStock > 1 ? 'available' : 'unique',
+          availability_type: parsedStock > 1 ? "available" : "unique",
           video_url: videoUrl,
         }),
       });
@@ -239,20 +208,23 @@ export default function EditProductPage({ params }: Props) {
       const result = await parseResponseJson(response);
 
       if (!response.ok) {
-        setError(result.error || 'Error al guardar los cambios');
+        setError(result.error || "Error al guardar los cambios");
         setSaving(false);
         return;
       }
 
       setSuccess(true);
-      toast.success('Publicación actualizada correctamente', '¡Éxito!');
+      toast.success("Publicación actualizada correctamente", "¡Éxito!");
       setTimeout(() => {
-        router.push('/user/dashboard/products');
+        router.push("/user/dashboard/products");
         router.refresh();
       }, 1000);
     } catch (err: unknown) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : 'Error de conexión al guardar los cambios';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Error de conexión al guardar los cambios";
       setError(msg);
     } finally {
       setSaving(false);
@@ -310,7 +282,9 @@ export default function EditProductPage({ params }: Props) {
             <ArrowLeft className="w-4 h-4" />
             Volver a Productos
           </Link>
-          <h1 className="text-2xl font-bold text-[#112237]">Editar publicación</h1>
+          <h1 className="text-2xl font-bold text-[#112237]">
+            Editar publicación
+          </h1>
           <p className="text-xs text-[#64748b]">
             Modifica los detalles, precio, fotos y video de tu producto
           </p>
@@ -319,7 +293,10 @@ export default function EditProductPage({ params }: Props) {
         {success && (
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl mb-6 flex items-center gap-3 text-xs font-semibold shadow-sm">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>Publicación actualizada exitosamente. Redirigiendo a tu catálogo...</span>
+            <span>
+              Publicación actualizada exitosamente. Redirigiendo a tu
+              catálogo...
+            </span>
           </div>
         )}
 
@@ -354,14 +331,20 @@ export default function EditProductPage({ params }: Props) {
             </h2>
 
             <div>
-              <Label htmlFor="title" className="text-xs font-semibold text-[#112237]">
-                Título de la publicación <span className="text-[#f25c05]">*</span>
+              <Label
+                htmlFor="title"
+                className="text-xs font-semibold text-[#112237]"
+              >
+                Título de la publicación{" "}
+                <span className="text-[#f25c05]">*</span>
               </Label>
               <Input
                 id="title"
                 name="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Ej: Proyector Epson PowerLite 97H"
                 required
                 className="mt-1"
@@ -370,7 +353,10 @@ export default function EditProductPage({ params }: Props) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="category_id" className="text-xs font-semibold text-[#112237]">
+                <Label
+                  htmlFor="category_id"
+                  className="text-xs font-semibold text-[#112237]"
+                >
                   Categoría <span className="text-[#f25c05]">*</span>
                 </Label>
                 <select
@@ -378,7 +364,9 @@ export default function EditProductPage({ params }: Props) {
                   name="category_id"
                   className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
                   value={formData.category_id}
-                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category_id: e.target.value })
+                  }
                   required
                 >
                   <option value="">Selecciona una categoría...</option>
@@ -391,20 +379,28 @@ export default function EditProductPage({ params }: Props) {
               </div>
 
               <div>
-                <Label htmlFor="condition" className="text-xs font-semibold text-[#112237]">
-                  Condición del producto <span className="text-[#f25c05]">*</span>
+                <Label
+                  htmlFor="condition"
+                  className="text-xs font-semibold text-[#112237]"
+                >
+                  Condición del producto{" "}
+                  <span className="text-[#f25c05]">*</span>
                 </Label>
                 <select
                   id="condition"
                   name="condition"
                   className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
                   value={formData.condition}
-                  onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, condition: e.target.value })
+                  }
                   required
                 >
                   <option value="">Selecciona la condición...</option>
                   <option value="new">Nuevo (Sin uso, empaque original)</option>
-                  <option value="like_new">Como nuevo (Excelente estado)</option>
+                  <option value="like_new">
+                    Como nuevo (Excelente estado)
+                  </option>
                   <option value="good">Buen estado (Uso normal)</option>
                   <option value="fair">Aceptable (Funcional)</option>
                 </select>
@@ -421,7 +417,10 @@ export default function EditProductPage({ params }: Props) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="price" className="text-xs font-semibold text-[#112237] mb-1 block">
+                <Label
+                  htmlFor="price"
+                  className="text-xs font-semibold text-[#112237] mb-1 block"
+                >
                   Precio de venta <span className="text-[#f25c05]">*</span>
                 </Label>
                 <CurrencyInput
@@ -435,7 +434,10 @@ export default function EditProductPage({ params }: Props) {
               </div>
 
               <div>
-                <Label htmlFor="stock" className="text-xs font-semibold text-[#112237]">
+                <Label
+                  htmlFor="stock"
+                  className="text-xs font-semibold text-[#112237]"
+                >
                   Stock disponible <span className="text-[#f25c05]">*</span>
                 </Label>
                 <Input
@@ -446,14 +448,19 @@ export default function EditProductPage({ params }: Props) {
                   placeholder="Ej: 10"
                   icon={<Package className="w-4 h-4 text-[#64748b]" />}
                   value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, stock: e.target.value })
+                  }
                   required
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <Label htmlFor="status" className="text-xs font-semibold text-[#112237]">
+                <Label
+                  htmlFor="status"
+                  className="text-xs font-semibold text-[#112237]"
+                >
                   Estado de publicación
                 </Label>
                 <select
@@ -461,7 +468,9 @@ export default function EditProductPage({ params }: Props) {
                   name="status"
                   className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
                 >
                   <option value="active">Activo (Visible)</option>
                   <option value="inactive">Inactivo (Pausado)</option>
@@ -482,7 +491,9 @@ export default function EditProductPage({ params }: Props) {
             </Label>
             <RichTextEditor
               content={formData.description}
-              onChange={(newDesc) => setFormData({ ...formData, description: newDesc })}
+              onChange={(newDesc) =>
+                setFormData({ ...formData, description: newDesc })
+              }
               placeholder="Describe las características principales, garantía, qué incluye el paquete..."
               maxLength={2000}
             />
@@ -491,7 +502,11 @@ export default function EditProductPage({ params }: Props) {
           {/* Acciones */}
           <div className="flex items-center justify-end gap-3 pt-4">
             <Link href="/user/dashboard/products">
-              <Button type="button" variant="outline" className="px-6 h-12 rounded-xl">
+              <Button
+                type="button"
+                variant="outline"
+                className="px-6 h-12 rounded-xl"
+              >
                 Cancelar
               </Button>
             </Link>
@@ -506,7 +521,7 @@ export default function EditProductPage({ params }: Props) {
                   Guardando cambios...
                 </>
               ) : (
-                'Guardar Cambios'
+                "Guardar Cambios"
               )}
             </Button>
           </div>
