@@ -87,6 +87,7 @@ export type Product = JsonEntity<
   {
     price: number;
     seller?: User;
+    company?: PrismaCompany | null;
     category?: Category;
     images?: ProductImage[];
     favorites?: number | null;

@@ -11,6 +11,7 @@ interface GetProductsOptions {
 const productInclude = {
   category: true,
   seller: true,
+  company: true,
   images: { orderBy: { position: 'asc' as const } },
 };
 
