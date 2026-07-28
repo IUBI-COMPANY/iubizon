@@ -71,10 +71,10 @@ export async function GET(req: Request) {
       ? { company_id: companyId! }
       : { seller_id: user.id, company_id: null };
 
-    // Construir filtro de pedidos
+    // Construir filtro de pedidos (Empresa vs Comprador)
     const orderWhere = isCompanyMode
       ? { company_id: companyId! }
-      : { seller_id: user.id, company_id: null };
+      : { buyer_id: user.id };
 
     const [products, orders, totalFavorites] = await Promise.all([
       prisma.product.findMany({
@@ -100,6 +100,9 @@ export async function GET(req: Request) {
           id: true,
           status: true,
           amount: true,
+          shipping: {
+            select: { tracking_number: true },
+          },
         },
       }),
       isCompanyMode
@@ -117,14 +120,21 @@ export async function GET(req: Request) {
       0,
     );
 
+    // Contabilizar compras únicas (paquetes) agrupados por código de orden
+    const uniquePackages = new Set(
+      orders.map((o) => o.shipping?.tracking_number || o.id),
+    );
+
     return NextResponse.json({
       isCompanyMode,
       company: targetCompany,
       stats: {
         totalProducts: products.length,
         activeProducts,
-        totalOrders: orders.length,
-        pendingOrders,
+        totalOrders: isCompanyMode ? orders.length : orders.length,
+        totalPurchases: isCompanyMode ? 0 : uniquePackages.size,
+        pendingDeliveries: pendingOrders,
+        pendingOrders: isCompanyMode ? pendingOrders : 0,
         favoritesCount: isCompanyMode ? companyFavorites : totalFavorites,
         totalViews,
       },

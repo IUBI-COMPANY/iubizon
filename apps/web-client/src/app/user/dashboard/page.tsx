@@ -23,6 +23,8 @@ interface DashboardData {
     totalProducts: number;
     activeProducts: number;
     totalOrders: number;
+    totalPurchases?: number;
+    pendingDeliveries?: number;
     pendingOrders: number;
     favoritesCount: number;
     totalViews: number;
@@ -137,8 +139,8 @@ function DashboardContent() {
         <BuyerDashboard
           user={user}
           stats={{
-            totalPurchases: stats.totalOrders,
-            pendingDeliveries: stats.pendingOrders,
+            totalPurchases: stats.totalPurchases ?? 0,
+            pendingDeliveries: stats.pendingDeliveries ?? 0,
             favoritesCount: stats.favoritesCount,
           }}
         />

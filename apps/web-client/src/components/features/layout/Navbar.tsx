@@ -134,7 +134,7 @@ export const Navbar = () => {
             </Link>
 
             {/* Shopping Cart Icon with Badge */}
-            <Link href="/user/dashboard" className="relative">
+            <Link href="/cart" className="relative">
               <Button
                 variant="ghost"
                 className="text-white hover:bg-white/10 p-1.5 sm:p-2"

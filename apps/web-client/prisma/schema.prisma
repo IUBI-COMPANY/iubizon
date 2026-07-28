@@ -165,15 +165,16 @@ model Order {
 }
 
 model Shipping {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  order_id        String    @unique @db.Uuid
-  address         String
-  city            String?
-  state           String?
-  postal_code     String?
-  tracking_number String?
-  status          String?   @default("pending")
-  created_at      DateTime? @default(now()) @db.Timestamptz
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id            String    @unique @db.Uuid
+  courier             String?
+  tracking_number     String?
+  status              String?   @default("pending")
+  origin_address      String?
+  destination_address String?
+  estimated_delivery  DateTime? @db.Timestamptz
+  created_at          DateTime? @default(now()) @db.Timestamptz
+  updated_at          DateTime? @default(now()) @updatedAt @db.Timestamptz
 
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
