@@ -42,6 +42,8 @@ export default function CartCheckoutPage() {
   const [step, setStep] = useState<number>(1);
   const [recommendations, setRecommendations] = useState<OrderBump[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
+  const [recsPage, setRecsPage] = useState<number>(1);
+  const [recsHasMore, setRecsHasMore] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,28 +108,30 @@ export default function CartCheckoutPage() {
     }
   };
 
-  // Cargar productos complementarios (Order Bumps)
-  const fetchRecommendations = useCallback(async () => {
+  // Cargar productos complementarios (Order Bumps) con Paginación
+  const fetchRecommendations = useCallback(async (pageToFetch = 1) => {
     try {
       setLoadingRecs(true);
       const excludeIds = items.map((i) => i.product_id).join(",");
       const res = await fetch(
-        `/api/products/recommendations?exclude=${excludeIds}`,
+        `/api/products/recommendations?exclude=${excludeIds}&page=${pageToFetch}&limit=6`,
       );
       const data = await res.json();
       if (Array.isArray(data.recommendations)) {
         setRecommendations(data.recommendations);
+        setRecsHasMore(!!data.pagination?.hasMore);
+        setRecsPage(pageToFetch);
       }
     } catch (err) {
-      console.error("Error al cargar Order Bumps:", err);
+      console.error("Error al cargar recomendaciones afines:", err);
     } finally {
       setLoadingRecs(false);
     }
   }, [items]);
 
   useEffect(() => {
-    fetchRecommendations();
-  }, [fetchRecommendations]);
+    fetchRecommendations(1);
+  }, [items, fetchRecommendations]);
 
   // Cálculos Financieros Detallados
   const shippingCost = items.length > 0 ? 50.0 : 0.0;
@@ -335,6 +339,9 @@ export default function CartCheckoutPage() {
                 recommendations={recommendations}
                 loading={loadingRecs}
                 onAddBump={handleAddBump}
+                page={recsPage}
+                hasMore={recsHasMore}
+                onPageChange={(nextPage) => fetchRecommendations(nextPage)}
               />
             </div>
 
