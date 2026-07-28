@@ -1,6 +1,45 @@
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
+export async function generateUniqueCompanySlug(
+  name: string,
+  excludeCompanyId?: string,
+): Promise<string> {
+  const baseSlug = slugify(name);
+  if (!baseSlug) return `empresa-${Date.now().toString().slice(-4)}`;
+
+  // 1. Verificar si el slug base está libre (ej: "iubizon")
+  const existingBase = await prisma.company.findFirst({
+    where: {
+      slug: baseSlug,
+      ...(excludeCompanyId ? { id: { not: excludeCompanyId } } : {}),
+    },
+    select: { id: true },
+  });
+
+  if (!existingBase) {
+    return baseSlug; // Se usa directamente el nombre sin sufijos si no colisiona
+  }
+
+  // 2. Si ya existe, generar el siguiente sufijo numérico libre (ej: "iubizon-1", "iubizon-2")
+  let suffix = 1;
+  while (true) {
+    const candidate = `${baseSlug}-${suffix}`;
+    const check = await prisma.company.findFirst({
+      where: {
+        slug: candidate,
+        ...(excludeCompanyId ? { id: { not: excludeCompanyId } } : {}),
+      },
+      select: { id: true },
+    });
+
+    if (!check) {
+      return candidate;
+    }
+    suffix++;
+  }
+}
+
 export async function createCompany(
   data: {
     name: string;
@@ -12,9 +51,8 @@ export async function createCompany(
   },
   userId: string,
 ) {
-  // Generar un slug único basado en el nombre (ej: "mi-empresa-1234")
-  const baseSlug = slugify(data.name);
-  const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+  // Generar un slug único limpio (solo añade número si ya existe otra empresa con el mismo slug)
+  const slug = await generateUniqueCompanySlug(data.name);
 
   return prisma.$transaction(async (tx) => {
     const company = await tx.company.create({
@@ -71,6 +109,33 @@ export async function getUserCompanies(userId: string) {
     }),
   ]);
 
+  // Limpiar y normalizar slugs de empresas existentes si el slug base "iubizon" está libre
+  for (const m of memberships) {
+    const base = slugify(m.company.name);
+    if (
+      base &&
+      m.company.slug &&
+      m.company.slug !== base &&
+      /-[0-9]+$/.test(m.company.slug)
+    ) {
+      const isTaken = await prisma.company.findFirst({
+        where: { slug: base, id: { not: m.company.id } },
+        select: { id: true },
+      });
+      if (!isTaken) {
+        try {
+          await prisma.company.update({
+            where: { id: m.company.id },
+            data: { slug: base },
+          });
+          m.company.slug = base;
+        } catch (e) {
+          console.error("Error al sanear slug de empresa:", e);
+        }
+      }
+    }
+  }
+
   const companies = memberships.map((m) => ({
     ...m.company,
     role: m.role,
@@ -115,7 +180,9 @@ export async function getPublicCompanyBySlugOrId(identifier: string) {
     );
 
   const company = await prisma.company.findFirst({
-    where: isUuid ? { OR: [{ id: identifier }, { slug: identifier }] } : { slug: identifier },
+    where: isUuid
+      ? { OR: [{ id: identifier }, { slug: identifier }] }
+      : { slug: identifier },
     include: {
       products: {
         where: { status: "active" },

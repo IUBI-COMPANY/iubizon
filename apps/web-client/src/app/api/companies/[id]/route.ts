@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/utils";
+import { generateUniqueCompanySlug } from "@/lib/services/companies";
 
 export async function PATCH(
   request: Request,
@@ -49,8 +49,10 @@ export async function PATCH(
 
     let updatedSlug = existingCompany.slug;
     if (body.name && body.name.trim() !== existingCompany.name) {
-      const baseSlug = slugify(body.name.trim());
-      updatedSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+      updatedSlug = await generateUniqueCompanySlug(
+        body.name.trim(),
+        companyId,
+      );
     }
 
     const updatedCompany = await prisma.company.update({
@@ -58,11 +60,16 @@ export async function PATCH(
       data: {
         name: body.name !== undefined ? body.name.trim() : undefined,
         slug: updatedSlug,
-        tax_id: body.tax_id !== undefined ? body.tax_id.trim() || null : undefined,
-        logo_url: body.logo_url !== undefined ? body.logo_url || null : undefined,
+        tax_id:
+          body.tax_id !== undefined ? body.tax_id.trim() || null : undefined,
+        logo_url:
+          body.logo_url !== undefined ? body.logo_url || null : undefined,
         phone: body.phone !== undefined ? body.phone.trim() || null : undefined,
         email: body.email !== undefined ? body.email.trim() || null : undefined,
-        location: body.location !== undefined ? body.location.trim() || null : undefined,
+        location:
+          body.location !== undefined
+            ? body.location.trim() || null
+            : undefined,
         description:
           body.description !== undefined
             ? body.description.trim() || null
