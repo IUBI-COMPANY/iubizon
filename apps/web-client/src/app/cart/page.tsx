@@ -365,14 +365,11 @@ export default function CartCheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8">
               <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 sm:p-8 shadow-sm space-y-5">
-                <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-4">
+                <div className="border-b border-[#f1f5f9] pb-4">
                   <h2 className="font-bold text-[#112237] text-base flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#f25c05]" />
                     <span>Datos de Contacto y Dirección de Entrega</span>
                   </h2>
-                  <span className="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-full">
-                    ✓ Guardado en Vivo
-                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

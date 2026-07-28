@@ -49,8 +49,13 @@ export async function POST(req: Request) {
       },
     });
 
-    // Código de orden principal correlativo
-    const orderCode = `IUBI-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Código de orden: número aleatorio de 6 dígitos único, verificado contra la BD
+    const generateUniqueCode = async (): Promise<string> => {
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const exists = await prisma.shipping.findFirst({ where: { tracking_number: code } });
+      return exists ? generateUniqueCode() : code; // reintenta si ya existe
+    };
+    const finalOrderCode = await generateUniqueCode();
 
     // 2. Procesar la transacción atómica con validación y descuento de stock
     const createdOrders = await prisma.$transaction(async (tx) => {
@@ -159,7 +164,7 @@ export async function POST(req: Request) {
                 origin_address: "Almacén Principal iubizon / Vendedor",
                 destination_address: `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`,
                 courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone}`,
-                tracking_number: orderCode,
+                tracking_number: finalOrderCode,
                 status: "pending",
               },
             },
@@ -196,7 +201,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      orderCode,
+      orderCode: finalOrderCode,
       orderCount: createdOrders.length,
       financials: {
         subtotal,
