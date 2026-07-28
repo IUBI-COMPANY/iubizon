@@ -18,7 +18,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
-import { AddToCartButton } from './AddToCartButton';
+import { ProductActionsBlock } from './ProductActionsBlock';
 import { FavoriteButton } from './FavoriteButton';
 import { getCategoryIcon } from '@/lib/utils/categoryIcons';
 
@@ -62,12 +62,6 @@ const conditionConfig: Record<string, { label: string; color: string; bg: string
   fair: { label: 'Aceptable', color: '#ef4444', bg: '#ef444410', icon: Wrench },
 };
 
-const deliveryLabels: Record<string, { label: string; icon: React.ElementType }> = {
-  public_meetup: { label: 'Encuentro en lugar público', icon: Handshake },
-  pickup: { label: 'Retiro en puerta', icon: MapPin },
-  delivery: { label: 'Entrega a puerta', icon: Truck },
-};
-
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
   const product = await getProduct(id);
@@ -80,8 +74,8 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-[#112237] mb-2">Producto no encontrado</h2>
             <p className="text-[#64748b] mb-4">El producto que buscas no existe o ha sido eliminado.</p>
-            <Link href="/products">
-              <Button>Ver todos los productos</Button>
+            <Link href="/search">
+              <Button>Ver catálogo de productos</Button>
             </Link>
           </div>
         </div>
@@ -94,12 +88,6 @@ export default async function ProductDetailPage({ params }: Props) {
   const condition = conditionConfig[product.condition];
   const CategoryIcon = product.category ? getCategoryIcon(product.category.slug) : null;
 
-  const deliveryPrefs: string[] = Array.isArray(product.delivery_preference)
-    ? product.delivery_preference
-    : typeof product.delivery_preference === 'string'
-    ? product.delivery_preference.split(',').filter(Boolean).map((p: string) => p.trim())
-    : [];
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -107,8 +95,8 @@ export default async function ProductDetailPage({ params }: Props) {
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container py-6">
           <nav className="mb-6">
-            <Link href="/products" className="text-[#64748b] hover:text-[#f25c05] transition-colors text-sm">
-              ← Volver a productos
+            <Link href="/search" className="text-[#64748b] hover:text-[#f25c05] transition-colors text-sm">
+              ← Volver al catálogo
             </Link>
           </nav>
 
@@ -170,19 +158,15 @@ export default async function ProductDetailPage({ params }: Props) {
                     </div>
                   )}
 
-                  {/* Availability */}
+                  {/* Stock */}
                   <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#f8fafc]">
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#f25c05]/10">
-                      {product.availability_type === 'available' ? (
-                        <PackageCheck className="w-4.5 h-4.5 text-[#f25c05]" />
-                      ) : (
-                        <Package className="w-4.5 h-4.5 text-[#f25c05]" />
-                      )}
+                      <PackageCheck className="w-4.5 h-4.5 text-[#f25c05]" />
                     </div>
                     <div>
-                      <p className="text-xs text-[#64748b]">Disponibilidad</p>
-                      <p className="text-sm font-medium text-[#112237]">
-                        {product.availability_type === 'available' ? 'Disponible' : 'Artículo único'}
+                      <p className="text-xs text-[#64748b]">Stock disponible</p>
+                      <p className="text-sm font-bold text-[#112237]">
+                        {product.stock || 1} {product.stock === 1 ? "unidad" : "unidades"}
                       </p>
                     </div>
                   </div>
@@ -200,29 +184,6 @@ export default async function ProductDetailPage({ params }: Props) {
                     </div>
                   )}
                 </div>
-
-                {/* Delivery Preferences */}
-                {deliveryPrefs.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-[#e2e8f0]">
-                    <p className="text-xs text-[#64748b] mb-2.5">Formas de entrega</p>
-                    <div className="flex flex-wrap gap-2">
-                      {deliveryPrefs.map((pref: string) => {
-                        const config = deliveryLabels[pref];
-                        if (!config) return null;
-                        const Icon = config.icon;
-                        return (
-                          <span
-                            key={pref}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f8fafc] border border-[#e2e8f0] text-xs font-medium text-[#112237]"
-                          >
-                            <Icon className="w-3.5 h-3.5 text-[#f25c05]" />
-                            {config.label}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
                 {/* Views */}
                 <div className="mt-4 pt-4 border-t border-[#e2e8f0] flex items-center gap-4 text-xs text-[#94a3b8]">
@@ -339,18 +300,18 @@ export default async function ProductDetailPage({ params }: Props) {
                   </div>
                 )}
 
-                {/* Botón de Agregar al Carrito */}
-                <div className="pt-2">
-                  {product.seller && (
-                    <AddToCartButton
-                      productId={product.id}
-                      productTitle={product.title}
-                      productPrice={Number(product.price)}
-                      sellerId={product.seller.id}
-                      images={product.images}
-                    />
-                  )}
-                </div>
+                {/* Selector de Cantidad y Botón de Agregar al Carrito (Tiempo Real) */}
+                {product.seller && (
+                  <ProductActionsBlock
+                    productId={product.id}
+                    productTitle={product.title}
+                    productPrice={Number(product.price)}
+                    sellerId={product.seller.id}
+                    images={product.images}
+                    initialStock={product.stock ?? 1}
+                    initialStatus={product.status || "active"}
+                  />
+                )}
               </div>
 
               {/* Compra Segura */}

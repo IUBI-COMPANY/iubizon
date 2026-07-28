@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const supabase = await createServerClient();
@@ -74,7 +76,7 @@ export async function GET(req: Request) {
         images: { orderBy: { position: "asc" } },
         category: true,
       },
-      orderBy: { created_at: "desc" },
+      orderBy: { updated_at: "desc" },
     });
 
     return NextResponse.json({
@@ -86,6 +88,7 @@ export async function GET(req: Request) {
         price: Number(p.price),
         condition: p.condition,
         status: p.status,
+        stock: p.stock ?? 1,
         views: p.views || 0,
         category: p.category?.name || null,
         images: p.images.map((img) => ({

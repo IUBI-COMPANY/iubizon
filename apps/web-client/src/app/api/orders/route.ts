@@ -51,78 +51,130 @@ export async function POST(req: Request) {
 
     // Código de orden principal correlativo
     const orderCode = `IUBI-${Math.floor(100000 + Math.random() * 900000)}`;
-    const createdOrders = [];
 
-    // 2. Procesar cada ítem del carrito
-    for (const item of items) {
-      const productId = item.product_id || item.id;
-      if (!productId) continue;
+    // 2. Procesar la transacción atómica con validación y descuento de stock
+    const createdOrders = await prisma.$transaction(async (tx) => {
+      const ordersResult = [];
 
-      const product = await prisma.product.findUnique({
-        where: { id: productId },
-        select: { id: true, seller_id: true, company_id: true, price: true },
-      });
+      for (const item of items) {
+        const productId = item.product_id || item.id;
+        const itemQuantity = Number(item.quantity) || 1;
+        if (!productId) continue;
 
-      if (!product) continue;
-
-      // Garantizar que el vendedor exista en la tabla profiles
-      await prisma.profile.upsert({
-        where: { id: product.seller_id },
-        update: {},
-        create: {
-          id: product.seller_id,
-          email: `seller_${product.seller_id.slice(0, 8)}@iubizon.com`,
-          name: "Vendedor iubizon",
-        },
-      });
-
-      // Verificar si la empresa existe en DB
-      let validCompanyId: string | null = null;
-      const targetCompanyId = product.company_id || item.company_id;
-      if (targetCompanyId) {
-        const companyExists = await prisma.company.findUnique({
-          where: { id: targetCompanyId },
-          select: { id: true },
+        // Obtener datos del producto con estado y stock actual
+        const product = await tx.product.findUnique({
+          where: { id: productId },
+          select: {
+            id: true,
+            title: true,
+            seller_id: true,
+            company_id: true,
+            price: true,
+            stock: true,
+            status: true,
+          },
         });
-        if (companyExists) {
-          validCompanyId = companyExists.id;
+
+        if (!product) {
+          throw new Error(`El producto solicitado ya no existe en la plataforma.`);
         }
-      }
 
-      const itemQuantity = Number(item.quantity) || 1;
-      const itemSubtotal = Number(product.price) * itemQuantity;
-      const commission = itemSubtotal * 0.1; // 10% comision para iubizon
+        const currentStock = product.stock ?? 1;
 
-      const order = await prisma.order.create({
-        data: {
-          product_id: product.id,
-          buyer_id: user.id,
-          seller_id: product.seller_id,
-          company_id: validCompanyId,
-          amount: itemSubtotal,
-          commission: commission,
-          status: "pending",
-          payment_method: payment_method || "cash_on_delivery",
-          shipping: {
-            create: {
-              origin_address: "Almacén Principal iubizon / Vendedor",
-              destination_address: `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`,
-              courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone}`,
-              tracking_number: orderCode,
-              status: "pending",
+        if (product.status !== "active" || currentStock < itemQuantity) {
+          throw new Error(
+            `Stock insuficiente para "${product.title}". Quedan ${currentStock > 0 ? currentStock : 0} unidades disponibles.`
+          );
+        }
+
+        // Descuento atómico de stock para evitar compras concurrentes duplicadas
+        const updated = await tx.product.updateMany({
+          where: {
+            id: productId,
+            stock: { gte: itemQuantity },
+          },
+          data: {
+            stock: { decrement: itemQuantity },
+          },
+        });
+
+        if (updated.count === 0) {
+          throw new Error(
+            `El producto "${product.title}" se agotó mientras procesabas tu pedido.`
+          );
+        }
+
+        // Verificar el stock resultante y cambiar estado a 'sold' si llega a 0
+        const updatedState = await tx.product.findUnique({
+          where: { id: productId },
+          select: { stock: true },
+        });
+
+        if ((updatedState?.stock ?? 0) <= 0) {
+          await tx.product.update({
+            where: { id: productId },
+            data: { status: "sold" },
+          });
+        }
+
+        // Garantizar que el vendedor exista en la tabla profiles
+        await tx.profile.upsert({
+          where: { id: product.seller_id },
+          update: {},
+          create: {
+            id: product.seller_id,
+            email: `seller_${product.seller_id.slice(0, 8)}@iubizon.com`,
+            name: "Vendedor iubizon",
+          },
+        });
+
+        // Verificar si la empresa existe en DB
+        let validCompanyId: string | null = null;
+        const targetCompanyId = product.company_id || item.company_id;
+        if (targetCompanyId) {
+          const companyExists = await tx.company.findUnique({
+            where: { id: targetCompanyId },
+            select: { id: true },
+          });
+          if (companyExists) {
+            validCompanyId = companyExists.id;
+          }
+        }
+
+        const itemSubtotal = Number(product.price) * itemQuantity;
+        const commission = itemSubtotal * 0.1; // 10% comision para iubizon
+
+        const order = await tx.order.create({
+          data: {
+            product_id: product.id,
+            buyer_id: user.id,
+            seller_id: product.seller_id,
+            company_id: validCompanyId,
+            amount: itemSubtotal,
+            commission: commission,
+            status: "pending",
+            payment_method: payment_method || "cash_on_delivery",
+            shipping: {
+              create: {
+                origin_address: "Almacén Principal iubizon / Vendedor",
+                destination_address: `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`,
+                courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone}`,
+                tracking_number: orderCode,
+                status: "pending",
+              },
             },
           },
-        },
-        include: {
-          shipping: true,
-          product: {
-            select: { title: true },
+          include: {
+            shipping: true,
+            product: { select: { title: true } },
           },
-        },
-      });
+        });
 
-      createdOrders.push(order);
-    }
+        ordersResult.push(order);
+      }
+
+      return ordersResult;
+    });
 
     if (createdOrders.length === 0) {
       return NextResponse.json(
@@ -133,7 +185,7 @@ export async function POST(req: Request) {
 
     // Calcular totales globales del pedido
     const subtotal = items.reduce(
-      (sum, i) => sum + Number(i.price) * Number(i.quantity),
+      (sum, i) => sum + Number(i.price) * Number(i.quantity || 1),
       0,
     );
     const shippingCost = 50.0;
@@ -156,11 +208,11 @@ export async function POST(req: Request) {
       },
     });
   } catch (err: unknown) {
-    console.error("Error detallado al registrar pedido:", err);
-    const errorMessage = err instanceof Error ? err.message : "Error interno al procesar la compra";
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 },
-    );
+    console.error("Error al registrar pedido con descuento de stock:", err);
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : "Error interno al procesar la compra";
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }

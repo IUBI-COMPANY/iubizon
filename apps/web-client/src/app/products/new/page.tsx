@@ -70,17 +70,6 @@ const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: 
   fair: { icon: Wrench, label: 'Aceptable', desc: 'Marcas visibles, completamente funcional', color: '#ef4444' },
 };
 
-const availabilityOptions = [
-  { value: 'unique', label: 'Artículo único', desc: 'Solo tienes uno disponible', icon: Package },
-  { value: 'available', label: 'Disponible', desc: 'Tienes más de uno disponible', icon: PackageCheck },
-];
-
-const deliveryOptions = [
-  { value: 'public_meetup', label: 'Encuentro en lugar público', desc: 'Coordinar un punto de encuentro seguro', icon: Handshake },
-  { value: 'pickup', label: 'Retiro en puerta', desc: 'El comprador retira en tu dirección', icon: MapPin },
-  { value: 'delivery', label: 'Entrega a puerta', desc: 'Llevas el producto hasta el comprador', icon: Truck },
-];
-
 const techCategorySlugs = ['electronica', 'laptops', 'proyectores', 'moviles', 'consolas', 'tv-audio', 'accesorios'];
 
 interface UploadedImage {
@@ -196,11 +185,10 @@ export default function PublishProductPage() {
   const [condition, setCondition] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brand, setBrand] = useState('');
-  const [availability, setAvailability] = useState('');
+  const [stock, setStock] = useState('1');
   const [location, setLocation] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  const [deliveryPreferences, setDeliveryPreferences] = useState<string[]>([]);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
@@ -406,9 +394,8 @@ export default function PublishProductPage() {
     if (!price || parseFloat(price) <= 0) errors.price = 'Ingresa un precio válido';
     if (!categoryId) errors.category_id = 'Selecciona una categoría';
     if (!condition) errors.condition = 'Selecciona el estado de tu producto';
-    if (!availability) errors.availability = 'Selecciona la disponibilidad';
+    if (!stock || parseInt(stock) < 1) errors.stock = 'Ingresa una cantidad de stock válida (mínimo 1)';
     if (!location.trim()) errors.location = 'Agrega una ubicación';
-    if (deliveryPreferences.length === 0) errors.deliveryPreference = 'Selecciona cómo entregarás el producto';
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -426,6 +413,7 @@ export default function PublishProductPage() {
     setError(null);
 
     try {
+      const parsedStock = parseInt(stock) || 1;
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -436,12 +424,11 @@ export default function PublishProductPage() {
           condition,
           category_id: categoryId,
           brand: brand.trim() || null,
-          availability_type: availability,
-          stock: 1,
+          availability_type: parsedStock > 1 ? 'available' : 'unique',
+          stock: parsedStock,
           location: location.trim(),
           latitude,
           longitude,
-          delivery_preference: deliveryPreferences.join(','),
           company_id: activeCompany?.id || null,
         }),
       });
@@ -809,55 +796,31 @@ export default function PublishProductPage() {
               </div>
             </div>
 
-            {/* Availability */}
+            {/* Stock disponible */}
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-3">
+              <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#112237]">
-                  Disponibilidad <span className="text-[#f25c05]">*</span>
+                  Stock disponible <span className="text-[#f25c05]">*</span>
                 </Label>
-                <div className="space-y-2">
-                  {availabilityOptions.map((opt) => {
-                    const isSelected = availability === opt.value;
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          setAvailability(opt.value);
-                          setFieldErrors((prev) => ({ ...prev, availability: '' }));
-                        }}
-                        className={`flex items-center gap-3 w-full p-3.5 rounded-xl border-2 transition-all duration-200 text-left ${
-                          isSelected
-                            ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-sm'
-                            : 'border-[#e2e8f0] hover:border-[#f25c05]/40 hover:bg-[#f8fafc]'
-                        }`}
-                      >
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#f25c05]/10' : 'bg-[#f8fafc]'}`}>
-                          <opt.icon className={`w-5 h-5 ${isSelected ? 'text-[#f25c05]' : 'text-[#94a3b8]'}`} />
-                        </div>
-                        <div>
-                          <p className={`text-sm font-medium ${isSelected ? 'text-[#112237]' : 'text-[#64748b]'}`}>
-                            {opt.label}
-                          </p>
-                          <p className="text-[11px] text-[#94a3b8]">{opt.desc}</p>
-                        </div>
-                        {isSelected && (
-                          <div className="ml-auto">
-                            <div className="w-5 h-5 rounded-full bg-[#f25c05] flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                {fieldErrors.availability && <p className="text-xs text-[#ef4444]">{fieldErrors.availability}</p>}
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="Ej: 10"
+                  icon={<Package className="w-4 h-4 text-[#64748b]" />}
+                  value={stock}
+                  onChange={(e) => {
+                    setStock(e.target.value);
+                    setFieldErrors((prev) => ({ ...prev, stock: '' }));
+                  }}
+                  error={fieldErrors.stock}
+                />
+                <p className="text-[10px] text-[#94a3b8]">
+                  Cantidad de unidades disponibles para venta
+                </p>
               </div>
             </div>
 
-            {/* Location */}
+            {/* Ubicación */}
             <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
               <div className="space-y-1.5">
                 <Label className="text-sm font-semibold text-[#112237]">
@@ -889,58 +852,6 @@ export default function PublishProductPage() {
                   </button>
                 </div>
                 <p className="text-[10px] text-[#94a3b8]">Los compradores verán tu ubicación general</p>
-              </div>
-            </div>
-
-            {/* Delivery Preference */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-[#112237]">
-                  Preferencia de entrega <span className="text-[#f25c05]">*</span>
-                  <span className="text-[#94a3b8] font-normal ml-1.5 text-xs">Puedes elegir más de una</span>
-                </Label>
-                <div className="space-y-2">
-                  {deliveryOptions.map((opt) => {
-                    const isSelected = deliveryPreferences.includes(opt.value);
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          setDeliveryPreferences((prev) =>
-                            prev.includes(opt.value)
-                              ? prev.filter((v) => v !== opt.value)
-                              : [...prev, opt.value]
-                          );
-                          setFieldErrors((prev) => ({ ...prev, deliveryPreference: '' }));
-                        }}
-                        className={`flex items-center gap-3 w-full p-3.5 rounded-xl border-2 transition-all duration-200 text-left ${
-                          isSelected
-                            ? 'border-[#f25c05] bg-[#f25c05]/5 shadow-sm'
-                            : 'border-[#e2e8f0] hover:border-[#f25c05]/40 hover:bg-[#f8fafc]'
-                        }`}
-                      >
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#f25c05]/10' : 'bg-[#f8fafc]'}`}>
-                          <opt.icon className={`w-5 h-5 ${isSelected ? 'text-[#f25c05]' : 'text-[#94a3b8]'}`} />
-                        </div>
-                        <div>
-                          <p className={`text-sm font-medium ${isSelected ? 'text-[#112237]' : 'text-[#64748b]'}`}>
-                            {opt.label}
-                          </p>
-                          <p className="text-[11px] text-[#94a3b8]">{opt.desc}</p>
-                        </div>
-                        {isSelected && (
-                          <div className="ml-auto">
-                            <div className="w-5 h-5 rounded-full bg-[#f25c05] flex items-center justify-center">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-                {fieldErrors.deliveryPreference && <p className="text-xs text-[#ef4444]">{fieldErrors.deliveryPreference}</p>}
               </div>
             </div>
 

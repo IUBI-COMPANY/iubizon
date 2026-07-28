@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, Package } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -27,6 +27,9 @@ export const ProductCard = ({
   );
   const mainImage = sortedImages[0]?.url;
   const hasMultipleImages = sortedImages.length > 1;
+  const isOutOfStock =
+    (product.stock !== undefined && product.stock !== null && product.stock <= 0) ||
+    product.status === "sold";
 
   return (
     <Link href={`/products/${product.id}`}>
@@ -42,15 +45,19 @@ export const ProductCard = ({
             />
           ) : (
             <div className="flex items-center justify-center h-full text-[#94a3b8]">
-              <span className="text-4xl">📦</span>
+              <Package className="w-10 h-10 text-[#cbd5e1]" />
             </div>
           )}
 
-          {product.is_bundle && (
+          {isOutOfStock ? (
+            <Badge variant="destructive" className="absolute top-2 left-2 z-10 font-bold bg-red-600 text-white">
+              AGOTADO
+            </Badge>
+          ) : product.is_bundle ? (
             <Badge variant="default" className="absolute top-2 left-2">
               LOTE
             </Badge>
-          )}
+          ) : null}
 
           {product.condition === "new" && (
             <Badge variant="success" className="absolute top-2 right-2">

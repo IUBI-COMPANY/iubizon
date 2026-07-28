@@ -17,6 +17,7 @@ interface CartItem {
   image_url?: string;
   quantity: number;
   seller_id: string;
+  stock?: number;
 }
 
 interface CartContextType {
@@ -30,7 +31,9 @@ interface CartContextType {
           price: number;
           seller_id: string;
           images?: { url: string }[];
+          stock?: number;
         },
+    quantityToAdd?: number,
   ) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -66,6 +69,66 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isLoading]);
 
+  // Sync fresh stock & price from DB for cart items
+  useEffect(() => {
+    if (isLoading) return;
+
+    let isMounted = true;
+    const syncStock = async () => {
+      if (items.length === 0) return;
+      try {
+        const updated = await Promise.all(
+          items.map(async (item) => {
+            try {
+              const res = await fetch(`/api/products/${item.product_id}`);
+              const data = await res.json();
+              if (res.ok && data.product) {
+                const freshStock = typeof data.product.stock === "number" ? data.product.stock : 10;
+                const freshPrice = Number(data.product.price) || item.price;
+                return {
+                  ...item,
+                  stock: freshStock,
+                  price: freshPrice,
+                  quantity: Math.min(item.quantity, freshStock),
+                };
+              }
+            } catch {
+              // fallback
+            }
+            return item;
+          })
+        );
+
+        if (isMounted) {
+          setItems((prev) => {
+            let hasChanges = false;
+            const nextItems = prev.map((prevItem) => {
+              const fresh = updated.find((u) => u.product_id === prevItem.product_id);
+              if (fresh && (prevItem.stock !== fresh.stock || prevItem.price !== fresh.price)) {
+                hasChanges = true;
+                return {
+                  ...prevItem,
+                  stock: fresh.stock,
+                  price: fresh.price,
+                  quantity: Math.min(prevItem.quantity, fresh.stock),
+                };
+              }
+              return prevItem;
+            });
+            return hasChanges ? nextItems : prev;
+          });
+        }
+      } catch (e) {
+        console.error("Error al sincronizar stock del carrito:", e);
+      }
+    };
+
+    syncStock();
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoading, items.length]);
+
   const addItem = useCallback(
     (
       product:
@@ -76,17 +139,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             price: number;
             seller_id: string;
             images?: { url: string }[];
+            stock?: number;
           },
+      quantityToAdd: number = 1,
     ) => {
       setItems((prev) => {
         const existingItem = prev.find(
           (item) => item.product_id === product.id,
         );
 
+        const availableStock = product.stock ?? existingItem?.stock ?? 10;
+
         if (existingItem) {
+          const newQty = Math.min(existingItem.quantity + quantityToAdd, availableStock);
           return prev.map((item) =>
             item.product_id === product.id
-              ? { ...item, quantity: item.quantity + 1 }
+              ? { ...item, quantity: newQty, stock: availableStock }
               : item,
           );
         }
@@ -100,8 +168,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             typeof product.images?.[0] === "string"
               ? product.images[0]
               : product.images?.[0]?.url,
-          quantity: 1,
+          quantity: Math.min(quantityToAdd, availableStock),
           seller_id: product.seller_id,
+          stock: availableStock,
         };
 
         return [...prev, newItem];
@@ -119,9 +188,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setItems((prev) => prev.filter((item) => item.product_id !== productId));
     } else {
       setItems((prev) =>
-        prev.map((item) =>
-          item.product_id === productId ? { ...item, quantity } : item,
-        ),
+        prev.map((item) => {
+          if (item.product_id === productId) {
+            const maxStock = typeof item.stock === "number" && item.stock > 0 ? item.stock : 99;
+            const cappedQty = Math.min(quantity, maxStock);
+            return { ...item, quantity: cappedQty };
+          }
+          return item;
+        }),
       );
     }
   }, []);

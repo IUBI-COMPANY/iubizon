@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
+import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { CartStepIndicator } from "@/components/features/cart/CartStepIndicator";
 import { CartOrderBumps, type OrderBump } from "@/components/features/cart/CartOrderBumps";
 import { CartSummarySidebar } from "@/components/features/cart/CartSummarySidebar";
@@ -290,48 +291,39 @@ export default function CartCheckoutPage() {
                             <p className="font-semibold text-sm text-[#112237] truncate">
                               {item.title}
                             </p>
-                            <p className="text-xs font-bold text-[#f25c05] mt-0.5">
-                              S/ {item.price.toFixed(2)}
-                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-xs font-bold text-[#f25c05]">
+                                S/ {item.price.toFixed(2)}
+                              </p>
+                              {item.stock !== undefined && (
+                                <span className="text-[10px] text-[#64748b] bg-[#f1f5f9] px-1.5 py-0.5 rounded font-medium">
+                                  Stock: {item.stock} un.
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
                         {/* Control de Cantidad (- / +) */}
-                        <div className="flex items-center gap-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-1 shrink-0">
-                          <button
-                            onClick={() =>
-                              updateQuantity(
-                                item.product_id,
-                                item.quantity - 1,
-                              )
+                        <div className="flex items-center gap-3 shrink-0">
+                          <QuantitySelector
+                            value={item.quantity}
+                            onChange={(newQty) =>
+                              updateQuantity(item.product_id, newQty)
                             }
-                            className="p-1 rounded-lg hover:bg-white text-[#334155] transition-colors"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="w-6 text-center text-xs font-bold text-[#112237]">
-                            {item.quantity}
-                          </span>
+                            max={typeof item.stock === "number" && item.stock > 0 ? item.stock : 99}
+                            size="sm"
+                            showLimitWarning={true}
+                          />
+
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                item.product_id,
-                                item.quantity + 1,
-                              )
-                            }
-                            className="p-1 rounded-lg hover:bg-white text-[#334155] transition-colors"
+                            onClick={() => removeItem(item.product_id)}
+                            className="p-2 text-[#94a3b8] hover:text-red-500 transition-colors"
+                            title="Eliminar ítem"
                           >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-
-                        <button
-                          onClick={() => removeItem(item.product_id)}
-                          className="p-2 text-[#94a3b8] hover:text-red-500 transition-colors"
-                          title="Eliminar ítem"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     ))}
                   </div>
