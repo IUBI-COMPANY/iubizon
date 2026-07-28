@@ -63,6 +63,7 @@ import {
 
 import { CreateCompanyStep } from '@/components/features/products/CreateCompanyStep';
 import { MediaUploader } from '@/components/features/products/MediaUploader';
+import { detectForbiddenContactInfo } from '@/lib/utils/contactDetector';
 import type { Category } from '@/types';
 
 const conditionOptions: Record<string, { icon: LucideIcon; label: string; desc: string; color: string }> = {
@@ -334,6 +335,16 @@ function PublishProductForm() {
     if (!categoryId) errors.category_id = 'Selecciona una categoría';
     if (!condition) errors.condition = 'Selecciona el estado de tu producto';
     if (!stock || parseInt(stock) < 1) errors.stock = 'Ingresa una cantidad de stock válida (mínimo 1)';
+
+    if (description.trim()) {
+      const contactCheck = detectForbiddenContactInfo(description);
+      if (contactCheck.hasViolation) {
+        const reason = contactCheck.reason || 'Información de contacto no permitida';
+        errors.description = reason;
+        toast.error(reason, 'Datos de contacto detectados');
+      }
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };

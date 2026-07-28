@@ -65,6 +65,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
   }
 
+  if (description) {
+    const { detectForbiddenContactInfo } = await import('@/lib/utils/contactDetector');
+    const contactCheck = detectForbiddenContactInfo(description);
+    if (contactCheck.hasViolation) {
+      return NextResponse.json({ error: contactCheck.reason }, { status: 400 });
+    }
+  }
+
   // Validar membresía de empresa o autodetectar la empresa activa del usuario
   if (company_id) {
     const { data: memberData } = await supabase
