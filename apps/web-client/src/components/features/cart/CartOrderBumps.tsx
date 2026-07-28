@@ -29,11 +29,11 @@ export const CartOrderBumps = ({
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-5 h-5 text-[#f25c05]" />
         <h3 className="font-bold text-base">
-          Ofertas Complementarias (Order Bumps)
+          Ofertas exclusivas para tu set
         </h3>
       </div>
       <p className="text-xs text-slate-300 mb-4">
-        Añade productos complementarios a tu pedido con 1 solo clic antes de finalizar tu compra:
+        Añade estas ofertas únicas a tu pedido con un solo clic antes de finalizar tu compra:
       </p>
 
       {loading ? (
