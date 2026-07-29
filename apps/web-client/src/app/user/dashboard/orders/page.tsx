@@ -121,33 +121,7 @@ function OrdersContent() {
     }
   }, [user, fetchOrders]);
 
-  const handleCancelPackage = async (pkg: SellerPackage) => {
-    if (
-      !confirm(
-        "¿Estás seguro de cancelar este despacho? Se notificará al comprador.",
-      )
-    )
-      return;
 
-    try {
-      setIsUpdating(true);
-      const res = await fetch("/api/seller/orders", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          packageId: pkg.packageId,
-          action: "cancel",
-        }),
-      });
-
-      if (!res.ok) throw new Error("Error al cancelar la orden");
-      await fetchOrders();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error al cancelar orden");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const filteredPackages = packages.filter((pkg) => {
     if (statusTab === "all") return true;
@@ -158,6 +132,18 @@ function OrdersContent() {
       return pkg.status === "delivered" || pkg.status === "completed";
     return true;
   });
+
+  const pendingCount = packages.filter((p) => p.status === "pending").length;
+  const shippedCount = packages.filter(
+    (p) => p.status === "shipped" || p.status === "paid",
+  ).length;
+  const completedCount = packages.filter(
+    (p) => p.status === "delivered" || p.status === "completed",
+  ).length;
+  const totalNetEarnings = packages.reduce(
+    (acc, p) => acc + (p.netEarnings || 0),
+    0,
+  );
 
   if (authLoading || loading) {
     return (
@@ -190,6 +176,71 @@ function OrdersContent() {
             </p>
           </div>
         </div>
+
+        {/* KPIs Informativos de Ventas */}
+        {!loading && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="p-2.5 bg-blue-500/10 rounded-xl">
+                  <ShoppingCart className="w-5 h-5 text-blue-500" />
+                </div>
+                <span className="text-xs font-bold text-[#64748b] uppercase tracking-wider">
+                  Nuevas Ventas
+                </span>
+              </div>
+              <p className="text-2xl font-black text-[#112237]">{pendingCount}</p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                {pendingCount === 1 ? "pendiente de despacho" : "pendientes de despacho"}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="p-2.5 bg-amber-500/10 rounded-xl">
+                  <Truck className="w-5 h-5 text-amber-500" />
+                </div>
+                <span className="text-xs font-bold text-[#64748b] uppercase tracking-wider">
+                  En Camino
+                </span>
+              </div>
+              <p className="text-2xl font-black text-[#112237]">{shippedCount}</p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                {shippedCount === 1 ? "pedido en proceso" : "pedidos en proceso"}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="p-2.5 bg-emerald-500/10 rounded-xl">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                </div>
+                <span className="text-xs font-bold text-[#64748b] uppercase tracking-wider">
+                  Completadas
+                </span>
+              </div>
+              <p className="text-2xl font-black text-[#112237]">{completedCount}</p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                {completedCount === 1 ? "venta entregada" : "ventas entregadas"}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="p-2.5 bg-orange-500/10 rounded-xl">
+                  <Wallet className="w-5 h-5 text-[#f25c05]" />
+                </div>
+                <span className="text-xs font-bold text-[#64748b] uppercase tracking-wider">
+                  Neto Total
+                </span>
+              </div>
+              <p className="text-2xl font-black text-emerald-600">
+                S/ {formatMoney(totalNetEarnings)}
+              </p>
+              <p className="text-xs text-[#64748b] mt-0.5">acumulado a recibir</p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-4 rounded-2xl">
@@ -314,26 +365,15 @@ function OrdersContent() {
 
                       <div className="flex items-center gap-2 flex-wrap justify-end">
                         {isPending && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => setSelectedPackageForDispatch(pkg)}
-                              disabled={isUpdating}
-                              className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm"
-                            >
-                              <Truck className="w-4 h-4 mr-1.5" />
-                              Confirmar Despacho
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleCancelPackage(pkg)}
-                              disabled={isUpdating}
-                              className="text-xs font-bold px-3 py-2 rounded-xl"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          </>
+                          <Button
+                            size="sm"
+                            onClick={() => setSelectedPackageForDispatch(pkg)}
+                            disabled={isUpdating}
+                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm"
+                          >
+                            <Truck className="w-4 h-4 mr-1.5" />
+                            {pkg.trackingNumber ? "Editar Despacho" : "Confirmar Despacho"}
+                          </Button>
                         )}
 
                         {isDelivered && (
