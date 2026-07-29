@@ -8,10 +8,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CreditCard,
-  FileText,
   Loader2,
   Package,
-  Receipt,
   ShieldCheck,
   ShoppingCart,
   Trash2,
@@ -33,6 +31,12 @@ import {
   type OrderBump,
 } from "@/components/features/cart/CartOrderBumps";
 import { CartSummarySidebar } from "@/components/features/cart/CartSummarySidebar";
+import {
+  InvoiceSelector,
+  InvoiceSummaryText,
+  type InvoiceType,
+  type DocType,
+} from "@/components/features/cart/InvoiceSelector";
 
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
 const FORM_STORAGE_KEY = "iubizon_checkout_form";
@@ -55,11 +59,11 @@ export default function CartCheckoutPage() {
   );
 
   // Comprobante de pago (Boleta vs Factura)
-  const [invoiceType, setInvoiceType] = useState<"boleta" | "factura">("boleta");
-  const [docType, setDocType] = useState<"dni" | "ce" | "pasaporte">("dni");
-  const [invoiceDni, setInvoiceDni] = useState<string>("");
-  const [invoiceRuc, setInvoiceRuc] = useState<string>("");
-  const [invoiceCompanyName, setInvoiceCompanyName] = useState<string>("");
+  const [invoiceType, setInvoiceType] = useState<InvoiceType>("boleta");
+  const [docType, setDocType] = useState<DocType>("dni");
+  const [invoiceDni, setInvoiceDni] = useState("");
+  const [invoiceRuc, setInvoiceRuc] = useState("");
+  const [invoiceCompanyName, setInvoiceCompanyName] = useState("");
 
   // Formulario de envío con Auto-Guardado en LocalStorage
   const [shippingForm, setShippingForm] = useState({
@@ -740,167 +744,19 @@ export default function CartCheckoutPage() {
                   </div>
                 </div>
 
-                {/* Selección de Tipo de Comprobante (Boleta vs Factura) */}
-                <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-[#f25c05]" />
-                      <h3 className="text-xs font-bold text-[#112237] uppercase tracking-wider">
-                        Tipo de Comprobante de Pago
-                      </h3>
-                    </div>
-                    <span className="text-[11px] text-[#64748b]">Elige cómo deseas tu comprobante</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setInvoiceType("boleta")}
-                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
-                        invoiceType === "boleta"
-                          ? "border-[#f25c05] bg-white ring-2 ring-[#f25c05]/20 shadow-xs"
-                          : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                          invoiceType === "boleta" ? "bg-[#f25c05] text-white" : "bg-slate-100 text-slate-500"
-                        }`}>
-                          <Receipt className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#112237]">Boleta de Venta</p>
-                          <p className="text-[10px] text-[#64748b]">Para persona natural</p>
-                        </div>
-                      </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        invoiceType === "boleta" ? "border-[#f25c05] bg-[#f25c05]" : "border-slate-300"
-                      }`}>
-                        {invoiceType === "boleta" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setInvoiceType("factura")}
-                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
-                        invoiceType === "factura"
-                          ? "border-[#f25c05] bg-white ring-2 ring-[#f25c05]/20 shadow-xs"
-                          : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                          invoiceType === "factura" ? "bg-[#f25c05] text-white" : "bg-slate-100 text-slate-500"
-                        }`}>
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#112237]">Factura Electrónica</p>
-                          <p className="text-[10px] text-[#64748b]">Para empresas (con RUC)</p>
-                        </div>
-                      </div>
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        invoiceType === "factura" ? "border-[#f25c05] bg-[#f25c05]" : "border-slate-300"
-                      }`}>
-                        {invoiceType === "factura" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Campos para Boleta — DNI (requerido SUNAT > S/700, opcional si no) */}
-                  {invoiceType === "boleta" && (
-                    <div className="pt-3 border-t border-[#e2e8f0]">
-                      {grandTotal > 700 ? (
-                        <div className="flex items-start gap-2 mb-3 p-2.5 bg-red-50 border border-red-200 rounded-xl">
-                          <span className="text-red-500 text-sm mt-0.5">⚠️</span>
-                          <p className="text-[11px] text-red-700 leading-relaxed">
-                            Tu pedido supera <strong>S/ 700</strong> — la SUNAT <strong>exige obligatoriamente</strong> tu número de documento para emitir la boleta.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-2 mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
-                          <span className="text-amber-500 text-sm mt-0.5">ℹ️</span>
-                          <p className="text-[11px] text-amber-700 leading-relaxed">
-                            Para montos mayores a <strong>S/ 700</strong>, la SUNAT exige tu número de documento en la boleta.
-                          </p>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label htmlFor="docType" className="block text-xs font-semibold text-[#112237] mb-1">
-                            Tipo de doc.
-                          </label>
-                          <select
-                            id="docType"
-                            value={docType}
-                            onChange={(e) => setDocType(e.target.value as "dni" | "ce" | "pasaporte")}
-                            className="w-full h-10 rounded-xl border border-[#e2e8f0] bg-white px-3 text-xs text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all"
-                          >
-                            <option value="dni">DNI</option>
-                            <option value="ce">Carnet de Extranjería</option>
-                            <option value="pasaporte">Pasaporte</option>
-                          </select>
-                        </div>
-                        <div className="sm:col-span-2">
-                          <label htmlFor="invoiceDni" className="block text-xs font-semibold text-[#112237] mb-1">
-                            Número de {docType === "dni" ? "DNI" : docType === "ce" ? "C.E." : "Pasaporte"}
-                            {grandTotal > 700 ? (
-                              <span className="text-[#f25c05] ml-1">*</span>
-                            ) : (
-                              <span className="text-[#94a3b8] font-normal ml-1">(opcional)</span>
-                            )}
-                          </label>
-                          <Input
-                            id="invoiceDni"
-                            type="text"
-                            maxLength={docType === "dni" ? 8 : 20}
-                            placeholder={docType === "dni" ? "Ej: 45678901" : "Número de documento"}
-                            value={invoiceDni}
-                            onChange={(e) => setInvoiceDni(e.target.value.replace(/\D/g, ""))}
-                          />
-                          <p className="text-[10px] text-[#64748b] mt-1">
-                            {docType === "dni" ? "8 dígitos" : "Hasta 20 caracteres"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Campos adicionales para Factura */}
-                  {invoiceType === "factura" && (
-                    <div className="pt-3 border-t border-[#e2e8f0] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      <div>
-                        <label htmlFor="invoiceRuc" className="block text-xs font-semibold text-[#112237] mb-1">
-                          Número de RUC <span className="text-[#f25c05]">*</span>
-                        </label>
-                        <Input
-                          id="invoiceRuc"
-                          type="text"
-                          maxLength={11}
-                          placeholder="Ej: 20601234567"
-                          value={invoiceRuc}
-                          onChange={(e) => setInvoiceRuc(e.target.value.replace(/\D/g, ""))}
-                        />
-                        <p className="text-[10px] text-[#64748b] mt-1">11 dígitos numéricos</p>
-                      </div>
-
-                      <div>
-                        <label htmlFor="invoiceCompanyName" className="block text-xs font-semibold text-[#112237] mb-1">
-                          Razón Social <span className="text-[#f25c05]">*</span>
-                        </label>
-                        <Input
-                          id="invoiceCompanyName"
-                          type="text"
-                          placeholder="Ej: Servicios Integrales SAC"
-                          value={invoiceCompanyName}
-                          onChange={(e) => setInvoiceCompanyName(e.target.value)}
-                        />
-                        <p className="text-[10px] text-[#64748b] mt-1">Nombre registrado en SUNAT</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <InvoiceSelector
+                  invoiceType={invoiceType}
+                  onInvoiceTypeChange={setInvoiceType}
+                  docType={docType}
+                  onDocTypeChange={setDocType}
+                  invoiceDni={invoiceDni}
+                  onDniChange={setInvoiceDni}
+                  invoiceRuc={invoiceRuc}
+                  onRucChange={setInvoiceRuc}
+                  invoiceCompanyName={invoiceCompanyName}
+                  onCompanyNameChange={setInvoiceCompanyName}
+                  grandTotal={grandTotal}
+                />
 
                 {/* Resumen de Dirección y Comprobante */}
                 <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] space-y-2 text-xs">
@@ -917,18 +773,13 @@ export default function CartCheckoutPage() {
                   </p>
                   <p className="text-[#334155]">
                     <strong className="text-[#112237]">Comprobante:</strong>{" "}
-                    {invoiceType === "factura" ? (
-                      <span className="font-semibold text-[#f25c05]">
-                        Factura Electrónica — RUC: {invoiceRuc || "Pendiente"} ({invoiceCompanyName || "Sin Razón Social"})
-                      </span>
-                    ) : (
-                      <span>
-                        Boleta de Venta
-                        {invoiceDni && (
-                          <> — {docType.toUpperCase()}: {invoiceDni}</>
-                        )}
-                      </span>
-                    )}
+                    <InvoiceSummaryText
+                      invoiceType={invoiceType}
+                      invoiceRuc={invoiceRuc}
+                      invoiceCompanyName={invoiceCompanyName}
+                      invoiceDni={invoiceDni}
+                      docType={docType}
+                    />
                   </p>
                   {shippingForm.notes && (
                     <p className="text-[#334155]">
