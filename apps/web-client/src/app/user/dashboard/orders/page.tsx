@@ -14,13 +14,14 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  FileText,
   Loader2,
   MapPin,
   Package,
+  Phone,
   ShoppingCart,
   Truck,
   User as UserIcon,
+  Wallet,
   XCircle,
 } from "lucide-react";
 
@@ -44,9 +45,8 @@ interface SellerPackage {
   courierInfo: string | null;
   paymentMethod: string;
   subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
+  platformCommission?: number;
+  netEarnings?: number;
   orderIds: string[];
   items: SellerPackageItem[];
 }
@@ -65,17 +65,6 @@ function formatDate(isoString: string) {
   } catch {
     return isoString;
   }
-}
-
-// Formatear o extraer información útil del string de courier (Cliente, Teléfono, Comprobante)
-function parseCourierInfo(courierStr: string | null) {
-  if (!courierStr) return null;
-  // ej: "Cliente: Noel Moriano | Tel: 987654321 | Boleta de Venta — DNI: 45678901"
-  const parts = courierStr.split("|").map((p) => p.trim());
-  const comprobantePart = parts.find((p) =>
-    p.toLowerCase().includes("boleta") || p.toLowerCase().includes("factura"),
-  );
-  return comprobantePart || courierStr;
 }
 
 function OrdersContent() {
@@ -177,7 +166,7 @@ function OrdersContent() {
               Gestión de Pedidos & Ventas
             </h1>
             <p className="text-xs text-[#64748b]">
-              Administra los despachos agrupados por comprador y código de seguimiento.
+              Administra los despachos asignados y consulta el monto neto a recibir por iubizon.
             </p>
           </div>
         </div>
@@ -194,8 +183,13 @@ function OrdersContent() {
           {filteredPackages.length > 0 ? (
             <div className="space-y-6">
               {filteredPackages.map((pkg) => {
-                const comprobanteText = parseCourierInfo(pkg.courierInfo);
                 const isUpdating = updatingGroup === pkg.trackingNumber;
+
+                // Cálculos financieros defensivos
+                const subtotal = pkg.subtotal ?? 0;
+                const platformCommission =
+                  pkg.platformCommission ?? subtotal * 0.1;
+                const netEarnings = pkg.netEarnings ?? subtotal - platformCommission;
 
                 return (
                   <div
@@ -283,62 +277,53 @@ function OrdersContent() {
                       ))}
                     </div>
 
-                    {/* Sección Detallada para Despejar Dudas del Vendedor */}
+                    {/* Sección Relevante para el Vendedor: Datos de Despacho + Pago Neto por iubizon */}
                     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      {/* Lado Izquierdo: Datos del Cliente y Entrega */}
-                      <div className="space-y-2">
-                        <p className="font-bold text-[#112237] border-b border-[#e2e8f0] pb-1.5 flex items-center gap-1.5">
-                          <UserIcon className="w-3.5 h-3.5 text-[#f25c05]" />
-                          <span>Datos del Comprador & Envío:</span>
+                      {/* Lado Izquierdo: Datos de Contacto & Entrega Destacados */}
+                      <div className="space-y-3">
+                        <p className="font-extrabold text-[#112237] border-b border-[#e2e8f0] pb-2 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                          <MapPin className="w-4 h-4 text-[#f25c05]" />
+                          <span>Datos de Despacho & Destino</span>
                         </p>
-                        <p className="text-[#334155]">
-                          <strong className="text-[#112237]">Cliente:</strong>{" "}
-                          {pkg.buyerName}{" "}
-                          {pkg.buyerPhone ? `(${pkg.buyerPhone})` : ""}
-                        </p>
-                        {pkg.destinationAddress && (
-                          <p className="text-[#334155] flex items-start gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-[#64748b] shrink-0 mt-0.5" />
-                            <span>
-                              <strong className="text-[#112237]">Dirección:</strong>{" "}
-                              {pkg.destinationAddress}
-                            </span>
+
+                        <div className="space-y-2 text-xs">
+                          <p className="text-[#334155]">
+                            <strong className="text-[#112237]">Destinatario:</strong>{" "}
+                            {pkg.buyerName}
                           </p>
-                        )}
-                        {comprobanteText && (
-                          <p className="text-[#334155] flex items-center gap-1 pt-0.5">
-                            <FileText className="w-3.5 h-3.5 text-[#f25c05] shrink-0" />
-                            <span>
-                              <strong className="text-[#112237]">Comprobante:</strong>{" "}
-                              {comprobanteText}
-                            </span>
-                          </p>
-                        )}
+                          {pkg.destinationAddress && (
+                            <p className="text-[#334155] flex items-start gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-[#64748b] shrink-0 mt-0.5" />
+                              <span>
+                                <strong className="text-[#112237]">Dirección de Envío:</strong>{" "}
+                                {pkg.destinationAddress}
+                              </span>
+                            </p>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Lado Derecho: Totales y Cobro Contra Entrega */}
+                      {/* Lado Derecho: Ganancia Neto del Vendedor pagada por iubizon */}
                       <div className="space-y-2 border-t md:border-t-0 pt-3 md:pt-0 border-[#e2e8f0] flex flex-col justify-between">
                         <div className="space-y-1">
-                          <p className="font-bold text-[#112237] border-b border-[#e2e8f0] pb-1.5">
-                            Cobro & Desglose de Despacho:
+                          <p className="font-extrabold text-[#112237] border-b border-[#e2e8f0] pb-2 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                            <Wallet className="w-4 h-4 text-[#f25c05]" />
+                            <span>Pago de iubizon al Vendedor</span>
                           </p>
                           <p className="text-[#334155]">
-                            <strong className="text-[#112237]">Subtotal:</strong> S/ {pkg.subtotal.toFixed(2)}
+                            <strong className="text-[#112237]">Valor de Productos:</strong> S/ {subtotal.toFixed(2)}
                           </p>
-                          <p className="text-[#334155]">
-                            <strong className="text-[#112237]">IGV (18%):</strong> S/ {pkg.taxAmount.toFixed(2)}
-                          </p>
-                          <p className="text-[#334155]">
-                            <strong className="text-[#112237]">Envío de Paquete:</strong> S/ {pkg.shippingCost.toFixed(2)}
+                          <p className="text-[#64748b]">
+                            <strong className="text-[#112237]">Comisión iubizon (10%):</strong> - S/ {platformCommission.toFixed(2)}
                           </p>
                         </div>
 
                         <div className="pt-2 border-t border-[#e2e8f0] flex items-center justify-between">
-                          <span className="text-[11px] text-[#64748b] font-semibold">
-                            Total a Cobrar al Cliente:
+                          <span className="text-[11px] text-[#475569] font-bold">
+                            Monto Neto a Recibir por iubizon:
                           </span>
-                          <span className="text-xl font-black text-[#f25c05]">
-                            S/ {pkg.totalAmount.toFixed(2)}
+                          <span className="text-xl font-black text-emerald-600">
+                            S/ {netEarnings.toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -415,7 +400,7 @@ function OrdersContent() {
                 No tienes registros en esta sección
               </h2>
               <p className="text-xs text-[#64748b] mb-6">
-                Las ventas de tus productos agrupadas por comprador aparecerán aquí.
+                Las ventas de tus productos aparecerán aquí.
               </p>
               <Link href="/search">
                 <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-6 py-2.5 rounded-xl">

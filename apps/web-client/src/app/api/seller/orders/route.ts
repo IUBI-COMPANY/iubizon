@@ -22,9 +22,8 @@ export interface SellerPackage {
   courierInfo: string | null;
   paymentMethod: string;
   subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
+  platformCommission: number;
+  netEarnings: number;
   orderIds: string[];
   items: SellerPackageItem[];
 }
@@ -137,24 +136,22 @@ export async function GET() {
     const sellerPackages: SellerPackage[] = [];
 
     for (const tempPkg of Array.from(packageMap.values())) {
-      const taxAmount = tempPkg.subtotal * 0.18;
-      const shippingCost = 50.0;
-      const totalAmount = tempPkg.subtotal + taxAmount + shippingCost;
+      const platformCommission = tempPkg.subtotal * 0.1;
+      const netEarnings = tempPkg.subtotal - platformCommission;
 
       sellerPackages.push({
         trackingNumber: tempPkg.trackingNumber,
         createdAt: tempPkg.createdAt,
         status: tempPkg.status,
         buyerName: tempPkg.buyerName,
-        buyerPhone: tempPkg.buyerPhone,
-        buyerEmail: tempPkg.buyerEmail,
+        buyerPhone: null,
+        buyerEmail: null,
         destinationAddress: tempPkg.destinationAddress,
         courierInfo: tempPkg.courierInfo,
         paymentMethod: tempPkg.paymentMethod,
         subtotal: tempPkg.subtotal,
-        taxAmount,
-        shippingCost,
-        totalAmount,
+        platformCommission,
+        netEarnings,
         orderIds: tempPkg.orderIds,
         items: tempPkg.items,
       });
@@ -195,13 +192,11 @@ export async function PATCH(req: Request) {
     }
 
     if (orderIds && Array.isArray(orderIds) && orderIds.length > 0) {
-      // Actualizar todas las órdenes enviadas
       await prisma.order.updateMany({
         where: { id: { in: orderIds } },
         data: { status: newStatus, updated_at: new Date() },
       });
 
-      // Actualizar shippings asociados
       await prisma.shipping.updateMany({
         where: { order_id: { in: orderIds } },
         data: { status: newStatus, updated_at: new Date() },
