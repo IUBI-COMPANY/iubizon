@@ -17,7 +17,17 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { items, shipping, payment_method, delivery_type } = body;
+    const {
+      items,
+      shipping,
+      payment_method,
+      delivery_type,
+      invoice_type,
+      invoice_doc_type,
+      invoice_dni,
+      invoice_ruc,
+      invoice_company_name,
+    } = body;
 
     // Dirección de destino según tipo de entrega elegida por el comprador
     const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
@@ -38,6 +48,34 @@ export async function POST(req: Request) {
         { error: "Faltan datos obligatorios de envío (Nombre, Teléfono y Dirección)" },
         { status: 400 },
       );
+    }
+
+    if (invoice_type === "factura") {
+      if (!invoice_ruc || String(invoice_ruc).trim().length !== 11) {
+        return NextResponse.json(
+          { error: "El RUC para la factura electrónica debe contener 11 dígitos" },
+          { status: 400 },
+        );
+      }
+      if (!invoice_company_name || !String(invoice_company_name).trim()) {
+        return NextResponse.json(
+          { error: "La Razón Social es requerida para emitir factura electrónica" },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Validación SUNAT: Boleta > S/700 requiere número de documento del comprador
+    if (invoice_type === "boleta" || !invoice_type) {
+      const orderSubtotal = (items as Array<{ price: number; quantity?: number }>)
+        .reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      const orderTotal = orderSubtotal * 1.18 + 50; // incluir IGV + envío
+      if (orderTotal > 700 && (!invoice_dni || !String(invoice_dni).trim())) {
+        return NextResponse.json(
+          { error: "Para pedidos mayores a S/ 700, la SUNAT exige el número de documento del comprador en la boleta." },
+          { status: 400 },
+        );
+      }
     }
 
     // 1. Garantizar existencia del perfil del Comprador en la tabla profiles
@@ -156,6 +194,12 @@ export async function POST(req: Request) {
         const itemSubtotal = Number(product.price) * itemQuantity;
         const commission = itemSubtotal * 0.1; // 10% comision para iubizon
 
+        const invoiceDetails = invoice_type === "factura"
+          ? `Factura RUC: ${invoice_ruc} (${invoice_company_name})`
+          : invoice_dni
+            ? `Boleta de Venta — ${String(invoice_doc_type || "dni").toUpperCase()}: ${invoice_dni}`
+            : "Boleta de Venta";
+
         const order = await tx.order.create({
           data: {
             product_id: product.id,
@@ -170,7 +214,7 @@ export async function POST(req: Request) {
               create: {
                 origin_address: "Almacén / Proveedor",
                 destination_address: supplierDestination,
-                courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone}`,
+                courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone} | ${invoiceDetails}`,
                 tracking_number: finalOrderCode,
                 status: "pending",
               },

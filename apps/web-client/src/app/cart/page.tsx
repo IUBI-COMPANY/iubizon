@@ -8,8 +8,10 @@ import {
   ArrowLeft,
   ArrowRight,
   CreditCard,
+  FileText,
   Loader2,
   Package,
+  Receipt,
   ShieldCheck,
   ShoppingCart,
   Trash2,
@@ -51,6 +53,13 @@ export default function CartCheckoutPage() {
   const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">(
     "progressive",
   );
+
+  // Comprobante de pago (Boleta vs Factura)
+  const [invoiceType, setInvoiceType] = useState<"boleta" | "factura">("boleta");
+  const [docType, setDocType] = useState<"dni" | "ce" | "pasaporte">("dni");
+  const [invoiceDni, setInvoiceDni] = useState<string>("");
+  const [invoiceRuc, setInvoiceRuc] = useState<string>("");
+  const [invoiceCompanyName, setInvoiceCompanyName] = useState<string>("");
 
   // Formulario de envío con Auto-Guardado en LocalStorage
   const [shippingForm, setShippingForm] = useState({
@@ -178,6 +187,43 @@ export default function CartCheckoutPage() {
       return;
     }
 
+    if (invoiceType === "factura") {
+      const cleanRuc = invoiceRuc.trim();
+      if (!cleanRuc || cleanRuc.length !== 11) {
+        toast.error(
+          "El número de RUC para la factura debe contener exactamente 11 dígitos.",
+          "RUC inválido"
+        );
+        return;
+      }
+      if (!invoiceCompanyName.trim()) {
+        toast.error(
+          "Por favor ingresa la Razón Social de tu empresa para la factura.",
+          "Razón Social requerida"
+        );
+        return;
+      }
+    }
+
+    // Validación SUNAT: Boleta > S/700 requiere número de documento del comprador
+    if (invoiceType === "boleta" && grandTotal > 700) {
+      const cleanDni = invoiceDni.trim();
+      if (!cleanDni) {
+        toast.error(
+          "Por tu pedido superior a S/ 700, la SUNAT exige que ingreses tu número de documento (DNI, C.E. o Pasaporte) en la boleta.",
+          "Documento requerido"
+        );
+        return;
+      }
+      if (docType === "dni" && cleanDni.length !== 8) {
+        toast.error(
+          "El DNI debe tener exactamente 8 dígitos.",
+          "DNI inválido"
+        );
+        return;
+      }
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -189,6 +235,13 @@ export default function CartCheckoutPage() {
           shipping: shippingForm,
           payment_method: "cash_on_delivery",
           delivery_type: deliveryType,
+          invoice_type: invoiceType,
+          // Boleta
+          invoice_doc_type: invoiceType === "boleta" ? docType : null,
+          invoice_dni: invoiceType === "boleta" && invoiceDni.trim() ? invoiceDni.trim() : null,
+          // Factura
+          invoice_ruc: invoiceType === "factura" ? invoiceRuc.trim() : null,
+          invoice_company_name: invoiceType === "factura" ? invoiceCompanyName.trim() : null,
         }),
       });
 
@@ -687,10 +740,172 @@ export default function CartCheckoutPage() {
                   </div>
                 </div>
 
-                {/* Resumen de Dirección */}
+                {/* Selección de Tipo de Comprobante (Boleta vs Factura) */}
+                <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-[#f25c05]" />
+                      <h3 className="text-xs font-bold text-[#112237] uppercase tracking-wider">
+                        Tipo de Comprobante de Pago
+                      </h3>
+                    </div>
+                    <span className="text-[11px] text-[#64748b]">Elige cómo deseas tu comprobante</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceType("boleta")}
+                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
+                        invoiceType === "boleta"
+                          ? "border-[#f25c05] bg-white ring-2 ring-[#f25c05]/20 shadow-xs"
+                          : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          invoiceType === "boleta" ? "bg-[#f25c05] text-white" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          <Receipt className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#112237]">Boleta de Venta</p>
+                          <p className="text-[10px] text-[#64748b]">Para persona natural</p>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        invoiceType === "boleta" ? "border-[#f25c05] bg-[#f25c05]" : "border-slate-300"
+                      }`}>
+                        {invoiceType === "boleta" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceType("factura")}
+                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${
+                        invoiceType === "factura"
+                          ? "border-[#f25c05] bg-white ring-2 ring-[#f25c05]/20 shadow-xs"
+                          : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          invoiceType === "factura" ? "bg-[#f25c05] text-white" : "bg-slate-100 text-slate-500"
+                        }`}>
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[#112237]">Factura Electrónica</p>
+                          <p className="text-[10px] text-[#64748b]">Para empresas (con RUC)</p>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        invoiceType === "factura" ? "border-[#f25c05] bg-[#f25c05]" : "border-slate-300"
+                      }`}>
+                        {invoiceType === "factura" && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Campos para Boleta — DNI (requerido SUNAT > S/700, opcional si no) */}
+                  {invoiceType === "boleta" && (
+                    <div className="pt-3 border-t border-[#e2e8f0]">
+                      {grandTotal > 700 ? (
+                        <div className="flex items-start gap-2 mb-3 p-2.5 bg-red-50 border border-red-200 rounded-xl">
+                          <span className="text-red-500 text-sm mt-0.5">⚠️</span>
+                          <p className="text-[11px] text-red-700 leading-relaxed">
+                            Tu pedido supera <strong>S/ 700</strong> — la SUNAT <strong>exige obligatoriamente</strong> tu número de documento para emitir la boleta.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2 mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                          <span className="text-amber-500 text-sm mt-0.5">ℹ️</span>
+                          <p className="text-[11px] text-amber-700 leading-relaxed">
+                            Para montos mayores a <strong>S/ 700</strong>, la SUNAT exige tu número de documento en la boleta.
+                          </p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label htmlFor="docType" className="block text-xs font-semibold text-[#112237] mb-1">
+                            Tipo de doc.
+                          </label>
+                          <select
+                            id="docType"
+                            value={docType}
+                            onChange={(e) => setDocType(e.target.value as "dni" | "ce" | "pasaporte")}
+                            className="w-full h-10 rounded-xl border border-[#e2e8f0] bg-white px-3 text-xs text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all"
+                          >
+                            <option value="dni">DNI</option>
+                            <option value="ce">Carnet de Extranjería</option>
+                            <option value="pasaporte">Pasaporte</option>
+                          </select>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label htmlFor="invoiceDni" className="block text-xs font-semibold text-[#112237] mb-1">
+                            Número de {docType === "dni" ? "DNI" : docType === "ce" ? "C.E." : "Pasaporte"}
+                            {grandTotal > 700 ? (
+                              <span className="text-[#f25c05] ml-1">*</span>
+                            ) : (
+                              <span className="text-[#94a3b8] font-normal ml-1">(opcional)</span>
+                            )}
+                          </label>
+                          <Input
+                            id="invoiceDni"
+                            type="text"
+                            maxLength={docType === "dni" ? 8 : 20}
+                            placeholder={docType === "dni" ? "Ej: 45678901" : "Número de documento"}
+                            value={invoiceDni}
+                            onChange={(e) => setInvoiceDni(e.target.value.replace(/\D/g, ""))}
+                          />
+                          <p className="text-[10px] text-[#64748b] mt-1">
+                            {docType === "dni" ? "8 dígitos" : "Hasta 20 caracteres"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Campos adicionales para Factura */}
+                  {invoiceType === "factura" && (
+                    <div className="pt-3 border-t border-[#e2e8f0] grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div>
+                        <label htmlFor="invoiceRuc" className="block text-xs font-semibold text-[#112237] mb-1">
+                          Número de RUC <span className="text-[#f25c05]">*</span>
+                        </label>
+                        <Input
+                          id="invoiceRuc"
+                          type="text"
+                          maxLength={11}
+                          placeholder="Ej: 20601234567"
+                          value={invoiceRuc}
+                          onChange={(e) => setInvoiceRuc(e.target.value.replace(/\D/g, ""))}
+                        />
+                        <p className="text-[10px] text-[#64748b] mt-1">11 dígitos numéricos</p>
+                      </div>
+
+                      <div>
+                        <label htmlFor="invoiceCompanyName" className="block text-xs font-semibold text-[#112237] mb-1">
+                          Razón Social <span className="text-[#f25c05]">*</span>
+                        </label>
+                        <Input
+                          id="invoiceCompanyName"
+                          type="text"
+                          placeholder="Ej: Servicios Integrales SAC"
+                          value={invoiceCompanyName}
+                          onChange={(e) => setInvoiceCompanyName(e.target.value)}
+                        />
+                        <p className="text-[10px] text-[#64748b] mt-1">Nombre registrado en SUNAT</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Resumen de Dirección y Comprobante */}
                 <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] space-y-2 text-xs">
                   <p className="font-bold text-[#112237] border-b border-[#e2e8f0] pb-2">
-                    Resumen de Dirección de Entrega:
+                    Resumen de Dirección y Comprobante:
                   </p>
                   <p className="text-[#334155]">
                     <strong className="text-[#112237]">Cliente:</strong>{" "}
@@ -699,6 +914,21 @@ export default function CartCheckoutPage() {
                   <p className="text-[#334155]">
                     <strong className="text-[#112237]">Dirección:</strong>{" "}
                     {shippingForm.address}, {shippingForm.city}
+                  </p>
+                  <p className="text-[#334155]">
+                    <strong className="text-[#112237]">Comprobante:</strong>{" "}
+                    {invoiceType === "factura" ? (
+                      <span className="font-semibold text-[#f25c05]">
+                        Factura Electrónica — RUC: {invoiceRuc || "Pendiente"} ({invoiceCompanyName || "Sin Razón Social"})
+                      </span>
+                    ) : (
+                      <span>
+                        Boleta de Venta
+                        {invoiceDni && (
+                          <> — {docType.toUpperCase()}: {invoiceDni}</>
+                        )}
+                      </span>
+                    )}
                   </p>
                   {shippingForm.notes && (
                     <p className="text-[#334155]">
