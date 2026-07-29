@@ -44,19 +44,7 @@ function TrackingGroupCard({
         </span>
       </div>
 
-      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3 py-2 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] text-[#64748b] font-medium uppercase tracking-wider">
-            Tracking ID
-          </p>
-          <p className="text-sm font-black text-[#f25c05] tracking-widest mt-0.5">
-            {group.trackingCode.replace(/^(?:#|TRK-)+/gi, "")}
-          </p>
-        </div>
-        <Package className="w-5 h-5 text-slate-300" />
-      </div>
-
-      <ul className="space-y-1">
+      <ul className="space-y-1 pt-1">
         {group.productTitles.map((title, i) => (
           <li key={i} className="text-[11px] text-[#475569] flex items-start gap-1.5">
             <span className="text-[#f25c05] mt-0.5 shrink-0">·</span>
@@ -121,7 +109,7 @@ function SuccessContent() {
         {trackingGroups.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs font-bold text-[#112237] uppercase tracking-wider">
-              Tracking por Proveedor
+              Despachos por Proveedor
             </p>
             {trackingGroups.map((group, i) => (
               <TrackingGroupCard key={group.trackingCode} group={group} index={i} />

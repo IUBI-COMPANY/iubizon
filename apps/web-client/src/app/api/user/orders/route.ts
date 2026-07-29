@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { parseDispatchMeta } from "@/lib/shippingHelper";
+import { ensureSellerPayoutForOrders } from "@/lib/payoutService";
 
 export interface PackageItem {
   id: string;
@@ -354,6 +355,8 @@ export async function PATCH(req: Request) {
         updated_at: new Date(),
       },
     });
+
+    await ensureSellerPayoutForOrders(orderIds);
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

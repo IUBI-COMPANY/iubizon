@@ -12,6 +12,7 @@ import {
   Plus,
   ShoppingCart,
   Users,
+  Wallet,
 } from "lucide-react";
 import type { Company } from "@/types";
 
@@ -135,10 +136,32 @@ export const CompanyDashboard = ({
             </span>
           </div>
           <p className="text-2xl font-bold text-[#112237]">
-            {stats.totalOrders}
+            {stats.pendingOrders}
           </p>
           <p className="text-xs text-[#64748b] mt-1">
-            {stats.pendingOrders} por despachar
+            {stats.pendingOrders === 1
+              ? "1 nueva venta recibida"
+              : `${stats.pendingOrders} nuevas ventas recibidas`}
+          </p>
+        </Link>
+
+        <Link
+          href="/user/dashboard/payouts"
+          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+              <Wallet className="w-5 h-5 text-emerald-500 group-hover:text-white transition-colors" />
+            </div>
+            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider group-hover:text-emerald-500 transition-colors">
+              Mis Pagos & Finanzas
+            </span>
+          </div>
+          <p className="text-sm font-bold text-[#112237]">
+            Liquidación de Entregas
+          </p>
+          <p className="text-xs text-[#64748b] mt-1">
+            Consultar retribuciones por abonar ➔
           </p>
         </Link>
 
@@ -194,7 +217,7 @@ export const CompanyDashboard = ({
 
         {loading ? (
           <div className="p-4 space-y-3">
-            {[1, 2, 3, 4].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center justify-between p-2">
                 <div className="flex items-center gap-3">
                   <Skeleton width={48} height={48} borderRadius={12} />
@@ -209,7 +232,7 @@ export const CompanyDashboard = ({
           </div>
         ) : recentProducts.length > 0 ? (
           <div className="divide-y divide-[#f1f5f9]">
-            {recentProducts.map((product) => (
+            {recentProducts.slice(0, 3).map((product) => (
               <Link
                 key={product.id}
                 href={`/products/edit/${product.id}`}
