@@ -101,11 +101,11 @@ export async function POST(req: Request) {
           ? `Boleta de Venta — ${String(invoice_doc_type || "dni").toUpperCase()}: ${invoice_dni}`
           : "Boleta de Venta";
 
-    // Código de sesión de compra: 6 dígitos, verificado como único en shippings
+    // Código de sesión de compra: 6 dígitos, verificado como único en BD
     const generateSessionCode = async (): Promise<string> => {
       const code = String(Math.floor(100000 + Math.random() * 900000));
-      const exists = await prisma.shipping.findFirst({
-        where: { tracking_number: { startsWith: code } },
+      const exists = await prisma.order.findFirst({
+        where: { payment_id: code },
       });
       return exists ? generateSessionCode() : code;
     };
@@ -199,8 +199,6 @@ export async function POST(req: Request) {
 
       for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
         const [, groupItems] = groups[groupIndex];
-        // Tracking único por proveedor
-        const trackingCode = `${sessionCode}-${String(groupIndex + 1).padStart(3, "0")}`;
 
         for (const { item, product } of groupItems) {
           const itemQuantity = Number(item.quantity) || 1;
@@ -271,12 +269,13 @@ export async function POST(req: Request) {
               commission: itemSubtotal * 0.1,
               status: "pending",
               payment_method: payment_method || "cash_on_delivery",
+              payment_id: sessionCode,
               shipping: {
                 create: {
                   origin_address: "Almacén / Proveedor",
                   destination_address: supplierDestination,
                   courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone} | ${invoiceDetails}`,
-                  tracking_number: trackingCode,
+                  tracking_number: null,
                   status: "pending",
                 },
               },

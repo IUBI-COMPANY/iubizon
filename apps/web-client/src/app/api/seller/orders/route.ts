@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { parseDispatchMeta, formatDispatchMeta } from "@/lib/shippingHelper";
 
 export interface SellerPackageItem {
   id: string;
@@ -12,7 +13,12 @@ export interface SellerPackageItem {
 }
 
 export interface SellerPackage {
-  trackingNumber: string; // ej. "374155-001"
+  packageId: string;
+  trackingNumber: string | null;
+  carrierName: string | null;
+  trackingUrl: string | null;
+  carrierPhone: string | null;
+  estimatedDelivery: string | null;
   createdAt: string;
   status: string;
   buyerName: string;
@@ -39,7 +45,6 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Obtener todas las órdenes donde el usuario es el vendedor o pertenece a la empresa vendedora
     const orders = await prisma.order.findMany({
       where: {
         OR: [
@@ -53,8 +58,6 @@ export async function GET() {
           select: {
             id: true,
             name: true,
-            email: true,
-            phone: true,
           },
         },
         product: {
@@ -73,12 +76,16 @@ export async function GET() {
     });
 
     type TempPackage = {
-      trackingNumber: string;
+      packageId: string;
+      sessionCode: string;
+      trackingNumber: string | null;
+      carrierName: string | null;
+      trackingUrl: string | null;
+      carrierPhone: string | null;
+      estimatedDelivery: string | null;
       createdAt: string;
       status: string;
       buyerName: string;
-      buyerPhone: string | null;
-      buyerEmail: string | null;
       destinationAddress: string | null;
       courierInfo: string | null;
       paymentMethod: string;
@@ -90,23 +97,29 @@ export async function GET() {
     const packageMap = new Map<string, TempPackage>();
 
     for (const order of orders) {
-      const rawTracking =
-        order.shipping?.tracking_number || `374155-${order.id.slice(0, 3)}`;
+      const sessionCode =
+        order.payment_id || order.id.slice(0, 6).toUpperCase();
+      const groupKey = `${sessionCode}_${order.seller_id}`;
 
-      // Remover cualquier prefijo TRK- para obtener código limpio (ej. 374155-001)
-      const cleanTracking = rawTracking.replace(/^TRK-/, "");
-      const formattedTracking = cleanTracking.includes("-")
-        ? cleanTracking
-        : `${cleanTracking}-001`;
+      const { carrierName, trackingUrl, carrierPhone } = parseDispatchMeta(
+        order.shipping?.courier,
+      );
 
-      if (!packageMap.has(formattedTracking)) {
-        packageMap.set(formattedTracking, {
-          trackingNumber: formattedTracking,
-          createdAt: order.created_at?.toISOString() || new Date().toISOString(),
-          status: order.shipping?.status || order.status,
+      if (!packageMap.has(groupKey)) {
+        packageMap.set(groupKey, {
+          packageId: groupKey,
+          sessionCode,
+          trackingNumber: order.shipping?.tracking_number || null,
+          carrierName,
+          trackingUrl,
+          carrierPhone,
+          estimatedDelivery: order.shipping?.estimated_delivery
+            ? order.shipping.estimated_delivery.toISOString()
+            : null,
+          createdAt:
+            order.created_at?.toISOString() || new Date().toISOString(),
+          status: order.status,
           buyerName: order.buyer?.name || "Comprador",
-          buyerPhone: order.buyer?.phone || null,
-          buyerEmail: order.buyer?.email || null,
           destinationAddress: order.shipping?.destination_address || null,
           courierInfo: order.shipping?.courier || null,
           paymentMethod: order.payment_method || "cash_on_delivery",
@@ -116,10 +129,18 @@ export async function GET() {
         });
       }
 
-      const pkg = packageMap.get(formattedTracking)!;
+      const pkg = packageMap.get(groupKey)!;
       const itemPrice = Number(order.amount);
       pkg.subtotal += itemPrice;
       pkg.orderIds.push(order.id);
+
+      if (!pkg.trackingNumber && order.shipping?.tracking_number) {
+        pkg.trackingNumber = order.shipping.tracking_number;
+      }
+      if (!pkg.estimatedDelivery && order.shipping?.estimated_delivery) {
+        pkg.estimatedDelivery =
+          order.shipping.estimated_delivery.toISOString();
+      }
 
       if (order.product) {
         pkg.items.push({
@@ -140,7 +161,12 @@ export async function GET() {
       const netEarnings = tempPkg.subtotal - platformCommission;
 
       sellerPackages.push({
+        packageId: tempPkg.packageId,
         trackingNumber: tempPkg.trackingNumber,
+        carrierName: tempPkg.carrierName,
+        trackingUrl: tempPkg.trackingUrl,
+        carrierPhone: tempPkg.carrierPhone,
+        estimatedDelivery: tempPkg.estimatedDelivery,
         createdAt: tempPkg.createdAt,
         status: tempPkg.status,
         buyerName: tempPkg.buyerName,
@@ -170,7 +196,6 @@ export async function GET() {
   }
 }
 
-// Endpoint para actualizar estado del paquete / órdenes asociadas
 export async function PATCH(req: Request) {
   try {
     const supabase = await createServerClient();
@@ -182,49 +207,134 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { orderIds, trackingNumber, newStatus } = await req.json();
+    const body = await req.json();
+    const {
+      orderIds,
+      action,
+      courier,
+      trackingNumber,
+      trackingUrl,
+      carrierPhone,
+      estimatedDelivery,
+    } = body;
 
-    if (!newStatus) {
+    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
       return NextResponse.json(
-        { error: "Falta el nuevo estado" },
+        { error: "Faltan las órdenes a actualizar" },
         { status: 400 },
       );
     }
 
-    if (orderIds && Array.isArray(orderIds) && orderIds.length > 0) {
+    if (action === "cancel") {
       await prisma.order.updateMany({
         where: { id: { in: orderIds } },
-        data: { status: newStatus, updated_at: new Date() },
+        data: { status: "cancelled", updated_at: new Date() },
       });
-
       await prisma.shipping.updateMany({
         where: { order_id: { in: orderIds } },
-        data: { status: newStatus, updated_at: new Date() },
+        data: { status: "cancelled", updated_at: new Date() },
       });
-    } else if (trackingNumber) {
-      const shippings = await prisma.shipping.findMany({
-        where: { tracking_number: { contains: trackingNumber } },
-        select: { order_id: true },
-      });
-      const ids = shippings.map((s) => s.order_id);
-      if (ids.length > 0) {
-        await prisma.order.updateMany({
-          where: { id: { in: ids } },
-          data: { status: newStatus, updated_at: new Date() },
-        });
+      return NextResponse.json({ success: true });
+    }
+
+    if (!courier || !String(courier).trim()) {
+      return NextResponse.json(
+        { error: "La empresa de transporte es requerida" },
+        { status: 400 },
+      );
+    }
+
+    if (!trackingNumber || !String(trackingNumber).trim()) {
+      return NextResponse.json(
+        { error: "El Código de Tracking / Guía es requerido" },
+        { status: 400 },
+      );
+    }
+
+    if (!estimatedDelivery) {
+      return NextResponse.json(
+        { error: "La Fecha Estimada de Entrega es requerida" },
+        { status: 400 },
+      );
+    }
+
+    const estDeliveryDate = new Date(estimatedDelivery);
+    const dispatchCourierMeta = formatDispatchMeta({
+      courier,
+      trackingNumber,
+      trackingUrl,
+      carrierPhone,
+    });
+
+    // Actualizar todas las órdenes del paquete a "shipped"
+    await prisma.order.updateMany({
+      where: { id: { in: orderIds } },
+      data: { status: "shipped", updated_at: new Date() },
+    });
+
+    // Optimización de consultas DB para shippings (Lote masivo)
+    const existingShippings = await prisma.shipping.findMany({
+      where: { order_id: { in: orderIds } },
+      select: { id: true, order_id: true },
+    });
+
+    const existingOrderIds = new Set(existingShippings.map((s) => s.order_id));
+    const missingOrderIds = orderIds.filter((id) => !existingOrderIds.has(id));
+
+    const updateFields = {
+      courier: dispatchCourierMeta,
+      tracking_number: trackingNumber.trim(),
+      estimated_delivery: estDeliveryDate,
+      updated_at: new Date(),
+    };
+
+    // Intentar actualizar en lote con "in_transit"
+    try {
+      if (existingShippings.length > 0) {
         await prisma.shipping.updateMany({
-          where: { order_id: { in: ids } },
-          data: { status: newStatus, updated_at: new Date() },
+          where: { order_id: { in: Array.from(existingOrderIds) } },
+          data: { ...updateFields, status: "in_transit" },
+        });
+      }
+
+      if (missingOrderIds.length > 0) {
+        await prisma.shipping.createMany({
+          data: missingOrderIds.map((id) => ({
+            order_id: id,
+            ...updateFields,
+            status: "in_transit",
+            origin_address: "Almacén / Proveedor",
+          })),
+        });
+      }
+    } catch {
+      // Fallback seguro a "pending" si la restricción CHECK rechaza "in_transit"
+      if (existingShippings.length > 0) {
+        await prisma.shipping.updateMany({
+          where: { order_id: { in: Array.from(existingOrderIds) } },
+          data: { ...updateFields, status: "pending" },
+        });
+      }
+
+      if (missingOrderIds.length > 0) {
+        await prisma.shipping.createMany({
+          data: missingOrderIds.map((id) => ({
+            order_id: id,
+            ...updateFields,
+            status: "pending",
+            origin_address: "Almacén / Proveedor",
+          })),
         });
       }
     }
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    console.error("Error al actualizar estado del pedido:", err);
-    return NextResponse.json(
-      { error: "Error interno al actualizar pedido" },
-      { status: 500 },
-    );
+    console.error("Error al registrar despacho:", err);
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error interno al registrar despacho";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

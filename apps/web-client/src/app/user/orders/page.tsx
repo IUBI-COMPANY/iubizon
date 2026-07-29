@@ -7,13 +7,18 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
-  ChevronRight,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+  Loader2,
   Package,
   ShoppingBag,
+  Truck,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PackageItem {
@@ -31,7 +36,10 @@ interface PackageItem {
 }
 
 interface TrackingPackage {
-  trackingNumber: string;
+  trackingNumber: string | null;
+  carrierName: string | null;
+  trackingUrl: string | null;
+  estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
   subtotal: number;
@@ -41,6 +49,7 @@ interface TrackingPackage {
   destinationAddress: string | null;
   courierInfo: string | null;
   sellerName: string | null;
+  orderIds: string[];
   items: PackageItem[];
 }
 
@@ -56,7 +65,21 @@ interface PurchaseOrderSession {
   packages: TrackingPackage[];
 }
 
-function formatDate(isoString: string) {
+function formatDate(isoString: string | null) {
+  if (!isoString) return null;
+  try {
+    const d = new Date(isoString);
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return isoString;
+  }
+}
+
+function formatFullDate(isoString: string) {
   try {
     const d = new Date(isoString);
     return new Intl.DateTimeFormat("es-PE", {
@@ -77,6 +100,7 @@ export default function UserOrdersPage() {
   const [sessions, setSessions] = useState<PurchaseOrderSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingPackageKey, setConfirmingPackageKey] = useState<string | null>(null);
 
   const fetchUserOrders = useCallback(async () => {
     try {
@@ -91,30 +115,6 @@ export default function UserOrdersPage() {
 
       if (Array.isArray(data.sessions)) {
         setSessions(data.sessions);
-      } else if (Array.isArray(data.packages)) {
-        // Fallback en caso de formato plano
-        const subtotal = data.packages.reduce(
-          (s: number, p: TrackingPackage) => s + (p.subtotal || 0),
-          0,
-        );
-        const taxAmount = subtotal * 0.18;
-        const shippingCost = 50.0;
-        const totalAmount = subtotal + taxAmount + shippingCost;
-        const defaultSession: PurchaseOrderSession = {
-          orderCode: data.packages[0]?.orderCode || "374155",
-          createdAt: data.packages[0]?.createdAt || new Date().toISOString(),
-          subtotal,
-          taxAmount,
-          shippingCost,
-          totalAmount,
-          totalItems: data.packages.reduce(
-            (s: number, p: TrackingPackage) => s + (p.items?.length || 0),
-            0,
-          ),
-          destinationAddress: data.packages[0]?.destinationAddress || null,
-          packages: data.packages,
-        };
-        setSessions([defaultSession]);
       }
     } catch (err: unknown) {
       setError(
@@ -130,6 +130,31 @@ export default function UserOrdersPage() {
       fetchUserOrders();
     }
   }, [user, fetchUserOrders]);
+
+  const handleConfirmReceipt = async (pkg: TrackingPackage) => {
+    if (!confirm("¿Confirmas que has recibido el paquete a satisfacción?")) return;
+
+    const pkgKey = pkg.trackingNumber || pkg.orderIds[0];
+    setConfirmingPackageKey(pkgKey);
+
+    try {
+      const res = await fetch("/api/user/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderIds: pkg.orderIds }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al confirmar recepción");
+      }
+
+      await fetchUserOrders();
+    } catch (err) {
+      console.error("Error al confirmar recepción:", err);
+    } finally {
+      setConfirmingPackageKey(null);
+    }
+  };
 
   if (authLoading || (loading && !error)) {
     return (
@@ -227,7 +252,7 @@ export default function UserOrdersPage() {
                       <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
                       <span>
                         <strong className="text-[#112237]">Fecha de compra:</strong>{" "}
-                        {formatDate(session.createdAt)}
+                        {formatFullDate(session.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -245,43 +270,93 @@ export default function UserOrdersPage() {
                   </div>
                 </div>
 
-                {/* Sub-cards de Paquetes por Vendedor / Tracking ID */}
+                {/* Sub-cards de Paquetes por Vendedor / Agencia de Transporte */}
                 <div className="space-y-5">
-                  {session.packages.map((pkg) => {
-                    const cleanTracking = pkg.trackingNumber.replace(/^(?:#|TRK-)+/gi, "");
+                  {session.packages.map((pkg, idx) => {
+                    const isConfirming =
+                      confirmingPackageKey === (pkg.trackingNumber || pkg.orderIds[0]);
 
                     return (
                       <div
-                        key={pkg.trackingNumber}
+                        key={pkg.trackingNumber || `pkg_${idx}`}
                         className="border border-[#e2e8f0] bg-white rounded-2xl p-5 space-y-4 hover:border-[#cbd5e1] transition-all"
                       >
-                        {/* Cabecera del Sub-Paquete con Tracking ID */}
+                        {/* Cabecera del Sub-Paquete con Tracking ID y Agencia */}
                         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl">
-                              Tracking Id: {cleanTracking}
-                            </span>
+                            {pkg.trackingNumber ? (
+                              <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl flex items-center gap-1">
+                                <Truck className="w-3.5 h-3.5" />
+                                <span>Tracking Id: {pkg.trackingNumber}</span>
+                              </span>
+                            ) : (
+                              <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>El vendedor está preparando tu paquete</span>
+                              </span>
+                            )}
+
                             <span className="text-xs font-bold text-[#112237] bg-slate-100 px-2.5 py-1 rounded-xl">
-                              {pkg.items.length} {pkg.items.length === 1 ? "producto en paquete" : "productos en paquete"}
+                              {pkg.items.length}{" "}
+                              {pkg.items.length === 1
+                                ? "producto en paquete"
+                                : "productos en paquete"}
                             </span>
+
+                            {pkg.sellerName && (
+                              <span className="text-xs text-[#64748b] flex items-center gap-1 font-semibold">
+                                <Building2 className="w-3 h-3 text-[#f25c05]" />
+                                <span>{pkg.sellerName}</span>
+                              </span>
+                            )}
                           </div>
 
                           <span
                             className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                              pkg.status === "delivered"
+                              pkg.status === "delivered" || pkg.status === "completed"
                                 ? "bg-emerald-100 text-emerald-800"
-                                : pkg.status === "shipped"
+                                : pkg.status === "shipped" || pkg.status === "paid"
                                   ? "bg-blue-100 text-blue-800"
                                   : "bg-amber-100 text-amber-800"
                             }`}
                           >
-                            {pkg.status === "delivered"
+                            {pkg.status === "delivered" || pkg.status === "completed"
                               ? "Entregado"
-                              : pkg.status === "shipped"
+                              : pkg.status === "shipped" || pkg.status === "paid"
                                 ? "En Camino"
                                 : "Pendiente de Despacho"}
                           </span>
                         </div>
+
+                        {/* Datos de Transporte / Rastreo si fue despachado */}
+                        {pkg.trackingNumber && (
+                          <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                            <div className="space-y-0.5">
+                              <p className="text-[#334155]">
+                                <strong className="text-[#112237]">Agencia de Transporte:</strong>{" "}
+                                {pkg.carrierName || "Agencia de Envío"}
+                              </p>
+                              {pkg.estimatedDelivery && (
+                                <p className="text-[#334155]">
+                                  <strong className="text-[#112237]">Llegada Estimada:</strong>{" "}
+                                  {formatDate(pkg.estimatedDelivery)}
+                                </p>
+                              )}
+                            </div>
+
+                            {pkg.trackingUrl && (
+                              <a
+                                href={pkg.trackingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-4 py-2 rounded-xl transition-all shadow-xs shrink-0"
+                              >
+                                <span>Rastrear Envío</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        )}
 
                         {/* Lista de Productos dentro de este Paquete */}
                         <div className="divide-y divide-[#f1f5f9]">
@@ -311,15 +386,9 @@ export default function UserOrdersPage() {
                                   >
                                     {item.title}
                                   </Link>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs font-extrabold text-[#f25c05]">
-                                      S/ {item.price.toFixed(2)}
-                                    </span>
-                                    <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-semibold">
-                                      <Building2 className="w-3 h-3 text-[#f25c05]" />
-                                      <span>{item.company?.name || pkg.sellerName}</span>
-                                    </span>
-                                  </div>
+                                  <p className="text-xs font-extrabold text-[#f25c05] mt-0.5">
+                                    S/ {item.price.toFixed(2)}
+                                  </p>
                                 </div>
                               </div>
 
@@ -327,18 +396,51 @@ export default function UserOrdersPage() {
                                 href={`/products/${item.productId}`}
                                 className="text-xs font-semibold text-[#f25c05] hover:underline shrink-0 flex items-center gap-0.5"
                               >
-                                <span>Ver detalle</span>
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <span>Ver producto</span>
                               </Link>
                             </div>
                           ))}
+                        </div>
+
+                        {/* Acción para el Comprador: Confirmar Recepción */}
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#f1f5f9]">
+                          <span className="text-[11px] text-[#64748b]">
+                            {pkg.status === "delivered" || pkg.status === "completed"
+                              ? "Paquete recibido a satisfacción."
+                              : pkg.status === "shipped" || pkg.status === "paid"
+                                ? "Presiona al recibir tu paquete para dar por completada la entrega."
+                                : "Tu paquete será despachado por el vendedor a la brevedad."}
+                          </span>
+
+                          {(pkg.status === "shipped" || pkg.status === "paid") && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirmReceipt(pkg)}
+                              disabled={isConfirming}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 rounded-xl shadow-xs shrink-0"
+                            >
+                              {isConfirming ? (
+                                <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4 mr-1.5" />
+                              )}
+                              Confirmar Recepción del Paquete
+                            </Button>
+                          )}
+
+                          {(pkg.status === "delivered" || pkg.status === "completed") && (
+                            <span className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-xl border border-emerald-200 shrink-0">
+                              <CheckCircle className="w-4 h-4" />
+                              Entrega Confirmada
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Resumen Único de Importes de la Compra Global (Al final de toda la Orden) */}
+                {/* Resumen Único de Importes de la Compra Global */}
                 <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 text-xs">
                     <p className="text-[#334155]">

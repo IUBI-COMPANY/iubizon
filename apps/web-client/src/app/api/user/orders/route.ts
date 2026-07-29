@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { parseDispatchMeta } from "@/lib/shippingHelper";
 
 export interface PackageItem {
   id: string;
@@ -17,7 +18,10 @@ export interface PackageItem {
 }
 
 export interface TrackingPackage {
-  trackingNumber: string; // ej. "374155-001"
+  trackingNumber: string | null;
+  carrierName: string | null;
+  trackingUrl: string | null;
+  estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
   subtotal: number;
@@ -27,12 +31,13 @@ export interface TrackingPackage {
   destinationAddress: string | null;
   courierInfo: string | null;
   sellerName: string | null;
+  orderIds: string[];
   items: PackageItem[];
 }
 
 export interface PurchaseOrderSession {
-  orderCode: string; // ej. "374155"
-  createdAt: string; // ISO date string
+  orderCode: string;
+  createdAt: string;
   subtotal: number;
   taxAmount: number;
   shippingCost: number;
@@ -53,7 +58,6 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Obtener todas las órdenes del usuario
     const orders = await prisma.order.findMany({
       where: { buyer_id: user.id },
       orderBy: { created_at: "desc" },
@@ -87,14 +91,53 @@ export async function GET() {
       },
     });
 
+    // ── Lógica de Auto-Completado por Fecha Estimada (+24 Horas) ─────────────
+    const now = new Date();
+    const ordersToAutoComplete: string[] = [];
+
+    for (const order of orders) {
+      if (
+        order.shipping &&
+        order.shipping.status === "shipped" &&
+        order.shipping.estimated_delivery
+      ) {
+        const expiryTime = new Date(
+          order.shipping.estimated_delivery.getTime() + 24 * 60 * 60 * 1000,
+        );
+        if (now > expiryTime) {
+          ordersToAutoComplete.push(order.id);
+          order.status = "delivered";
+          if (order.shipping) order.shipping.status = "delivered";
+        }
+      }
+    }
+
+    if (ordersToAutoComplete.length > 0) {
+      await prisma.order.updateMany({
+        where: { id: { in: ordersToAutoComplete } },
+        data: { status: "delivered", updated_at: now },
+      });
+      await prisma.shipping.updateMany({
+        where: { order_id: { in: ordersToAutoComplete } },
+        data: { status: "delivered", updated_at: now },
+      });
+    }
+
+    // ── Agrupación en Sesiones y Paquetes por Vendedor ─────────────────────
+
     type TempPackage = {
-      trackingNumber: string;
+      packageKey: string;
+      trackingNumber: string | null;
+      carrierName: string | null;
+      trackingUrl: string | null;
+      estimatedDelivery: string | null;
       status: string;
       paymentMethod: string;
       sellerName: string | null;
       subtotal: number;
       destinationAddress: string | null;
       courierInfo: string | null;
+      orderIds: string[];
       items: PackageItem[];
     };
 
@@ -107,18 +150,13 @@ export async function GET() {
     const sessionMap = new Map<string, TempSession>();
 
     for (const order of orders) {
-      const rawTracking =
-        order.shipping?.tracking_number || `374155-${order.id.slice(0, 3)}`;
+      const mainOrderCode =
+        order.payment_id || order.id.slice(0, 6).toUpperCase();
+      const pkgKey = `${mainOrderCode}_${order.seller_id}`;
 
-      // Extraer el código principal de orden (ej. de TRK-374155-001 o 374155-001 -> 374155)
-      const match = rawTracking.match(/^(?:TRK-)?([A-Za-z0-9]+)-\d{3}$/);
-      const mainOrderCode = match ? match[1] : rawTracking.replace(/^TRK-/, "");
-
-      // Remover cualquier prefijo TRK- para obtener código puro (ej. 374155-001)
-      const cleanTracking = rawTracking.replace(/^TRK-/, "");
-      const formattedTracking = cleanTracking.includes("-")
-        ? cleanTracking
-        : `${cleanTracking}-001`;
+      const { carrierName, trackingUrl } = parseDispatchMeta(
+        order.shipping?.courier,
+      );
 
       if (!sessionMap.has(mainOrderCode)) {
         sessionMap.set(mainOrderCode, {
@@ -131,25 +169,33 @@ export async function GET() {
 
       const session = sessionMap.get(mainOrderCode)!;
 
-      if (!session.packageMap.has(formattedTracking)) {
+      if (!session.packageMap.has(pkgKey)) {
         const sellerName =
           order.company?.name || order.seller?.name || "Vendedor iubizon";
 
-        session.packageMap.set(formattedTracking, {
-          trackingNumber: formattedTracking,
-          status: order.shipping?.status || order.status,
+        session.packageMap.set(pkgKey, {
+          packageKey: pkgKey,
+          trackingNumber: order.shipping?.tracking_number || null,
+          carrierName,
+          trackingUrl,
+          estimatedDelivery: order.shipping?.estimated_delivery
+            ? order.shipping.estimated_delivery.toISOString()
+            : null,
+          status: order.status,
           paymentMethod: order.payment_method || "cash_on_delivery",
           sellerName,
           subtotal: 0,
           destinationAddress: order.shipping?.destination_address || null,
           courierInfo: order.shipping?.courier || null,
+          orderIds: [],
           items: [],
         });
       }
 
-      const pkg = session.packageMap.get(formattedTracking)!;
+      const pkg = session.packageMap.get(pkgKey)!;
       const itemPrice = Number(order.amount);
       pkg.subtotal += itemPrice;
+      pkg.orderIds.push(order.id);
 
       if (order.product) {
         pkg.items.push({
@@ -170,7 +216,6 @@ export async function GET() {
       }
     }
 
-    // Construir la estructura final jerárquica
     const purchaseSessions: PurchaseOrderSession[] = [];
 
     for (const session of Array.from(sessionMap.values())) {
@@ -192,6 +237,9 @@ export async function GET() {
 
         packagesList.push({
           trackingNumber: tempPkg.trackingNumber,
+          carrierName: tempPkg.carrierName,
+          trackingUrl: tempPkg.trackingUrl,
+          estimatedDelivery: tempPkg.estimatedDelivery,
           status: tempPkg.status,
           paymentMethod: tempPkg.paymentMethod,
           subtotal: tempPkg.subtotal,
@@ -201,6 +249,7 @@ export async function GET() {
           destinationAddress: tempPkg.destinationAddress,
           courierInfo: tempPkg.courierInfo,
           sellerName: tempPkg.sellerName,
+          orderIds: tempPkg.orderIds,
           items: tempPkg.items,
         });
       }
@@ -231,6 +280,57 @@ export async function GET() {
     console.error("Error al obtener compras del usuario:", err);
     return NextResponse.json(
       { error: "Error al cargar historial de compras" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { orderIds } = await req.json();
+
+    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+      return NextResponse.json(
+        { error: "Faltan los IDs de las órdenes" },
+        { status: 400 },
+      );
+    }
+
+    await prisma.order.updateMany({
+      where: {
+        id: { in: orderIds },
+        buyer_id: user.id,
+      },
+      data: {
+        status: "delivered",
+        updated_at: new Date(),
+      },
+    });
+
+    await prisma.shipping.updateMany({
+      where: {
+        order_id: { in: orderIds },
+      },
+      data: {
+        status: "delivered",
+        updated_at: new Date(),
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    console.error("Error al confirmar recepción del paquete:", err);
+    return NextResponse.json(
+      { error: "Error interno al confirmar recepción" },
       { status: 500 },
     );
   }

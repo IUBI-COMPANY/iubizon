@@ -17,11 +17,11 @@ import {
   Loader2,
   MapPin,
   Package,
-  Phone,
   ShoppingCart,
   Truck,
   User as UserIcon,
   Wallet,
+  X,
   XCircle,
 } from "lucide-react";
 
@@ -35,7 +35,12 @@ interface SellerPackageItem {
 }
 
 interface SellerPackage {
-  trackingNumber: string;
+  packageId: string;
+  trackingNumber: string | null;
+  carrierName: string | null;
+  trackingUrl: string | null;
+  carrierPhone: string | null;
+  estimatedDelivery: string | null;
   createdAt: string;
   status: string;
   buyerName: string;
@@ -51,7 +56,21 @@ interface SellerPackage {
   items: SellerPackageItem[];
 }
 
-function formatDate(isoString: string) {
+function formatDate(isoString: string | null) {
+  if (!isoString) return "No especificada";
+  try {
+    const d = new Date(isoString);
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(d);
+  } catch {
+    return isoString;
+  }
+}
+
+function formatFullDate(isoString: string) {
   try {
     const d = new Date(isoString);
     return new Intl.DateTimeFormat("es-PE", {
@@ -75,6 +94,15 @@ function OrdersContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusTab, setStatusTab] = useState("all");
   const [updatingGroup, setUpdatingGroup] = useState<string | null>(null);
+
+  // Estado para el Modal de Despacho
+  const [dispatchModalPkg, setDispatchModalPkg] = useState<SellerPackage | null>(null);
+  const [courierName, setCourierName] = useState("Shalom Courier");
+  const [trackingNumberInput, setTrackingNumberInput] = useState("");
+  const [estimatedDeliveryInput, setEstimatedDeliveryInput] = useState("");
+  const [carrierPhoneInput, setCarrierPhoneInput] = useState("");
+  const [trackingUrlInput, setTrackingUrlInput] = useState("");
+  const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -104,26 +132,94 @@ function OrdersContent() {
     }
   }, [user, fetchSellerOrders]);
 
-  const updatePackageStatus = async (pkg: SellerPackage, newStatus: string) => {
-    setUpdatingGroup(pkg.trackingNumber);
+  const openDispatchModal = (pkg: SellerPackage) => {
+    setDispatchModalPkg(pkg);
+    setCourierName("Shalom Courier");
+    setTrackingNumberInput("");
+    setCarrierPhoneInput("");
+    setTrackingUrlInput("");
+    setModalError(null);
+
+    // Calcular fecha por defecto: hoy + 2 días (formato YYYY-MM-DD)
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 2);
+    setEstimatedDeliveryInput(targetDate.toISOString().split("T")[0]);
+  };
+
+  const handleConfirmDispatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dispatchModalPkg) return;
+
+    if (!courierName.trim()) {
+      setModalError("La empresa de transporte es requerida");
+      return;
+    }
+
+    if (!trackingNumberInput.trim()) {
+      setModalError("El Código de Tracking / Guía es requerido");
+      return;
+    }
+
+    if (!estimatedDeliveryInput) {
+      setModalError("La Fecha Estimada de Entrega es requerida");
+      return;
+    }
+
+    setUpdatingGroup(dispatchModalPkg.packageId);
+    setModalError(null);
+
+    try {
+      const res = await fetch("/api/seller/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderIds: dispatchModalPkg.orderIds,
+          action: "dispatch",
+          courier: courierName.trim(),
+          trackingNumber: trackingNumberInput.trim(),
+          estimatedDelivery: estimatedDeliveryInput,
+          carrierPhone: carrierPhoneInput.trim() || null,
+          trackingUrl: trackingUrlInput.trim() || null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al registrar el despacho");
+      }
+
+      setDispatchModalPkg(null);
+      await fetchSellerOrders();
+    } catch (err: unknown) {
+      setModalError(
+        err instanceof Error ? err.message : "Error al registrar despacho",
+      );
+    } finally {
+      setUpdatingGroup(null);
+    }
+  };
+
+  const handleCancelPackage = async (pkg: SellerPackage) => {
+    if (!confirm("¿Estás seguro de cancelar este pedido?")) return;
+    setUpdatingGroup(pkg.packageId);
     try {
       const res = await fetch("/api/seller/orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderIds: pkg.orderIds,
-          trackingNumber: pkg.trackingNumber,
-          newStatus,
+          action: "cancel",
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Error al actualizar estado");
+        throw new Error("Error al cancelar");
       }
 
       await fetchSellerOrders();
     } catch (err) {
-      console.error("Error updating package status:", err);
+      console.error("Error al cancelar pedido:", err);
     } finally {
       setUpdatingGroup(null);
     }
@@ -166,7 +262,7 @@ function OrdersContent() {
               Gestión de Pedidos & Ventas
             </h1>
             <p className="text-xs text-[#64748b]">
-              Administra los despachos asignados y consulta el monto neto a recibir por iubizon.
+              Administra los despachos asignados e ingresa el seguimiento de la agencia de transporte.
             </p>
           </div>
         </div>
@@ -183,32 +279,41 @@ function OrdersContent() {
           {filteredPackages.length > 0 ? (
             <div className="space-y-6">
               {filteredPackages.map((pkg) => {
-                const isUpdating = updatingGroup === pkg.trackingNumber;
+                const isUpdating = updatingGroup === pkg.packageId;
 
-                // Cálculos financieros defensivos
                 const subtotal = pkg.subtotal ?? 0;
                 const platformCommission =
                   pkg.platformCommission ?? subtotal * 0.1;
-                const netEarnings = pkg.netEarnings ?? subtotal - platformCommission;
+                const netEarnings =
+                  pkg.netEarnings ?? subtotal - platformCommission;
 
                 return (
                   <div
-                    key={pkg.trackingNumber}
+                    key={pkg.packageId}
                     className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-5 hover:border-[#cbd5e1] transition-all"
                   >
                     {/* Cabecera del Paquete / Venta Agrupada */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#e2e8f0]">
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl">
-                          Tracking Id: {pkg.trackingNumber}
-                        </span>
+                        {pkg.trackingNumber ? (
+                          <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl flex items-center gap-1">
+                            <Truck className="w-3.5 h-3.5" />
+                            <span>Tracking Id: {pkg.trackingNumber}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Pendiente de Despacho</span>
+                          </span>
+                        )}
+
                         <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
                           <UserIcon className="w-3.5 h-3.5 text-[#64748b]" />
                           <span>Venta a: {pkg.buyerName}</span>
                         </span>
                         <div className="flex items-center gap-1 text-xs text-[#64748b] ml-1">
                           <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
-                          <span>{formatDate(pkg.createdAt)}</span>
+                          <span>{formatFullDate(pkg.createdAt)}</span>
                         </div>
                       </div>
 
@@ -279,7 +384,7 @@ function OrdersContent() {
 
                     {/* Sección Relevante para el Vendedor: Datos de Despacho + Pago Neto por iubizon */}
                     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      {/* Lado Izquierdo: Datos de Contacto & Entrega Destacados */}
+                      {/* Lado Izquierdo: Datos de Despacho & Destino */}
                       <div className="space-y-3">
                         <p className="font-extrabold text-[#112237] border-b border-[#e2e8f0] pb-2 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
                           <MapPin className="w-4 h-4 text-[#f25c05]" />
@@ -298,6 +403,18 @@ function OrdersContent() {
                                 <strong className="text-[#112237]">Dirección de Envío:</strong>{" "}
                                 {pkg.destinationAddress}
                               </span>
+                            </p>
+                          )}
+                          {pkg.carrierName && (
+                            <p className="text-[#334155] pt-1 border-t border-slate-200">
+                              <strong className="text-[#112237]">Agencia de Transporte:</strong>{" "}
+                              {pkg.carrierName}
+                            </p>
+                          )}
+                          {pkg.estimatedDelivery && (
+                            <p className="text-[#334155]">
+                              <strong className="text-[#112237]">Llegada Estimada:</strong>{" "}
+                              {formatDate(pkg.estimatedDelivery)}
                             </p>
                           )}
                         </div>
@@ -335,21 +452,17 @@ function OrdersContent() {
                         <>
                           <Button
                             size="sm"
-                            onClick={() => updatePackageStatus(pkg, "shipped")}
+                            onClick={() => openDispatchModal(pkg)}
                             disabled={isUpdating}
                             className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-5 rounded-xl shadow-xs"
                           >
-                            {isUpdating ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                            ) : (
-                              <CheckCircle className="w-4 h-4 mr-1.5" />
-                            )}
+                            <Truck className="w-4 h-4 mr-1.5" />
                             Confirmar Despacho
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => updatePackageStatus(pkg, "cancelled")}
+                            onClick={() => handleCancelPackage(pkg)}
                             disabled={isUpdating}
                             className="text-xs font-bold px-4 rounded-xl"
                           >
@@ -360,19 +473,10 @@ function OrdersContent() {
                       )}
 
                       {(pkg.status === "shipped" || pkg.status === "paid") && (
-                        <Button
-                          size="sm"
-                          onClick={() => updatePackageStatus(pkg, "delivered")}
-                          disabled={isUpdating}
-                          className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-5 rounded-xl"
-                        >
-                          {isUpdating ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                          ) : (
-                            <Truck className="w-4 h-4 mr-1.5" />
-                          )}
-                          Marcar como Entregado
-                        </Button>
+                        <div className="flex items-center gap-1.5 text-xs font-extrabold text-blue-800 bg-blue-50 px-4 py-2 rounded-xl border border-blue-200">
+                          <Truck className="w-4 h-4" />
+                          <span>En Camino — El comprador confirmará la recepción</span>
+                        </div>
                       )}
 
                       {(pkg.status === "delivered" || pkg.status === "completed") && (
@@ -411,6 +515,155 @@ function OrdersContent() {
           )}
         </Tabs>
       </div>
+
+      {/* Modal de Registro de Despacho */}
+      {dispatchModalPkg && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f25c05] flex items-center justify-center font-bold">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-[#112237]">
+                    Confirmar Despacho de Pedido
+                  </h3>
+                  <p className="text-[11px] text-[#64748b]">
+                    Ingresa la agencia y datos de seguimiento entregados
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDispatchModalPkg(null)}
+                className="text-[#64748b] hover:text-[#112237] p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {modalError && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-xl">
+                {modalError}
+              </div>
+            )}
+
+            <form onSubmit={handleConfirmDispatch} className="space-y-4 text-xs">
+              {/* Empresa de Transporte */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#112237] block">
+                  Empresa de Transporte / Agencia <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  list="agencias-sugeridas"
+                  value={courierName}
+                  onChange={(e) => setCourierName(e.target.value)}
+                  placeholder="ej. Shalom, Olva Courier, Marvisur..."
+                  required
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-2.5 text-xs text-[#112237] focus:outline-none focus:border-[#f25c05] transition-colors"
+                />
+                <datalist id="agencias-sugeridas">
+                  <option value="Shalom Courier" />
+                  <option value="Olva Courier" />
+                  <option value="Marvisur" />
+                  <option value="Servientrega" />
+                  <option value="Courier Propio / Directo" />
+                </datalist>
+              </div>
+
+              {/* Código de Tracking */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#112237] block">
+                  Código de Tracking / Guía de Remisión <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={trackingNumberInput}
+                  onChange={(e) => setTrackingNumberInput(e.target.value)}
+                  placeholder="ej. SH-9842104 o 8740129"
+                  required
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-2.5 text-xs text-[#112237] focus:outline-none focus:border-[#f25c05] transition-colors font-mono"
+                />
+              </div>
+
+              {/* Fecha Estimada de Entrega */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#112237] block">
+                  Fecha Estimada de Entrega <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={estimatedDeliveryInput}
+                  onChange={(e) => setEstimatedDeliveryInput(e.target.value)}
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-2.5 text-xs text-[#112237] focus:outline-none focus:border-[#f25c05] transition-colors"
+                />
+                <p className="text-[10px] text-[#64748b]">
+                  El pedido se auto-completará 24 horas después de esta fecha si el comprador no lo confirma antes.
+                </p>
+              </div>
+
+              {/* Teléfono del Transportista (Opcional - Gestión iubizon) */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#112237] flex items-center justify-between">
+                  <span>Teléfono del Transportista / Agencia</span>
+                  <span className="text-[10px] text-[#64748b] font-normal">(Opcional)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={carrierPhoneInput}
+                  onChange={(e) => setCarrierPhoneInput(e.target.value)}
+                  placeholder="ej. 987654321 (Para uso interno de iubizon)"
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-2.5 text-xs text-[#112237] focus:outline-none focus:border-[#f25c05] transition-colors"
+                />
+              </div>
+
+              {/* Link de Seguimiento (Opcional) */}
+              <div className="space-y-1">
+                <label className="font-bold text-[#112237] flex items-center justify-between">
+                  <span>Link / URL de Seguimiento de la Agencia</span>
+                  <span className="text-[10px] text-[#64748b] font-normal">(Opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  value={trackingUrlInput}
+                  onChange={(e) => setTrackingUrlInput(e.target.value)}
+                  placeholder="ej. https://shalom.pe/tracking/SH-9842104"
+                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3.5 py-2.5 text-xs text-[#112237] focus:outline-none focus:border-[#f25c05] transition-colors"
+                />
+              </div>
+
+              {/* Acciones Modal */}
+              <div className="pt-3 flex items-center justify-end gap-2 border-t border-[#f1f5f9]">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDispatchModalPkg(null)}
+                  className="text-xs"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={updatingGroup === dispatchModalPkg.packageId}
+                  className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-5 rounded-xl shadow-xs"
+                >
+                  {updatingGroup === dispatchModalPkg.packageId ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-1.5" />
+                  )}
+                  Guardar & Despachar
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
