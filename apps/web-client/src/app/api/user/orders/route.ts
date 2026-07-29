@@ -47,8 +47,11 @@ export interface PurchaseOrderSession {
   packages: TrackingPackage[];
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const orderCodeParam = searchParams.get("code");
+
     const supabase = await createServerClient();
     const {
       data: { user },
@@ -149,9 +152,28 @@ export async function GET() {
 
     const sessionMap = new Map<string, TempSession>();
 
+    const getSessionCode = (order: (typeof orders)[0]) => {
+      if (order.payment_id && order.payment_id.trim() !== "") {
+        return order.payment_id.toUpperCase();
+      }
+      if (order.created_at) {
+        const timeKey = order.created_at.toISOString().slice(0, 16);
+        let hash = 0;
+        for (let i = 0; i < timeKey.length; i++) {
+          hash = (hash << 5) - hash + timeKey.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash)
+          .toString(36)
+          .toUpperCase()
+          .padStart(6, "0")
+          .slice(0, 6);
+      }
+      return order.id.slice(0, 6).toUpperCase();
+    };
+
     for (const order of orders) {
-      const mainOrderCode =
-        order.payment_id || order.id.slice(0, 6).toUpperCase();
+      const mainOrderCode = getSessionCode(order);
       const pkgKey = `${mainOrderCode}_${order.seller_id}`;
 
       const { carrierName, trackingUrl } = parseDispatchMeta(
@@ -271,9 +293,16 @@ export async function GET() {
       });
     }
 
+    const filteredSessions = orderCodeParam
+      ? purchaseSessions.filter(
+          (s) => s.orderCode.toLowerCase() === orderCodeParam.toLowerCase(),
+        )
+      : purchaseSessions;
+
     return NextResponse.json({
-      sessions: purchaseSessions,
-      packages: purchaseSessions.flatMap((s) => s.packages),
+      sessions: filteredSessions,
+      session: filteredSessions[0] || null,
+      packages: filteredSessions.flatMap((s) => s.packages),
       totalPurchases: purchaseSessions.length,
     });
   } catch (err: unknown) {

@@ -96,9 +96,28 @@ export async function GET() {
 
     const packageMap = new Map<string, TempPackage>();
 
+    const getSessionCode = (order: (typeof orders)[0]) => {
+      if (order.payment_id && order.payment_id.trim() !== "") {
+        return order.payment_id.toUpperCase();
+      }
+      if (order.created_at) {
+        const timeKey = order.created_at.toISOString().slice(0, 16);
+        let hash = 0;
+        for (let i = 0; i < timeKey.length; i++) {
+          hash = (hash << 5) - hash + timeKey.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash)
+          .toString(36)
+          .toUpperCase()
+          .padStart(6, "0")
+          .slice(0, 6);
+      }
+      return order.id.slice(0, 6).toUpperCase();
+    };
+
     for (const order of orders) {
-      const sessionCode =
-        order.payment_id || order.id.slice(0, 6).toUpperCase();
+      const sessionCode = getSessionCode(order);
       const groupKey = `${sessionCode}_${order.seller_id}`;
 
       const { carrierName, trackingUrl, carrierPhone } = parseDispatchMeta(
