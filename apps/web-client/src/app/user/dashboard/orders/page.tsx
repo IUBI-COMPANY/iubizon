@@ -1,69 +1,91 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
-import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { createClient } from "@/lib/supabase/client";
-import { formatPrice, formatDate } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import {
-  ShoppingCart,
-  Package,
-  Truck,
-  CheckCircle,
-  XCircle,
   ArrowLeft,
-  Loader2,
+  Calendar,
+  CheckCircle,
   Clock,
-  Check,
-  Ban,
-  Home,
+  FileText,
+  Loader2,
+  MapPin,
+  Package,
+  ShoppingCart,
+  Truck,
+  User as UserIcon,
+  XCircle,
 } from "lucide-react";
 
-interface Order {
+interface SellerPackageItem {
   id: string;
   productId: string;
-  productTitle: string;
-  productImage: string;
-  amount: number;
+  title: string;
+  price: number;
+  image: string | null;
   status: string;
-  createdAt: string;
-  buyerName: string;
-  buyerId: string;
-  sellerId: string;
-  sellerName: string;
-  shippingStatus?: string;
 }
 
-const statusConfig: Record<
-  string,
-  { label: string; variant: string; Icon: React.ComponentType<{ className?: string }> }
-> = {
-  pending: { label: "Pendiente", variant: "warning", Icon: Clock },
-  paid: { label: "Pagado", variant: "success", Icon: Check },
-  shipped: { label: "Enviado", variant: "default", Icon: Truck },
-  delivered: { label: "Entregado", variant: "success", Icon: Home },
-  completed: { label: "Completado", variant: "success", Icon: CheckCircle },
-  cancelled: { label: "Cancelado", variant: "destructive", Icon: Ban },
-};
+interface SellerPackage {
+  trackingNumber: string;
+  createdAt: string;
+  status: string;
+  buyerName: string;
+  buyerPhone: string | null;
+  buyerEmail: string | null;
+  destinationAddress: string | null;
+  courierInfo: string | null;
+  paymentMethod: string;
+  subtotal: number;
+  taxAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  orderIds: string[];
+  items: SellerPackageItem[];
+}
+
+function formatDate(isoString: string) {
+  try {
+    const d = new Date(isoString);
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(d);
+  } catch {
+    return isoString;
+  }
+}
+
+// Formatear o extraer información útil del string de courier (Cliente, Teléfono, Comprobante)
+function parseCourierInfo(courierStr: string | null) {
+  if (!courierStr) return null;
+  // ej: "Cliente: Noel Moriano | Tel: 987654321 | Boleta de Venta — DNI: 45678901"
+  const parts = courierStr.split("|").map((p) => p.trim());
+  const comprobantePart = parts.find((p) =>
+    p.toLowerCase().includes("boleta") || p.toLowerCase().includes("factura"),
+  );
+  return comprobantePart || courierStr;
+}
 
 function OrdersContent() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const supabase = createClient();
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [packages, setPackages] = useState<SellerPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusTab, setStatusTab] = useState("all");
-  const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const [updatingGroup, setUpdatingGroup] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -71,119 +93,60 @@ function OrdersContent() {
     }
   }, [user, authLoading, router]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (authLoading) return;
-
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-
-      const { data: ordersData, error: ordersError } = await supabase
-        .from("orders")
-        .select("*")
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
-
-      if (ordersError) {
-        console.error("Error fetching orders:", ordersError);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!ordersData || ordersData.length === 0) {
-        setOrders([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const ordersWithDetails = await Promise.all(
-        ordersData.map(async (order) => {
-          const [productRes, buyerRes, sellerRes, imagesRes] =
-            await Promise.all([
-              supabase
-                .from("products")
-                .select("title")
-                .eq("id", order.product_id)
-                .maybeSingle(),
-              supabase
-                .from("profiles")
-                .select("name")
-                .eq("id", order.buyer_id)
-                .maybeSingle(),
-              supabase
-                .from("profiles")
-                .select("name")
-                .eq("id", order.seller_id)
-                .maybeSingle(),
-              supabase
-                .from("product_images")
-                .select("url")
-                .eq("product_id", order.product_id)
-                .order("position", { ascending: true })
-                .limit(1),
-            ]);
-
-          const productImage =
-            imagesRes.data && imagesRes.data.length > 0
-              ? imagesRes.data[0].url
-              : "";
-          return {
-            id: order.id,
-            productId: order.product_id,
-            productTitle: productRes?.data?.title || "Producto",
-            productImage: productImage,
-            amount: Number(order.amount),
-            status: order.status,
-            createdAt: order.created_at,
-            buyerName: buyerRes?.data?.name || "Comprador",
-            buyerId: order.buyer_id,
-            sellerId: order.seller_id,
-            sellerName: sellerRes?.data?.name || "Vendedor",
-          };
-        }),
-      );
-
-      setOrders(ordersWithDetails);
-      setIsLoading(false);
-    };
-
-    fetchOrders();
-  }, [user, supabase, authLoading]);
-
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    setUpdatingOrder(orderId);
+  const fetchSellerOrders = useCallback(async () => {
+    if (!user) return;
     try {
-      const { error } = await supabase
-        .from("orders")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq("id", orderId);
-
-      if (error) throw error;
-
-      setOrders(
-        orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
-      );
+      setIsLoading(true);
+      const res = await fetch("/api/seller/orders");
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.packages)) {
+        setPackages(data.packages);
+      }
     } catch (err) {
-      console.error("Error updating order:", err);
+      console.error("Error al cargar ventas del vendedor:", err);
     } finally {
-      setUpdatingOrder(null);
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSellerOrders();
+    }
+  }, [user, fetchSellerOrders]);
+
+  const updatePackageStatus = async (pkg: SellerPackage, newStatus: string) => {
+    setUpdatingGroup(pkg.trackingNumber);
+    try {
+      const res = await fetch("/api/seller/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderIds: pkg.orderIds,
+          trackingNumber: pkg.trackingNumber,
+          newStatus,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al actualizar estado");
+      }
+
+      await fetchSellerOrders();
+    } catch (err) {
+      console.error("Error updating package status:", err);
+    } finally {
+      setUpdatingGroup(null);
     }
   };
 
-  const filteredOrders = orders.filter((order) => {
-    const isSale = order.sellerId === user!.id;
-    if (!isSale) return false;
-
+  const filteredPackages = packages.filter((pkg) => {
     if (statusTab === "all") return true;
-    if (statusTab === "pending") return order.status === "pending";
+    if (statusTab === "pending") return pkg.status === "pending";
     if (statusTab === "in_progress")
-      return ["paid", "shipped"].includes(order.status);
+      return ["paid", "shipped"].includes(pkg.status);
     if (statusTab === "completed")
-      return ["delivered", "completed", "cancelled"].includes(order.status);
+      return ["delivered", "completed", "cancelled"].includes(pkg.status);
     return true;
   });
 
@@ -202,191 +165,266 @@ function OrdersContent() {
       <Navbar />
 
       <div className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
+        {/* Cabecera */}
         <div className="flex items-center gap-4 mb-6">
           <Link href="/user/dashboard">
             <Button variant="ghost" size="icon">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-[#112237]">
-            Gestión de Pedidos & Ventas
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-[#112237]">
+              Gestión de Pedidos & Ventas
+            </h1>
+            <p className="text-xs text-[#64748b]">
+              Administra los despachos agrupados por comprador y código de seguimiento.
+            </p>
+          </div>
         </div>
 
+        {/* Pestañas de Filtrado */}
         <Tabs value={statusTab} onValueChange={setStatusTab}>
-          <TabsList className="mb-4">
+          <TabsList className="mb-6">
             <TabsTrigger value="all">Todos</TabsTrigger>
             <TabsTrigger value="pending">Pendientes</TabsTrigger>
             <TabsTrigger value="in_progress">En proceso</TabsTrigger>
             <TabsTrigger value="completed">Completados</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={statusTab}>
-                {filteredOrders.length > 0 ? (
-                  <div className="space-y-4">
-                    {filteredOrders.map((order) => {
-                      const status =
-                        statusConfig[order.status] || statusConfig.pending;
-                      const StatusIcon = status.Icon;
+          {filteredPackages.length > 0 ? (
+            <div className="space-y-6">
+              {filteredPackages.map((pkg) => {
+                const comprobanteText = parseCourierInfo(pkg.courierInfo);
+                const isUpdating = updatingGroup === pkg.trackingNumber;
 
-                      return (
-                        <Card key={order.id} className="rounded-2xl border-[#e2e8f0]">
-                          <CardContent className="p-6">
-                            <div className="flex items-start gap-4">
-                              <div className="w-20 h-20 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center relative">
-                                {order.productImage ? (
-                                  <Image
-                                    src={order.productImage}
-                                    alt={order.productTitle}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized
-                                  />
-                                ) : (
-                                  <Package className="w-8 h-8 text-[#cbd5e1]" />
-                                )}
-                              </div>
+                return (
+                  <div
+                    key={pkg.trackingNumber}
+                    className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-5 hover:border-[#cbd5e1] transition-all"
+                  >
+                    {/* Cabecera del Paquete / Venta Agrupada */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#e2e8f0]">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl">
+                          Tracking Id: {pkg.trackingNumber}
+                        </span>
+                        <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                          <UserIcon className="w-3.5 h-3.5 text-[#64748b]" />
+                          <span>Venta a: {pkg.buyerName}</span>
+                        </span>
+                        <div className="flex items-center gap-1 text-xs text-[#64748b] ml-1">
+                          <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
+                          <span>{formatDate(pkg.createdAt)}</span>
+                        </div>
+                      </div>
 
-                              <div className="flex-1 min-w-0">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                  <div>
-                                    <Link
-                                      href={`/products/${order.productId}`}
-                                      className="font-bold text-base text-[#112237] hover:text-[#f25c05] line-clamp-1"
-                                    >
-                                      {order.productTitle}
-                                    </Link>
-                                    <p className="text-xs text-[#64748b] mt-0.5 font-medium">
-                                      {order.sellerId === user!.id
-                                        ? `Venta a: ${order.buyerName}`
-                                        : `Compra a: ${order.sellerName || "Vendedor"}`}
-                                    </p>
-                                  </div>
-                                  <Badge
-                                    variant={status.variant as any}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full"
-                                  >
-                                    <StatusIcon className="w-3.5 h-3.5" />
-                                    <span>{status.label}</span>
-                                  </Badge>
-                                </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                          pkg.status === "delivered" || pkg.status === "completed"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : pkg.status === "shipped" || pkg.status === "paid"
+                              ? "bg-blue-100 text-blue-800"
+                              : pkg.status === "cancelled"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {pkg.status === "delivered" || pkg.status === "completed"
+                          ? "Entregado"
+                          : pkg.status === "shipped" || pkg.status === "paid"
+                            ? "En Camino"
+                            : pkg.status === "cancelled"
+                              ? "Cancelado"
+                              : "Pendiente de Despacho"}
+                      </span>
+                    </div>
 
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 pt-3 border-t border-[#f1f5f9]">
-                                  <div>
-                                    <p className="text-lg font-black text-[#f25c05]">
-                                      {formatPrice(order.amount)}
-                                    </p>
-                                    <p className="text-xs text-[#64748b]">
-                                      {formatDate(order.createdAt)}
-                                    </p>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                                    <Link
-                                      href={`/products/${order.productId}`}
-                                      className="w-full sm:w-auto"
-                                    >
-                                      <Button variant="outline" size="sm" className="w-full">
-                                        Ver producto
-                                      </Button>
-                                    </Link>
-
-                                    {/* Acciones de Vendedor */}
-                                    {order.sellerId === user.id && (
-                                      <>
-                                        {order.status === "pending" && (
-                                          <>
-                                            <Button
-                                              size="sm"
-                                              onClick={() =>
-                                                updateOrderStatus(order.id, "paid")
-                                              }
-                                              disabled={updatingOrder === order.id}
-                                              className="bg-[#f25c05] hover:bg-[#d94d04] text-white"
-                                            >
-                                              {updatingOrder === order.id ? (
-                                                <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                                              ) : (
-                                                <CheckCircle className="w-4 h-4 mr-1" />
-                                              )}
-                                              Confirmar
-                                            </Button>
-                                            <Button
-                                              variant="destructive"
-                                              size="sm"
-                                              onClick={() =>
-                                                updateOrderStatus(order.id, "cancelled")
-                                              }
-                                              disabled={updatingOrder === order.id}
-                                            >
-                                              <XCircle className="w-4 h-4 mr-1" />
-                                              Cancelar
-                                            </Button>
-                                          </>
-                                        )}
-                                        {order.status === "paid" && (
-                                          <Button
-                                            size="sm"
-                                            onClick={() =>
-                                              updateOrderStatus(order.id, "shipped")
-                                            }
-                                            disabled={updatingOrder === order.id}
-                                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white"
-                                          >
-                                            {updatingOrder === order.id ? (
-                                              <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                                            ) : (
-                                              <Truck className="w-4 h-4 mr-1" />
-                                            )}
-                                            Marcar enviado
-                                          </Button>
-                                        )}
-                                        {order.status === "shipped" && (
-                                          <Button
-                                            size="sm"
-                                            onClick={() =>
-                                              updateOrderStatus(order.id, "delivered")
-                                            }
-                                            disabled={updatingOrder === order.id}
-                                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white"
-                                          >
-                                            {updatingOrder === order.id ? (
-                                              <Loader2 className="w-4 h-4 animate-spin mr-1" />
-                                            ) : (
-                                              <Package className="w-4 h-4 mr-1" />
-                                            )}
-                                            Marcar entregado
-                                          </Button>
-                                        )}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
+                    {/* Lista de Productos agrupados en esta venta */}
+                    <div className="divide-y divide-[#f1f5f9]">
+                      {pkg.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="relative w-14 h-14 bg-[#f8fafc] rounded-2xl border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.title}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                <Package className="w-6 h-6 text-[#cbd5e1]" />
+                              )}
                             </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                            <div className="min-w-0">
+                              <Link
+                                href={`/products/${item.productId}`}
+                                className="font-bold text-sm text-[#112237] hover:text-[#f25c05] transition-colors line-clamp-1"
+                              >
+                                {item.title}
+                              </Link>
+                              <p className="text-xs font-extrabold text-[#f25c05] mt-0.5">
+                                S/ {item.price.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <Link
+                            href={`/products/${item.productId}`}
+                            className="text-xs font-semibold text-[#64748b] hover:text-[#112237] hover:underline shrink-0"
+                          >
+                            Ver producto
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Sección Detallada para Despejar Dudas del Vendedor */}
+                    <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      {/* Lado Izquierdo: Datos del Cliente y Entrega */}
+                      <div className="space-y-2">
+                        <p className="font-bold text-[#112237] border-b border-[#e2e8f0] pb-1.5 flex items-center gap-1.5">
+                          <UserIcon className="w-3.5 h-3.5 text-[#f25c05]" />
+                          <span>Datos del Comprador & Envío:</span>
+                        </p>
+                        <p className="text-[#334155]">
+                          <strong className="text-[#112237]">Cliente:</strong>{" "}
+                          {pkg.buyerName}{" "}
+                          {pkg.buyerPhone ? `(${pkg.buyerPhone})` : ""}
+                        </p>
+                        {pkg.destinationAddress && (
+                          <p className="text-[#334155] flex items-start gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-[#64748b] shrink-0 mt-0.5" />
+                            <span>
+                              <strong className="text-[#112237]">Dirección:</strong>{" "}
+                              {pkg.destinationAddress}
+                            </span>
+                          </p>
+                        )}
+                        {comprobanteText && (
+                          <p className="text-[#334155] flex items-center gap-1 pt-0.5">
+                            <FileText className="w-3.5 h-3.5 text-[#f25c05] shrink-0" />
+                            <span>
+                              <strong className="text-[#112237]">Comprobante:</strong>{" "}
+                              {comprobanteText}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Lado Derecho: Totales y Cobro Contra Entrega */}
+                      <div className="space-y-2 border-t md:border-t-0 pt-3 md:pt-0 border-[#e2e8f0] flex flex-col justify-between">
+                        <div className="space-y-1">
+                          <p className="font-bold text-[#112237] border-b border-[#e2e8f0] pb-1.5">
+                            Cobro & Desglose de Despacho:
+                          </p>
+                          <p className="text-[#334155]">
+                            <strong className="text-[#112237]">Subtotal:</strong> S/ {pkg.subtotal.toFixed(2)}
+                          </p>
+                          <p className="text-[#334155]">
+                            <strong className="text-[#112237]">IGV (18%):</strong> S/ {pkg.taxAmount.toFixed(2)}
+                          </p>
+                          <p className="text-[#334155]">
+                            <strong className="text-[#112237]">Envío de Paquete:</strong> S/ {pkg.shippingCost.toFixed(2)}
+                          </p>
+                        </div>
+
+                        <div className="pt-2 border-t border-[#e2e8f0] flex items-center justify-between">
+                          <span className="text-[11px] text-[#64748b] font-semibold">
+                            Total a Cobrar al Cliente:
+                          </span>
+                          <span className="text-xl font-black text-[#f25c05]">
+                            S/ {pkg.totalAmount.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Botones de Acción para el Vendedor */}
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#f1f5f9]">
+                      {pkg.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => updatePackageStatus(pkg, "shipped")}
+                            disabled={isUpdating}
+                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-5 rounded-xl shadow-xs"
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                            ) : (
+                              <CheckCircle className="w-4 h-4 mr-1.5" />
+                            )}
+                            Confirmar Despacho
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => updatePackageStatus(pkg, "cancelled")}
+                            disabled={isUpdating}
+                            className="text-xs font-bold px-4 rounded-xl"
+                          >
+                            <XCircle className="w-4 h-4 mr-1.5" />
+                            Cancelar
+                          </Button>
+                        </>
+                      )}
+
+                      {(pkg.status === "shipped" || pkg.status === "paid") && (
+                        <Button
+                          size="sm"
+                          onClick={() => updatePackageStatus(pkg, "delivered")}
+                          disabled={isUpdating}
+                          className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold px-5 rounded-xl"
+                        >
+                          {isUpdating ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                          ) : (
+                            <Truck className="w-4 h-4 mr-1.5" />
+                          )}
+                          Marcar como Entregado
+                        </Button>
+                      )}
+
+                      {(pkg.status === "delivered" || pkg.status === "completed") && (
+                        <div className="flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Despacho Completado</span>
+                        </div>
+                      )}
+
+                      {pkg.status === "cancelled" && (
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-4 py-2 rounded-xl border border-red-200">
+                          <XCircle className="w-4 h-4" />
+                          <span>Despacho Cancelado</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-16 bg-white rounded-3xl border border-[#e2e8f0]">
-                    <ShoppingCart className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
-                    <h2 className="text-base font-bold text-[#112237] mb-1">
-                      No tienes registros en esta sección
-                    </h2>
-                    <p className="text-xs text-[#64748b] mb-6">
-                      Las ventas de tus productos aparecerán aquí.
-                    </p>
-                    <Link href="/search">
-                      <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white">
-                        Explorar catálogo
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-white rounded-3xl border border-[#e2e8f0] shadow-sm">
+              <ShoppingCart className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
+              <h2 className="text-base font-bold text-[#112237] mb-1">
+                No tienes registros en esta sección
+              </h2>
+              <p className="text-xs text-[#64748b] mb-6">
+                Las ventas de tus productos agrupadas por comprador aparecerán aquí.
+              </p>
+              <Link href="/search">
+                <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-6 py-2.5 rounded-xl">
+                  Explorar catálogo
+                </Button>
+              </Link>
+            </div>
+          )}
+        </Tabs>
       </div>
 
       <Footer />

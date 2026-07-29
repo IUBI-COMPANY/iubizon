@@ -16,24 +16,33 @@ export interface PackageItem {
   } | null;
 }
 
-export interface PurchasePackage {
-  orderCode: string;
-  createdAt: string;
+export interface TrackingPackage {
+  trackingNumber: string; // ej. "374155-001"
   status: string;
   paymentMethod: string;
   subtotal: number;
+  taxAmount: number;
   shippingCost: number;
   totalAmount: number;
+  destinationAddress: string | null;
+  courierInfo: string | null;
+  sellerName: string | null;
   items: PackageItem[];
-  shipping: {
-    destinationAddress: string | null;
-    courierInfo: string | null;
-    trackingNumber: string | null;
-    status: string;
-  } | null;
 }
 
-export async function GET(req: Request) {
+export interface PurchaseOrderSession {
+  orderCode: string; // ej. "374155"
+  createdAt: string; // ISO date string
+  subtotal: number;
+  taxAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  totalItems: number;
+  destinationAddress: string | null;
+  packages: TrackingPackage[];
+}
+
+export async function GET() {
   try {
     const supabase = await createServerClient();
     const {
@@ -68,45 +77,79 @@ export async function GET(req: Request) {
             slug: true,
           },
         },
+        seller: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         shipping: true,
       },
     });
 
-    // Agrupar órdenes por Código de Orden (tracking_number) en Paquetes de Compra
-    const packageMap = new Map<string, PurchasePackage>();
+    type TempPackage = {
+      trackingNumber: string;
+      status: string;
+      paymentMethod: string;
+      sellerName: string | null;
+      subtotal: number;
+      destinationAddress: string | null;
+      courierInfo: string | null;
+      items: PackageItem[];
+    };
+
+    type TempSession = {
+      orderCode: string;
+      createdAt: string;
+      packageMap: Map<string, TempPackage>;
+    };
+
+    const sessionMap = new Map<string, TempSession>();
 
     for (const order of orders) {
-      const code =
-        order.shipping?.tracking_number ||
-        `IUBI-${order.id.slice(0, 6).toUpperCase()}`;
+      const rawTracking =
+        order.shipping?.tracking_number || `374155-${order.id.slice(0, 3)}`;
 
-      if (!packageMap.has(code)) {
-        packageMap.set(code, {
-          orderCode: code,
+      // Extraer el código principal de orden (ej. de TRK-374155-001 o 374155-001 -> 374155)
+      const match = rawTracking.match(/^(?:TRK-)?([A-Za-z0-9]+)-\d{3}$/);
+      const mainOrderCode = match ? match[1] : rawTracking.replace(/^TRK-/, "");
+
+      // Remover cualquier prefijo TRK- para obtener código puro (ej. 374155-001)
+      const cleanTracking = rawTracking.replace(/^TRK-/, "");
+      const formattedTracking = cleanTracking.includes("-")
+        ? cleanTracking
+        : `${cleanTracking}-001`;
+
+      if (!sessionMap.has(mainOrderCode)) {
+        sessionMap.set(mainOrderCode, {
+          orderCode: mainOrderCode,
           createdAt:
             order.created_at?.toISOString() || new Date().toISOString(),
-          status: order.status,
-          paymentMethod: order.payment_method || "cash_on_delivery",
-          subtotal: 0,
-          shippingCost: 50.0, // Costo fijo de envío por paquete S/ 50.00
-          totalAmount: 50.0,
-          items: [],
-          shipping: order.shipping
-            ? {
-                destinationAddress: order.shipping.destination_address,
-                courierInfo: order.shipping.courier,
-                trackingNumber: order.shipping.tracking_number,
-                status: order.shipping.status || order.status,
-              }
-            : null,
+          packageMap: new Map<string, TempPackage>(),
         });
       }
 
-      const pkg = packageMap.get(code)!;
+      const session = sessionMap.get(mainOrderCode)!;
+
+      if (!session.packageMap.has(formattedTracking)) {
+        const sellerName =
+          order.company?.name || order.seller?.name || "Vendedor iubizon";
+
+        session.packageMap.set(formattedTracking, {
+          trackingNumber: formattedTracking,
+          status: order.shipping?.status || order.status,
+          paymentMethod: order.payment_method || "cash_on_delivery",
+          sellerName,
+          subtotal: 0,
+          destinationAddress: order.shipping?.destination_address || null,
+          courierInfo: order.shipping?.courier || null,
+          items: [],
+        });
+      }
+
+      const pkg = session.packageMap.get(formattedTracking)!;
       const itemPrice = Number(order.amount);
       pkg.subtotal += itemPrice;
-      const taxAmount = pkg.subtotal * 0.18;
-      pkg.totalAmount = pkg.subtotal + taxAmount + pkg.shippingCost;
 
       if (order.product) {
         pkg.items.push({
@@ -127,11 +170,62 @@ export async function GET(req: Request) {
       }
     }
 
-    const packages = Array.from(packageMap.values());
+    // Construir la estructura final jerárquica
+    const purchaseSessions: PurchaseOrderSession[] = [];
+
+    for (const session of Array.from(sessionMap.values())) {
+      const packagesList: TrackingPackage[] = [];
+      let sessionSubtotal = 0;
+      let sessionItemsCount = 0;
+      let mainDestination: string | null = null;
+
+      for (const tempPkg of Array.from(session.packageMap.values())) {
+        const taxAmount = tempPkg.subtotal * 0.18;
+        const shippingCost = 50.0;
+        const totalAmount = tempPkg.subtotal + taxAmount + shippingCost;
+
+        sessionSubtotal += tempPkg.subtotal;
+        sessionItemsCount += tempPkg.items.length;
+        if (!mainDestination && tempPkg.destinationAddress) {
+          mainDestination = tempPkg.destinationAddress;
+        }
+
+        packagesList.push({
+          trackingNumber: tempPkg.trackingNumber,
+          status: tempPkg.status,
+          paymentMethod: tempPkg.paymentMethod,
+          subtotal: tempPkg.subtotal,
+          taxAmount,
+          shippingCost,
+          totalAmount,
+          destinationAddress: tempPkg.destinationAddress,
+          courierInfo: tempPkg.courierInfo,
+          sellerName: tempPkg.sellerName,
+          items: tempPkg.items,
+        });
+      }
+
+      const sessionTax = sessionSubtotal * 0.18;
+      const sessionShipping = 50.0;
+      const sessionTotal = sessionSubtotal + sessionTax + sessionShipping;
+
+      purchaseSessions.push({
+        orderCode: session.orderCode,
+        createdAt: session.createdAt,
+        subtotal: sessionSubtotal,
+        taxAmount: sessionTax,
+        shippingCost: sessionShipping,
+        totalAmount: sessionTotal,
+        totalItems: sessionItemsCount,
+        destinationAddress: mainDestination,
+        packages: packagesList,
+      });
+    }
 
     return NextResponse.json({
-      packages,
-      totalPurchases: packages.length,
+      sessions: purchaseSessions,
+      packages: purchaseSessions.flatMap((s) => s.packages),
+      totalPurchases: purchaseSessions.length,
     });
   } catch (err: unknown) {
     console.error("Error al obtener compras del usuario:", err);

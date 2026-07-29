@@ -1,72 +1,155 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
   Clock,
   Loader2,
+  Package,
   ShoppingBag,
+  Truck,
 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 
+type TrackingGroup = {
+  sellerId: string;
+  trackingCode: string;
+  productCount: number;
+  productTitles: string[];
+};
+
+function TrackingGroupCard({
+  group,
+  index,
+}: {
+  group: TrackingGroup;
+  index: number;
+}) {
+  return (
+    <div className="bg-white border border-[#e2e8f0] rounded-2xl p-4 text-left space-y-2.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#f25c05]/10 text-[#f25c05] flex items-center justify-center shrink-0">
+            <Truck className="w-3.5 h-3.5" />
+          </div>
+          <span className="text-xs font-bold text-[#112237]">
+            Envío {index + 1} — Proveedor
+          </span>
+        </div>
+        <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+          {group.productCount} {group.productCount === 1 ? "producto" : "productos"}
+        </span>
+      </div>
+
+      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl px-3 py-2 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] text-[#64748b] font-medium uppercase tracking-wider">
+            Tracking ID
+          </p>
+          <p className="text-sm font-black text-[#f25c05] tracking-widest mt-0.5">
+            {group.trackingCode.replace(/^(?:#|TRK-)+/gi, "")}
+          </p>
+        </div>
+        <Package className="w-5 h-5 text-slate-300" />
+      </div>
+
+      <ul className="space-y-1">
+        {group.productTitles.map((title, i) => (
+          <li key={i} className="text-[11px] text-[#475569] flex items-start gap-1.5">
+            <span className="text-[#f25c05] mt-0.5 shrink-0">·</span>
+            <span>{title}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const orderCode = searchParams.get("order_code") || "IUBI-982104";
+  const orderCode = searchParams.get("order_code") || "";
+  const [trackingGroups, setTrackingGroups] = useState<TrackingGroup[]>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem("iubizon_tracking_groups");
+      if (raw) {
+        setTrackingGroups(JSON.parse(raw));
+        sessionStorage.removeItem("iubizon_tracking_groups");
+      }
+    } catch {
+      // silently ignore parse errors
+    }
+  }, []);
 
   return (
     <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl">
-      <div className="bg-white rounded-3xl border border-[#e2e8f0] p-8 shadow-xl text-center space-y-6">
-        {/* Icono de Éxito */}
-        <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-emerald-50">
-          <CheckCircle2 className="w-10 h-10" />
+      <div className="bg-white rounded-3xl border border-[#e2e8f0] p-8 shadow-xl space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm ring-8 ring-emerald-50">
+            <CheckCircle2 className="w-10 h-10" />
+          </div>
+          <div>
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+              Pedido Registrado con Éxito
+            </span>
+            <h1 className="text-3xl font-extrabold text-[#112237] mt-3">
+              ¡Gracias por tu compra!
+            </h1>
+            <p className="text-sm text-[#64748b] mt-1 max-w-md mx-auto">
+              Cada proveedor ha recibido su código de despacho y preparará tu pedido para enviarlo contra entrega.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <span className="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-            ¡Pedido Registrado con Éxito!
-          </span>
-          <h1 className="text-3xl font-extrabold text-[#112237] mt-3">
-            ¡Gracias por tu compra!
-          </h1>
-          <p className="text-sm text-[#64748b] mt-1 max-w-md mx-auto">
-            Tu pedido ha sido asignado a la empresa proveedora para su preparación y despacho contra entrega.
-          </p>
-        </div>
-
-        {/* Código de Orden */}
-        <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-4 max-w-sm mx-auto">
+        {/* Código de sesión */}
+        <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-4 text-center">
           <p className="text-xs text-[#64748b] font-semibold uppercase tracking-wider">
-            Código de Orden Interna
+            Código de Orden
           </p>
           <p className="text-2xl font-black text-[#f25c05] tracking-widest mt-1">
             #{orderCode}
           </p>
         </div>
 
-        {/* Estado y Siguiente Paso dentro de iubizon */}
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left space-y-3">
+        {/* Grupos de tracking */}
+        {trackingGroups.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-xs font-bold text-[#112237] uppercase tracking-wider">
+              Tracking por Proveedor
+            </p>
+            {trackingGroups.map((group, i) => (
+              <TrackingGroupCard key={group.trackingCode} group={group} index={i} />
+            ))}
+          </div>
+        )}
+
+        {/* Siguiente paso */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-[#112237]">
             <Clock className="w-4 h-4 text-[#f25c05]" />
-            <span>Siguiente Paso en la Plataforma:</span>
+            <span>Siguiente Paso:</span>
           </div>
           <ul className="text-xs text-[#475569] space-y-2 list-disc list-inside">
-            <li>La empresa notificará el despacho de tus productos.</li>
-            <li>Podrás consultar el avance de la entrega en tu panel de usuario.</li>
+            <li>Cada proveedor notificará el despacho de sus productos.</li>
+            <li>Podrás consultar el avance por código de tracking en tu panel.</li>
             <li>Pagarás en efectivo, Yape o Plin únicamente al recibir tu producto.</li>
           </ul>
         </div>
 
-        {/* Botón Principal: Ver Mi Pedido en la Plataforma */}
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* Botones */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/user/dashboard?view=personal"
             className="w-full sm:w-auto bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold px-8 py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Ver Mi Pedido en la Plataforma ➔</span>
+            <span>Ver Mi Pedido en la Plataforma</span>
           </Link>
           <Link
             href="/products"

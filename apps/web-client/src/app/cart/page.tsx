@@ -260,6 +260,8 @@ export default function CartCheckoutPage() {
       if (typeof window !== "undefined") {
         localStorage.removeItem(STEP_STORAGE_KEY);
         localStorage.removeItem(FORM_STORAGE_KEY);
+        // Guardar grupos de tracking para mostrarlos en la pantalla de éxito
+        sessionStorage.setItem("iubizon_tracking_groups", JSON.stringify(data.trackingGroups ?? []));
       }
 
       // Redirigir a pantalla de confirmación exitosa en plataforma

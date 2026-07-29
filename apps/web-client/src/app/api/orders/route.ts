@@ -29,12 +29,7 @@ export async function POST(req: Request) {
       invoice_company_name,
     } = body;
 
-    // Dirección de destino según tipo de entrega elegida por el comprador
-    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
-    const isCompleteDelivery = delivery_type === "complete";
-    const supplierDestination = isCompleteDelivery
-      ? IUBIZON_WAREHOUSE
-      : `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
+    // ── Validaciones de entrada ──────────────────────────────────────────────
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -45,7 +40,10 @@ export async function POST(req: Request) {
 
     if (!shipping || !shipping.name || !shipping.phone || !shipping.address) {
       return NextResponse.json(
-        { error: "Faltan datos obligatorios de envío (Nombre, Teléfono y Dirección)" },
+        {
+          error:
+            "Faltan datos obligatorios de envío (Nombre, Teléfono y Dirección)",
+        },
         { status: 400 },
       );
     }
@@ -53,32 +51,67 @@ export async function POST(req: Request) {
     if (invoice_type === "factura") {
       if (!invoice_ruc || String(invoice_ruc).trim().length !== 11) {
         return NextResponse.json(
-          { error: "El RUC para la factura electrónica debe contener 11 dígitos" },
+          {
+            error:
+              "El RUC para la factura electrónica debe contener 11 dígitos",
+          },
           { status: 400 },
         );
       }
       if (!invoice_company_name || !String(invoice_company_name).trim()) {
         return NextResponse.json(
-          { error: "La Razón Social es requerida para emitir factura electrónica" },
+          {
+            error:
+              "La Razón Social es requerida para emitir factura electrónica",
+          },
           { status: 400 },
         );
       }
     }
 
-    // Validación SUNAT: Boleta > S/700 requiere número de documento del comprador
+    // Validación SUNAT: Boleta > S/700 requiere número de documento
     if (invoice_type === "boleta" || !invoice_type) {
-      const orderSubtotal = (items as Array<{ price: number; quantity?: number }>)
-        .reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
-      const orderTotal = orderSubtotal * 1.18 + 50; // incluir IGV + envío
+      const orderSubtotal = (
+        items as Array<{ price: number; quantity?: number }>
+      ).reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
+      const orderTotal = orderSubtotal * 1.18 + 50;
       if (orderTotal > 700 && (!invoice_dni || !String(invoice_dni).trim())) {
         return NextResponse.json(
-          { error: "Para pedidos mayores a S/ 700, la SUNAT exige el número de documento del comprador en la boleta." },
+          {
+            error:
+              "Para pedidos mayores a S/ 700, la SUNAT exige el número de documento del comprador en la boleta.",
+          },
           { status: 400 },
         );
       }
     }
 
-    // 1. Garantizar existencia del perfil del Comprador en la tabla profiles
+    // ── Preparación de datos ─────────────────────────────────────────────────
+
+    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
+    const isCompleteDelivery = delivery_type === "complete";
+    const supplierDestination = isCompleteDelivery
+      ? IUBIZON_WAREHOUSE
+      : `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
+
+    const invoiceDetails =
+      invoice_type === "factura"
+        ? `Factura RUC: ${invoice_ruc} (${invoice_company_name})`
+        : invoice_dni
+          ? `Boleta de Venta — ${String(invoice_doc_type || "dni").toUpperCase()}: ${invoice_dni}`
+          : "Boleta de Venta";
+
+    // Código de sesión de compra: 6 dígitos, verificado como único en shippings
+    const generateSessionCode = async (): Promise<string> => {
+      const code = String(Math.floor(100000 + Math.random() * 900000));
+      const exists = await prisma.shipping.findFirst({
+        where: { tracking_number: { startsWith: code } },
+      });
+      return exists ? generateSessionCode() : code;
+    };
+    const sessionCode = await generateSessionCode();
+
+    // Garantizar perfil del comprador
     await prisma.profile.upsert({
       where: { id: user.id },
       update: {
@@ -94,25 +127,21 @@ export async function POST(req: Request) {
       },
     });
 
-    // Código de orden: número aleatorio de 6 dígitos único, verificado contra la BD
-    const generateUniqueCode = async (): Promise<string> => {
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      const exists = await prisma.shipping.findFirst({ where: { tracking_number: code } });
-      return exists ? generateUniqueCode() : code; // reintenta si ya existe
+    // ── Fase 1: Prefetch de productos para poder agrupar antes de la tx ───────
+
+    type ItemInput = {
+      product_id?: string;
+      id?: string;
+      quantity?: number;
+      company_id?: string;
+      price?: number;
     };
-    const finalOrderCode = await generateUniqueCode();
-
-    // 2. Procesar la transacción atómica con validación y descuento de stock
-    const createdOrders = await prisma.$transaction(async (tx) => {
-      const ordersResult = [];
-
-      for (const item of items) {
+    const enrichedItems = await Promise.all(
+      (items as ItemInput[]).map(async (item) => {
         const productId = item.product_id || item.id;
-        const itemQuantity = Number(item.quantity) || 1;
-        if (!productId) continue;
+        if (!productId) return null;
 
-        // Obtener datos del producto con estado y stock actual
-        const product = await tx.product.findUnique({
+        const product = await prisma.product.findUnique({
           where: { id: productId },
           select: {
             id: true,
@@ -125,111 +154,144 @@ export async function POST(req: Request) {
           },
         });
 
-        if (!product) {
-          throw new Error(`El producto solicitado ya no existe en la plataforma.`);
-        }
+        return product ? { item, product } : null;
+      }),
+    );
 
-        const currentStock = product.stock ?? 1;
+    const validItems = enrichedItems.filter(Boolean) as Array<{
+      item: ItemInput;
+      product: {
+        id: string;
+        title: string;
+        seller_id: string;
+        company_id: string | null;
+        price: unknown;
+        stock: number | null;
+        status: string;
+      };
+    }>;
 
-        if (product.status !== "active" || currentStock < itemQuantity) {
-          throw new Error(
-            `Stock insuficiente para "${product.title}". Quedan ${currentStock > 0 ? currentStock : 0} unidades disponibles.`
-          );
-        }
+    if (validItems.length === 0) {
+      return NextResponse.json(
+        { error: "Ninguno de los productos del carrito está disponible" },
+        { status: 400 },
+      );
+    }
 
-        // Descuento atómico de stock para evitar compras concurrentes duplicadas
-        const updated = await tx.product.updateMany({
-          where: {
-            id: productId,
-            stock: { gte: itemQuantity },
-          },
-          data: {
-            stock: { decrement: itemQuantity },
-          },
-        });
+    // ── Fase 2: Agrupar por seller_id ────────────────────────────────────────
+    // La clave de agrupación es siempre el seller_id del producto.
+    // Cada proveedor (independientemente de si opera bajo empresa o no)
+    // recibe un tracking code propio para despachar sus productos.
 
-        if (updated.count === 0) {
-          throw new Error(
-            `El producto "${product.title}" se agotó mientras procesabas tu pedido.`
-          );
-        }
+    const groupMap = new Map<string, typeof validItems>();
+    for (const entry of validItems) {
+      const key = entry.product.seller_id;
+      if (!groupMap.has(key)) groupMap.set(key, []);
+      groupMap.get(key)!.push(entry);
+    }
 
-        // Verificar el stock resultante y cambiar estado a 'sold' si llega a 0
-        const updatedState = await tx.product.findUnique({
-          where: { id: productId },
-          select: { stock: true },
-        });
+    const groups = Array.from(groupMap.entries()); // [sellerId, items[]]
 
-        if ((updatedState?.stock ?? 0) <= 0) {
-          await tx.product.update({
-            where: { id: productId },
-            data: { status: "sold" },
-          });
-        }
+    // ── Fase 3: Transacción atómica ─────────────────────────────────────────
 
-        // Garantizar que el vendedor exista en la tabla profiles
-        await tx.profile.upsert({
-          where: { id: product.seller_id },
-          update: {},
-          create: {
-            id: product.seller_id,
-            email: `seller_${product.seller_id.slice(0, 8)}@iubizon.com`,
-            name: "Vendedor iubizon",
-          },
-        });
+    const createdOrders = await prisma.$transaction(async (tx) => {
+      const allOrders = [];
 
-        // Verificar si la empresa existe en DB
-        let validCompanyId: string | null = null;
-        const targetCompanyId = product.company_id || item.company_id;
-        if (targetCompanyId) {
-          const companyExists = await tx.company.findUnique({
-            where: { id: targetCompanyId },
-            select: { id: true },
-          });
-          if (companyExists) {
-            validCompanyId = companyExists.id;
+      for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+        const [, groupItems] = groups[groupIndex];
+        // Tracking único por proveedor
+        const trackingCode = `${sessionCode}-${String(groupIndex + 1).padStart(3, "0")}`;
+
+        for (const { item, product } of groupItems) {
+          const itemQuantity = Number(item.quantity) || 1;
+          const currentStock = product.stock ?? 1;
+
+          if (product.status !== "active" || currentStock < itemQuantity) {
+            throw new Error(
+              `Stock insuficiente para "${product.title}". Quedan ${Math.max(currentStock, 0)} unidades disponibles.`,
+            );
           }
-        }
 
-        const itemSubtotal = Number(product.price) * itemQuantity;
-        const commission = itemSubtotal * 0.1; // 10% comision para iubizon
+          // Descuento atómico de stock (evita race conditions)
+          const updated = await tx.product.updateMany({
+            where: { id: product.id, stock: { gte: itemQuantity } },
+            data: { stock: { decrement: itemQuantity } },
+          });
 
-        const invoiceDetails = invoice_type === "factura"
-          ? `Factura RUC: ${invoice_ruc} (${invoice_company_name})`
-          : invoice_dni
-            ? `Boleta de Venta — ${String(invoice_doc_type || "dni").toUpperCase()}: ${invoice_dni}`
-            : "Boleta de Venta";
+          if (updated.count === 0) {
+            throw new Error(
+              `El producto "${product.title}" se agotó mientras procesabas tu pedido.`,
+            );
+          }
 
-        const order = await tx.order.create({
-          data: {
-            product_id: product.id,
-            buyer_id: user.id,
-            seller_id: product.seller_id,
-            company_id: validCompanyId,
-            amount: itemSubtotal,
-            commission: commission,
-            status: "pending",
-            payment_method: payment_method || "cash_on_delivery",
-            shipping: {
-              create: {
-                origin_address: "Almacén / Proveedor",
-                destination_address: supplierDestination,
-                courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone} | ${invoiceDetails}`,
-                tracking_number: finalOrderCode,
-                status: "pending",
+          // Marcar como vendido si llega a 0
+          const afterUpdate = await tx.product.findUnique({
+            where: { id: product.id },
+            select: { stock: true },
+          });
+          if ((afterUpdate?.stock ?? 0) <= 0) {
+            await tx.product.update({
+              where: { id: product.id },
+              data: { status: "sold" },
+            });
+          }
+
+          // Garantizar perfil del vendedor
+          await tx.profile.upsert({
+            where: { id: product.seller_id },
+            update: {},
+            create: {
+              id: product.seller_id,
+              email: `seller_${product.seller_id.slice(0, 8)}@iubizon.com`,
+              name: "Vendedor iubizon",
+            },
+          });
+
+          // Verificar company_id válida
+          let validCompanyId: string | null = null;
+          const targetCompanyId =
+            product.company_id || (item as { company_id?: string }).company_id;
+          if (targetCompanyId) {
+            const companyExists = await tx.company.findUnique({
+              where: { id: targetCompanyId },
+              select: { id: true },
+            });
+            if (companyExists) validCompanyId = companyExists.id;
+          }
+
+          const itemSubtotal = Number(product.price) * itemQuantity;
+
+          const order = await tx.order.create({
+            data: {
+              product_id: product.id,
+              buyer_id: user.id,
+              seller_id: product.seller_id,
+              company_id: validCompanyId,
+              amount: itemSubtotal,
+              commission: itemSubtotal * 0.1,
+              status: "pending",
+              payment_method: payment_method || "cash_on_delivery",
+              shipping: {
+                create: {
+                  origin_address: "Almacén / Proveedor",
+                  destination_address: supplierDestination,
+                  courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone} | ${invoiceDetails}`,
+                  tracking_number: trackingCode,
+                  status: "pending",
+                },
               },
             },
-          },
-          include: {
-            shipping: true,
-            product: { select: { title: true } },
-          },
-        });
+            include: {
+              shipping: true,
+              product: { select: { title: true } },
+            },
+          });
 
-        ordersResult.push(order);
+          allOrders.push(order);
+        }
       }
 
-      return ordersResult;
+      return allOrders;
     });
 
     if (createdOrders.length === 0) {
@@ -239,8 +301,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Calcular totales globales del pedido
-    const subtotal = items.reduce(
+    // ── Respuesta ──────────────────────────────────────────────────────────
+
+    // Calcular totales globales
+    const subtotal = (items as ItemInput[]).reduce(
       (sum, i) => sum + Number(i.price) * Number(i.quantity || 1),
       0,
     );
@@ -248,23 +312,34 @@ export async function POST(req: Request) {
     const totalTax = subtotal * 0.18;
     const totalAmount = subtotal + totalTax + shippingCost;
     const totalCommission = subtotal * 0.1;
-    const totalSellerEarnings = subtotal - totalCommission;
+
+    // Construir resumen de grupos de tracking para mostrar en la UI
+    const trackingGroups = groups.map(([sellerId, groupItems], index) => ({
+      sellerId,
+      trackingCode: `${sessionCode}-${String(index + 1).padStart(3, "0")}`,
+      productCount: groupItems.reduce(
+        (s, e) => s + (Number(e.item.quantity) || 1),
+        0,
+      ),
+      productTitles: groupItems.map((e) => e.product.title),
+    }));
 
     return NextResponse.json({
       success: true,
-      orderCode: finalOrderCode,
+      orderCode: sessionCode,
       orderCount: createdOrders.length,
+      trackingGroups,
       financials: {
         subtotal,
         shippingCost,
         taxAmount: totalTax,
         platformCommission: totalCommission,
-        sellerEarnings: totalSellerEarnings,
+        sellerEarnings: subtotal - totalCommission,
         totalAmount,
       },
     });
   } catch (err: unknown) {
-    console.error("Error al registrar pedido con descuento de stock:", err);
+    console.error("Error al registrar pedido:", err);
     const errorMessage =
       err instanceof Error
         ? err.message

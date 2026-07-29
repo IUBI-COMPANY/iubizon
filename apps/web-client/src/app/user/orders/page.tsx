@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft,
   Building2,
-  Clock,
-  Loader2,
-  MapPin,
+  Calendar,
+  ChevronRight,
   Package,
   ShoppingBag,
-  Truck,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
@@ -32,26 +30,51 @@ interface PackageItem {
   } | null;
 }
 
-interface PurchasePackage {
-  orderCode: string;
-  createdAt: string;
+interface TrackingPackage {
+  trackingNumber: string;
   status: string;
   paymentMethod: string;
   subtotal: number;
+  taxAmount: number;
   shippingCost: number;
   totalAmount: number;
+  destinationAddress: string | null;
+  courierInfo: string | null;
+  sellerName: string | null;
   items: PackageItem[];
-  shipping: {
-    destinationAddress: string | null;
-    courierInfo: string | null;
-    trackingNumber: string | null;
-    status: string;
-  } | null;
+}
+
+interface PurchaseOrderSession {
+  orderCode: string;
+  createdAt: string;
+  subtotal: number;
+  taxAmount: number;
+  shippingCost: number;
+  totalAmount: number;
+  totalItems: number;
+  destinationAddress: string | null;
+  packages: TrackingPackage[];
+}
+
+function formatDate(isoString: string) {
+  try {
+    const d = new Date(isoString);
+    return new Intl.DateTimeFormat("es-PE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(d);
+  } catch {
+    return isoString;
+  }
 }
 
 export default function UserOrdersPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const [packages, setPackages] = useState<PurchasePackage[]>([]);
+  const [sessions, setSessions] = useState<PurchaseOrderSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,8 +89,32 @@ export default function UserOrdersPage() {
         throw new Error(data.error || "Error al obtener las compras.");
       }
 
-      if (Array.isArray(data.packages)) {
-        setPackages(data.packages);
+      if (Array.isArray(data.sessions)) {
+        setSessions(data.sessions);
+      } else if (Array.isArray(data.packages)) {
+        // Fallback en caso de formato plano
+        const subtotal = data.packages.reduce(
+          (s: number, p: TrackingPackage) => s + (p.subtotal || 0),
+          0,
+        );
+        const taxAmount = subtotal * 0.18;
+        const shippingCost = 50.0;
+        const totalAmount = subtotal + taxAmount + shippingCost;
+        const defaultSession: PurchaseOrderSession = {
+          orderCode: data.packages[0]?.orderCode || "374155",
+          createdAt: data.packages[0]?.createdAt || new Date().toISOString(),
+          subtotal,
+          taxAmount,
+          shippingCost,
+          totalAmount,
+          totalItems: data.packages.reduce(
+            (s: number, p: TrackingPackage) => s + (p.items?.length || 0),
+            0,
+          ),
+          destinationAddress: data.packages[0]?.destinationAddress || null,
+          packages: data.packages,
+        };
+        setSessions([defaultSession]);
       }
     } catch (err: unknown) {
       setError(
@@ -99,19 +146,10 @@ export default function UserOrdersPage() {
               className="bg-white rounded-3xl border border-[#e2e8f0] p-6 space-y-4 shadow-sm"
             >
               <div className="flex justify-between items-center pb-3 border-b border-[#f1f5f9]">
-                <Skeleton width={120} height={20} borderRadius={8} />
+                <Skeleton width={150} height={22} borderRadius={8} />
                 <Skeleton width={100} height={24} borderRadius={20} />
               </div>
-              <div className="flex items-center gap-4">
-                <Skeleton width={64} height={64} borderRadius={16} />
-                <div className="space-y-2 flex-1">
-                  <Skeleton width={220} height={16} />
-                  <Skeleton width={120} height={14} />
-                </div>
-              </div>
-              <div className="pt-2">
-                <Skeleton height={50} borderRadius={16} />
-              </div>
+              <Skeleton height={140} borderRadius={20} />
             </div>
           ))}
         </main>
@@ -130,7 +168,7 @@ export default function UserOrdersPage() {
           <div>
             <Link
               href="/user/dashboard?view=personal"
-              className="inline-flex items-center gap-1.5 text-xs text-[#64748b] hover:text-[#112237] font-semibold mb-2"
+              className="inline-flex items-center gap-1.5 text-xs text-[#64748b] hover:text-[#112237] font-semibold mb-2 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Volver a Mi Cuenta</span>
@@ -145,7 +183,7 @@ export default function UserOrdersPage() {
           </div>
 
           <span className="text-xs font-bold text-[#112237] bg-white px-3.5 py-2 rounded-xl border border-[#e2e8f0] shadow-sm">
-            {packages.length} {packages.length === 1 ? "compra realizada" : "compras realizadas"}
+            {sessions.length} {sessions.length === 1 ? "compra realizada" : "compras realizadas"}
           </span>
         </div>
 
@@ -155,8 +193,8 @@ export default function UserOrdersPage() {
           </div>
         )}
 
-        {/* Lista de Paquetes de Compra */}
-        {packages.length === 0 ? (
+        {/* Lista de Órdenes de Compra */}
+        {sessions.length === 0 ? (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-12 text-center shadow-sm">
             <Package className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
             <h2 className="text-base font-bold text-[#112237]">
@@ -173,110 +211,148 @@ export default function UserOrdersPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-6">
-            {packages.map((pkg) => (
+          <div className="space-y-8">
+            {sessions.map((session) => (
               <div
-                key={pkg.orderCode}
-                className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-5"
+                key={session.orderCode}
+                className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-6"
               >
-                {/* Cabecera del Paquete de Compra */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#f1f5f9]">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 px-3 py-1 rounded-xl">
-                      #{pkg.orderCode}
+                {/* Cabecera Principal de la Orden de Compra */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#e2e8f0]">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-xs font-black text-white bg-[#112237] px-3.5 py-1.5 rounded-xl tracking-wider shadow-xs">
+                      ORDEN #{session.orderCode}
                     </span>
-                    <span className="text-xs font-bold text-[#112237] bg-slate-100 px-2.5 py-1 rounded-xl">
-                      {pkg.items.length} {pkg.items.length === 1 ? "producto en paquete" : "productos en paquete"}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-xs text-[#475569]">
+                      <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
+                      <span>
+                        <strong className="text-[#112237]">Fecha de compra:</strong>{" "}
+                        {formatDate(session.createdAt)}
+                      </span>
+                    </div>
                   </div>
 
-                  <span
-                    className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                      pkg.status === "delivered"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : pkg.status === "shipped"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-amber-100 text-amber-800"
-                    }`}
-                  >
-                    {pkg.status === "delivered"
-                      ? "Entregado"
-                      : pkg.status === "shipped"
-                        ? "En Camino"
-                        : "Pendiente de Despacho"}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
+                      {session.packages.length}{" "}
+                      {session.packages.length === 1
+                        ? "paquete / despacho"
+                        : "paquetes / despachos"}
+                    </span>
+                    <span className="text-xs font-semibold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl">
+                      Pago Contra Entrega
+                    </span>
+                  </div>
                 </div>
 
-                {/* Lista de Productos del Paquete */}
-                <div className="divide-y divide-[#f1f5f9]">
-                  {pkg.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="relative w-14 h-14 bg-[#f8fafc] rounded-2xl border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
-                          {item.image ? (
-                            <Image
-                              src={item.image}
-                              alt={item.title}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <Package className="w-6 h-6 text-[#cbd5e1]" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <Link
-                            href={`/products/${item.productId}`}
-                            className="font-bold text-sm text-[#112237] hover:text-[#f25c05] transition-colors line-clamp-1"
-                          >
-                            {item.title}
-                          </Link>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs font-extrabold text-[#f25c05]">
-                              S/ {item.price.toFixed(2)}
+                {/* Sub-cards de Paquetes por Vendedor / Tracking ID */}
+                <div className="space-y-5">
+                  {session.packages.map((pkg) => {
+                    const cleanTracking = pkg.trackingNumber.replace(/^(?:#|TRK-)+/gi, "");
+
+                    return (
+                      <div
+                        key={pkg.trackingNumber}
+                        className="border border-[#e2e8f0] bg-white rounded-2xl p-5 space-y-4 hover:border-[#cbd5e1] transition-all"
+                      >
+                        {/* Cabecera del Sub-Paquete con Tracking ID */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl">
+                              Tracking Id: {cleanTracking}
                             </span>
-                            {item.company && (
-                              <Link
-                                href={`/companies/${item.company.slug || item.company.id}`}
-                                className="text-[11px] text-[#64748b] hover:underline flex items-center gap-1 font-semibold"
-                              >
-                                <Building2 className="w-3 h-3 text-[#f25c05]" />
-                                <span>{item.company.name}</span>
-                              </Link>
-                            )}
+                            <span className="text-xs font-bold text-[#112237] bg-slate-100 px-2.5 py-1 rounded-xl">
+                              {pkg.items.length} {pkg.items.length === 1 ? "producto en paquete" : "productos en paquete"}
+                            </span>
                           </div>
+
+                          <span
+                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                              pkg.status === "delivered"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : pkg.status === "shipped"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {pkg.status === "delivered"
+                              ? "Entregado"
+                              : pkg.status === "shipped"
+                                ? "En Camino"
+                                : "Pendiente de Despacho"}
+                          </span>
+                        </div>
+
+                        {/* Lista de Productos dentro de este Paquete */}
+                        <div className="divide-y divide-[#f1f5f9]">
+                          {pkg.items.map((item) => (
+                            <div
+                              key={item.id}
+                              className="py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                            >
+                              <div className="flex items-center gap-3.5 min-w-0">
+                                <div className="relative w-14 h-14 bg-[#f8fafc] rounded-2xl border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
+                                  {item.image ? (
+                                    <Image
+                                      src={item.image}
+                                      alt={item.title}
+                                      fill
+                                      className="object-cover"
+                                      unoptimized
+                                    />
+                                  ) : (
+                                    <Package className="w-6 h-6 text-[#cbd5e1]" />
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <Link
+                                    href={`/products/${item.productId}`}
+                                    className="font-bold text-sm text-[#112237] hover:text-[#f25c05] transition-colors line-clamp-1"
+                                  >
+                                    {item.title}
+                                  </Link>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs font-extrabold text-[#f25c05]">
+                                      S/ {item.price.toFixed(2)}
+                                    </span>
+                                    <span className="text-[11px] text-[#64748b] flex items-center gap-1 font-semibold">
+                                      <Building2 className="w-3 h-3 text-[#f25c05]" />
+                                      <span>{item.company?.name || pkg.sellerName}</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <Link
+                                href={`/products/${item.productId}`}
+                                className="text-xs font-semibold text-[#f25c05] hover:underline shrink-0 flex items-center gap-0.5"
+                              >
+                                <span>Ver detalle</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
+                          ))}
                         </div>
                       </div>
-
-                      <Link
-                        href={`/products/${item.productId}`}
-                        className="text-xs font-semibold text-[#f25c05] hover:underline shrink-0"
-                      >
-                        Ver detalle ➔
-                      </Link>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* Resumen de Importes del Paquete Unificado */}
-                <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                {/* Resumen Único de Importes de la Compra Global (Al final de toda la Orden) */}
+                <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1 text-xs">
                     <p className="text-[#334155]">
-                      <strong className="text-[#112237]">Subtotal (sin IGV):</strong> S/ {pkg.subtotal.toFixed(2)}
+                      <strong className="text-[#112237]">Subtotal (sin IGV):</strong> S/ {session.subtotal.toFixed(2)}
                     </p>
                     <p className="text-[#334155]">
-                      <strong className="text-[#112237]">IGV (18%):</strong> S/ {(pkg.subtotal * 0.18).toFixed(2)}
+                      <strong className="text-[#112237]">IGV (18%):</strong> S/ {session.taxAmount.toFixed(2)}
                     </p>
                     <p className="text-[#334155]">
-                      <strong className="text-[#112237]">Envío de Paquete:</strong> S/ {pkg.shippingCost.toFixed(2)}
+                      <strong className="text-[#112237]">Envío Total de la Compra:</strong> S/ {session.shippingCost.toFixed(2)}
                     </p>
-                    {pkg.shipping?.destinationAddress && (
+                    {session.destinationAddress && (
                       <p className="text-[#64748b] text-[11px] pt-1">
-                        <strong className="text-[#112237]">Entrega:</strong> {pkg.shipping.destinationAddress}
+                        <strong className="text-[#112237]">Entrega:</strong> {session.destinationAddress}
                       </p>
                     )}
                   </div>
@@ -285,8 +361,8 @@ export default function UserOrdersPage() {
                     <span className="text-[11px] text-[#64748b] font-semibold block">
                       Pago Único Contra Entrega:
                     </span>
-                    <span className="text-xl font-black text-[#f25c05]">
-                      S/ {pkg.totalAmount.toFixed(2)}
+                    <span className="text-2xl font-black text-[#f25c05]">
+                      S/ {session.totalAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
