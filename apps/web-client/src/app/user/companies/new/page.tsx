@@ -1,10 +1,17 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Building2, Loader2, Navigation, Save, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Loader2,
+  Navigation,
+  Save,
+  Upload,
+} from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -77,7 +84,7 @@ export default function NewCompanyPage() {
               "User-Agent": "IubizonMarketplace/1.0",
             },
             signal: AbortSignal.timeout(8000),
-          }
+          },
         );
         if (res.ok) {
           const data = await res.json();
@@ -99,7 +106,11 @@ export default function NewCompanyPage() {
           if (parts.length > 0) {
             locationName = parts.join(", ");
           } else if (data.display_name) {
-            locationName = data.display_name.split(",").slice(0, 3).join(",").trim();
+            locationName = data.display_name
+              .split(",")
+              .slice(0, 3)
+              .join(",")
+              .trim();
           }
         }
       } catch {
@@ -117,7 +128,9 @@ export default function NewCompanyPage() {
         longitude,
       }));
     } catch {
-      setError("No se pudo obtener la ubicación automáticamente. Por favor escríbela manualmente.");
+      setError(
+        "No se pudo obtener la ubicación automáticamente. Por favor escríbela manualmente.",
+      );
     } finally {
       setGeoLoading(false);
     }
@@ -164,7 +177,10 @@ export default function NewCompanyPage() {
           .from("products")
           .getPublicUrl(fileName);
         if (publicUrlData?.publicUrl) {
-          setFormData((prev) => ({ ...prev, logo_url: publicUrlData.publicUrl }));
+          setFormData((prev) => ({
+            ...prev,
+            logo_url: publicUrlData.publicUrl,
+          }));
         }
       }
     } catch (err: unknown) {
@@ -215,7 +231,9 @@ export default function NewCompanyPage() {
       router.refresh();
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Error inesperado al registrar la empresa.",
+        err instanceof Error
+          ? err.message
+          : "Error inesperado al registrar la empresa.",
       );
     } finally {
       setIsSaving(false);
@@ -244,7 +262,8 @@ export default function NewCompanyPage() {
               Registrar mi Empresa
             </h1>
             <p className="text-sm text-[#64748b]">
-              Crea tu perfil comercial para publicar productos y colaborar con tu equipo.
+              Crea tu perfil comercial para publicar productos y colaborar con
+              tu equipo.
             </p>
           </div>
         </div>
@@ -345,12 +364,20 @@ export default function NewCompanyPage() {
                   <select
                     id="tax_type"
                     value={formData.tax_type}
-                    onChange={(e) => handleInputChange("tax_type", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("tax_type", e.target.value)
+                    }
                     className="w-full h-10 px-3 rounded-lg border border-[#e2e8f0] bg-white text-sm text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]"
                   >
-                    <option value="ruc20">RUC 20 (Persona Jurídica / Empresa)</option>
-                    <option value="ruc10">RUC 10 (Persona Natural con Negocio)</option>
-                    <option value="dni">DNI / CE (Persona Natural / Vendedor Ind.)</option>
+                    <option value="ruc20">
+                      RUC 20 (Persona Jurídica / Empresa)
+                    </option>
+                    <option value="ruc10">
+                      RUC 10 (Persona Natural con Negocio)
+                    </option>
+                    <option value="dni">
+                      DNI / CE (Persona Natural / Vendedor Ind.)
+                    </option>
                   </select>
                 </div>
                 <div>
@@ -363,7 +390,9 @@ export default function NewCompanyPage() {
                   <Input
                     id="tax_id"
                     value={formData.tax_id}
-                    onChange={(e) => handleInputChange("tax_id", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("tax_id", e.target.value)
+                    }
                     placeholder={
                       formData.tax_type === "dni"
                         ? "ej: 72819201"
@@ -419,7 +448,9 @@ export default function NewCompanyPage() {
                     <Input
                       id="location"
                       value={formData.location}
-                      onChange={(e) => handleInputChange("location", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("location", e.target.value)
+                      }
                       placeholder="Lima, Perú"
                     />
                   </div>
@@ -435,7 +466,9 @@ export default function NewCompanyPage() {
                     ) : (
                       <Navigation className="w-3.5 h-3.5 text-[#f25c05]" />
                     )}
-                    <span>{geoLoading ? "Localizando..." : "Mi ubicación"}</span>
+                    <span>
+                      {geoLoading ? "Localizando..." : "Mi ubicación"}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -451,7 +484,9 @@ export default function NewCompanyPage() {
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   placeholder="Resumen de tus productos y servicios para colegios y empresas..."
                   rows={3}
                 />

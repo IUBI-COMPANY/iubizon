@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,12 +18,10 @@ import {
   Eye,
   Loader2,
   Package,
-  Receipt,
   ShoppingCart,
   Truck,
   User as UserIcon,
   Wallet,
-  XCircle,
 } from "lucide-react";
 
 interface SellerPackageItem {
@@ -82,12 +80,12 @@ function OrdersContent() {
   const [packages, setPackages] = useState<SellerPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusTab, setStatusTab] = useState("all");
+  const [statusTab, setStatusTab] = useState("pending");
 
   // Estado del modal de despacho
   const [selectedPackageForDispatch, setSelectedPackageForDispatch] =
     useState<SellerPackage | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isUpdating, ] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -120,8 +118,6 @@ function OrdersContent() {
       fetchOrders();
     }
   }, [user, fetchOrders]);
-
-
 
   const filteredPackages = packages.filter((pkg) => {
     if (statusTab === "all") return true;
@@ -172,7 +168,8 @@ function OrdersContent() {
               Gestión de Pedidos & Ventas
             </h1>
             <p className="text-xs text-[#64748b] mt-0.5">
-              Administra los despachos asignados y consulta el estado de cada venta.
+              Administra los despachos asignados y consulta el estado de cada
+              venta.
             </p>
           </div>
         </div>
@@ -189,9 +186,13 @@ function OrdersContent() {
                   Nuevas Ventas
                 </span>
               </div>
-              <p className="text-2xl font-black text-[#112237]">{pendingCount}</p>
+              <p className="text-2xl font-black text-[#112237]">
+                {pendingCount}
+              </p>
               <p className="text-xs text-[#64748b] mt-0.5">
-                {pendingCount === 1 ? "pendiente de despacho" : "pendientes de despacho"}
+                {pendingCount === 1
+                  ? "pendiente de despacho"
+                  : "pendientes de despacho"}
               </p>
             </div>
 
@@ -204,9 +205,13 @@ function OrdersContent() {
                   En Camino
                 </span>
               </div>
-              <p className="text-2xl font-black text-[#112237]">{shippedCount}</p>
+              <p className="text-2xl font-black text-[#112237]">
+                {shippedCount}
+              </p>
               <p className="text-xs text-[#64748b] mt-0.5">
-                {shippedCount === 1 ? "pedido en proceso" : "pedidos en proceso"}
+                {shippedCount === 1
+                  ? "pedido en proceso"
+                  : "pedidos en proceso"}
               </p>
             </div>
 
@@ -219,7 +224,9 @@ function OrdersContent() {
                   Completadas
                 </span>
               </div>
-              <p className="text-2xl font-black text-[#112237]">{completedCount}</p>
+              <p className="text-2xl font-black text-[#112237]">
+                {completedCount}
+              </p>
               <p className="text-xs text-[#64748b] mt-0.5">
                 {completedCount === 1 ? "venta entregada" : "ventas entregadas"}
               </p>
@@ -237,7 +244,9 @@ function OrdersContent() {
               <p className="text-2xl font-black text-emerald-600">
                 S/ {formatMoney(totalNetEarnings)}
               </p>
-              <p className="text-xs text-[#64748b] mt-0.5">acumulado a recibir</p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                acumulado a recibir
+              </p>
             </div>
           </div>
         )}
@@ -251,159 +260,196 @@ function OrdersContent() {
         {/* Pestañas de estado */}
         <Tabs value={statusTab} onValueChange={setStatusTab}>
           <TabsList className="mb-6">
-            <TabsTrigger value="all">Todos ({packages.length})</TabsTrigger>
-            <TabsTrigger value="pending">Pendientes de Despacho</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pendientes
+              {pendingCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-extrabold bg-amber-500 text-white rounded-full">
+                  {pendingCount}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="shipped">En proceso</TabsTrigger>
             <TabsTrigger value="completed">Completados</TabsTrigger>
+            <TabsTrigger value="all">Todos ({packages.length})</TabsTrigger>
           </TabsList>
 
           {filteredPackages.length > 0 ? (
             <div className="space-y-4">
-              {filteredPackages.map((pkg) => {
-                const isDelivered =
-                  pkg.status === "delivered" || pkg.status === "completed";
-                const isShipped =
-                  pkg.status === "shipped" || pkg.status === "paid";
-                const isPending = pkg.status === "pending";
+              {[...filteredPackages]
+                .sort((a, b) => {
+                  if (a.status === "pending" && b.status !== "pending")
+                    return -1;
+                  if (a.status !== "pending" && b.status === "pending")
+                    return 1;
+                  return 0;
+                })
+                .map((pkg) => {
+                  const isDelivered =
+                    pkg.status === "delivered" || pkg.status === "completed";
+                  const isShipped =
+                    pkg.status === "shipped" || pkg.status === "paid";
+                  const isPending = pkg.status === "pending";
 
-                const badgeStyle = isDelivered
-                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  : isShipped
-                    ? "bg-blue-100 text-blue-800 border-blue-200"
-                    : "bg-amber-100 text-amber-800 border-amber-200";
+                  const badgeStyle = isDelivered
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    : isShipped
+                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                      : "bg-amber-100 text-amber-800 border-amber-200";
 
-                const badgeLabel = isDelivered
-                  ? "ENTREGADO"
-                  : isShipped
-                    ? "EN CAMINO"
-                    : "PENDIENTE DE DESPACHO";
+                  const badgeLabel = isDelivered
+                    ? "ENTREGADO"
+                    : isShipped
+                      ? "EN CAMINO"
+                      : "PENDIENTE DE DESPACHO";
 
-                return (
-                  <div
-                    key={pkg.packageId}
-                    className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm hover:border-[#cbd5e1] transition-all space-y-4"
-                  >
-                    {/* Fila Superior: Identificadores y Estado */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        {pkg.trackingNumber ? (
-                          <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>Tracking Id: {pkg.trackingNumber}</span>
+                  return (
+                    <div
+                      key={pkg.packageId}
+                      className={`rounded-3xl border p-6 shadow-sm transition-all space-y-4 ${
+                        isPending
+                          ? "bg-amber-50/60 border-l-4 border-l-amber-400 border-amber-200 hover:border-amber-300 hover:shadow-md"
+                          : "bg-white border-[#e2e8f0] hover:border-[#cbd5e1]"
+                      }`}
+                    >
+                      {/* Banner de urgencia para pendientes */}
+                      {isPending && !pkg.trackingNumber && (
+                        <div className="-mx-6 -mt-6 mb-2 px-6 py-2.5 bg-amber-400 rounded-t-3xl flex items-center gap-2">
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
                           </span>
-                        ) : (
-                          <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>Orden #{pkg.sessionCode} (Despacho Pendiente)</span>
+                          <span className="text-xs font-extrabold text-amber-900 uppercase tracking-wide">
+                            ⚡ Acción requerida — Ingresa los datos de despacho
                           </span>
-                        )}
-
-                        <span className="text-xs font-semibold text-[#112237] bg-slate-100 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                          <UserIcon className="w-3.5 h-3.5 text-[#64748b]" />
-                          <span>Venta a: {pkg.buyerName}</span>
-                        </span>
-
-                        <span className="text-xs text-[#64748b] flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
-                          <span>{formatFullDate(pkg.createdAt)}</span>
-                        </span>
-                      </div>
-
-                      <span
-                        className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase border ${badgeStyle}`}
-                      >
-                        {badgeLabel}
-                      </span>
-                    </div>
-
-                    {/* Previsualización Compacta de Productos */}
-                    <div className="flex items-center gap-3 overflow-x-auto py-1">
-                      {pkg.items.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center gap-3 bg-[#f8fafc] p-2.5 rounded-2xl border border-[#e2e8f0] shrink-0 max-w-xs"
-                        >
-                          <div className="w-12 h-12 bg-white rounded-xl overflow-hidden relative shrink-0 border border-slate-200">
-                            {item.image ? (
-                              <Image
-                                src={item.image}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                <Package className="w-5 h-5" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="pr-2">
-                            <p className="text-xs font-bold text-[#112237] line-clamp-1">
-                              {item.title}
-                            </p>
-                            <p className="text-[11px] font-extrabold text-[#f25c05]">
-                              S/ {formatMoney(item.price)}{" "}
-                              <span className="text-[#64748b] font-normal">
-                                (x{item.quantity || 1})
-                              </span>
-                            </p>
-                          </div>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                      {/* Fila Superior: Identificadores y Estado */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          {pkg.trackingNumber ? (
+                            <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
+                              <Truck className="w-3.5 h-3.5" />
+                              <span>Tracking Id: {pkg.trackingNumber}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>
+                                Orden #{pkg.sessionCode} (Despacho Pendiente)
+                              </span>
+                            </span>
+                          )}
 
-                    {/* Barra Inferior Resumida Financiera & Acciones */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#f1f5f9]">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#64748b] font-medium">
-                          Monto Neto a Recibir por iubizon:
-                        </span>
-                        <span className="text-xl font-black text-emerald-600">
-                          S/ {formatMoney(pkg.netEarnings)}
+                          <span className="text-xs font-semibold text-[#112237] bg-slate-100 px-3 py-1 rounded-xl flex items-center gap-1.5">
+                            <UserIcon className="w-3.5 h-3.5 text-[#64748b]" />
+                            <span>Venta a: {pkg.buyerName}</span>
+                          </span>
+
+                          <span className="text-xs text-[#64748b] flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
+                            <span>{formatFullDate(pkg.createdAt)}</span>
+                          </span>
+                        </div>
+
+                        <span
+                          className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase border ${badgeStyle}`}
+                        >
+                          {badgeLabel}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-wrap justify-end">
-                        {isPending && (
-                          <Button
-                            size="sm"
-                            onClick={() => setSelectedPackageForDispatch(pkg)}
-                            disabled={isUpdating}
-                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm"
+                      {/* Previsualización Compacta de Productos */}
+                      <div className="flex items-center gap-3 overflow-x-auto py-1">
+                        {pkg.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex items-center gap-3 bg-[#f8fafc] p-2.5 rounded-2xl border border-[#e2e8f0] shrink-0 max-w-xs"
                           >
-                            <Truck className="w-4 h-4 mr-1.5" />
-                            {pkg.trackingNumber ? "Editar Despacho" : "Confirmar Despacho"}
-                          </Button>
-                        )}
+                            <div className="w-12 h-12 bg-white rounded-xl overflow-hidden relative shrink-0 border border-slate-200">
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.title}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                  <Package className="w-5 h-5" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="pr-2">
+                              <p className="text-xs font-bold text-[#112237] line-clamp-1">
+                                {item.title}
+                              </p>
+                              <p className="text-[11px] font-extrabold text-[#f25c05]">
+                                S/ {formatMoney(item.price)}{" "}
+                                <span className="text-[#64748b] font-normal">
+                                  (x{item.quantity || 1})
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
 
-                        {isDelivered && (
-                          <Link href="/user/dashboard/payouts">
+                      {/* Barra Inferior Resumida Financiera & Acciones */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#f1f5f9]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#64748b] font-medium">
+                            Monto Neto a Recibir por iubizon:
+                          </span>
+                          <span className="text-xl font-black text-emerald-600">
+                            S/ {formatMoney(pkg.netEarnings)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap justify-end">
+                          {isPending && (
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="text-xs font-extrabold border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-xl"
+                              onClick={() => setSelectedPackageForDispatch(pkg)}
+                              disabled={isUpdating}
+                              className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-sm"
                             >
-                              <Wallet className="w-3.5 h-3.5 mr-1" />
-                              Ver pago en Mis Finanzas
+                              <Truck className="w-4 h-4 mr-1.5" />
+                              {pkg.trackingNumber
+                                ? "Editar Despacho"
+                                : "Confirmar Despacho"}
+                            </Button>
+                          )}
+
+                          {isDelivered && (
+                            <Link href="/user/dashboard/payouts">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs font-extrabold border-emerald-300 text-emerald-700 hover:bg-emerald-50 rounded-xl"
+                              >
+                                <Wallet className="w-3.5 h-3.5 mr-1" />
+                                Ver pago en Mis Finanzas
+                              </Button>
+                            </Link>
+                          )}
+
+                          <Link
+                            href={`/user/dashboard/orders/${encodeURIComponent(pkg.packageId)}`}
+                          >
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="bg-slate-100 hover:bg-slate-200 text-[#112237] text-xs font-extrabold px-4 py-2 rounded-xl"
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1.5 text-[#f25c05]" />
+                              Ver detalle de la venta ➔
                             </Button>
                           </Link>
-                        )}
-
-                        <Link href={`/user/dashboard/orders/${encodeURIComponent(pkg.packageId)}`}>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="bg-slate-100 hover:bg-slate-200 text-[#112237] text-xs font-extrabold px-4 py-2 rounded-xl"
-                          >
-                            <Eye className="w-3.5 h-3.5 mr-1.5 text-[#f25c05]" />
-                            Ver detalle de la venta ➔
-                          </Button>
-                        </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           ) : (
             <div className="text-center py-16 bg-white rounded-3xl border border-[#e2e8f0] shadow-sm">
@@ -412,7 +458,8 @@ function OrdersContent() {
                 No tienes ventas en esta sección
               </h2>
               <p className="text-xs text-[#64748b]">
-                Las compras recibidas aparecerán aquí para que ingreses la información de despacho.
+                Las compras recibidas aparecerán aquí para que ingreses la
+                información de despacho.
               </p>
             </div>
           )}
@@ -427,7 +474,9 @@ function OrdersContent() {
           packageId={selectedPackageForDispatch.packageId}
           currentCarrierName={selectedPackageForDispatch.carrierName}
           currentTrackingNumber={selectedPackageForDispatch.trackingNumber}
-          currentEstimatedDelivery={selectedPackageForDispatch.estimatedDelivery}
+          currentEstimatedDelivery={
+            selectedPackageForDispatch.estimatedDelivery
+          }
           currentCarrierPhone={selectedPackageForDispatch.carrierPhone}
           currentTrackingUrl={selectedPackageForDispatch.trackingUrl}
           onSuccess={() => fetchOrders()}

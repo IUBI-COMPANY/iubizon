@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,6 @@ import {
   Link as LinkIcon,
   Loader2,
   Phone,
-  Truck,
 } from "lucide-react";
 
 interface DispatchModalProps {
@@ -67,6 +66,7 @@ export function DispatchModal({
     }
   }, [
     isOpen,
+    packageId,
     currentCarrierName,
     currentTrackingNumber,
     currentEstimatedDelivery,
@@ -77,7 +77,9 @@ export function DispatchModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!carrierName.trim() || !trackingNumber.trim() || !estimatedDelivery) {
-      setError("Por favor completa la empresa de transporte, el número de seguimiento y la fecha estimada.");
+      setError(
+        "Por favor completa la empresa de transporte, el número de seguimiento y la fecha estimada.",
+      );
       return;
     }
 
@@ -123,122 +125,123 @@ export function DispatchModal({
             Confirmar Despacho del Pedido
           </DialogTitle>
         </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="text-xs text-[#64748b]">
-          Ingresa la información proporcionada por la agencia de transporte al momento de realizar el envío.
-        </p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="text-xs text-[#64748b]">
+            Ingresa la información proporcionada por la agencia de transporte al
+            momento de realizar el envío.
+          </p>
 
-        {error && (
-          <div className="p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl border border-red-200">
-            {error}
-          </div>
-        )}
+          {error && (
+            <div className="p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl border border-red-200">
+              {error}
+            </div>
+          )}
 
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-[#112237]">
-            Empresa de Transporte *
-          </Label>
-          <Input
-            placeholder="Ej: Shalom Courier, Olva Courier, Marvisur"
-            value={carrierName}
-            onChange={(e) => setCarrierName(e.target.value)}
-            className="text-xs"
-            required
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-[#112237]">
-            Tracking ID / Número de Guía *
-          </Label>
-          <Input
-            placeholder="Ej: SHA-9842104"
-            value={trackingNumber}
-            onChange={(e) => setTrackingNumber(e.target.value)}
-            className="text-xs"
-            required
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-[#112237]">
-            Fecha Estimada de Llegada *
-          </Label>
-          <div className="relative">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-[#112237]">
+              Empresa de Transporte *
+            </Label>
             <Input
-              type="date"
-              value={estimatedDelivery}
-              onChange={(e) => setEstimatedDelivery(e.target.value)}
+              placeholder="Ej: Shalom Courier, Olva Courier, Marvisur"
+              value={carrierName}
+              onChange={(e) => setCarrierName(e.target.value)}
               className="text-xs"
               required
             />
-            <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
           </div>
-        </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-[#112237]">
-            Teléfono del Transportista (Opcional)
-          </Label>
-          <div className="relative">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-[#112237]">
+              Tracking ID / Número de Guía *
+            </Label>
             <Input
-              type="tel"
-              placeholder="Ej: 987654321"
-              value={carrierPhone}
-              onChange={(e) => setCarrierPhone(e.target.value)}
-              className="text-xs pl-9"
+              placeholder="Ej: SHA-9842104"
+              value={trackingNumber}
+              onChange={(e) => setTrackingNumber(e.target.value)}
+              className="text-xs"
+              required
             />
-            <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           </div>
-        </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs font-bold text-[#112237]">
-            Link de Seguimiento de la Agencia (Opcional)
-          </Label>
-          <div className="relative">
-            <Input
-              type="url"
-              placeholder="https://shalom.pe/rastreo/..."
-              value={trackingUrl}
-              onChange={(e) => setTrackingUrl(e.target.value)}
-              className="text-xs pl-9"
-            />
-            <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-[#112237]">
+              Fecha Estimada de Llegada *
+            </Label>
+            <div className="relative">
+              <Input
+                type="date"
+                value={estimatedDelivery}
+                onChange={(e) => setEstimatedDelivery(e.target.value)}
+                className="text-xs"
+                required
+              />
+              <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
+            </div>
           </div>
-        </div>
 
-        <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="text-xs"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isSubmitting}
-            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-5 rounded-xl shadow-sm"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
-                <span>Guardando...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-1.5" />
-                <span>Guardar Despacho</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-[#112237]">
+              Teléfono del Transportista (Opcional)
+            </Label>
+            <div className="relative">
+              <Input
+                type="tel"
+                placeholder="Ej: 987654321"
+                value={carrierPhone}
+                onChange={(e) => setCarrierPhone(e.target.value)}
+                className="text-xs pl-9"
+              />
+              <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-bold text-[#112237]">
+              Link de Seguimiento de la Agencia (Opcional)
+            </Label>
+            <div className="relative">
+              <Input
+                type="url"
+                placeholder="https://shalom.pe/rastreo/..."
+                value={trackingUrl}
+                onChange={(e) => setTrackingUrl(e.target.value)}
+                className="text-xs pl-9"
+              />
+              <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            </div>
+          </div>
+
+          <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="text-xs"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSubmitting}
+              className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-5 rounded-xl shadow-sm"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-1.5" />
+                  <span>Guardar Despacho</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

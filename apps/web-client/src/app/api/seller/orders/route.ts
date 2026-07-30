@@ -14,6 +14,7 @@ export interface SellerPackageItem {
 
 export interface SellerPackage {
   packageId: string;
+  sessionCode: string;
   trackingNumber: string | null;
   carrierName: string | null;
   trackingUrl: string | null;
@@ -181,6 +182,7 @@ export async function GET() {
 
       sellerPackages.push({
         packageId: tempPkg.packageId,
+        sessionCode: tempPkg.sessionCode,
         trackingNumber: tempPkg.trackingNumber,
         carrierName: tempPkg.carrierName,
         trackingUrl: tempPkg.trackingUrl,
