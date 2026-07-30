@@ -85,7 +85,7 @@ function OrdersContent() {
   // Estado del modal de despacho
   const [selectedPackageForDispatch, setSelectedPackageForDispatch] =
     useState<SellerPackage | null>(null);
-  const [isUpdating, ] = useState(false);
+  const [isUpdating] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {

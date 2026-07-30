@@ -71,10 +71,10 @@ export default async function MarketplaceHomePage() {
                 No hay productos disponibles
               </p>
             )}
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
-  );
-}
+           </div>
+         </section>
+       </main>
+       <Footer categories={popularCategories} />
+     </div>
+   );
+ }

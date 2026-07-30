@@ -1,34 +1,34 @@
-'use client';
+import Link from "next/link";
+import Image from "next/image";
+import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
+import type { Category } from "@/types";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { Heart, Facebook, Instagram, Phone, Mail, MapPin } from 'lucide-react';
+interface FooterProps {
+  categories?: Category[];
+}
 
-export const Footer = () => {
+export const Footer = ({ categories = [] }: FooterProps) => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     comprar: [
-      { label: 'Todas las categorías', href: '/search' },
-      { label: 'Electrónica', href: '/search?keywords=electronica' },
-      { label: 'Hogar', href: '/search?keywords=hogar' },
-      { label: 'Herramientas', href: '/search?keywords=herramientas' },
+      { label: "Todas las categorías", href: "/search" },
+      ...categories.map((cat) => ({
+        label: cat.name,
+        href: `/search?category_id=${cat.id}`,
+      })),
     ],
-    vender: [
-      { label: 'Publicar producto', href: '/products/new' },
-      { label: 'Iubizon PRO', href: '/iubizon-pro' },
-      { label: 'Consejos para vender', href: '/help/selling-tips' },
-    ],
+    vender: [{ label: "Publicar producto", href: "/products/new" }],
     ayuda: [
-      { label: 'Centro de ayuda', href: '/help' },
-      { label: 'Cómo comprar', href: '/help/how-to-buy' },
-      { label: 'Cómo vender', href: '/help/how-to-sell' },
-      { label: 'Seguridad', href: '/help/security' },
+      { label: "Centro de ayuda", href: "/help" },
+      { label: "Cómo comprar", href: "/help/how-to-buy" },
+      { label: "Cómo vender", href: "/help/how-to-sell" },
+      { label: "Seguridad", href: "/help/security" },
     ],
     legal: [
-      { label: 'Términos y condiciones', href: '/terms' },
-      { label: 'Política de privacidad', href: '/privacy' },
-      { label: 'Política deCookies', href: '/cookies' },
+      { label: "Términos y condiciones", href: "/terms" },
+      { label: "Política de privacidad", href: "/privacy" },
+      { label: "Política deCookies", href: "/cookies" },
     ],
   };
 
@@ -47,7 +47,8 @@ export const Footer = () => {
               />
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">
-              El marketplace de confianza en Perú. Compra y vende de forma segura.
+              El marketplace de confianza en Perú. Compra y vende de forma
+              segura.
             </p>
             <div className="flex gap-4">
               <a

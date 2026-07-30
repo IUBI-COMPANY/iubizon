@@ -1,21 +1,10 @@
-import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
-import {
-  Building2,
-  CheckCircle2,
-  Mail,
-  MapPin,
-  Package,
-  Phone,
-  Search,
-  Share2,
-} from "lucide-react";
+import { Building2 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
-import { ProductCard } from "@/components/ui/ProductCard";
 import { getPublicCompanyBySlugOrId } from "@/lib/services/companies";
+import { getCategories } from "@/lib/services/categories";
 import { PublicCompanyStorefront } from "./PublicCompanyStorefront";
 import type { Product } from "@/types";
 
@@ -46,7 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PublicCompanyPage({ params }: Props) {
   const { slug } = await params;
-  const company = await getPublicCompanyBySlugOrId(slug);
+  const [company, categories] = await Promise.all([
+    getPublicCompanyBySlugOrId(slug),
+    getCategories(),
+  ]);
 
   if (!company) {
     return (
@@ -69,7 +61,7 @@ export default async function PublicCompanyPage({ params }: Props) {
             </Link>
           </div>
         </div>
-        <Footer />
+        <Footer categories={categories} />
       </div>
     );
   }
@@ -119,9 +111,9 @@ export default async function PublicCompanyPage({ params }: Props) {
           is_verified: company.is_verified ?? false,
         }}
         products={formattedProducts}
-      />
+       />
 
-      <Footer />
-    </div>
-  );
-}
+       <Footer categories={categories} />
+     </div>
+   );
+ }
