@@ -47,8 +47,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
               />
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">
-              El marketplace de confianza en Perú. Compra y vende de forma
-              segura.
+              El Marketplace de Tecnología Educativa y Empresarial.
             </p>
             <div className="flex gap-4">
               <a
