@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import Link from "next/link";
+import { BoxIcon } from "lucide-react";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +79,17 @@ export default async function FavoritesPage() {
                 >
                   <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 hover:shadow-lg transition-shadow">
                     <div className="aspect-square bg-[#f8fafc] rounded-lg mb-3 flex items-center justify-center text-4xl">
-                      📦
+                      {fav?.product?.images?.[0].url ? (
+                        <Image
+                          src={fav?.product?.images?.[0].url}
+                          alt={fav?.product?.title}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <BoxIcon className="w-13 h-13" />
+                      )}
                     </div>
                     <h3 className="font-medium text-[#112237] truncate">
                       {fav.product?.title}
