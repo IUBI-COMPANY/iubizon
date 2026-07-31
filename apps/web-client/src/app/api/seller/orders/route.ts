@@ -161,6 +161,13 @@ export async function GET() {
         pkg.estimatedDelivery =
           order.shipping.estimated_delivery.toISOString();
       }
+      if (order.shipping?.courier && (!pkg.carrierName || !pkg.courierInfo)) {
+        const meta = parseDispatchMeta(order.shipping.courier);
+        if (meta.carrierName) pkg.carrierName = meta.carrierName;
+        if (meta.trackingUrl) pkg.trackingUrl = meta.trackingUrl;
+        if (meta.carrierPhone) pkg.carrierPhone = meta.carrierPhone;
+        pkg.courierInfo = order.shipping.courier;
+      }
 
       if (order.product) {
         pkg.items.push({
@@ -180,6 +187,24 @@ export async function GET() {
       const platformCommission = tempPkg.subtotal * 0.1;
       const netEarnings = tempPkg.subtotal - platformCommission;
 
+      const allDelivered =
+        tempPkg.items.length > 0 &&
+        tempPkg.items.every(
+          (i) => i.status === "delivered" || i.status === "completed",
+        );
+      const anyShipped = tempPkg.items.some(
+        (i) =>
+          i.status === "shipped" ||
+          i.status === "paid" ||
+          i.status === "delivered" ||
+          i.status === "completed",
+      );
+      const computedStatus = allDelivered
+        ? "delivered"
+        : anyShipped
+          ? "shipped"
+          : tempPkg.status;
+
       sellerPackages.push({
         packageId: tempPkg.packageId,
         sessionCode: tempPkg.sessionCode,
@@ -189,7 +214,7 @@ export async function GET() {
         carrierPhone: tempPkg.carrierPhone,
         estimatedDelivery: tempPkg.estimatedDelivery,
         createdAt: tempPkg.createdAt,
-        status: tempPkg.status,
+        status: computedStatus,
         buyerName: tempPkg.buyerName,
         buyerPhone: null,
         buyerEmail: null,
@@ -230,16 +255,46 @@ export async function PATCH(req: Request) {
 
     const body = await req.json();
     const {
-      orderIds,
+      orderIds: rawOrderIds,
+      packageId,
       action,
-      courier,
+      courier: rawCourier,
+      carrierName,
       trackingNumber,
       trackingUrl,
       carrierPhone,
       estimatedDelivery,
     } = body;
 
-    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+    let orderIds: string[] = Array.isArray(rawOrderIds) ? rawOrderIds : [];
+
+    // Fallback: Si no se enviaron orderIds explícitos pero sí packageId, buscarlos en la BD
+    if (orderIds.length === 0 && packageId) {
+      const sellerOrders = await prisma.order.findMany({
+        where: {
+          OR: [
+            { seller_id: user.id },
+            { company: { companyMembers: { some: { user_id: user.id } } } },
+          ],
+        },
+        select: { id: true, payment_id: true, created_at: true, seller_id: true },
+      });
+
+      orderIds = sellerOrders
+        .filter((o) => {
+          if (o.id === packageId) return true;
+          const sessionCode = o.payment_id
+            ? o.payment_id.toUpperCase()
+            : o.created_at
+              ? o.created_at.toISOString().slice(0, 16)
+              : o.id.slice(0, 6).toUpperCase();
+          const groupKey = `${sessionCode}_${o.seller_id}`;
+          return groupKey === packageId || sessionCode === packageId;
+        })
+        .map((o) => o.id);
+    }
+
+    if (!orderIds || orderIds.length === 0) {
       return NextResponse.json(
         { error: "Faltan las órdenes a actualizar" },
         { status: 400 },
@@ -258,7 +313,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    if (!courier || !String(courier).trim()) {
+    const courier = (rawCourier || carrierName || "").trim();
+
+    if (!courier) {
       return NextResponse.json(
         { error: "La empresa de transporte es requerida" },
         { status: 400 },

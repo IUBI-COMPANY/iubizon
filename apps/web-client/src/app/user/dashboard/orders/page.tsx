@@ -305,24 +305,12 @@ function OrdersContent() {
                   return (
                     <div
                       key={pkg.packageId}
-                      className={`rounded-3xl border p-6 shadow-sm transition-all space-y-4 ${
+                      className={`bg-white rounded-3xl border p-6 shadow-sm transition-all space-y-4 ${
                         isPending
-                          ? "bg-amber-50/60 border-l-4 border-l-amber-400 border-amber-200 hover:border-amber-300 hover:shadow-md"
-                          : "bg-white border-[#e2e8f0] hover:border-[#cbd5e1]"
+                          ? "border-amber-300 hover:border-amber-400"
+                          : "border-[#e2e8f0] hover:border-[#cbd5e1]"
                       }`}
                     >
-                      {/* Banner de urgencia para pendientes */}
-                      {isPending && !pkg.trackingNumber && (
-                        <div className="-mx-6 -mt-6 mb-2 px-6 py-2.5 bg-amber-400 rounded-t-3xl flex items-center gap-2">
-                          <span className="relative flex h-2.5 w-2.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
-                          </span>
-                          <span className="text-xs font-extrabold text-amber-900 uppercase tracking-wide">
-                            ⚡ Acción requerida — Ingresa los datos de despacho
-                          </span>
-                        </div>
-                      )}
                       {/* Fila Superior: Identificadores y Estado */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
                         <div className="flex flex-wrap items-center gap-2.5">
@@ -406,7 +394,7 @@ function OrdersContent() {
                         </div>
 
                         <div className="flex items-center gap-2 flex-wrap justify-end">
-                          {isPending && (
+                          {(isPending || isShipped) && (
                             <Button
                               size="sm"
                               onClick={() => setSelectedPackageForDispatch(pkg)}
@@ -472,6 +460,7 @@ function OrdersContent() {
           isOpen={!!selectedPackageForDispatch}
           onClose={() => setSelectedPackageForDispatch(null)}
           packageId={selectedPackageForDispatch.packageId}
+          orderIds={selectedPackageForDispatch.orderIds}
           currentCarrierName={selectedPackageForDispatch.carrierName}
           currentTrackingNumber={selectedPackageForDispatch.trackingNumber}
           currentEstimatedDelivery={

@@ -22,6 +22,7 @@ interface DispatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   packageId: string;
+  orderIds?: string[];
   currentCarrierName?: string | null;
   currentTrackingNumber?: string | null;
   currentEstimatedDelivery?: string | null;
@@ -30,10 +31,28 @@ interface DispatchModalProps {
   onSuccess: () => void;
 }
 
+function formatDateForInput(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr.slice(0, 16);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch {
+    return dateStr.slice(0, 16);
+  }
+}
+
 export function DispatchModal({
   isOpen,
   onClose,
   packageId,
+  orderIds,
   currentCarrierName,
   currentTrackingNumber,
   currentEstimatedDelivery,
@@ -46,7 +65,7 @@ export function DispatchModal({
     currentTrackingNumber || "",
   );
   const [estimatedDelivery, setEstimatedDelivery] = useState(
-    currentEstimatedDelivery ? currentEstimatedDelivery.slice(0, 10) : "",
+    formatDateForInput(currentEstimatedDelivery),
   );
   const [carrierPhone, setCarrierPhone] = useState(currentCarrierPhone || "");
   const [trackingUrl, setTrackingUrl] = useState(currentTrackingUrl || "");
@@ -57,9 +76,7 @@ export function DispatchModal({
     if (isOpen) {
       setCarrierName(currentCarrierName || "");
       setTrackingNumber(currentTrackingNumber || "");
-      setEstimatedDelivery(
-        currentEstimatedDelivery ? currentEstimatedDelivery.slice(0, 10) : "",
-      );
+      setEstimatedDelivery(formatDateForInput(currentEstimatedDelivery));
       setCarrierPhone(currentCarrierPhone || "");
       setTrackingUrl(currentTrackingUrl || "");
       setError(null);
@@ -92,8 +109,10 @@ export function DispatchModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageId,
+          orderIds: orderIds && orderIds.length > 0 ? orderIds : undefined,
           action: "dispatch",
           carrierName: carrierName.trim(),
+          courier: carrierName.trim(),
           trackingNumber: trackingNumber.trim(),
           estimatedDelivery,
           carrierPhone: carrierPhone.trim() || undefined,
@@ -163,19 +182,19 @@ export function DispatchModal({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 w-full">
             <Label className="text-xs font-bold text-[#112237]">
-              Fecha Estimada de Llegada *
+              Fecha y Hora Estimada de Llegada *
             </Label>
-            <div className="relative">
+            <div className="relative w-full">
               <Input
-                type="date"
+                type="datetime-local"
                 value={estimatedDelivery}
                 onChange={(e) => setEstimatedDelivery(e.target.value)}
-                className="text-xs"
+                className="w-full text-xs pl-3.5 pr-10 cursor-pointer font-medium text-[#112237] rounded-xl [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 required
               />
-              <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
+              <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 

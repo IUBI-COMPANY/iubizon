@@ -223,13 +223,13 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               </p>
             </div>
 
-            {isPending && (
+            {(isPending || isShipped) && (
               <Button
                 onClick={() => setIsDispatchModalOpen(true)}
                 className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-sm"
               >
                 <Truck className="w-4 h-4 mr-1.5" />
-                Confirmar Despacho
+                {pkg.trackingNumber ? "Editar Despacho" : "Confirmar Despacho"}
               </Button>
             )}
 
@@ -266,10 +266,21 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             </div>
 
             <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] space-y-2">
-              <p className="font-extrabold text-[#112237] flex items-center gap-1.5 text-xs">
-                <Truck className="w-4 h-4 text-[#f25c05]" />
-                <span>Información de Agencia & Seguimiento</span>
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="font-extrabold text-[#112237] flex items-center gap-1.5 text-xs">
+                  <Truck className="w-4 h-4 text-[#f25c05]" />
+                  <span>Información de Agencia & Seguimiento</span>
+                </p>
+                {(isPending || isShipped) && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDispatchModalOpen(true)}
+                    className="text-[11px] font-bold text-[#f25c05] hover:underline"
+                  >
+                    Editar
+                  </button>
+                )}
+              </div>
               <div className="space-y-1 text-[#334155]">
                 <p>
                   <strong>Agencia de Transporte:</strong>{" "}
@@ -389,6 +400,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
           isOpen={isDispatchModalOpen}
           onClose={() => setIsDispatchModalOpen(false)}
           packageId={pkg.packageId}
+          orderIds={pkg.orderIds}
           currentCarrierName={pkg.carrierName}
           currentTrackingNumber={pkg.trackingNumber}
           currentEstimatedDelivery={pkg.estimatedDelivery}

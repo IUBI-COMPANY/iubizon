@@ -9,15 +9,33 @@ export interface ParsedDispatchMeta {
 }
 
 export function parseDispatchMeta(rawCourier?: string | null): ParsedDispatchMeta {
-  if (!rawCourier || !rawCourier.includes("[DESPACHO]")) {
+  if (!rawCourier || !rawCourier.trim()) {
     return { carrierName: null, trackingUrl: null, carrierPhone: null };
+  }
+
+  const trimmed = rawCourier.trim();
+
+  // Si contiene notas o datos del cliente/comprobante guardados en el campo courier, ignorarlos
+  if (
+    trimmed.startsWith("Cliente:") ||
+    trimmed.includes("Boleta") ||
+    trimmed.includes("Factura") ||
+    trimmed.includes("DNI:") ||
+    trimmed.includes("RUC:") ||
+    trimmed.includes("Tel:")
+  ) {
+    return { carrierName: null, trackingUrl: null, carrierPhone: null };
+  }
+
+  if (!trimmed.includes("[DESPACHO]")) {
+    return { carrierName: trimmed, trackingUrl: null, carrierPhone: null };
   }
 
   let carrierName: string | null = null;
   let trackingUrl: string | null = null;
   let carrierPhone: string | null = null;
 
-  const parts = rawCourier.split("|").map((p) => p.trim());
+  const parts = trimmed.split("|").map((p) => p.trim());
   for (const part of parts) {
     if (part.startsWith("Carrier:")) {
       const val = part.replace("Carrier:", "").trim();
@@ -31,6 +49,10 @@ export function parseDispatchMeta(rawCourier?: string | null): ParsedDispatchMet
       const val = part.replace("CarrierTel:", "").trim();
       if (val && val !== "N/A") carrierPhone = val;
     }
+  }
+
+  if (!carrierName && trimmed && !trimmed.startsWith("[DESPACHO]")) {
+    carrierName = trimmed;
   }
 
   return { carrierName, trackingUrl, carrierPhone };
