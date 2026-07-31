@@ -47,7 +47,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
               />
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">
-              El Marketplace de Tecnología Educativa y Empresarial.
+              Tecnología para educar y trabajar.
             </p>
             <div className="flex gap-4">
               <a
