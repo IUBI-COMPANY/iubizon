@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       const orderSubtotal = (
         items as Array<{ price: number; quantity?: number }>
       ).reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
-      const orderTotal = orderSubtotal * 1.18 + 50;
+      const orderTotal = orderSubtotal + 50;
       if (orderTotal > 700 && (!invoice_dni || !String(invoice_dni).trim())) {
         return NextResponse.json(
           {
@@ -308,8 +308,8 @@ export async function POST(req: Request) {
       0,
     );
     const shippingCost = 50.0;
-    const totalTax = subtotal * 0.18;
-    const totalAmount = subtotal + totalTax + shippingCost;
+    const totalTax = 0;
+    const totalAmount = subtotal + shippingCost;
     const totalCommission = subtotal * 0.1;
 
     // Construir resumen de grupos de tracking para mostrar en la UI

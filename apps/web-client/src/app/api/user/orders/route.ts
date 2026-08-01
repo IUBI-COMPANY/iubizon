@@ -248,9 +248,9 @@ export async function GET(req: Request) {
       let mainDestination: string | null = null;
 
       for (const tempPkg of Array.from(session.packageMap.values())) {
-        const taxAmount = tempPkg.subtotal * 0.18;
+        const taxAmount = 0;
         const shippingCost = 50.0;
-        const totalAmount = tempPkg.subtotal + taxAmount + shippingCost;
+        const totalAmount = tempPkg.subtotal + shippingCost;
 
         sessionSubtotal += tempPkg.subtotal;
         sessionItemsCount += tempPkg.items.length;
@@ -277,9 +277,9 @@ export async function GET(req: Request) {
         });
       }
 
-      const sessionTax = sessionSubtotal * 0.18;
+      const sessionTax = 0;
       const sessionShipping = 50.0;
-      const sessionTotal = sessionSubtotal + sessionTax + sessionShipping;
+      const sessionTotal = sessionSubtotal + sessionShipping;
 
       purchaseSessions.push({
         orderCode: session.orderCode,

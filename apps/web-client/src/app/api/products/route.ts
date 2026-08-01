@@ -24,6 +24,8 @@ export async function POST(request: Request) {
   let brand: string | null;
   let company_id: string | null = null;
   let video_url: string | null = null;
+  let warranty: string | null = null;
+  let warranty_conditions: string | null = null;
 
   const contentType = request.headers.get('content-type') || '';
 
@@ -43,6 +45,8 @@ export async function POST(request: Request) {
     brand = body.brand || null;
     company_id = body.company_id || null;
     video_url = body.video_url || null;
+    warranty = body.warranty || null;
+    warranty_conditions = body.warranty_conditions || null;
   } else {
     const formData = await request.formData();
     title = formData.get('title') as string;
@@ -59,6 +63,8 @@ export async function POST(request: Request) {
     brand = (formData.get('brand') as string) || null;
     company_id = (formData.get('company_id') as string) || null;
     video_url = (formData.get('video_url') as string) || null;
+    warranty = (formData.get('warranty') as string) || null;
+    warranty_conditions = (formData.get('warranty_conditions') as string) || null;
   }
 
   if (!title || !price || !condition || !category_id) {
@@ -142,6 +148,8 @@ export async function POST(request: Request) {
     }
   }
 
+  const defaultWarranty = warranty || 'Sin garantía del vendedor';
+
   const insertData: Record<string, unknown> = {
     title,
     description,
@@ -159,6 +167,11 @@ export async function POST(request: Request) {
     availability_type: availability_type || 'unique',
     delivery_preference: delivery_preference || null,
     video_url: video_url || null,
+    specifications: {
+      warranty: defaultWarranty,
+      warranty_coverage: 'Fallas de fabricación y componentes defectuosos de origen',
+      warranty_conditions: warranty_conditions || null,
+    },
   };
 
   const { data, error } = await supabase

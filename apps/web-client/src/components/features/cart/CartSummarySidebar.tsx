@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 interface CartSummarySidebarProps {
   step: number;
   subtotal: number;
-  taxAmount: number;
+  taxAmount?: number;
   shippingCost: number;
   grandTotal: number;
   itemCount: number;
@@ -39,16 +39,9 @@ export const CartSummarySidebar = ({
         )}
 
         <div className="flex justify-between">
-          <span>Subtotal (sin IGV):</span>
+          <span>Subtotal de productos:</span>
           <span className="font-bold text-[#112237]">
             S/ {subtotal.toFixed(2)}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>IGV (18%):</span>
-          <span className="font-bold text-[#112237]">
-            S/ {taxAmount.toFixed(2)}
           </span>
         </div>
 

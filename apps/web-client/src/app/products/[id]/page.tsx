@@ -315,18 +315,65 @@ export default async function ProductDetailPage({ params }: Props) {
                 )}
               </div>
 
-              {/* Compra Segura */}
-              <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
-                <div className="flex items-center gap-3 text-sm text-[#64748b]">
-                  <div className="w-10 h-10 bg-[#10b981]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5 text-[#10b981]" />
+              {/* Garantía del Vendedor y Protección Iubizon */}
+              {(() => {
+                const specs =
+                  product.specifications && typeof product.specifications === "object"
+                    ? (product.specifications as Record<string, unknown>)
+                    : null;
+                const warrantyText = specs?.warranty ? String(specs.warranty) : null;
+                const warrantyConditions = specs?.warranty_conditions ? String(specs.warranty_conditions) : null;
+                const hasSellerWarranty = !!warrantyText && !warrantyText.toLowerCase().includes("sin garantía");
+
+                return (
+                  <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm space-y-3.5">
+                    {hasSellerWarranty ? (
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 bg-[#f25c05]/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                          <ShieldCheck className="w-5 h-5 text-[#f25c05]" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-bold text-[#112237] text-xs uppercase tracking-wider">
+                            Garantía del Vendedor
+                          </p>
+                          <p className="text-xs text-[#334155] font-semibold">
+                            {warrantyText}
+                          </p>
+                          <p className="text-[11px] text-[#64748b]">
+                            ℹ️ <strong className="text-[#334155]">Cobertura:</strong> Fallas de fabricación y componentes defectuosos de origen.
+                          </p>
+                          {warrantyConditions && (
+                            <p className="text-[11px] text-[#64748b]">
+                              📋 <strong className="text-[#334155]">Condiciones:</strong> {warrantyConditions}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start gap-3 text-xs text-[#64748b]">
+                        <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                          <ShieldCheck className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-[#112237] text-xs uppercase tracking-wider">
+                            Garantía del Vendedor
+                          </p>
+                          <p className="text-xs text-[#64748b] mt-0.5">
+                            Este producto no incluye garantía extendida adicional del vendedor.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="border-t border-[#f1f5f9] pt-3 flex items-start gap-2.5 text-xs text-[#64748b]">
+                      <div className="w-2 h-2 rounded-full bg-[#10b981] shrink-0 mt-1.5" />
+                      <span>
+                        <strong className="text-[#112237]">Protección al Comprador Iubizon:</strong> Cobertura de 7 días para verificar la entrega e idoneidad del producto.
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-[#112237]">Compra segura</p>
-                    <p className="text-xs text-[#94a3b8]">Protección en cada transacción</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
           </div>
         </div>

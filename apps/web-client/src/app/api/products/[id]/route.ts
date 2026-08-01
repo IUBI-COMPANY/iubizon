@@ -103,6 +103,8 @@ export async function PUT(
       status,
       stock,
       video_url,
+      warranty,
+      warranty_conditions,
     } = body;
 
     if (description) {
@@ -135,6 +137,13 @@ export async function PUT(
         ...(parsedStock !== undefined && !isNaN(parsedStock) && { stock: Math.max(0, parsedStock) }),
         ...(availabilityType && { availability_type: availabilityType }),
         ...(video_url !== undefined && { video_url }),
+        ...((warranty !== undefined || warranty_conditions !== undefined) && {
+          specifications: {
+            warranty: warranty || 'Sin garantía del vendedor',
+            warranty_coverage: 'Fallas de fabricación y componentes defectuosos de origen',
+            warranty_conditions: warranty_conditions || null,
+          },
+        }),
         updated_at: new Date(),
       },
     });

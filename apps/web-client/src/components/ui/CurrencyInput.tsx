@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronDown } from 'lucide-react';
+import { Alert } from '@/components/ui/Alert';
 
 export type CurrencyCode = 'PEN' | 'USD' | 'EUR';
 
@@ -26,6 +27,8 @@ export interface CurrencyInputProps
   onCurrencyChange?: (currency: CurrencyCode) => void;
   allowCurrencyChange?: boolean;
   error?: string | boolean;
+  showTaxAlert?: boolean;
+  taxAlertMessage?: string;
 }
 
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
@@ -39,6 +42,8 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
       allowCurrencyChange = false,
       error,
       placeholder = '0.00',
+      showTaxAlert = true,
+      taxAlertMessage = 'El precio debe incluir los impuestos de acuerdo a ley.',
       ...props
     },
     ref
@@ -46,7 +51,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
     const selectedCurrency = CURRENCIES[currency] || CURRENCIES.PEN;
 
     return (
-      <div className="relative w-full">
+      <div className="relative w-full space-y-2">
         <div
           className={cn(
             'flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white transition-all overflow-hidden focus-within:ring-2 focus-within:ring-[#f25c05] focus-within:border-transparent',
@@ -95,6 +100,14 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
         {error && typeof error === 'string' && (
           <p className="mt-1 text-xs text-[#ef4444]">{error}</p>
+        )}
+
+        {showTaxAlert && (
+          <Alert
+            variant="info"
+            message={taxAlertMessage}
+            className="py-2.5 px-3.5 text-xs rounded-xl"
+          />
         )}
       </div>
     );

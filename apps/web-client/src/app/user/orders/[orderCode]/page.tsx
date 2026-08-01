@@ -15,6 +15,7 @@ import {
   MapPin,
   Package,
   Receipt,
+  ShieldCheck,
   ShoppingBag,
   Truck,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
+import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PackageItem {
@@ -113,6 +115,13 @@ export default function OrderDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmingPackageKey, setConfirmingPackageKey] = useState<string | null>(null);
+  const [warrantyModalData, setWarrantyModalData] = useState<{
+    isOpen: boolean;
+    sellerName?: string | null;
+    productTitle?: string;
+  }>({
+    isOpen: false,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -426,7 +435,7 @@ export default function OrderDetailPage({
                   ))}
                 </div>
 
-                {/* Confirmación del Comprador */}
+                {/* Confirmación del Comprador y Garantía */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#f1f5f9]">
                   <span className="text-[11px] text-[#64748b]">
                     {pkg.status === "delivered" || pkg.status === "completed"
@@ -436,28 +445,46 @@ export default function OrderDetailPage({
                         : "Tu paquete será despachado por el vendedor a la brevedad."}
                   </span>
 
-                  {(pkg.status === "shipped" || pkg.status === "paid") && (
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       size="sm"
-                      onClick={() => handleConfirmReceipt(pkg)}
-                      disabled={isConfirming}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0"
+                      variant="outline"
+                      onClick={() =>
+                        setWarrantyModalData({
+                          isOpen: true,
+                          sellerName: pkg.sellerName,
+                          productTitle: pkg.items[0]?.title,
+                        })
+                      }
+                      className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0"
                     >
-                      {isConfirming ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
-                      ) : (
-                        <CheckCircle className="w-4 h-4 mr-1.5" />
-                      )}
-                      Confirmar Recepción del Paquete
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Garantía & Cobertura</span>
                     </Button>
-                  )}
 
-                  {(pkg.status === "delivered" || pkg.status === "completed") && (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200 shrink-0">
-                      <CheckCircle className="w-4 h-4" />
-                      Entrega Confirmada
-                    </span>
-                  )}
+                    {(pkg.status === "shipped" || pkg.status === "paid") && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleConfirmReceipt(pkg)}
+                        disabled={isConfirming}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0"
+                      >
+                        {isConfirming ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                        ) : (
+                          <CheckCircle className="w-4 h-4 mr-1.5" />
+                        )}
+                        Confirmar Recepción del Paquete
+                      </Button>
+                    )}
+
+                    {(pkg.status === "delivered" || pkg.status === "completed") && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200 shrink-0">
+                        <CheckCircle className="w-4 h-4" />
+                        Entrega Confirmada
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -474,12 +501,8 @@ export default function OrderDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
             <div className="space-y-2 text-[#334155]">
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>Subtotal (sin IGV):</span>
+                <span>Subtotal de Productos:</span>
                 <strong className="text-[#112237]">S/ {session.subtotal.toFixed(2)}</strong>
-              </p>
-              <p className="flex justify-between border-b border-slate-100 pb-1.5">
-                <span>IGV (18%):</span>
-                <strong className="text-[#112237]">S/ {session.taxAmount.toFixed(2)}</strong>
               </p>
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
                 <span>Envío Total de la Compra:</span>
@@ -501,6 +524,15 @@ export default function OrderDetailPage({
           </div>
         </div>
       </main>
+
+      <WarrantyModal
+        isOpen={warrantyModalData.isOpen}
+        onClose={() => setWarrantyModalData({ isOpen: false })}
+        orderCode={session.orderCode}
+        createdAt={session.createdAt}
+        sellerName={warrantyModalData.sellerName}
+        productTitle={warrantyModalData.productTitle}
+      />
 
       <Footer />
     </div>
