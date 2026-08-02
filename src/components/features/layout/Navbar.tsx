@@ -88,7 +88,7 @@ export const Navbar = () => {
             </button>
 
             {/* Logo */}
-            <Link href="/public" className="flex items-center shrink-0">
+            <Link href="/" className="flex items-center shrink-0">
               <Image
                 src="/images/logo.png"
                 alt="iubizon"

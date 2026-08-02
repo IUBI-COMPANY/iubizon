@@ -54,7 +54,7 @@ export default async function PublicCompanyPage({ params }: Props) {
               La marca o empresa que estás buscando no existe o ha cambiado de dirección.
             </p>
             <Link
-              href="/public"
+              href="/"
               className="inline-block bg-[#f25c05] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#d94d04] transition-all shadow-md w-full"
             >
               Volver al inicio

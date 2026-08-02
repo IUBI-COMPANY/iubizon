@@ -40,7 +40,7 @@ export default async function UserProfilePage({ params }: Props) {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-[#112237] mb-2">Usuario no encontrado</h2>
-            <Link href="/public" className="text-[#f25c05] hover:underline">
+            <Link href="/" className="text-[#f25c05] hover:underline">
               Volver al inicio
             </Link>
           </div>
