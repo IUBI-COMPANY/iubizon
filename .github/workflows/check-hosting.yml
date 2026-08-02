@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ main, production ]
     paths:
-      - "apps/web-client/**"
+      - "../../web-client/**"
   workflow_dispatch:
 
 jobs:
