@@ -204,7 +204,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
                   <h2 className="text-base font-semibold text-[#112237] mb-3">Descripción</h2>
                   <div
-                    className="tiptap-content prose prose-sm max-w-none text-[#112237]"
+                    className="tiptap-content prose prose-sm max-w-none text-[#112237] whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                 </div>

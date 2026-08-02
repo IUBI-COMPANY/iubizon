@@ -65,7 +65,10 @@ model Product {
   favorites_count     Int?      @default(0) @map("favorites")
   is_bundle           Boolean?  @default(false)
   location            String?
+  latitude            Float?
+  longitude           Float?
   video_url           String?
+  brand               String?
   delivery_preference String?
   availability_type   String?
   specifications      Json?     @default("{}")

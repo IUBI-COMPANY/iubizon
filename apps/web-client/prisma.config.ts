@@ -9,6 +9,9 @@ const dbUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== ''
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
+  migrations: {
+    seed: 'node --import tsx/esm prisma/seed.ts',
+  },
   datasource: {
     url: directUrl || dbUrl || '',
   },

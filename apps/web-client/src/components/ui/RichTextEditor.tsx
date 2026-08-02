@@ -93,49 +93,22 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none min-h-[120px] px-4 py-2.5 text-sm text-[#112237]",
+          "prose prose-sm max-w-none focus:outline-none min-h-[120px] px-4 py-2.5 text-sm text-[#112237] whitespace-pre-wrap",
       },
-      handlePaste: (view, event) => {
-        const html = event.clipboardData?.getData("text/html");
+      handlePaste: (_view, event) => {
         const text = event.clipboardData?.getData("text/plain");
+        const html = event.clipboardData?.getData("text/html");
 
-        if (html && html.trim()) {
-          return false;
-        }
-
-        if (text) {
+        if (!html && text) {
           event.preventDefault();
-
-          const paragraphs = text.split(/\n/);
-
-          let insertPos = view.state.selection.from;
-
-          for (let i = 0; i < paragraphs.length; i++) {
-            const line = paragraphs[i];
-
-            if (line.trim() === "") {
-              view.dispatch(
-                view.state.tr.insertText("\n", insertPos, insertPos),
-              );
-              insertPos += 1;
-            } else {
-              view.dispatch(
-                view.state.tr.insertText(line, insertPos, insertPos),
-              );
-              insertPos += line.length;
-
-              if (i < paragraphs.length - 1) {
-                view.dispatch(
-                  view.state.tr.insertText("\n", insertPos, insertPos),
-                );
-                insertPos += 1;
-              }
-            }
-          }
-
+          // Insert text line breaks as hard breaks / paragraph splits
+          const htmlParagraphs = text
+            .split(/\r?\n/)
+            .map((line) => line ? `<p>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : "<p><br></p>")
+            .join("");
+          editor?.commands.insertContent(htmlParagraphs);
           return true;
         }
-
         return false;
       },
       handleKeyDown: (_view, event) => {
