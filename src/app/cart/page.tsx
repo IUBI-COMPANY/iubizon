@@ -370,6 +370,7 @@ export default function CartCheckoutPage() {
                                 src={item.image_url}
                                 alt={item.title}
                                 fill
+                                sizes="56px"
                                 className="object-cover"
                                 unoptimized
                               />

@@ -311,6 +311,7 @@ export default function UserOrdersPage() {
                                         src={item.image}
                                         alt={item.title}
                                         fill
+                                        sizes="48px"
                                         className="object-cover"
                                         unoptimized
                                       />

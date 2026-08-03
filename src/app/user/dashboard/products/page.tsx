@@ -217,6 +217,7 @@ export default function ProductsManagementPage() {
                               src={mainImage}
                               alt={product.title}
                               fill
+                              sizes="56px"
                               className="object-cover"
                               unoptimized
                             />

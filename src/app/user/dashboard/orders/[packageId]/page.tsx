@@ -331,6 +331,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                         src={item.image}
                         alt={item.title}
                         fill
+                        sizes="56px"
                         className="object-cover"
                       />
                     ) : (

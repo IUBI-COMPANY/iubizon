@@ -95,6 +95,7 @@ export const Navbar = () => {
                 width={130}
                 height={34}
                 className="h-6 sm:h-7 md:h-9 w-auto object-contain"
+                style={{ width: "auto" }}
                 priority
               />
             </Link>

@@ -44,6 +44,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
                 width={150}
                 height={40}
                 className="h-10 w-auto object-contain"
+                style={{ width: "auto" }}
               />
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">

@@ -17,6 +17,7 @@ import type { Product } from '@/types';
 interface ProductCardProps {
   product: Product;
   showSeller?: boolean;
+  priority?: boolean;
 }
 
 const conditionLabels: Record<string, string> = {
@@ -26,7 +27,7 @@ const conditionLabels: Record<string, string> = {
   fair: 'Aceptable',
 };
 
-export const ProductCard = ({ product, showSeller = false }: ProductCardProps) => {
+export const ProductCard = ({ product, showSeller = false, priority = false }: ProductCardProps) => {
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { addItem } = useCart();
@@ -78,6 +79,7 @@ export const ProductCard = ({ product, showSeller = false }: ProductCardProps) =
                 src={mainImage}
                 alt={product.title}
                 fill
+                priority={priority}
                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
               />
