@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { calculateIubizonCommission } from "@/lib/utils/commission";
 
 export async function POST(req: Request) {
   try {
@@ -266,7 +267,7 @@ export async function POST(req: Request) {
               seller_id: product.seller_id,
               company_id: validCompanyId,
               amount: itemSubtotal,
-              commission: itemSubtotal * 0.1,
+              commission: calculateIubizonCommission(itemSubtotal),
               status: "pending",
               payment_method: payment_method || "cash_on_delivery",
               payment_id: sessionCode,

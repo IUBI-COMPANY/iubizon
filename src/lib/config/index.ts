@@ -5,7 +5,7 @@ export const APP_CONFIG = {
   locale: 'es-PE',
   currency: 'PEN',
   currencySymbol: 'S/',
-  commissionRate: 0.08,
+  commissionRate: 0.09,
   iubizonProPrice: 4900,
 };
 

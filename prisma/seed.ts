@@ -14,17 +14,8 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
 
-  console.log(`🔍 Iniciando validación de ambiente para Seeding: [${appEnv}]`);
-
-  // PROTECCIÓN CRÍTICA DE PRODUCCIÓN
-  if (appEnv === "production") {
-    console.error(
-      "❌ BARRERA DE SEGURIDAD ACTIVADA: ¡No se puede ejecutar el script de datos falsos (seed) en PRODUCCIÓN!"
-    );
-    process.exit(1);
-  }
-
-  console.log("🌱 Ejecutando carga de datos de desarrollo (Dev Seeding)...");
+  console.log(`🔍 Iniciando sincronización de datos base para ambiente: [${appEnv || 'default'}]`);
+  console.log("🌱 Sincronizando las 11 categorías oficiales y configuraciones globales en la base de datos...");
 
   // 1. Categorías del Sistema (Coincidentes con Producción)
   const defaultCategories = [
@@ -61,6 +52,38 @@ async function main() {
   }
 
   console.log("✅ Categorías obsoletas eliminadas y 11 categorías oficiales sincronizadas correctamente.");
+
+  // 3. Configuraciones Dinámicas de la Plataforma (Administrables desde BD por Admin/SuperAdmin)
+  const defaultSettings = [
+    {
+      key: "COMMISSION_CONFIG",
+      value: { base_rate: 0.09, fixed_fee: 2.50, threshold_amount: 40.00 },
+      description: "Regla de comisión de la plataforma (9% plano >= S/ 40, o 9% + S/ 2.50 < S/ 40)",
+      category: "commission",
+    },
+    {
+      key: "NIUBIZ_CONFIG",
+      value: { enabled: true, environment: "sandbox", max_installments: 12 },
+      description: "Configuración global de la pasarela de pago Niubiz",
+      category: "payment_gateway",
+    },
+    {
+      key: "BUYER_PROTECTION_DAYS",
+      value: { days: 7 },
+      description: "Días de garantía y retención de pago al vendedor para protección al comprador",
+      category: "features",
+    },
+  ];
+
+  for (const set of defaultSettings) {
+    await prisma.platformSetting.upsert({
+      where: { key: set.key },
+      update: { value: set.value, description: set.description, category: set.category },
+      create: set,
+    });
+  }
+
+  console.log("✅ Configuraciones globales (platform_settings) verificadas/creadas correctamente.");
 }
 
 main()

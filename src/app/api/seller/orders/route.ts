@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { parseDispatchMeta, formatDispatchMeta } from "@/lib/shippingHelper";
+import { refundNiubizTransaction } from "@/lib/services/niubiz";
 
 export interface SellerPackageItem {
   id: string;
@@ -302,6 +303,47 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "cancel") {
+      const ordersToCancel = await prisma.order.findMany({
+        where: { id: { in: orderIds } },
+        include: { paymentTransaction: true },
+      });
+
+      const refundAmount = ordersToCancel.reduce((sum: number, o: { amount: unknown }) => sum + Number(o.amount), 0);
+      const firstWithTx = ordersToCancel.find(
+        (o: { paymentTransaction: any }) => o.paymentTransaction && o.paymentTransaction.status === "authorized"
+      );
+
+      if (firstWithTx && firstWithTx.paymentTransaction) {
+        const tx = firstWithTx.paymentTransaction;
+        if (tx.authorization_code && tx.transaction_id) {
+          try {
+            await refundNiubizTransaction({
+              authorizationCode: tx.authorization_code,
+              transactionId: tx.transaction_id,
+              amount: refundAmount,
+              purchaseNumber: tx.purchase_number,
+            });
+
+            await prisma.paymentTransaction.create({
+              data: {
+                provider: "niubiz",
+                transaction_type: "refund",
+                status: "refunded",
+                purchase_number: `REF-${tx.purchase_number}-${Date.now().toString().slice(-4)}`,
+                amount: refundAmount,
+                currency: "PEN",
+                authorization_code: tx.authorization_code,
+                transaction_id: tx.transaction_id,
+                response_code: "00",
+                response_message: `Reembolso parcial de paquete ejecutado (S/ ${refundAmount.toFixed(2)})`,
+              },
+            });
+          } catch (refundErr) {
+            console.error("Error al procesar reembolso parcial en Niubiz:", refundErr);
+          }
+        }
+      }
+
       await prisma.order.updateMany({
         where: { id: { in: orderIds } },
         data: { status: "cancelled", updated_at: new Date() },
@@ -310,7 +352,7 @@ export async function PATCH(req: Request) {
         where: { order_id: { in: orderIds } },
         data: { status: "cancelled", updated_at: new Date() },
       });
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, refundedAmount: refundAmount });
     }
 
     const courier = (rawCourier || carrierName || "").trim();

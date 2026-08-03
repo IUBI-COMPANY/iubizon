@@ -37,6 +37,7 @@ import {
   type InvoiceType,
   type DocType,
 } from "@/components/features/cart/InvoiceSelector";
+import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
 
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
 const FORM_STORAGE_KEY = "iubizon_checkout_form";
@@ -689,44 +690,26 @@ export default function CartCheckoutPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Método 1: Contra Entrega (ACTIVO) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Método 1: Tarjeta Niubiz (ACTIVO) */}
                   <div className="border-2 border-[#f25c05] bg-orange-50/50 p-4 rounded-2xl flex flex-col justify-between shadow-sm cursor-pointer">
                     <div className="flex items-center justify-between mb-3">
-                      <Truck className="w-6 h-6 text-[#f25c05]" />
-                      <span className="bg-[#f25c05] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">
-                        ACTIVO
+                      <CreditCard className="w-6 h-6 text-[#f25c05]" />
+                      <span className="bg-[#f25c05] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+                        OFICIAL / ACTIVO
                       </span>
                     </div>
                     <div>
                       <p className="font-bold text-sm text-[#112237]">
-                        Pago Contra Entrega
+                        Tarjeta Crédito / Débito (Niubiz)
                       </p>
                       <p className="text-[11px] text-[#64748b] mt-0.5">
-                        Paga en Efectivo, Yape o Plin al recibir tu producto.
+                        Visa, Mastercard, American Express. Pago 100% seguro.
                       </p>
                     </div>
                   </div>
 
-                  {/* Método 2: Tarjeta (Próximamente / Escalable) */}
-                  <div className="border border-slate-200 bg-slate-50 p-4 rounded-2xl flex flex-col justify-between opacity-60 cursor-not-allowed">
-                    <div className="flex items-center justify-between mb-3">
-                      <CreditCard className="w-6 h-6 text-slate-400" />
-                      <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        Próximamente
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-slate-700">
-                        Tarjeta Crédito / Débito
-                      </p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Visa, Mastercard, American Express.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Método 3: PayPal (Próximamente / Escalable) */}
+                  {/* Método 2: PayPal (Próximamente) */}
                   <div className="border border-slate-200 bg-slate-50 p-4 rounded-2xl flex flex-col justify-between opacity-60 cursor-not-allowed">
                     <div className="flex items-center justify-between mb-3">
                       <ShieldCheck className="w-6 h-6 text-slate-400" />
@@ -788,32 +771,45 @@ export default function CartCheckoutPage() {
                   )}
                 </div>
 
-                <div className="pt-2 flex items-center justify-between">
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <Button
                     variant="outline"
                     onClick={() => handleStepChange(2)}
-                    className="text-xs font-semibold flex items-center gap-1.5"
+                    className="text-xs font-semibold flex items-center gap-1.5 w-full sm:w-auto"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Cambiar Datos de Envío</span>
                   </Button>
 
-                  <Button
-                    onClick={handleConfirmOrder}
-                    disabled={isSubmitting}
-                    className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold text-sm px-8 py-3.5 rounded-xl shadow-lg transition-all flex items-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin mr-1" />
-                        Procesando Pedido...
-                      </>
-                    ) : (
-                      <>
-                        <span>Confirmar Pedido Contra Entrega</span>
-                      </>
-                    )}
-                  </Button>
+                  <div className="w-full sm:w-auto min-w-[280px]">
+                    <NiubizPayModal
+                      amount={grandTotal}
+                      cartItems={items}
+                      shippingForm={shippingForm}
+                      invoiceDetails={{
+                        doc_type: invoiceType,
+                        identity_type: invoiceType === "factura" ? "ruc" : docType,
+                        identity_number: invoiceType === "factura" ? invoiceRuc : invoiceDni,
+                        legal_name: invoiceType === "factura" ? invoiceCompanyName : shippingForm.name,
+                        tax_address: shippingForm.address,
+                      }}
+                      onSuccess={(sessionCode) => {
+                        toast.success(
+                          "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
+                          "¡Gracias por tu compra!",
+                        );
+                        clearCart();
+                        if (typeof window !== "undefined") {
+                          localStorage.removeItem(STEP_STORAGE_KEY);
+                          localStorage.removeItem(FORM_STORAGE_KEY);
+                        }
+                        router.push(`/user/orders/${sessionCode}`);
+                      }}
+                      onError={(errorMessage) => {
+                        toast.error(errorMessage, "Error al procesar el pago");
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -148,25 +148,28 @@ model Favorite {
 }
 
 model Order {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  product_id     String    @db.Uuid
-  buyer_id       String    @db.Uuid
-  seller_id      String    @db.Uuid
-  company_id     String?   @db.Uuid
-  amount         Decimal   @db.Decimal(10, 2)
-  commission     Decimal?  @default(0) @db.Decimal(10, 2)
-  status         String    @default("pending")
-  payment_method String?
-  payment_id     String?
-  created_at     DateTime? @default(now()) @db.Timestamptz
-  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamptz
+  id                     String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  product_id             String              @db.Uuid
+  buyer_id               String              @db.Uuid
+  seller_id              String              @db.Uuid
+  company_id             String?             @db.Uuid
+  payment_transaction_id String?             @db.Uuid
+  amount                 Decimal             @db.Decimal(10, 2)
+  commission             Decimal?            @default(0) @db.Decimal(10, 2)
+  status                 String              @default("pending")
+  payment_method         String?
+  payment_id             String?
+  created_at             DateTime?           @default(now()) @db.Timestamptz
+  updated_at             DateTime?           @default(now()) @updatedAt @db.Timestamptz
 
-  product  Product   @relation(fields: [product_id], references: [id])
-  buyer    Profile   @relation("BuyerOrders", fields: [buyer_id], references: [id])
-  seller   Profile   @relation("SellerOrders", fields: [seller_id], references: [id])
-  company  Company?  @relation(fields: [company_id], references: [id])
-  reviews  Review[]
-  shipping Shipping?
+  product            Product             @relation(fields: [product_id], references: [id])
+  buyer              Profile             @relation("BuyerOrders", fields: [buyer_id], references: [id])
+  seller             Profile             @relation("SellerOrders", fields: [seller_id], references: [id])
+  company            Company?            @relation(fields: [company_id], references: [id])
+  paymentTransaction PaymentTransaction? @relation(fields: [payment_transaction_id], references: [id])
+  invoiceDocument    InvoiceDocument?
+  reviews            Review[]
+  shipping           Shipping?
 
   @@map("orders")
 }
@@ -223,4 +226,59 @@ model SellerPayout {
   seller Profile @relation(fields: [seller_id], references: [id], onDelete: Cascade)
 
   @@map("seller_payouts")
+}
+
+model PaymentTransaction {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider           String    @default("niubiz") // 'niubiz', 'mercadopago', 'paypal'
+  transaction_type   String    @default("authorization") // 'authorization', 'refund', 'void'
+  status             String    @default("pending") // 'pending', 'authorized', 'denied', 'failed', 'refunded'
+  purchase_number    String    @unique
+  amount             Decimal   @db.Decimal(10, 2)
+  currency           String    @default("PEN") // 'PEN' (604) o 'USD' (840)
+  transaction_id     String?
+  authorization_code String?
+  card_brand         String? // 'VISA', 'MASTERCARD', 'AMEX'
+  card_bin           String? // Primeros 6 dígitos
+  card_last4         String? // Últimos 4 dígitos
+  response_code      String?
+  response_message   String?
+  customer_ip        String?
+  raw_response       Json? // Payload completo devuelto por Niubiz para auditoría
+  created_at         DateTime? @default(now()) @db.Timestamptz
+  updated_at         DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  orders Order[]
+
+  @@map("payment_transactions")
+}
+
+model InvoiceDocument {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id        String    @unique @db.Uuid
+  doc_type        String // 'boleta' | 'factura'
+  identity_type   String // 'dni' | 'ruc' | 'ce'
+  identity_number String
+  legal_name      String? // Nombre o Razón Social
+  tax_address     String? // Dirección fiscal para Factura
+  sunat_status    String    @default("pending") // 'pending', 'emitted', 'rejected'
+  pdf_url         String?
+  created_at      DateTime? @default(now()) @db.Timestamptz
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("invoice_documents")
+}
+
+model PlatformSetting {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String    @unique // 'COMMISSION_CONFIG', 'NIUBIZ_CONFIG', 'BUYER_PROTECTION_DAYS'
+  value       Json // Payload JSON flexible para configuraciones dinámicas
+  description String?
+  category    String    @default("commission") // 'commission', 'payment_gateway', 'features'
+  updated_by  String?   @db.Uuid
+  created_at  DateTime? @default(now()) @db.Timestamptz
+  updated_at  DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  @@map("platform_settings")
 }

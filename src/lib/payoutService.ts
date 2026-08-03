@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { calculateIubizonCommission } from "@/lib/utils/commission";
 
 /**
  * Servicio para la generación automática de registros de pago a vendedores (Seller Payouts)
@@ -50,7 +51,7 @@ export async function ensureSellerPayoutForOrders(orderIds: string[]) {
     for (const grp of Array.from(groupMap.values())) {
       if (grp.subtotal <= 0) continue;
 
-      const commission = grp.subtotal * 0.1;
+      const commission = calculateIubizonCommission(grp.subtotal);
       const netAmount = grp.subtotal - commission;
 
       // Buscar si ya existe un registro de pago para esta entrega por tracking_number u order_code
