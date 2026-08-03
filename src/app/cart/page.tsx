@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CreditCard,
-  Loader2,
   Package,
   ShieldCheck,
   ShoppingCart,
@@ -42,22 +41,27 @@ import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
 const FORM_STORAGE_KEY = "iubizon_checkout_form";
 
+export interface ShippingFormState {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  notes: string;
+}
+
 export default function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, addItem, removeItem, updateQuantity, clearCart, total } =
-    useCart();
+  const { items, addItem, removeItem, updateQuantity, clearCart, total } = useCart();
+  const toast = useToast();
 
   const [step, setStep] = useState<number>(1);
   const [recommendations, setRecommendations] = useState<OrderBump[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [recsPage, setRecsPage] = useState<number>(1);
   const [recsHasMore, setRecsHasMore] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const toast = useToast();
-  const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">(
-    "progressive",
-  );
+  const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">("progressive");
 
   // Comprobante de pago (Boleta vs Factura)
   const [invoiceType, setInvoiceType] = useState<InvoiceType>("boleta");
@@ -67,7 +71,7 @@ export default function CartCheckoutPage() {
   const [invoiceCompanyName, setInvoiceCompanyName] = useState("");
 
   // Formulario de envío con Auto-Guardado en LocalStorage
-  const [shippingForm, setShippingForm] = useState({
+  const [shippingForm, setShippingForm] = useState<ShippingFormState>({
     name: user?.name || "",
     phone: "",
     email: user?.email || "",
@@ -97,7 +101,7 @@ export default function CartCheckoutPage() {
         }
       }
 
-      // Procesar retorno de Niubiz (success / error)
+      // Procesar retorno de Niubiz si vino por redirección en URL (success / error)
       const urlParams = new URLSearchParams(window.location.search);
       const isSuccess = urlParams.get("success") === "true";
       const sessionCode = urlParams.get("sessionCode");
@@ -108,14 +112,14 @@ export default function CartCheckoutPage() {
         localStorage.removeItem(STEP_STORAGE_KEY);
         localStorage.removeItem(FORM_STORAGE_KEY);
         toast.success(`¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`, "Pago Confirmado");
-        router.push("/user/profile");
+        router.push(`/user/orders/${sessionCode}`);
       } else if (errorMsg && errorMsg !== "Accept") {
         toast.error(`No se pudo completar el pago: ${errorMsg}`, "Pago Rechazado");
       }
     }
   }, []);
 
-  // Actualizar email/nombre si el usuario se autentica después
+  // Sincronizar email/nombre cuando el usuario inicie sesión
   useEffect(() => {
     if (user) {
       setShippingForm((prev) => ({
@@ -135,7 +139,7 @@ export default function CartCheckoutPage() {
   };
 
   // Persistir inputs del formulario en LocalStorage mientras se escribe
-  const handleFormChange = (field: string, value: string) => {
+  const handleFormChange = (field: keyof ShippingFormState, value: string) => {
     const updated = { ...shippingForm, [field]: value };
     setShippingForm(updated);
     if (typeof window !== "undefined") {
@@ -171,10 +175,10 @@ export default function CartCheckoutPage() {
     fetchRecommendations(1);
   }, [items, fetchRecommendations]);
 
-  // Cálculos Financieros
+  // Cálculos Financieros Memoizados
   const subtotal = total;
-  const shippingCost = items.length > 0 ? 50.0 : 0.0;
-  const grandTotal = subtotal + shippingCost;
+  const shippingCost = useMemo(() => (items.length > 0 ? 50.0 : 0.0), [items.length]);
+  const grandTotal = useMemo(() => subtotal + shippingCost, [subtotal, shippingCost]);
 
   // Añadir un Order Bump al carrito de 1 solo clic
   const handleAddBump = (bump: OrderBump) => {
@@ -187,111 +191,13 @@ export default function CartCheckoutPage() {
     });
   };
 
-  // Confirmar y Procesar Pedido
-  const handleConfirmOrder = async () => {
-    if (!user) {
-      router.push("/auth/login?redirect=/cart");
+  // Validaciones del formulario para avanzar al paso 3
+  const handleProceedToStep3 = () => {
+    if (!shippingForm.name.trim() || !shippingForm.phone.trim() || !shippingForm.address.trim()) {
+      toast.error("Completa Nombre, Teléfono y Dirección para continuar.", "Datos incompletos");
       return;
     }
-
-    if (
-      !shippingForm.name.trim() ||
-      !shippingForm.phone.trim() ||
-      !shippingForm.address.trim()
-    ) {
-      toast.error(
-        "Por favor completa los datos de envío obligatorios (Nombre, Teléfono y Dirección).",
-        "Datos incompletos",
-      );
-      handleStepChange(2);
-      return;
-    }
-
-    if (invoiceType === "factura") {
-      const cleanRuc = invoiceRuc.trim();
-      if (!cleanRuc || cleanRuc.length !== 11) {
-        toast.error(
-          "El número de RUC para la factura debe contener exactamente 11 dígitos.",
-          "RUC inválido"
-        );
-        return;
-      }
-      if (!invoiceCompanyName.trim()) {
-        toast.error(
-          "Por favor ingresa la Razón Social de tu empresa para la factura.",
-          "Razón Social requerida"
-        );
-        return;
-      }
-    }
-
-    // Validación SUNAT: Boleta > S/700 requiere número de documento del comprador
-    if (invoiceType === "boleta" && grandTotal > 700) {
-      const cleanDni = invoiceDni.trim();
-      if (!cleanDni) {
-        toast.error(
-          "Por tu pedido superior a S/ 700, la SUNAT exige que ingreses tu número de documento (DNI, C.E. o Pasaporte) en la boleta.",
-          "Documento requerido"
-        );
-        return;
-      }
-      if (docType === "dni" && cleanDni.length !== 8) {
-        toast.error(
-          "El DNI debe tener exactamente 8 dígitos.",
-          "DNI inválido"
-        );
-        return;
-      }
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items,
-          shipping: shippingForm,
-          payment_method: "cash_on_delivery",
-          delivery_type: deliveryType,
-          invoice_type: invoiceType,
-          // Boleta
-          invoice_doc_type: invoiceType === "boleta" ? docType : null,
-          invoice_dni: invoiceType === "boleta" && invoiceDni.trim() ? invoiceDni.trim() : null,
-          // Factura
-          invoice_ruc: invoiceType === "factura" ? invoiceRuc.trim() : null,
-          invoice_company_name: invoiceType === "factura" ? invoiceCompanyName.trim() : null,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Error al registrar el pedido");
-      }
-
-      // Vaciar carrito y LocalStorage
-      clearCart();
-      if (typeof window !== "undefined") {
-        localStorage.removeItem(STEP_STORAGE_KEY);
-        localStorage.removeItem(FORM_STORAGE_KEY);
-        // Guardar grupos de tracking para mostrarlos en la pantalla de éxito
-        sessionStorage.setItem("iubizon_tracking_groups", JSON.stringify(data.trackingGroups ?? []));
-      }
-
-      // Redirigir a pantalla de confirmación exitosa en plataforma
-      router.push(`/cart/success?order_code=${data.orderCode}`);
-    } catch (err: unknown) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Error inesperado al procesar tu pedido.",
-        "Error al procesar pedido",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    handleStepChange(3);
   };
 
   return (
@@ -580,9 +486,7 @@ export default function CartCheckoutPage() {
                     </label>
                     <Input
                       value={shippingForm.phone}
-                      onChange={(e) =>
-                        handleFormChange("phone", e.target.value)
-                      }
+                      onChange={(e) => handleFormChange("phone", e.target.value)}
                       placeholder="+51 999 999 999"
                       required
                     />
@@ -597,9 +501,7 @@ export default function CartCheckoutPage() {
                     <Input
                       type="email"
                       value={shippingForm.email}
-                      onChange={(e) =>
-                        handleFormChange("email", e.target.value)
-                      }
+                      onChange={(e) => handleFormChange("email", e.target.value)}
                       placeholder="ejemplo@correo.com"
                     />
                   </div>
@@ -623,9 +525,7 @@ export default function CartCheckoutPage() {
                   </label>
                   <Input
                     value={shippingForm.address}
-                    onChange={(e) =>
-                      handleFormChange("address", e.target.value)
-                    }
+                    onChange={(e) => handleFormChange("address", e.target.value)}
                     placeholder="Av. Larco 1234, Dpto 501"
                     required
                   />
@@ -654,20 +554,7 @@ export default function CartCheckoutPage() {
                   </Button>
 
                   <Button
-                    onClick={() => {
-                      if (
-                        !shippingForm.name ||
-                        !shippingForm.phone ||
-                        !shippingForm.address
-                      ) {
-                        toast.error(
-                          "Completa Nombre, Teléfono y Dirección para continuar.",
-                          "Datos incompletos",
-                        );
-                        return;
-                      }
-                      handleStepChange(3);
-                    }}
+                    onClick={handleProceedToStep3}
                     className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2"
                   >
                     <span>Continuar al Pago</span>
@@ -690,7 +577,7 @@ export default function CartCheckoutPage() {
           </div>
         )}
 
-        {/* PASO 3: CONFIRMAR Y PAGO CONTRA ENTREGA */}
+        {/* PASO 3: CONFIRMAR Y PAGO CON NIUBIZ */}
         {step === 3 && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-6">
@@ -702,8 +589,7 @@ export default function CartCheckoutPage() {
                     <span>Selecciona el Método de Pago</span>
                   </h2>
                   <p className="text-xs text-[#64748b] mt-0.5">
-                    Pago 100% seguro con garantía de entrega directamente en tu
-                    puerta.
+                    Pago 100% seguro con garantía de entrega directamente en tu puerta.
                   </p>
                 </div>
 

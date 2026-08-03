@@ -3,14 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Clock,
-  Loader2,
-  Package,
-  ShoppingBag,
-  Truck,
-} from "lucide-react";
+import { CheckCircle2, Clock, Loader2, ShoppingBag, Truck } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { useCart } from "@/hooks/useCart";
@@ -41,13 +34,17 @@ function TrackingGroupCard({
           </span>
         </div>
         <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
-          {group.productCount} {group.productCount === 1 ? "producto" : "productos"}
+          {group.productCount}{" "}
+          {group.productCount === 1 ? "producto" : "productos"}
         </span>
       </div>
 
       <ul className="space-y-1 pt-1">
         {group.productTitles.map((title, i) => (
-          <li key={i} className="text-[11px] text-[#475569] flex items-start gap-1.5">
+          <li
+            key={i}
+            className="text-[11px] text-[#475569] flex items-start gap-1.5"
+          >
             <span className="text-[#f25c05] mt-0.5 shrink-0">·</span>
             <span>{title}</span>
           </li>
@@ -96,7 +93,8 @@ function SuccessContent() {
               ¡Gracias por tu compra!
             </h1>
             <p className="text-sm text-[#64748b] mt-1 max-w-md mx-auto">
-              Cada proveedor ha recibido la confirmación de tu pago y preparará tu pedido para su despacho.
+              Cada proveedor ha recibido la confirmación de tu pago y preparará
+              tu pedido para su despacho.
             </p>
           </div>
         </div>
@@ -118,7 +116,11 @@ function SuccessContent() {
               Despachos por Proveedor
             </p>
             {trackingGroups.map((group, i) => (
-              <TrackingGroupCard key={group.trackingCode} group={group} index={i} />
+              <TrackingGroupCard
+                key={group.trackingCode}
+                group={group}
+                index={i}
+              />
             ))}
           </div>
         )}
@@ -131,8 +133,13 @@ function SuccessContent() {
           </div>
           <ul className="text-xs text-[#475569] space-y-2 list-disc list-inside">
             <li>Cada proveedor notificará el despacho de sus productos.</li>
-            <li>Podrás consultar el avance por código de tracking en tu panel.</li>
-            <li>Tu pago se procesó con éxito y recibirás notificaciones en tiempo real sobre tu envío.</li>
+            <li>
+              Podrás consultar el avance por código de tracking en tu panel.
+            </li>
+            <li>
+              Tu pago se procesó con éxito y recibirás notificaciones en tiempo
+              real sobre tu envío.
+            </li>
           </ul>
         </div>
 
