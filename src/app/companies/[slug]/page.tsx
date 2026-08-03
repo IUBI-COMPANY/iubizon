@@ -72,6 +72,12 @@ export default async function PublicCompanyPage({ params }: Props) {
     seller_id: company.id,
     category_id: p.category_id,
     company_id: company.id,
+    company: {
+      id: company.id,
+      name: company.name,
+      slug: company.slug,
+      logo_url: company.logo_url,
+    },
     title: p.title,
     description: p.description,
     price: Number(p.price),
