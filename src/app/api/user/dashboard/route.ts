@@ -21,7 +21,6 @@ export async function GET(req: Request) {
     let companyId: string | null = null;
 
     if (companyIdParam) {
-      // Verificar que el usuario pertenece a la empresa enviada
       const membership = await prisma.companyMember.findFirst({
         where: {
           company_id: companyIdParam,
@@ -34,31 +33,42 @@ export async function GET(req: Request) {
         isCompanyMode = true;
         companyId = companyIdParam;
         targetCompany = membership.company;
-
-        // Auto-vincular cualquier producto del usuario sin company_id a su empresa activa
-        await prisma.product.updateMany({
-          where: {
-            seller_id: user.id,
-            company_id: null,
-          },
-          data: {
-            company_id: companyId,
-          },
-        });
       }
     }
 
-    // Construir filtro de productos
+    // Filtros de búsqueda para productos y pedidos
     const productWhere = isCompanyMode
       ? { company_id: companyId! }
       : { seller_id: user.id, company_id: null };
 
-    // Construir filtro de pedidos (Empresa vs Comprador)
     const orderWhere = isCompanyMode
       ? { company_id: companyId! }
       : { buyer_id: user.id };
 
-    const [products, orders, totalFavorites] = await Promise.all([
+    // Consultas ultrarrápidas y optimizadas en paralelo directo desde PostgreSQL
+    const [
+      totalProducts,
+      activeProducts,
+      productSums,
+      recentProductsRaw,
+      orders,
+      totalFavorites,
+    ] = await Promise.all([
+      // 1. Conteo total de productos
+      prisma.product.count({ where: productWhere }),
+      // 2. Conteo de productos activos
+      prisma.product.count({
+        where: { ...productWhere, status: "active" },
+      }),
+      // 3. Suma en SQL de vistas y favoritos
+      prisma.product.aggregate({
+        where: productWhere,
+        _sum: {
+          views: true,
+          favorites_count: true,
+        },
+      }),
+      // 4. Solo los 5 productos más recientes para la vista previa
       prisma.product.findMany({
         where: productWhere,
         select: {
@@ -67,26 +77,28 @@ export async function GET(req: Request) {
           price: true,
           status: true,
           views: true,
-          favorites_count: true,
           created_at: true,
           images: {
             orderBy: { position: "asc" },
             take: 1,
+            select: { url: true },
           },
         },
         orderBy: { created_at: "desc" },
+        take: 5,
       }),
+      // 5. Registros de pedidos
       prisma.order.findMany({
         where: orderWhere,
         select: {
           id: true,
           status: true,
-          amount: true,
           shipping: {
             select: { tracking_number: true },
           },
         },
       }),
+      // 6. Conteo de favoritos en modo personal
       isCompanyMode
         ? 0
         : prisma.favorite.count({
@@ -94,45 +106,43 @@ export async function GET(req: Request) {
           }),
     ]);
 
-    const activeProducts = products.filter((p) => p.status === "active").length;
-    const pendingOrders = orders.filter(
+    const pendingOrdersCount = orders.filter(
       (o) =>
         (o.status === "pending" || o.status === "paid") &&
         !o.shipping?.tracking_number,
     ).length;
-    const totalViews = products.reduce((sum, p) => sum + (p.views || 0), 0);
-    const companyFavorites = products.reduce(
-      (sum, p) => sum + (p.favorites_count || 0),
-      0,
-    );
 
-    // Contabilizar compras únicas (paquetes) agrupados por código de orden
+    const totalViews = productSums._sum.views || 0;
+    const companyFavorites = productSums._sum.favorites_count || 0;
+
     const uniquePackages = new Set(
       orders.map((o) => o.shipping?.tracking_number || o.id),
     );
+
+    const recentProducts = recentProductsRaw.map((p) => ({
+      id: p.id,
+      title: p.title,
+      price: Number(p.price),
+      status: p.status,
+      views: p.views || 0,
+      image: p.images[0]?.url || null,
+      created_at: p.created_at,
+    }));
 
     return NextResponse.json({
       isCompanyMode,
       company: targetCompany,
       stats: {
-        totalProducts: products.length,
+        totalProducts,
         activeProducts,
-        totalOrders: isCompanyMode ? orders.length : orders.length,
+        totalOrders: orders.length,
         totalPurchases: isCompanyMode ? 0 : uniquePackages.size,
-        pendingDeliveries: pendingOrders,
-        pendingOrders: isCompanyMode ? pendingOrders : 0,
+        pendingDeliveries: pendingOrdersCount,
+        pendingOrders: isCompanyMode ? pendingOrdersCount : 0,
         favoritesCount: isCompanyMode ? companyFavorites : totalFavorites,
         totalViews,
       },
-      recentProducts: products.slice(0, 5).map((p) => ({
-        id: p.id,
-        title: p.title,
-        price: Number(p.price),
-        status: p.status,
-        views: p.views || 0,
-        image: p.images[0]?.url || null,
-        created_at: p.created_at,
-      })),
+      recentProducts,
     });
   } catch (err) {
     console.error("Error al obtener estadísticas del dashboard:", err);
