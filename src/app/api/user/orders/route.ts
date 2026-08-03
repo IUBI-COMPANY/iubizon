@@ -18,6 +18,16 @@ export interface PackageItem {
   } | null;
 }
 
+export interface PaymentDetails {
+  provider: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
+  authorizationCode: string | null;
+  docType: string | null;
+  identityNumber: string | null;
+  legalName: string | null;
+}
+
 export interface TrackingPackage {
   trackingNumber: string | null;
   carrierName: string | null;
@@ -25,6 +35,7 @@ export interface TrackingPackage {
   estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
+  paymentDetails: PaymentDetails | null;
   subtotal: number;
   taxAmount: number;
   shippingCost: number;
@@ -45,6 +56,7 @@ export interface PurchaseOrderSession {
   totalAmount: number;
   totalItems: number;
   destinationAddress: string | null;
+  paymentDetails: PaymentDetails | null;
   packages: TrackingPackage[];
 }
 
@@ -92,6 +104,23 @@ export async function GET(req: Request) {
           },
         },
         shipping: true,
+        paymentTransaction: {
+          select: {
+            provider: true,
+            card_brand: true,
+            card_last4: true,
+            authorization_code: true,
+            status: true,
+          },
+        },
+        invoiceDocument: {
+          select: {
+            doc_type: true,
+            identity_type: true,
+            identity_number: true,
+            legal_name: true,
+          },
+        },
       },
     });
 
@@ -137,6 +166,7 @@ export async function GET(req: Request) {
       estimatedDelivery: string | null;
       status: string;
       paymentMethod: string;
+      paymentDetails: PaymentDetails | null;
       sellerName: string | null;
       subtotal: number;
       destinationAddress: string | null;
@@ -155,7 +185,7 @@ export async function GET(req: Request) {
 
     const getSessionCode = (order: (typeof orders)[0]) => {
       if (order.payment_id && order.payment_id.trim() !== "") {
-        return order.payment_id.toUpperCase();
+        return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
       }
       if (order.created_at) {
         const timeKey = order.created_at.toISOString().slice(0, 16);
@@ -181,6 +211,26 @@ export async function GET(req: Request) {
         order.shipping?.courier,
       );
 
+      const payDetails: PaymentDetails | null = order.paymentTransaction
+        ? {
+            provider: order.payment_method || "niubiz_card",
+            cardBrand: order.paymentTransaction.card_brand || "VISA",
+            cardLast4: order.paymentTransaction.card_last4 || null,
+            authorizationCode: order.paymentTransaction.authorization_code || mainOrderCode,
+            docType: order.invoiceDocument?.doc_type || null,
+            identityNumber: order.invoiceDocument?.identity_number || null,
+            legalName: order.invoiceDocument?.legal_name || null,
+          }
+        : {
+            provider: order.payment_method || "niubiz_card",
+            cardBrand: "VISA",
+            cardLast4: null,
+            authorizationCode: mainOrderCode,
+            docType: order.invoiceDocument?.doc_type || null,
+            identityNumber: order.invoiceDocument?.identity_number || null,
+            legalName: order.invoiceDocument?.legal_name || null,
+          };
+
       if (!sessionMap.has(mainOrderCode)) {
         sessionMap.set(mainOrderCode, {
           orderCode: mainOrderCode,
@@ -205,7 +255,8 @@ export async function GET(req: Request) {
             ? order.shipping.estimated_delivery.toISOString()
             : null,
           status: order.status,
-          paymentMethod: order.payment_method || "cash_on_delivery",
+          paymentMethod: order.payment_method || "niubiz_card",
+          paymentDetails: payDetails,
           sellerName,
           subtotal: 0,
           destinationAddress: order.shipping?.destination_address || null,
@@ -246,6 +297,7 @@ export async function GET(req: Request) {
       let sessionSubtotal = 0;
       let sessionItemsCount = 0;
       let mainDestination: string | null = null;
+      let mainPayDetails: PaymentDetails | null = null;
 
       for (const tempPkg of Array.from(session.packageMap.values())) {
         const taxAmount = 0;
@@ -257,6 +309,9 @@ export async function GET(req: Request) {
         if (!mainDestination && tempPkg.destinationAddress) {
           mainDestination = tempPkg.destinationAddress;
         }
+        if (!mainPayDetails && tempPkg.paymentDetails) {
+          mainPayDetails = tempPkg.paymentDetails;
+        }
 
         packagesList.push({
           trackingNumber: tempPkg.trackingNumber,
@@ -265,6 +320,7 @@ export async function GET(req: Request) {
           estimatedDelivery: tempPkg.estimatedDelivery,
           status: tempPkg.status,
           paymentMethod: tempPkg.paymentMethod,
+          paymentDetails: tempPkg.paymentDetails,
           subtotal: tempPkg.subtotal,
           taxAmount,
           shippingCost,
@@ -290,6 +346,7 @@ export async function GET(req: Request) {
         totalAmount: sessionTotal,
         totalItems: sessionItemsCount,
         destinationAddress: mainDestination,
+        paymentDetails: mainPayDetails,
         packages: packagesList,
       });
     }

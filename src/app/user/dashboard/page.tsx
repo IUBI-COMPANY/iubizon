@@ -10,6 +10,8 @@ import { BuyerDashboard } from "@/components/features/dashboard/BuyerDashboard";
 import { CompanyDashboard } from "@/components/features/dashboard/CompanyDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/context/ToastContext";
 
 interface DashboardData {
   isCompanyMode: boolean;
@@ -43,6 +45,8 @@ interface DashboardData {
 function DashboardContent() {
   const { user, isLoading: authLoading } = useAuth();
   const { activeCompany, isLoadingCompanies } = useCompany();
+  const { clearCart } = useCart();
+  const toast = useToast();
   const searchParams = useSearchParams();
 
   const viewMode = searchParams.get("view"); // 'personal' | 'company' | null
@@ -86,6 +90,21 @@ function DashboardContent() {
       fetchDashboardData();
     }
   }, [user, targetCompanyId, fetchDashboardData]);
+
+  // Procesar confirmación de pago Niubiz al redirigir al Dashboard
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isSuccess = searchParams.get("success") === "true";
+      const sessionCode = searchParams.get("sessionCode");
+
+      if (isSuccess && sessionCode) {
+        clearCart();
+        localStorage.removeItem("iubizon_checkout_step");
+        localStorage.removeItem("iubizon_checkout_form");
+        toast.success(`¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`, "Pago Confirmado");
+      }
+    }
+  }, [searchParams, clearCart, toast]);
 
   if (authLoading || isLoadingCompanies) {
     return (

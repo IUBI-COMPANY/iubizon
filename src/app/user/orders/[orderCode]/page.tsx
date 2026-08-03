@@ -58,6 +58,16 @@ interface TrackingPackage {
   items: PackageItem[];
 }
 
+interface PaymentDetails {
+  provider: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
+  authorizationCode: string | null;
+  docType: string | null;
+  identityNumber: string | null;
+  legalName: string | null;
+}
+
 interface PurchaseOrderSession {
   orderCode: string;
   createdAt: string;
@@ -67,6 +77,7 @@ interface PurchaseOrderSession {
   totalAmount: number;
   totalItems: number;
   destinationAddress: string | null;
+  paymentDetails: PaymentDetails | null;
   packages: TrackingPackage[];
 }
 
@@ -285,8 +296,9 @@ export default function OrderDetailPage({
               <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
                 {session.totalItems} {session.totalItems === 1 ? "producto" : "productos"} en total
               </span>
-              <span className="text-xs font-semibold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl">
-                Pago Único Contra Entrega
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {session.paymentDetails?.cardBrand ? `Pago Tarjeta ${session.paymentDetails.cardBrand}` : "Pago con Tarjeta (Niubiz)"}
               </span>
             </div>
           </div>
@@ -508,6 +520,28 @@ export default function OrderDetailPage({
                 <span>Envío Total de la Compra:</span>
                 <strong className="text-[#112237]">S/ {session.shippingCost.toFixed(2)}</strong>
               </p>
+              <p className="flex justify-between border-b border-slate-100 pb-1.5">
+                <span>Método de Pago:</span>
+                <strong className="text-[#112237]">
+                  {session.paymentDetails?.cardBrand
+                    ? `Tarjeta ${session.paymentDetails.cardBrand} ${session.paymentDetails.cardLast4 ? `(**** ${session.paymentDetails.cardLast4})` : ''}`
+                    : "Tarjeta de Crédito / Débito (Niubiz)"}
+                </strong>
+              </p>
+              {session.paymentDetails?.authorizationCode && (
+                <p className="flex justify-between border-b border-slate-100 pb-1.5">
+                  <span>Cód. de Autorización:</span>
+                  <strong className="text-[#112237] font-mono">{session.paymentDetails.authorizationCode}</strong>
+                </p>
+              )}
+              {session.paymentDetails?.docType && (
+                <p className="flex justify-between border-b border-slate-100 pb-1.5">
+                  <span>Comprobante Emitido:</span>
+                  <strong className="text-[#112237]">
+                    {session.paymentDetails.docType.toUpperCase()} {session.paymentDetails.identityNumber ? `(${session.paymentDetails.identityNumber})` : ''}
+                  </strong>
+                </p>
+              )}
             </div>
 
             <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col justify-center items-end text-right">
@@ -517,8 +551,9 @@ export default function OrderDetailPage({
               <span className="text-3xl font-black text-[#f25c05]">
                 S/ {session.totalAmount.toFixed(2)}
               </span>
-              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg mt-2 inline-block">
-                Pago Único Contra Entrega
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mt-2 inline-flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Pago Aprobado y Procesado
               </span>
             </div>
           </div>

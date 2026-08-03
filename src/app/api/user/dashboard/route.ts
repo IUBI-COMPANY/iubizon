@@ -95,7 +95,11 @@ export async function GET(req: Request) {
     ]);
 
     const activeProducts = products.filter((p) => p.status === "active").length;
-    const pendingOrders = orders.filter((o) => o.status === "pending").length;
+    const pendingOrders = orders.filter(
+      (o) =>
+        (o.status === "pending" || o.status === "paid") &&
+        !o.shipping?.tracking_number,
+    ).length;
     const totalViews = products.reduce((sum, p) => sum + (p.views || 0), 0);
     const companyFavorites = products.reduce(
       (sum, p) => sum + (p.favorites_count || 0),

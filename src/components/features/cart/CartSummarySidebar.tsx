@@ -81,7 +81,7 @@ export const CartSummarySidebar = ({
             <span>Garantía de Satisfacción</span>
           </div>
           <p>
-            Revisas y confirmas el producto antes de entregar el pago al repartidor.
+            Tu pago se procesa de forma 100% segura con encriptación PCI-DSS y garantía de protección al comprador Iubizon.
           </p>
         </div>
       )}

@@ -1,0 +1,78 @@
+import { NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { createNiubizSession } from "@/lib/services/niubiz";
+
+export async function POST(req: Request) {
+  try {
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { amount, cartItems, shipping, invoiceDetails } = await req.json();
+
+    if (!amount || Number(amount) <= 0) {
+      return NextResponse.json({ error: "Monto de transacción inválido" }, { status: 400 });
+    }
+
+    const numericAmount = Number(amount);
+
+    // Generar código de orden numérico único de 6 dígitos (Ej: 918025)
+    let purchaseNumber = String(Math.floor(100000 + Math.random() * 900000));
+    let existingTx = await prisma.paymentTransaction.findUnique({
+      where: { purchase_number: purchaseNumber },
+    });
+    while (existingTx) {
+      purchaseNumber = String(Math.floor(100000 + Math.random() * 900000));
+      existingTx = await prisma.paymentTransaction.findUnique({
+        where: { purchase_number: purchaseNumber },
+      });
+    }
+
+    // Obtener IP del cliente para CyberSource Fraud Prevention
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "127.0.0.1";
+
+    // 1. Obtener clave de sesión desde la API de Niubiz
+    const { sessionKey, merchantId, environment } = await createNiubizSession({
+      amount: numericAmount,
+      purchaseNumber,
+      customerEmail: user.email || "cliente@iubizon.com",
+      customerIp: clientIp,
+    });
+
+    // 2. Registrar el intento de pago previo en PaymentTransaction junto con la data del carrito
+    await prisma.paymentTransaction.create({
+      data: {
+        provider: "niubiz",
+        transaction_type: "authorization",
+        status: "pending",
+        purchase_number: purchaseNumber,
+        amount: numericAmount,
+        currency: "PEN",
+        customer_ip: clientIp,
+        raw_response: {
+          cartItems: cartItems || [],
+          shipping: shipping || {},
+          invoiceDetails: invoiceDetails || {},
+          buyer_id: user.id,
+          buyer_email: user.email,
+        },
+      },
+    });
+
+    return NextResponse.json({
+      sessionKey,
+      merchantId,
+      purchaseNumber,
+      amount: numericAmount,
+      environment,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error al iniciar sesión de pago Niubiz";
+    console.error("Error en API /api/payments/niubiz/session:", err);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}

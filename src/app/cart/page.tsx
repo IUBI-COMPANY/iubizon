@@ -96,6 +96,22 @@ export default function CartCheckoutPage() {
           console.error("Error al restaurar formulario de checkout:", e);
         }
       }
+
+      // Procesar retorno de Niubiz (success / error)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isSuccess = urlParams.get("success") === "true";
+      const sessionCode = urlParams.get("sessionCode");
+      const errorMsg = urlParams.get("error");
+
+      if (isSuccess && sessionCode) {
+        clearCart();
+        localStorage.removeItem(STEP_STORAGE_KEY);
+        localStorage.removeItem(FORM_STORAGE_KEY);
+        toast.success(`¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`, "Pago Confirmado");
+        router.push("/user/profile");
+      } else if (errorMsg && errorMsg !== "Accept") {
+        toast.error(`No se pudo completar el pago: ${errorMsg}`, "Pago Rechazado");
+      }
     }
   }, []);
 
@@ -771,45 +787,34 @@ export default function CartCheckoutPage() {
                   )}
                 </div>
 
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleStepChange(2)}
-                    className="text-xs font-semibold flex items-center gap-1.5 w-full sm:w-auto"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Cambiar Datos de Envío</span>
-                  </Button>
-
-                  <div className="w-full sm:w-auto min-w-[280px]">
-                    <NiubizPayModal
-                      amount={grandTotal}
-                      cartItems={items}
-                      shippingForm={shippingForm}
-                      invoiceDetails={{
-                        doc_type: invoiceType,
-                        identity_type: invoiceType === "factura" ? "ruc" : docType,
-                        identity_number: invoiceType === "factura" ? invoiceRuc : invoiceDni,
-                        legal_name: invoiceType === "factura" ? invoiceCompanyName : shippingForm.name,
-                        tax_address: shippingForm.address,
-                      }}
-                      onSuccess={(sessionCode) => {
-                        toast.success(
-                          "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
-                          "¡Gracias por tu compra!",
-                        );
-                        clearCart();
-                        if (typeof window !== "undefined") {
-                          localStorage.removeItem(STEP_STORAGE_KEY);
-                          localStorage.removeItem(FORM_STORAGE_KEY);
-                        }
-                        router.push(`/user/orders/${sessionCode}`);
-                      }}
-                      onError={(errorMessage) => {
-                        toast.error(errorMessage, "Error al procesar el pago");
-                      }}
-                    />
-                  </div>
+                <div className="pt-4 w-full">
+                  <NiubizPayModal
+                    amount={grandTotal}
+                    cartItems={items}
+                    shippingForm={shippingForm}
+                    invoiceDetails={{
+                      doc_type: invoiceType,
+                      identity_type: invoiceType === "factura" ? "ruc" : docType,
+                      identity_number: invoiceType === "factura" ? invoiceRuc : invoiceDni,
+                      legal_name: invoiceType === "factura" ? invoiceCompanyName : shippingForm.name,
+                      tax_address: shippingForm.address,
+                    }}
+                    onSuccess={(sessionCode) => {
+                      toast.success(
+                        "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
+                        "¡Gracias por tu compra!",
+                      );
+                      clearCart();
+                      if (typeof window !== "undefined") {
+                        localStorage.removeItem(STEP_STORAGE_KEY);
+                        localStorage.removeItem(FORM_STORAGE_KEY);
+                      }
+                      router.push(`/user/orders/${sessionCode}`);
+                    }}
+                    onError={(errorMessage) => {
+                      toast.error(errorMessage, "Error al procesar el pago");
+                    }}
+                  />
                 </div>
               </div>
             </div>

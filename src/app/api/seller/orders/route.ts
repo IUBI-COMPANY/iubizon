@@ -29,6 +29,13 @@ export interface SellerPackage {
   destinationAddress: string | null;
   courierInfo: string | null;
   paymentMethod: string;
+  paymentInfo?: {
+    provider: string;
+    cardBrand: string | null;
+    cardLast4: string | null;
+    docType: string | null;
+    identityNumber: string | null;
+  } | null;
   subtotal: number;
   platformCommission: number;
   netEarnings: number;
@@ -74,6 +81,23 @@ export async function GET() {
           },
         },
         shipping: true,
+        paymentTransaction: {
+          select: {
+            provider: true,
+            card_brand: true,
+            card_last4: true,
+            authorization_code: true,
+            status: true,
+          },
+        },
+        invoiceDocument: {
+          select: {
+            doc_type: true,
+            identity_type: true,
+            identity_number: true,
+            legal_name: true,
+          },
+        },
       },
     });
 
@@ -91,6 +115,13 @@ export async function GET() {
       destinationAddress: string | null;
       courierInfo: string | null;
       paymentMethod: string;
+      paymentInfo: {
+        provider: string;
+        cardBrand: string | null;
+        cardLast4: string | null;
+        docType: string | null;
+        identityNumber: string | null;
+      } | null;
       subtotal: number;
       orderIds: string[];
       items: SellerPackageItem[];
@@ -100,7 +131,7 @@ export async function GET() {
 
     const getSessionCode = (order: (typeof orders)[0]) => {
       if (order.payment_id && order.payment_id.trim() !== "") {
-        return order.payment_id.toUpperCase();
+        return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
       }
       if (order.created_at) {
         const timeKey = order.created_at.toISOString().slice(0, 16);
@@ -126,6 +157,14 @@ export async function GET() {
         order.shipping?.courier,
       );
 
+      const payInfo = {
+        provider: order.payment_method || "niubiz_card",
+        cardBrand: order.paymentTransaction?.card_brand || "VISA",
+        cardLast4: order.paymentTransaction?.card_last4 || null,
+        docType: order.invoiceDocument?.doc_type || null,
+        identityNumber: order.invoiceDocument?.identity_number || null,
+      };
+
       if (!packageMap.has(groupKey)) {
         packageMap.set(groupKey, {
           packageId: groupKey,
@@ -143,7 +182,8 @@ export async function GET() {
           buyerName: order.buyer?.name || "Comprador",
           destinationAddress: order.shipping?.destination_address || null,
           courierInfo: order.shipping?.courier || null,
-          paymentMethod: order.payment_method || "cash_on_delivery",
+          paymentMethod: order.payment_method || "niubiz_card",
+          paymentInfo: payInfo,
           subtotal: 0,
           orderIds: [],
           items: [],
@@ -193,18 +233,16 @@ export async function GET() {
         tempPkg.items.every(
           (i) => i.status === "delivered" || i.status === "completed",
         );
-      const anyShipped = tempPkg.items.some(
-        (i) =>
-          i.status === "shipped" ||
-          i.status === "paid" ||
-          i.status === "delivered" ||
-          i.status === "completed",
-      );
+
+      const isShippedWithTracking =
+        !!tempPkg.trackingNumber ||
+        tempPkg.items.some((i) => i.status === "shipped");
+
       const computedStatus = allDelivered
         ? "delivered"
-        : anyShipped
+        : isShippedWithTracking
           ? "shipped"
-          : tempPkg.status;
+          : "pending";
 
       sellerPackages.push({
         packageId: tempPkg.packageId,
@@ -222,6 +260,7 @@ export async function GET() {
         destinationAddress: tempPkg.destinationAddress,
         courierInfo: tempPkg.courierInfo,
         paymentMethod: tempPkg.paymentMethod,
+        paymentInfo: tempPkg.paymentInfo,
         subtotal: tempPkg.subtotal,
         platformCommission,
         netEarnings,

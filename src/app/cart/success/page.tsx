@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
+import { useCart } from "@/hooks/useCart";
 
 type TrackingGroup = {
   sellerId: string;
@@ -60,9 +61,14 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const orderCode = searchParams.get("order_code") || "";
   const [trackingGroups, setTrackingGroups] = useState<TrackingGroup[]>([]);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    clearCart();
+    localStorage.removeItem("iubizon_checkout_step");
+    localStorage.removeItem("iubizon_checkout_form");
+
     try {
       const raw = sessionStorage.getItem("iubizon_tracking_groups");
       if (raw) {
@@ -72,7 +78,7 @@ function SuccessContent() {
     } catch {
       // silently ignore parse errors
     }
-  }, []);
+  }, [clearCart]);
 
   return (
     <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl">
@@ -90,7 +96,7 @@ function SuccessContent() {
               ¡Gracias por tu compra!
             </h1>
             <p className="text-sm text-[#64748b] mt-1 max-w-md mx-auto">
-              Cada proveedor ha recibido su código de despacho y preparará tu pedido para enviarlo contra entrega.
+              Cada proveedor ha recibido la confirmación de tu pago y preparará tu pedido para su despacho.
             </p>
           </div>
         </div>
@@ -126,7 +132,7 @@ function SuccessContent() {
           <ul className="text-xs text-[#475569] space-y-2 list-disc list-inside">
             <li>Cada proveedor notificará el despacho de sus productos.</li>
             <li>Podrás consultar el avance por código de tracking en tu panel.</li>
-            <li>Pagarás en efectivo, Yape o Plin únicamente al recibir tu producto.</li>
+            <li>Tu pago se procesó con éxito y recibirás notificaciones en tiempo real sobre tu envío.</li>
           </ul>
         </div>
 
