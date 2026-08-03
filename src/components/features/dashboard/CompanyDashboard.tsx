@@ -256,9 +256,16 @@ export const CompanyDashboard = ({
                     <p className="font-semibold text-sm text-[#112237] line-clamp-1">
                       {product.title}
                     </p>
-                    <p className="text-xs font-bold text-[#f25c05]">
-                      S/ {product.price.toFixed(2)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs font-bold text-[#f25c05]">
+                        S/ {product.price.toFixed(2)}
+                      </p>
+                      {product.created_at && (
+                        <span className="text-[11px] text-[#64748b]">
+                          • Publicado el {new Date(product.created_at).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

@@ -13,6 +13,9 @@ import { useCart } from '@/hooks/useCart';
 import { AddToCartModal } from '@/components/features/cart/AddToCartModal';
 import { formatPrice, formatRelativeTime, cn } from '@/lib/utils';
 import type { Product } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useCompany } from '@/context/CompanyContext';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -29,11 +32,20 @@ const conditionLabels: Record<string, string> = {
 
 export const ProductCard = ({ product, showSeller = false, priority = false }: ProductCardProps) => {
   const router = useRouter();
+  const { user } = useAuth();
+  const { activeCompany } = useCompany();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { addItem } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const favorited = isFavorite(product.id);
+  
+  const isOwner = Boolean(
+    user?.id &&
+      (user.id === product.seller_id ||
+        (product.company_id && activeCompany?.id === product.company_id) ||
+        (product.company?.id && activeCompany?.id === product.company.id))
+  );
 
   const sortedImages = [...(product.images || [])].sort((a, b) =>
     (a.position ?? 0) - (b.position ?? 0)
@@ -49,6 +61,10 @@ export const ProductCard = ({ product, showSeller = false, priority = false }: P
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOwner) {
+      toast.error('Esta es tu propia publicación. No puedes agregarla al carrito.');
+      return;
+    }
     addItem({
       id: product.id,
       title: product.title,
@@ -155,14 +171,19 @@ export const ProductCard = ({ product, showSeller = false, priority = false }: P
               )}
             </div>
 
-            {/* Botón "Agregar al Carro" en la parte baja al hacer hover */}
+            {/* Botón "Agregar al Carro" o "Tu publicación" en la parte baja al hacer hover */}
             <div className="mt-3 pt-1 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0">
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-[#112237] hover:bg-[#f25c05] text-white text-xs font-bold py-2.5 px-4 rounded-full shadow-md flex items-center justify-center gap-2 transition-colors"
+                className={cn(
+                  "w-full text-xs font-bold py-2.5 px-4 rounded-full shadow-md flex items-center justify-center gap-2 transition-colors",
+                  isOwner
+                    ? "bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300"
+                    : "bg-[#112237] hover:bg-[#f25c05] text-white"
+                )}
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
-                <span>Agregar al Carro</span>
+                <span>{isOwner ? "Tu publicación" : "Agregar al Carro"}</span>
               </button>
             </div>
           </div>

@@ -1,16 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { Edit } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { AddToCartButton } from "./AddToCartButton";
 import { AddToCartModal } from "@/components/features/cart/AddToCartModal";
 import { useRealtimeStock } from "@/hooks/useRealtimeStock";
+import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
 
 interface ProductActionsBlockProps {
   productId: string;
   productTitle: string;
   productPrice: number;
   sellerId: string;
+  companyId?: string | null;
   images?: any[];
   initialStock: number;
   initialStatus: string;
@@ -21,10 +27,14 @@ export function ProductActionsBlock({
   productTitle,
   productPrice,
   sellerId,
+  companyId,
   images,
   initialStock,
   initialStatus,
 }: ProductActionsBlockProps) {
+  const { user } = useAuth();
+  const { activeCompany } = useCompany();
+
   // Hook de tiempo real con Supabase Postgres Changes
   const { stock, status, isOutOfStock } = useRealtimeStock(
     productId,
@@ -36,6 +46,27 @@ export function ProductActionsBlock({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const mainImageUrl = typeof images?.[0] === "string" ? images[0] : images?.[0]?.url;
+
+  // Detección estricta de propiedad
+  const isOwner = Boolean(
+    user?.id && (user.id === sellerId || (companyId && activeCompany?.id === companyId))
+  );
+
+  if (isOwner) {
+    return (
+      <div className="space-y-3 pt-2">
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs font-medium">
+          💡 Esta es tu propia publicación. Puedes gestionarla o editarla desde tu panel.
+        </div>
+        <Link href="/user/dashboard/products" className="block w-full">
+          <Button className="w-full bg-[#112237] hover:bg-[#1a3454] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs">
+            <Edit className="w-4 h-4 text-[#f25c05]" />
+            <span>Gestionar / Editar mi Producto</span>
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 pt-2">

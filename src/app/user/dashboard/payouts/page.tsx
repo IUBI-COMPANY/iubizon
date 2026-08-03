@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/hooks";
+import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
+import { BankAccountModal } from "@/components/features/dashboard/BankAccountModal";
 import {
   ArrowLeft,
   Calendar,
@@ -76,6 +78,7 @@ function formatFullDate(isoString: string) {
 
 function PayoutsContent() {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeCompany } = useCompany();
   const router = useRouter();
 
   const [payouts, setPayouts] = useState<SellerPayoutItem[]>([]);
@@ -87,6 +90,25 @@ function PayoutsContent() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [statusTab, setStatusTab] = useState("all");
+
+  // Estado de Cuenta Bancaria
+  const [bankAccount, setBankAccount] = useState<any>(null);
+  const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+
+  const fetchBankAccount = useCallback(async () => {
+    try {
+      const url = activeCompany?.id
+        ? `/api/seller/bank-account?company_id=${activeCompany.id}`
+        : `/api/seller/bank-account`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (res.ok) {
+        setBankAccount(data.bankAccount || null);
+      }
+    } catch (err) {
+      console.error("Error al obtener cuenta bancaria:", err);
+    }
+  }, [activeCompany?.id]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -114,8 +136,9 @@ function PayoutsContent() {
   useEffect(() => {
     if (user) {
       fetchPayouts();
+      fetchBankAccount();
     }
-  }, [user, fetchPayouts]);
+  }, [user, activeCompany?.id, fetchPayouts, fetchBankAccount]);
 
   const filteredPayouts = payouts.filter((p) => {
     if (statusTab === "all") return true;
@@ -158,60 +181,129 @@ function PayoutsContent() {
           </div>
         </div>
 
-        {/* Tarjetas de Resumen KPI */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Tarjetas de Resumen KPI & Cuenta Bancaria (Grid de 4 columnas) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Por Cobrar / Pendiente */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#64748b]">
-                Por Cobrar (Pendiente de Abono)
-              </span>
-              <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <Clock className="w-5 h-5" />
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Por Cobrar (Pendiente)
+                </span>
+                <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <Clock className="w-5 h-5" />
+                </div>
               </div>
+              <p className="text-2xl font-black text-[#112237]">
+                S/ {kpis.pendingTotal.toFixed(2)}
+              </p>
             </div>
-            <p className="text-2xl font-black text-[#112237]">
-              S/ {kpis.pendingTotal.toFixed(2)}
-            </p>
             <p className="text-[11px] text-[#64748b]">
-              Entregas completadas a la espera de transferencia por iubizon.
+              Entregas completadas a la espera de transferencia.
             </p>
           </div>
 
           {/* Pagado / Liquidado */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#64748b]">
-                Total Transferido / Abonado
-              </span>
-              <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5" />
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Total Transferido / Abonado
+                </span>
+                <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
               </div>
+              <p className="text-2xl font-black text-emerald-600">
+                S/ {kpis.paidTotal.toFixed(2)}
+              </p>
             </div>
-            <p className="text-2xl font-black text-emerald-600">
-              S/ {kpis.paidTotal.toFixed(2)}
-            </p>
             <p className="text-[11px] text-[#64748b]">
-              Monto que iubizon ya depositó en tu cuenta bancaria / Yape.
+              Monto depositado en tu cuenta bancaria.
             </p>
           </div>
 
           {/* Acumulado Histórico */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#64748b]">
-                Total Acumulado Neto
-              </span>
-              <div className="w-9 h-9 rounded-2xl bg-orange-50 text-[#f25c05] flex items-center justify-center">
-                <Wallet className="w-5 h-5" />
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Total Acumulado Neto
+                </span>
+                <div className="w-9 h-9 rounded-2xl bg-orange-50 text-[#f25c05] flex items-center justify-center">
+                  <Wallet className="w-5 h-5" />
+                </div>
               </div>
+              <p className="text-2xl font-black text-[#112237]">
+                S/ {kpis.accumulatedTotal.toFixed(2)}
+              </p>
             </div>
-            <p className="text-2xl font-black text-[#112237]">
-              S/ {kpis.accumulatedTotal.toFixed(2)}
-            </p>
             <p className="text-[11px] text-[#64748b]">
-              Suma total de retribuciones netas generadas en la plataforma.
+              Suma total de retribuciones netas generadas.
             </p>
+          </div>
+
+          {/* Cuenta Bancaria para Abonos (Al lado derecho de Total Acumulado Neto) */}
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Cuenta Bancaria Abonos
+                </span>
+                <div
+                  className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
+                    bankAccount ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                  }`}
+                >
+                  {bankAccount ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                </div>
+              </div>
+
+              {bankAccount ? (
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-base font-black text-[#112237]">
+                      {bankAccount.bank_name}
+                    </p>
+                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-full uppercase">
+                      Verificada
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold text-[#112237] truncate">
+                    Nº {bankAccount.account_number}
+                  </p>
+                  <p className="text-[11px] text-[#64748b] truncate mt-0.5">
+                    {bankAccount.holder_name}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-bold text-amber-800">
+                    Sin cuenta registrada
+                  </p>
+                  <p className="text-[11px] text-[#64748b] mt-1">
+                    Registra tus datos para recibir los abonos de iubizon.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Button
+              variant={bankAccount ? "outline" : "default"}
+              onClick={() => setIsBankModalOpen(true)}
+              className={`w-full text-xs font-bold py-1.5 rounded-xl h-8 mt-3 ${
+                bankAccount
+                  ? "border-[#e2e8f0] hover:bg-slate-50 text-[#112237]"
+                  : "bg-[#f25c05] hover:bg-[#d94d04] text-white shadow-sm"
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+              {bankAccount ? "Editar Cuenta" : "Configurar Cuenta"}
+            </Button>
           </div>
         </div>
 
@@ -350,6 +442,15 @@ function PayoutsContent() {
           )}
         </Tabs>
       </div>
+
+      {/* Modal de Configuración Bancaria */}
+      <BankAccountModal
+        isOpen={isBankModalOpen}
+        onClose={() => setIsBankModalOpen(false)}
+        companyId={activeCompany?.id}
+        initialData={bankAccount}
+        onSuccess={() => fetchBankAccount()}
+      />
 
       <Footer />
     </div>

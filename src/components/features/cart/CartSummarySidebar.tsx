@@ -50,8 +50,11 @@ export const CartSummarySidebar = ({
             <Truck className="w-3.5 h-3.5 text-[#f25c05]" />
             Costo de Envío:
           </span>
-          <span className="font-bold text-[#112237]">
-            S/ {shippingCost.toFixed(2)}
+          <span className="font-bold text-emerald-600 flex items-center gap-1">
+            <span>GRATIS</span>
+            <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-full uppercase">
+              Lanzamiento
+            </span>
           </span>
         </div>
 

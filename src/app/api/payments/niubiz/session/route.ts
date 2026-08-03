@@ -20,6 +20,39 @@ export async function POST(req: Request) {
 
     const numericAmount = Number(amount);
 
+    // Validar prevención de auto-compra (Self-Purchase Prevention)
+    if (Array.isArray(cartItems) && cartItems.length > 0) {
+      const productIds = cartItems
+        .map((i: { id?: string; product_id?: string }) => i.product_id || i.id)
+        .filter((id): id is string => Boolean(id));
+
+      const selfOwnedProduct = await prisma.product.findFirst({
+        where: {
+          id: { in: productIds },
+          OR: [
+            { seller_id: user.id },
+            {
+              company: {
+                companyMembers: {
+                  some: { user_id: user.id },
+                },
+              },
+            },
+          ],
+        },
+        select: { title: true },
+      });
+
+      if (selfOwnedProduct) {
+        return NextResponse.json(
+          {
+            error: `No está permitido comprar tus propias publicaciones ("${selfOwnedProduct.title}").`,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     // Generar código de orden numérico único de 6 dígitos (Ej: 918025)
     let purchaseNumber = String(Math.floor(100000 + Math.random() * 900000));
     let existingTx = await prisma.paymentTransaction.findUnique({

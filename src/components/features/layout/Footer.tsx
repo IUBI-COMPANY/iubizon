@@ -37,7 +37,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
       <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/" className="inline-block mb-4">
+            <Link href="/" className="inline-flex flex-col items-start mb-4">
               <Image
                 src="/images/logo.png"
                 alt="iubizon"
@@ -46,6 +46,11 @@ export const Footer = ({ categories = [] }: FooterProps) => {
                 className="h-10 w-auto object-contain"
                 style={{ width: "auto" }}
               />
+              {process.env.NODE_ENV !== "production" && (
+                <span className="text-[9px] font-black text-white bg-[#f25c05] px-1.5 py-[1px] rounded tracking-wider leading-none mt-0.5 shadow-sm">
+                  DEV
+                </span>
+              )}
             </Link>
             <p className="text-[#94a3b8] text-sm mb-4">
               Tecnología para educar y trabajar.

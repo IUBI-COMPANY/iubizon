@@ -88,7 +88,7 @@ export const Navbar = () => {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center shrink-0">
+            <Link href="/" className="flex flex-col items-start shrink-0">
               <Image
                 src="/images/logo.png"
                 alt="iubizon"
@@ -98,6 +98,11 @@ export const Navbar = () => {
                 style={{ width: "auto" }}
                 priority
               />
+              {process.env.NODE_ENV !== "production" && (
+                <span className="text-[9px] font-black text-white bg-[#f25c05] px-1.5 py-[1px] rounded tracking-wider leading-none mt-0.5 shadow-sm">
+                  DEV
+                </span>
+              )}
             </Link>
           </div>
 
@@ -277,13 +282,20 @@ export const Navbar = () => {
           />
           <div className="relative w-[85vw] max-w-sm bg-[#112237] text-white h-full p-6 flex flex-col z-10 shadow-2xl overflow-y-auto">
             <div className="flex items-center justify-between pb-5 border-b border-white/10">
-              <Image
-                src="/images/logo.png"
-                alt="iubizon"
-                width={130}
-                height={34}
-                className="h-7 w-auto object-contain"
-              />
+              <div className="flex flex-col items-start">
+                <Image
+                  src="/images/logo.png"
+                  alt="iubizon"
+                  width={130}
+                  height={34}
+                  className="h-7 w-auto object-contain"
+                />
+                {process.env.NODE_ENV !== "production" && (
+                  <span className="text-[9px] font-black text-white bg-[#f25c05] px-1.5 py-[1px] rounded tracking-wider leading-none mt-0.5 shadow-sm">
+                    DEV
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
                 className="p-2 rounded-xl hover:bg-white/10 text-white transition-colors"

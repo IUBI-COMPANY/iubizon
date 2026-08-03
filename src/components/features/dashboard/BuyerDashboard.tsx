@@ -300,9 +300,16 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
                           {totalItemsCount === 1 ? "producto" : "productos"})
                         </span>
                       </div>
-                      <p className="text-xs font-extrabold text-[#f25c05] mt-0.5">
-                        S/ {formatMoney(session.totalAmount)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs font-extrabold text-[#f25c05]">
+                          S/ {formatMoney(session.totalAmount)}
+                        </p>
+                        {session.createdAt && (
+                          <span className="text-[11px] text-[#64748b]">
+                            • {formatFullDate(session.createdAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 

@@ -175,9 +175,9 @@ export default function CartCheckoutPage() {
     fetchRecommendations(1);
   }, [items, fetchRecommendations]);
 
-  // Cálculos Financieros Memoizados
+  // Cálculos Financieros Memoizados (Envío GRATIS por Promoción de Lanzamiento)
   const subtotal = total;
-  const shippingCost = useMemo(() => (items.length > 0 ? 50.0 : 0.0), [items.length]);
+  const shippingCost = 0.0;
   const grandTotal = useMemo(() => subtotal + shippingCost, [subtotal, shippingCost]);
 
   // Añadir un Order Bump al carrito de 1 solo clic
