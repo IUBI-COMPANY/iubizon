@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   Building2,
@@ -39,6 +40,7 @@ export const PublicCompanyStorefront = ({
   company: initialCompany,
   products,
 }: PublicCompanyStorefrontProps) => {
+  const router = useRouter();
   const { companies, refreshCompanies } = useCompany();
   const [companyData, setCompanyData] = useState(initialCompany);
   const [searchQuery, setSearchQuery] = useState("");
@@ -262,6 +264,9 @@ export const PublicCompanyStorefront = ({
               ...updatedCompany,
             }));
             refreshCompanies();
+            if (updatedCompany.slug && updatedCompany.slug !== companyData.slug) {
+              router.replace(`/companies/${updatedCompany.slug}`);
+            }
           }}
         />
       )}
