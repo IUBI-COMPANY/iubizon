@@ -146,15 +146,15 @@ function SuccessContent() {
         {/* Botones */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href="/user/dashboard?view=personal"
+            href={orderCode ? `/user/orders/${orderCode}` : "/user/orders"}
             className="w-full sm:w-auto bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold px-8 py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Ver Mi Pedido en la Plataforma</span>
+            <span>Ver Detalle del Pedido #{orderCode || ""}</span>
           </Link>
           <Link
-            href="/products"
-            className="w-full sm:w-auto bg-white border border-[#e2e8f0] text-[#334155] hover:bg-slate-50 font-semibold px-6 py-3.5 rounded-xl transition-colors text-xs"
+            href="/search"
+            className="w-full sm:w-auto bg-white border border-[#e2e8f0] text-[#334155] hover:bg-slate-50 font-semibold px-6 py-3.5 rounded-xl transition-colors text-xs text-center"
           >
             Seguir Comprando
           </Link>
