@@ -93,11 +93,7 @@ export const ProductCard = ({ product, showSeller = false, priority = false }: P
               </div>
             )}
 
-            {product.condition === 'new' && (
-              <Badge variant="success" className="absolute top-2 right-2">
-                NUEVO
-              </Badge>
-            )}
+
 
             {/* Botón Favorito */}
             <button
