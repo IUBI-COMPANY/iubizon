@@ -85,7 +85,7 @@ export async function GET(req: Request) {
           },
         },
         orderBy: { created_at: "desc" },
-        take: 5,
+        take: 3,
       }),
       // 5. Registros de pedidos
       prisma.order.findMany({
