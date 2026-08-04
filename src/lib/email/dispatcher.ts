@@ -230,17 +230,32 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
             subject: `Confirmación de compra N° ${buyerData.orderCode} - iubizon`,
             react: React.createElement(BuyerOrderEmail, buyerData),
           });
+
           if (error) {
             console.error(
               `[Email Dispatcher] Error al enviar email a comprador (${buyerData.buyerEmail}):`,
               error,
             );
+
+            // Fallback de desarrollo si Resend rechaza emails a terceros en modo Sandbox (onboarding@resend.dev)
             if (
               error.message &&
               error.message.includes("testing emails to your own email address")
             ) {
+              const accountOwnerEmail =
+                error.message.match(/\(([^)]+)\)/)?.[1] ||
+                "iubizon.company@gmail.com";
               console.warn(
-                `[Resend Notice] Con onboarding@resend.dev solo se pueden enviar correos de prueba a tu email registrado en Resend. Para enviar a otros destinatarios, verifica tu dominio en resend.com/domains.`,
+                `[Resend Notice] Modo Sandbox activo. Redireccionando copia de prueba a ${accountOwnerEmail}...`,
+              );
+              await resend.emails.send({
+                from: DEFAULT_FROM_EMAIL,
+                to: [accountOwnerEmail],
+                subject: `[PRUEBA -> ${buyerData.buyerEmail}] Confirmación de compra N° ${buyerData.orderCode} - iubizon`,
+                react: React.createElement(BuyerOrderEmail, buyerData),
+              });
+              console.log(
+                `[Email Dispatcher] Copia de correo de prueba entregada en ${accountOwnerEmail}`,
               );
             }
           } else {
@@ -290,11 +305,36 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
               subject: `¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
               react: React.createElement(SellerSaleEmail, sellerData),
             });
+
             if (error) {
               console.error(
                 `[Email Dispatcher] Error enviando email a vendedor (${sellerGroup.sellerEmail}):`,
                 error,
               );
+
+              // Fallback de desarrollo si Resend rechaza emails a terceros en modo Sandbox (onboarding@resend.dev)
+              if (
+                error.message &&
+                error.message.includes(
+                  "testing emails to your own email address",
+                )
+              ) {
+                const accountOwnerEmail =
+                  error.message.match(/\(([^)]+)\)/)?.[1] ||
+                  "iubizon.company@gmail.com";
+                console.warn(
+                  `[Resend Notice] Modo Sandbox activo. Redireccionando copia de venta de vendedor a ${accountOwnerEmail}...`,
+                );
+                await resend.emails.send({
+                  from: DEFAULT_FROM_EMAIL,
+                  to: [accountOwnerEmail],
+                  subject: `[PRUEBA -> Vendedor: ${sellerGroup.sellerEmail}] ¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
+                  react: React.createElement(SellerSaleEmail, sellerData),
+                });
+                console.log(
+                  `[Email Dispatcher] Copia de correo de venta entregada en ${accountOwnerEmail}`,
+                );
+              }
             } else {
               console.log(
                 `[Email Dispatcher] Email de venta enviado exitosamente a vendedor ${sellerGroup.sellerEmail} (ID: ${data?.id})`,

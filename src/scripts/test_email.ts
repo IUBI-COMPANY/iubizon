@@ -7,7 +7,7 @@ async function main() {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.EMAIL_FROM || "iubizon <onboarding@resend.dev>";
 
-  console.log("=== PRUEBA DE ENVÍO DIRECTO CON RESEND ===");
+  console.log("=== TESTING RESEND SEND TO BUYER EMAIL ===");
   console.log("RESEND_API_KEY:", apiKey);
   console.log("EMAIL_FROM:", fromEmail);
 
@@ -18,15 +18,17 @@ async function main() {
 
   const resend = new Resend(apiKey);
 
-  console.log("\n1. Probando envío a email de prueba...");
-  const result = await resend.emails.send({
+  console.log("\nEnviando a nmoriano26@gmail.com...");
+  const resBuyer = await resend.emails.send({
     from: fromEmail,
-    to: ["iubizon.company@gmail.com"],
-    subject: "Prueba de Integración iubizon - Resend",
-    html: "<h1>¡Hola!</h1><p>Esta es una prueba de envío desde iubizon.</p>",
+    to: ["nmoriano26@gmail.com"],
+    subject: "Prueba de Compra - iubizon",
+    html: "<h1>Prueba a nmoriano26@gmail.com</h1>",
   });
-
-  console.log("Respuesta de Resend:", JSON.stringify(result, null, 2));
+  console.log(
+    "Respuesta para nmoriano26@gmail.com:",
+    JSON.stringify(resBuyer, null, 2),
+  );
 }
 
 main().catch(console.error);
