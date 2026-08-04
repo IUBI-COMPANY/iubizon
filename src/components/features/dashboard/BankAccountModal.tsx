@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, Building2, CheckCircle, X, ShieldCheck, Loader2 } from "lucide-react";
+import {
+  CreditCard,
+  Building2,
+  CheckCircle,
+  X,
+  ShieldCheck,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { toast } from "sonner";
@@ -29,8 +36,12 @@ export function BankAccountModal({
   onSuccess,
 }: BankAccountModalProps) {
   const [bankName, setBankName] = useState(initialData?.bank_name || "BCP");
-  const [accountType, setAccountType] = useState(initialData?.account_type || "corriente");
-  const [accountNumber, setAccountNumber] = useState(initialData?.account_number || "");
+  const [accountType, setAccountType] = useState(
+    initialData?.account_type || "corriente",
+  );
+  const [accountNumber, setAccountNumber] = useState(
+    initialData?.account_number || "",
+  );
   const [cci, setCci] = useState(initialData?.cci || "");
   const [holderName, setHolderName] = useState(initialData?.holder_name || "");
   const [holderDoc, setHolderDoc] = useState(initialData?.holder_doc || "");
@@ -119,7 +130,9 @@ export function BankAccountModal({
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start gap-3 text-xs text-amber-900">
             <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <p>
-              Tus datos bancarios se guardan de forma encriptada y son utilizados exclusivamente por iubizon para realizar las liquidaciones de tus productos entregados.
+              Tus datos bancarios se guardan de forma encriptada y son
+              utilizados exclusivamente por iubizon para realizar las
+              liquidaciones de tus productos entregados.
             </p>
           </div>
 
@@ -165,7 +178,9 @@ export function BankAccountModal({
             </label>
             <Input
               value={accountNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAccountNumber(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setAccountNumber(e.target.value)
+              }
               placeholder="Ej: 191-98765432-0-12 ó 987654321"
               required
               className="text-xs"
@@ -178,7 +193,9 @@ export function BankAccountModal({
             </label>
             <Input
               value={cci}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCci(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setCci(e.target.value)
+              }
               placeholder="Ej: 00219100987654320124 (Opcional)"
               className="text-xs"
             />
@@ -191,7 +208,9 @@ export function BankAccountModal({
               </label>
               <Input
                 value={holderName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHolderName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setHolderName(e.target.value)
+                }
                 placeholder="Ej: SigmaSkill Store S.A.C."
                 required
                 className="text-xs"
@@ -204,7 +223,9 @@ export function BankAccountModal({
               </label>
               <Input
                 value={holderDoc}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHolderDoc(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setHolderDoc(e.target.value)
+                }
                 placeholder="Ej: 20634600385"
                 className="text-xs"
               />

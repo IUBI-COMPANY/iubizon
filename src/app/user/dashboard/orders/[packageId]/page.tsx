@@ -128,7 +128,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
         setPkg(foundPkg);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar la venta.");
+      setError(
+        err instanceof Error ? err.message : "Error al cargar la venta.",
+      );
     } finally {
       setLoading(false);
     }
@@ -191,13 +193,19 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
         {/* Enlace de regreso */}
         <div className="flex items-center justify-between">
           <Link href="/user/dashboard/orders">
-            <Button variant="ghost" size="sm" className="text-xs font-bold text-[#64748b] hover:text-[#112237]">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs font-bold text-[#64748b] hover:text-[#112237]"
+            >
               <ArrowLeft className="w-4 h-4 mr-1" />
               <span>Volver a Pedidos & Ventas</span>
             </Button>
           </Link>
 
-          <span className={`px-4 py-1.5 rounded-full text-xs font-black border uppercase tracking-wide ${badgeStyle}`}>
+          <span
+            className={`px-4 py-1.5 rounded-full text-xs font-black border uppercase tracking-wide ${badgeStyle}`}
+          >
             {badgeLabel}
           </span>
         </div>
@@ -323,7 +331,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
           <div className="divide-y divide-slate-100">
             {pkg.items.map((item) => (
-              <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+              <div
+                key={item.id}
+                className="py-3 flex items-center justify-between gap-4"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-14 h-14 bg-slate-100 rounded-xl overflow-hidden relative shrink-0 border border-slate-200">
                     {item.image ? (
@@ -352,7 +363,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
                 <div className="text-right shrink-0">
                   <span className="text-xs font-black text-[#112237]">
-                    S/ {formatMoney(item.subtotal ?? (item.price * (item.quantity || 1)))}
+                    S/{" "}
+                    {formatMoney(
+                      item.subtotal ?? item.price * (item.quantity || 1),
+                    )}
                   </span>
                 </div>
               </div>
@@ -369,13 +383,19 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
           <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] space-y-3 text-xs">
             <div className="flex justify-between border-b border-slate-200 pb-2">
-              <span className="text-[#64748b] font-medium">Valor Total de Productos:</span>
-              <span className="font-bold text-[#112237]">S/ {formatMoney(pkg.subtotal)}</span>
+              <span className="text-[#64748b] font-medium">
+                Valor Total de Productos:
+              </span>
+              <span className="font-bold text-[#112237]">
+                S/ {formatMoney(pkg.subtotal)}
+              </span>
             </div>
 
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
               <span className="font-medium">Comisión iubizon (10%):</span>
-              <span className="font-semibold text-red-600">- S/ {formatMoney(pkg.platformCommission)}</span>
+              <span className="font-semibold text-red-600">
+                - S/ {formatMoney(pkg.platformCommission)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between pt-1">

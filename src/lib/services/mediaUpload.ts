@@ -1,36 +1,41 @@
-import { createClient } from '@/lib/supabase/client';
-import type { UploadedImage } from '@/components/features/products/MediaUploader';
+import { createClient } from "@/lib/supabase/client";
+import type { UploadedImage } from "@/components/features/products/MediaUploader";
 
 /**
  * Sube un archivo de video directamente a Supabase Storage desde el cliente.
  * Evita límites de tamaño de cuerpo de petición (body payload) en API Routes de Next.js.
  */
-export async function uploadProductVideoClient(file: File, productId?: string): Promise<string> {
+export async function uploadProductVideoClient(
+  file: File,
+  productId?: string,
+): Promise<string> {
   const supabase = createClient();
 
   if (file.size > 25 * 1024 * 1024) {
-    throw new Error('El video excede el límite de 25 MB.');
+    throw new Error("El video excede el límite de 25 MB.");
   }
 
-  const ext = file.name.split('.').pop() || 'mp4';
-  const folder = productId || 'temp';
+  const ext = file.name.split(".").pop() || "mp4";
+  const folder = productId || "temp";
   const fileName = `videos/${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
   const { error } = await supabase.storage
-    .from('product-images')
+    .from("product-images")
     .upload(fileName, file, {
-      contentType: file.type || 'video/mp4',
+      contentType: file.type || "video/mp4",
       upsert: true,
     });
 
   if (error) {
-    console.error('Error al subir video a Supabase Storage:', error);
-    throw new Error(error.message || 'Error al subir el video al almacenamiento.');
+    console.error("Error al subir video a Supabase Storage:", error);
+    throw new Error(
+      error.message || "Error al subir el video al almacenamiento.",
+    );
   }
 
-  const { data: { publicUrl } } = supabase.storage
-    .from('product-images')
-    .getPublicUrl(fileName);
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("product-images").getPublicUrl(fileName);
 
   return publicUrl;
 }
@@ -53,7 +58,10 @@ export async function syncProductMedia({
   initialImageIds = [],
   videoFile,
   videoPreview,
-}: SyncMediaParams): Promise<{ videoUrl: string | null; uploadedImagesCount: number }> {
+}: SyncMediaParams): Promise<{
+  videoUrl: string | null;
+  uploadedImagesCount: number;
+}> {
   // 1. Eliminar de la BD las imágenes que el usuario quitó de la interfaz
   if (initialImageIds.length > 0) {
     const currentIds = new Set(images.map((i) => i.id));
@@ -61,10 +69,10 @@ export async function syncProductMedia({
     for (const deleteId of toDelete) {
       try {
         await fetch(`/api/products/images?id=${deleteId}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
       } catch (err) {
-        console.warn('Error al eliminar foto:', deleteId, err);
+        console.warn("Error al eliminar foto:", deleteId, err);
       }
     }
   }
@@ -75,11 +83,11 @@ export async function syncProductMedia({
     const img = images[i];
     if (img.file) {
       const formDataImg = new FormData();
-      formDataImg.append('file', img.file);
-      formDataImg.append('product_id', productId);
-      formDataImg.append('position', String(i));
-      const res = await fetch('/api/products/images', {
-        method: 'POST',
+      formDataImg.append("file", img.file);
+      formDataImg.append("product_id", productId);
+      formDataImg.append("position", String(i));
+      const res = await fetch("/api/products/images", {
+        method: "POST",
         body: formDataImg,
       });
       if (res.ok) {
@@ -96,7 +104,10 @@ export async function syncProductMedia({
     try {
       finalVideoUrl = await uploadProductVideoClient(videoFile, productId);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al subir el video demostrativo';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Error al subir el video demostrativo";
       throw new Error(msg);
     }
   }

@@ -133,7 +133,10 @@ export default function CompanyMembersPage({ params }: Props) {
     }
   };
 
-  const handleRoleChange = async (targetUserId: string, selectedRole: string) => {
+  const handleRoleChange = async (
+    targetUserId: string,
+    selectedRole: string,
+  ) => {
     if (selectedRole === "owner") {
       const confirmTransfer = confirm(
         "⚠️ ADVERTENCIA: Al asignar el rol de Dueño (owner), transferirás la propiedad total de la empresa a este usuario. Tú pasarás a ser Administrador. ¿Deseas continuar?",
@@ -171,7 +174,10 @@ export default function CompanyMembersPage({ params }: Props) {
     }
   };
 
-  const handleRemoveMember = async (targetUserId: string, targetName: string) => {
+  const handleRemoveMember = async (
+    targetUserId: string,
+    targetName: string,
+  ) => {
     const confirmDelete = confirm(
       `¿Seguro que deseas desvincular a "${targetName}" de la empresa?`,
     );
@@ -250,7 +256,11 @@ export default function CompanyMembersPage({ params }: Props) {
                 unoptimized
               />
             ) : (
-              <span>{company?.name?.[0]?.toUpperCase() || <Building2 className="w-7 h-7" />}</span>
+              <span>
+                {company?.name?.[0]?.toUpperCase() || (
+                  <Building2 className="w-7 h-7" />
+                )}
+              </span>
             )}
           </div>
 
@@ -288,7 +298,8 @@ export default function CompanyMembersPage({ params }: Props) {
                   Invitar Nuevo Colaborador
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Ingresa el correo electrónico de un usuario previamente registrado en iubizon.
+                  Ingresa el correo electrónico de un usuario previamente
+                  registrado en iubizon.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
@@ -339,7 +350,10 @@ export default function CompanyMembersPage({ params }: Props) {
                   Miembros de la Empresa ({members.length})
                 </CardTitle>
                 <span className="text-xs text-[#64748b]">
-                  Tu rol: <strong className="text-[#112237] uppercase">{currentUserRole}</strong>
+                  Tu rol:{" "}
+                  <strong className="text-[#112237] uppercase">
+                    {currentUserRole}
+                  </strong>
                 </span>
               </div>
             </CardHeader>
@@ -367,7 +381,8 @@ export default function CompanyMembersPage({ params }: Props) {
                           />
                         ) : (
                           <span>
-                            {(m.user?.name || m.user?.email)?.[0]?.toUpperCase()}
+                            {(m.user?.name ||
+                              m.user?.email)?.[0]?.toUpperCase()}
                           </span>
                         )}
                       </div>
@@ -383,7 +398,9 @@ export default function CompanyMembersPage({ params }: Props) {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-[#64748b]">{m.user?.email}</p>
+                        <p className="text-xs text-[#64748b]">
+                          {m.user?.email}
+                        </p>
                       </div>
                     </div>
 

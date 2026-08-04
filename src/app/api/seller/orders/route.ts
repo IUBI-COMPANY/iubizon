@@ -199,8 +199,7 @@ export async function GET() {
         pkg.trackingNumber = order.shipping.tracking_number;
       }
       if (!pkg.estimatedDelivery && order.shipping?.estimated_delivery) {
-        pkg.estimatedDelivery =
-          order.shipping.estimated_delivery.toISOString();
+        pkg.estimatedDelivery = order.shipping.estimated_delivery.toISOString();
       }
       if (order.shipping?.courier && (!pkg.carrierName || !pkg.courierInfo)) {
         const meta = parseDispatchMeta(order.shipping.courier);
@@ -317,7 +316,12 @@ export async function PATCH(req: Request) {
             { company: { companyMembers: { some: { user_id: user.id } } } },
           ],
         },
-        select: { id: true, payment_id: true, created_at: true, seller_id: true },
+        select: {
+          id: true,
+          payment_id: true,
+          created_at: true,
+          seller_id: true,
+        },
       });
 
       orderIds = sellerOrders
@@ -347,9 +351,13 @@ export async function PATCH(req: Request) {
         include: { paymentTransaction: true },
       });
 
-      const refundAmount = ordersToCancel.reduce((sum: number, o: { amount: unknown }) => sum + Number(o.amount), 0);
+      const refundAmount = ordersToCancel.reduce(
+        (sum: number, o: { amount: unknown }) => sum + Number(o.amount),
+        0,
+      );
       const firstWithTx = ordersToCancel.find(
-        (o: { paymentTransaction: any }) => o.paymentTransaction && o.paymentTransaction.status === "authorized"
+        (o: { paymentTransaction: any }) =>
+          o.paymentTransaction && o.paymentTransaction.status === "authorized",
       );
 
       if (firstWithTx && firstWithTx.paymentTransaction) {
@@ -378,7 +386,10 @@ export async function PATCH(req: Request) {
               },
             });
           } catch (refundErr) {
-            console.error("Error al procesar reembolso parcial en Niubiz:", refundErr);
+            console.error(
+              "Error al procesar reembolso parcial en Niubiz:",
+              refundErr,
+            );
           }
         }
       }

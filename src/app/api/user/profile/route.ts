@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -11,7 +11,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (error || !supabaseUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     let profile = null;
@@ -25,19 +25,25 @@ export async function GET() {
         const googleAvatar =
           supabaseUser.user_metadata?.avatar_url ??
           supabaseUser.user_metadata?.picture ??
-          (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.avatar_url ??
-          (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.picture ??
+          (
+            supabaseUser.identities?.[0]?.identity_data as
+              Record<string, string> | undefined
+          )?.avatar_url ??
+          (
+            supabaseUser.identities?.[0]?.identity_data as
+              Record<string, string> | undefined
+          )?.picture ??
           null;
 
         if (!profile) {
           profile = await prisma.profile.create({
             data: {
               id: supabaseUser.id,
-              email: supabaseUser.email ?? '',
+              email: supabaseUser.email ?? "",
               name:
                 supabaseUser.user_metadata?.name ??
-                supabaseUser.email?.split('@')[0] ??
-                'Usuario',
+                supabaseUser.email?.split("@")[0] ??
+                "Usuario",
               avatar_url: googleAvatar,
             },
           });
@@ -48,22 +54,28 @@ export async function GET() {
           });
         }
       } catch (prismaErr) {
-        console.warn('[API /api/user/profile] Prisma fetch failed, fallback to Supabase:', prismaErr);
+        console.warn(
+          "[API /api/user/profile] Prisma fetch failed, fallback to Supabase:",
+          prismaErr,
+        );
       }
     }
 
     if (!profile) {
       const { data: supaProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', supabaseUser.id)
+        .from("profiles")
+        .select("*")
+        .eq("id", supabaseUser.id)
         .single();
       profile = supaProfile;
     }
 
     return NextResponse.json({ profile });
   } catch (err) {
-    console.error('[API /api/user/profile] Error:', err);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("[API /api/user/profile] Error:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

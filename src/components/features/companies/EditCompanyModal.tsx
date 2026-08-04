@@ -187,7 +187,11 @@ export const EditCompanyModal = ({
                   unoptimized
                 />
               ) : (
-                <span>{formData.name?.[0]?.toUpperCase() || <Building2 className="w-8 h-8" />}</span>
+                <span>
+                  {formData.name?.[0]?.toUpperCase() || (
+                    <Building2 className="w-8 h-8" />
+                  )}
+                </span>
               )}
 
               {uploadingLogo && (

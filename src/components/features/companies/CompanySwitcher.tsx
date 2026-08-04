@@ -69,7 +69,9 @@ export const CompanySwitcher = () => {
             </span>
           )}
         </div>
-        <span className="truncate max-w-[45px] sm:max-w-[95px]">{activeCompany.name}</span>
+        <span className="truncate max-w-[45px] sm:max-w-[95px]">
+          {activeCompany.name}
+        </span>
         <ChevronDown
           className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-300 shrink-0 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""

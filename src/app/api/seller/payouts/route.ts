@@ -57,7 +57,7 @@ export async function GET() {
       select: { user_id: true },
     });
     const relatedSellerIds = Array.from(
-      new Set([user.id, ...coMembers.map((m) => m.user_id)])
+      new Set([user.id, ...coMembers.map((m) => m.user_id)]),
     );
 
     // 3. Obtener todos los registros de pago del vendedor o su empresa

@@ -104,7 +104,11 @@ export function RichTextEditor({
           // Insert text line breaks as hard breaks / paragraph splits
           const htmlParagraphs = text
             .split(/\r?\n/)
-            .map((line) => line ? `<p>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : "<p><br></p>")
+            .map((line) =>
+              line
+                ? `<p>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`
+                : "<p><br></p>",
+            )
             .join("");
           editor?.commands.insertContent(htmlParagraphs);
           return true;

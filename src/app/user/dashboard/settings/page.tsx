@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/hooks';
-import { Navbar } from '@/components/features/layout/Navbar';
-import { Footer } from '@/components/features/layout/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Lock, Bell, ArrowLeft } from 'lucide-react';
+import { useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/hooks";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Lock, Bell, ArrowLeft } from "lucide-react";
 
 function SettingsContent() {
   const { user, isLoading: authLoading } = useAuth();
@@ -16,7 +22,7 @@ function SettingsContent() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth/login?redirect=/user/dashboard/settings');
+      router.push("/auth/login?redirect=/user/dashboard/settings");
     }
   }, [user, authLoading, router]);
 
@@ -61,8 +67,12 @@ function SettingsContent() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-[#112237]">Notificaciones push</p>
-                      <p className="text-sm text-[#64748b]">Recibe notificaciones en tu dispositivo</p>
+                      <p className="font-medium text-[#112237]">
+                        Notificaciones push
+                      </p>
+                      <p className="text-sm text-[#64748b]">
+                        Recibe notificaciones en tu dispositivo
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -72,8 +82,12 @@ function SettingsContent() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-[#112237]">Notificaciones por email</p>
-                      <p className="text-sm text-[#64748b]">Recibe actualizaciones por correo</p>
+                      <p className="font-medium text-[#112237]">
+                        Notificaciones por email
+                      </p>
+                      <p className="text-sm text-[#64748b]">
+                        Recibe actualizaciones por correo
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -97,7 +111,9 @@ function SettingsContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-[#112237]">Contraseña</p>
-                    <p className="text-sm text-[#64748b]">Cambia o actualiza tu contraseña de acceso</p>
+                    <p className="text-sm text-[#64748b]">
+                      Cambia o actualiza tu contraseña de acceso
+                    </p>
                   </div>
                   <Link href="/auth/forgot-password">
                     <Button variant="outline" size="sm">

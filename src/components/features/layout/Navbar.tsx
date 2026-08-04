@@ -348,7 +348,8 @@ export const Navbar = () => {
                       >
                         {companies.map((comp) => (
                           <option key={comp.id} value={comp.id}>
-                            {comp.name} {comp.id === activeCompany.id ? "(Activa)" : ""}
+                            {comp.name}{" "}
+                            {comp.id === activeCompany.id ? "(Activa)" : ""}
                           </option>
                         ))}
                       </select>

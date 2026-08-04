@@ -40,10 +40,14 @@ export async function PATCH(req: Request) {
 
     const { companyId } = await req.json();
     if (!companyId) {
-      return NextResponse.json({ error: "ID de empresa requerido" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de empresa requerido" },
+        { status: 400 },
+      );
     }
 
-    const { updateUserActiveCompany } = await import("@/lib/services/companies");
+    const { updateUserActiveCompany } =
+      await import("@/lib/services/companies");
     await updateUserActiveCompany(user.id, companyId);
     return NextResponse.json({ success: true });
   } catch (err) {

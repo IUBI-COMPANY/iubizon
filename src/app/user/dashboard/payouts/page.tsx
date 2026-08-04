@@ -176,7 +176,8 @@ function PayoutsContent() {
               <span>Mis Pagos & Finanzas</span>
             </h1>
             <p className="text-xs text-[#64748b] mt-0.5">
-              Estado de las retribuciones y transferencias que iubizon debe realizar por tus entregas completadas.
+              Estado de las retribuciones y transferencias que iubizon debe
+              realizar por tus entregas completadas.
             </p>
           </div>
         </div>
@@ -252,7 +253,9 @@ function PayoutsContent() {
                 </span>
                 <div
                   className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
-                    bankAccount ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                    bankAccount
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-amber-50 text-amber-600"
                   }`}
                 >
                   {bankAccount ? (
@@ -356,7 +359,9 @@ function PayoutsContent() {
 
                         <div className="flex items-center gap-1 text-xs text-[#64748b]">
                           <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
-                          <span>Entrega completada el {formatFullDate(p.createdAt)}</span>
+                          <span>
+                            Entrega completada el {formatFullDate(p.createdAt)}
+                          </span>
                         </div>
                       </div>
 
@@ -371,15 +376,20 @@ function PayoutsContent() {
                     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div className="space-y-2 text-[#334155]">
                         <p className="flex justify-between border-b border-slate-200/60 pb-1.5">
-                          <strong className="text-[#112237]">Valor Bruto de Productos:</strong>
+                          <strong className="text-[#112237]">
+                            Valor Bruto de Productos:
+                          </strong>
                           <span>S/ {p.subtotal.toFixed(2)}</span>
                         </p>
                         <p className="flex justify-between border-b border-slate-200/60 pb-1.5 text-[#64748b]">
-                          <strong className="text-[#112237]">Comisión iubizon (10%):</strong>
+                          <strong className="text-[#112237]">
+                            Comisión iubizon (10%):
+                          </strong>
                           <span>- S/ {p.commission.toFixed(2)}</span>
                         </p>
                         <p className="text-[11px] text-[#64748b] pt-0.5">
-                          iubizon transfiere directamente el saldo neto a tu cuenta tras la entrega al cliente.
+                          iubizon transfiere directamente el saldo neto a tu
+                          cuenta tras la entrega al cliente.
                         </p>
                       </div>
 
@@ -408,7 +418,9 @@ function PayoutsContent() {
                             {p.referenceCode && (
                               <p>
                                 <strong>Nro. Operación / Voucher:</strong>{" "}
-                                <span className="font-mono">{p.referenceCode}</span>
+                                <span className="font-mono">
+                                  {p.referenceCode}
+                                </span>
                               </p>
                             )}
                             {p.paidAt && (
@@ -431,7 +443,8 @@ function PayoutsContent() {
                 No tienes registros de pago en esta sección
               </h2>
               <p className="text-xs text-[#64748b] mb-6">
-                Cuando tus entregas sean marcadas como completadas, tus pagos pendientes aparecerán aquí.
+                Cuando tus entregas sean marcadas como completadas, tus pagos
+                pendientes aparecerán aquí.
               </p>
               <Link href="/user/dashboard/orders">
                 <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-6 py-2.5 rounded-xl">

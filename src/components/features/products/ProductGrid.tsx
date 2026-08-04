@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ProductCard } from './ProductCard';
-import type { Product } from '@/types';
+import { ProductCard } from "./ProductCard";
+import type { Product } from "@/types";
 
 interface ProductGridProps {
   products: Product[];
@@ -16,7 +16,7 @@ export const ProductGrid = ({
   favorites = [],
   onToggleFavorite,
   showSeller = false,
-  emptyMessage = 'No se encontraron productos',
+  emptyMessage = "No se encontraron productos",
 }: ProductGridProps) => {
   if (products.length === 0) {
     return (

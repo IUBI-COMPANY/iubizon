@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       if (!membership) {
         return NextResponse.json(
           { error: "No tienes permiso para acceder a esta empresa" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -78,7 +78,7 @@ export async function GET(req: Request) {
     console.error("Error al obtener cuenta bancaria:", err);
     return NextResponse.json(
       { error: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
     if (!bank_name || !account_number || !holder_name) {
       return NextResponse.json(
         { error: "Por favor completa el banco, número de cuenta y titular." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       if (!membership) {
         return NextResponse.json(
           { error: "No tienes permiso para actualizar esta empresa" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
     console.error("Error al guardar cuenta bancaria:", err);
     return NextResponse.json(
       { error: "Error al guardar los datos bancarios" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

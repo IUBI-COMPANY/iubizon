@@ -101,7 +101,10 @@ function DashboardContent() {
         clearCart();
         localStorage.removeItem("iubizon_checkout_step");
         localStorage.removeItem("iubizon_checkout_form");
-        toast.success(`¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`, "Pago Confirmado");
+        toast.success(
+          `¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`,
+          "Pago Confirmado",
+        );
       }
     }
   }, [searchParams, clearCart, toast]);

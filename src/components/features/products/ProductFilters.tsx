@@ -1,14 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { SlidersHorizontal, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
-import { PRODUCT_CONDITIONS, COLORS } from '@/lib/config';
-import type { SearchFilters, ProductCondition } from '@/types';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { SlidersHorizontal, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/Dialog";
+import { PRODUCT_CONDITIONS, COLORS } from "@/lib/config";
+import type { SearchFilters, ProductCondition } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface ProductFiltersProps {
   filters: SearchFilters;
@@ -17,10 +29,10 @@ interface ProductFiltersProps {
 }
 
 const sortOptions = [
-  { value: 'newest', label: 'Más recientes' },
-  { value: 'price_asc', label: 'Menor precio' },
-  { value: 'price_desc', label: 'Mayor precio' },
-  { value: 'popular', label: 'Más populares' },
+  { value: "newest", label: "Más recientes" },
+  { value: "price_asc", label: "Menor precio" },
+  { value: "price_desc", label: "Mayor precio" },
+  { value: "popular", label: "Más populares" },
 ];
 
 export const ProductFilters = ({
@@ -39,7 +51,8 @@ export const ProductFilters = ({
   };
 
   const hasActiveFilters = Object.values(filters).some(
-    (v) => v !== undefined && v !== '' && (Array.isArray(v) ? v.length > 0 : true)
+    (v) =>
+      v !== undefined && v !== "" && (Array.isArray(v) ? v.length > 0 : true),
   );
 
   const FilterContent = () => (
@@ -47,8 +60,8 @@ export const ProductFilters = ({
       <div>
         <h4 className="text-sm font-medium text-[#112237] mb-3">Ordenar por</h4>
         <Select
-          value={filters.sortBy || 'newest'}
-          onValueChange={(value) => updateFilter('sortBy', value)}
+          value={filters.sortBy || "newest"}
+          onValueChange={(value) => updateFilter("sortBy", value)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Ordenar por" />
@@ -67,8 +80,10 @@ export const ProductFilters = ({
         <div>
           <h4 className="text-sm font-medium text-[#112237] mb-3">Categoría</h4>
           <Select
-            value={filters.categoryId || ''}
-            onValueChange={(value) => updateFilter('categoryId', value || undefined)}
+            value={filters.categoryId || ""}
+            onValueChange={(value) =>
+              updateFilter("categoryId", value || undefined)
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Todas las categorías" />
@@ -85,19 +100,31 @@ export const ProductFilters = ({
       )}
 
       <div>
-        <h4 className="text-sm font-medium text-[#112237] mb-3">Rango de precio</h4>
+        <h4 className="text-sm font-medium text-[#112237] mb-3">
+          Rango de precio
+        </h4>
         <div className="flex gap-2">
           <Input
             type="number"
             placeholder="Min"
-            value={filters.minPrice || ''}
-            onChange={(e) => updateFilter('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+            value={filters.minPrice || ""}
+            onChange={(e) =>
+              updateFilter(
+                "minPrice",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
           <Input
             type="number"
             placeholder="Max"
-            value={filters.maxPrice || ''}
-            onChange={(e) => updateFilter('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+            value={filters.maxPrice || ""}
+            onChange={(e) =>
+              updateFilter(
+                "maxPrice",
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
           />
         </div>
       </div>
@@ -112,13 +139,15 @@ export const ProductFilters = ({
             >
               <input
                 type="checkbox"
-                checked={filters.condition?.includes(condition.value as ProductCondition)}
+                checked={filters.condition?.includes(
+                  condition.value as ProductCondition,
+                )}
                 onChange={(e) => {
                   const current = filters.condition || [];
                   const updated = e.target.checked
                     ? [...current, condition.value as ProductCondition]
                     : current.filter((c) => c !== condition.value);
-                  updateFilter('condition', updated);
+                  updateFilter("condition", updated);
                 }}
                 className="w-4 h-4 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
               />

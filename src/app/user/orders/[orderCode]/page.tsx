@@ -125,7 +125,9 @@ export default function OrderDetailPage({
   const [session, setSession] = useState<PurchaseOrderSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingPackageKey, setConfirmingPackageKey] = useState<string | null>(null);
+  const [confirmingPackageKey, setConfirmingPackageKey] = useState<
+    string | null
+  >(null);
   const [warrantyModalData, setWarrantyModalData] = useState<{
     isOpen: boolean;
     sellerName?: string | null;
@@ -144,11 +146,15 @@ export default function OrderDetailPage({
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/user/orders?code=${encodeURIComponent(orderCode)}`);
+      const res = await fetch(
+        `/api/user/orders?code=${encodeURIComponent(orderCode)}`,
+      );
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Error al obtener el detalle del pedido.");
+        throw new Error(
+          data.error || "Error al obtener el detalle del pedido.",
+        );
       }
 
       if (data.session) {
@@ -174,7 +180,8 @@ export default function OrderDetailPage({
   }, [user, fetchOrderDetail]);
 
   const handleConfirmReceipt = async (pkg: TrackingPackage) => {
-    if (!confirm("¿Confirmas que has recibido este paquete a satisfacción?")) return;
+    if (!confirm("¿Confirmas que has recibido este paquete a satisfacción?"))
+      return;
 
     const pkgKey = pkg.trackingNumber || pkg.orderIds[0];
     setConfirmingPackageKey(pkgKey);
@@ -222,7 +229,8 @@ export default function OrderDetailPage({
               {error || "Orden no encontrada"}
             </h1>
             <p className="text-xs text-[#64748b]">
-              No pudimos encontrar la orden solicitada. Verifica el código de pedido.
+              No pudimos encontrar la orden solicitada. Verifica el código de
+              pedido.
             </p>
             <Link href="/user/orders">
               <Button className="bg-[#f25c05] text-white text-xs font-bold px-6 py-2.5 rounded-xl">
@@ -294,11 +302,14 @@ export default function OrderDetailPage({
 
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl">
-                {session.totalItems} {session.totalItems === 1 ? "producto" : "productos"} en total
+                {session.totalItems}{" "}
+                {session.totalItems === 1 ? "producto" : "productos"} en total
               </span>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
                 <CheckCircle className="w-3.5 h-3.5" />
-                {session.paymentDetails?.cardBrand ? `Pago Tarjeta ${session.paymentDetails.cardBrand}` : "Pago con Tarjeta (Niubiz)"}
+                {session.paymentDetails?.cardBrand
+                  ? `Pago Tarjeta ${session.paymentDetails.cardBrand}`
+                  : "Pago con Tarjeta (Niubiz)"}
               </span>
             </div>
           </div>
@@ -311,7 +322,9 @@ export default function OrderDetailPage({
                 <strong className="text-[#112237] block font-bold">
                   Dirección de Entrega Asignada:
                 </strong>
-                <span className="text-[#334155]">{session.destinationAddress}</span>
+                <span className="text-[#334155]">
+                  {session.destinationAddress}
+                </span>
               </div>
             </div>
           )}
@@ -321,7 +334,9 @@ export default function OrderDetailPage({
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-[#112237] flex items-center gap-2">
             <Truck className="w-5 h-5 text-[#f25c05]" />
-            <span>Despachos & Seguimiento de Paquetes ({session.packages.length})</span>
+            <span>
+              Despachos & Seguimiento de Paquetes ({session.packages.length})
+            </span>
           </h2>
 
           {session.packages.map((pkg, idx) => {
@@ -378,12 +393,16 @@ export default function OrderDetailPage({
                   <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <p className="text-[#334155]">
-                        <strong className="text-[#112237]">Agencia de Transporte:</strong>{" "}
+                        <strong className="text-[#112237]">
+                          Agencia de Transporte:
+                        </strong>{" "}
                         {pkg.carrierName || "Agencia de Envío"}
                       </p>
                       {pkg.estimatedDelivery && (
                         <p className="text-[#334155]">
-                          <strong className="text-[#112237]">Llegada Estimada:</strong>{" "}
+                          <strong className="text-[#112237]">
+                            Llegada Estimada:
+                          </strong>{" "}
                           {formatDate(pkg.estimatedDelivery)}
                         </p>
                       )}
@@ -491,7 +510,8 @@ export default function OrderDetailPage({
                       </Button>
                     )}
 
-                    {(pkg.status === "delivered" || pkg.status === "completed") && (
+                    {(pkg.status === "delivered" ||
+                      pkg.status === "completed") && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-200 shrink-0">
                         <CheckCircle className="w-4 h-4" />
                         Entrega Confirmada
@@ -515,31 +535,40 @@ export default function OrderDetailPage({
             <div className="space-y-2 text-[#334155]">
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
                 <span>Subtotal de Productos:</span>
-                <strong className="text-[#112237]">S/ {session.subtotal.toFixed(2)}</strong>
+                <strong className="text-[#112237]">
+                  S/ {session.subtotal.toFixed(2)}
+                </strong>
               </p>
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
                 <span>Envío Total de la Compra:</span>
-                <strong className="text-[#112237]">S/ {session.shippingCost.toFixed(2)}</strong>
+                <strong className="text-[#112237]">
+                  S/ {session.shippingCost.toFixed(2)}
+                </strong>
               </p>
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
                 <span>Método de Pago:</span>
                 <strong className="text-[#112237]">
                   {session.paymentDetails?.cardBrand
-                    ? `Tarjeta ${session.paymentDetails.cardBrand} ${session.paymentDetails.cardLast4 ? `(**** ${session.paymentDetails.cardLast4})` : ''}`
+                    ? `Tarjeta ${session.paymentDetails.cardBrand} ${session.paymentDetails.cardLast4 ? `(**** ${session.paymentDetails.cardLast4})` : ""}`
                     : "Tarjeta de Crédito / Débito (Niubiz)"}
                 </strong>
               </p>
               {session.paymentDetails?.authorizationCode && (
                 <p className="flex justify-between border-b border-slate-100 pb-1.5">
                   <span>Cód. de Autorización:</span>
-                  <strong className="text-[#112237] font-mono">{session.paymentDetails.authorizationCode}</strong>
+                  <strong className="text-[#112237] font-mono">
+                    {session.paymentDetails.authorizationCode}
+                  </strong>
                 </p>
               )}
               {session.paymentDetails?.docType && (
                 <p className="flex justify-between border-b border-slate-100 pb-1.5">
                   <span>Comprobante Emitido:</span>
                   <strong className="text-[#112237]">
-                    {session.paymentDetails.docType.toUpperCase()} {session.paymentDetails.identityNumber ? `(${session.paymentDetails.identityNumber})` : ''}
+                    {session.paymentDetails.docType.toUpperCase()}{" "}
+                    {session.paymentDetails.identityNumber
+                      ? `(${session.paymentDetails.identityNumber})`
+                      : ""}
                   </strong>
                 </p>
               )}

@@ -23,7 +23,9 @@ export default async function MarketplaceHomePage() {
 
   const products = productsRes.status === "fulfilled" ? productsRes.value : [];
   const popularCategories: CategoryWithStats[] =
-    categoriesRes.status === "fulfilled" ? (categoriesRes.value as CategoryWithStats[]) : [];
+    categoriesRes.status === "fulfilled"
+      ? (categoriesRes.value as CategoryWithStats[])
+      : [];
 
   const maintenanceError =
     productsRes.status === "rejected" || categoriesRes.status === "rejected"
@@ -63,7 +65,11 @@ export default async function MarketplaceHomePage() {
             {products.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {products.map((product, index) => (
-                  <ProductCard key={product.id} product={product} priority={index < 4} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    priority={index < 4}
+                  />
                 ))}
               </div>
             ) : (
@@ -71,10 +77,10 @@ export default async function MarketplaceHomePage() {
                 No hay productos disponibles
               </p>
             )}
-           </div>
-         </section>
-       </main>
-       <Footer categories={popularCategories} />
-     </div>
-   );
- }
+          </div>
+        </section>
+      </main>
+      <Footer categories={popularCategories} />
+    </div>
+  );
+}

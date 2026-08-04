@@ -265,7 +265,10 @@ export const PublicCompanyStorefront = ({
               slug: updatedCompany.slug || prev.slug,
             }));
             refreshCompanies();
-            if (updatedCompany.slug && updatedCompany.slug !== companyData.slug) {
+            if (
+              updatedCompany.slug &&
+              updatedCompany.slug !== companyData.slug
+            ) {
               router.replace(`/companies/${updatedCompany.slug}`);
             }
           }}

@@ -12,19 +12,19 @@ import {
   Wifi,
   Pencil,
   type LucideIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
 const iconMap: Record<string, LucideIcon> = {
   proyectores: Projector,
   laptops: Laptop,
-  'pantallas-interactivas': Monitor,
+  "pantallas-interactivas": Monitor,
   moviles: Smartphone,
   audio: Volume2,
   mobiliario: Armchair,
   redes: Wifi,
   electronica: Cpu,
   accesorios: Headphones,
-  'utiles-suministros': Pencil,
+  "utiles-suministros": Pencil,
   otros: MoreHorizontal,
 };
 

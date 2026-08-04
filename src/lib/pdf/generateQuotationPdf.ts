@@ -27,7 +27,7 @@ export function generateQuotationPdf(items: QuotationItem[], total: number) {
       <td style="padding: 12px; text-align: right; color: #475569;">${formatPrice(item.price)}</td>
       <td style="padding: 12px; text-align: right; font-weight: 700; color: #f25c05;">${formatPrice(item.price * item.quantity)}</td>
     </tr>
-  `
+  `,
     )
     .join("");
 

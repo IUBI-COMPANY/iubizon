@@ -34,7 +34,9 @@ export const CartSummarySidebar = ({
         {step !== 3 && (
           <div className="flex justify-between">
             <span>Ítems seleccionados:</span>
-            <span className="font-bold text-[#112237]">{itemCount} productos</span>
+            <span className="font-bold text-[#112237]">
+              {itemCount} productos
+            </span>
           </div>
         )}
 
@@ -84,7 +86,8 @@ export const CartSummarySidebar = ({
             <span>Garantía de Satisfacción</span>
           </div>
           <p>
-            Tu pago se procesa de forma 100% segura con encriptación PCI-DSS y garantía de protección al comprador Iubizon.
+            Tu pago se procesa de forma 100% segura con encriptación PCI-DSS y
+            garantía de protección al comprador Iubizon.
           </p>
         </div>
       )}

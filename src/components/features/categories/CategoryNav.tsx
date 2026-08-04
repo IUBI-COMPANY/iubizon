@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useCategories } from '@/hooks/useCategories';
-import { CategoryCarousel } from './CategoryCarousel';
+import { useCategories } from "@/hooks/useCategories";
+import { CategoryCarousel } from "./CategoryCarousel";
 
 interface CategoryNavProps {
   activeSlug?: string;
 }
 
 const techSlugs = [
-  'proyectores',
-  'laptops',
-  'pantallas-interactivas',
-  'moviles',
-  'audio',
-  'mobiliario',
-  'redes',
-  'electronica',
-  'accesorios',
-  'utiles-suministros',
-  'otros',
+  "proyectores",
+  "laptops",
+  "pantallas-interactivas",
+  "moviles",
+  "audio",
+  "mobiliario",
+  "redes",
+  "electronica",
+  "accesorios",
+  "utiles-suministros",
+  "otros",
 ];
 
 export const CategoryNav = ({ activeSlug }: CategoryNavProps) => {

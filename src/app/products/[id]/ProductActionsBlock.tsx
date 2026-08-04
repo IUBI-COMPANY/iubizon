@@ -39,17 +39,19 @@ export function ProductActionsBlock({
   const { stock, status, isOutOfStock } = useRealtimeStock(
     productId,
     initialStock,
-    initialStatus
+    initialStatus,
   );
 
   const [quantity, setQuantity] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const mainImageUrl = typeof images?.[0] === "string" ? images[0] : images?.[0]?.url;
+  const mainImageUrl =
+    typeof images?.[0] === "string" ? images[0] : images?.[0]?.url;
 
   // Detección estricta de propiedad
   const isOwner = Boolean(
-    user?.id && (user.id === sellerId || (companyId && activeCompany?.id === companyId))
+    user?.id &&
+    (user.id === sellerId || (companyId && activeCompany?.id === companyId)),
   );
 
   if (isOwner) {
@@ -57,7 +59,10 @@ export function ProductActionsBlock({
       <div className="space-y-3 pt-2">
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs font-medium flex items-center gap-2">
           <Info className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>Esta es tu propia publicación. Puedes gestionarla o editarla desde tu panel.</span>
+          <span>
+            Esta es tu propia publicación. Puedes gestionarla o editarla desde
+            tu panel.
+          </span>
         </div>
         <Link href="/user/dashboard/products" className="block w-full">
           <Button className="w-full bg-[#112237] hover:bg-[#1a3454] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs">

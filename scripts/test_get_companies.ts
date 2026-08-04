@@ -1,12 +1,16 @@
-import { Pool } from 'pg';
-import fs from 'fs';
-import path from 'path';
+import { Pool } from "pg";
+import fs from "fs";
+import path from "path";
 
-const envPath = path.join(process.cwd(), '.env.local');
-const envContent = fs.readFileSync(envPath, 'utf8');
-const connectionStringMatch = envContent.match(/DIRECT_URL="([^"]+)"/) || envContent.match(/DATABASE_URL="([^"]+)"/);
+const envPath = path.join(process.cwd(), ".env.local");
+const envContent = fs.readFileSync(envPath, "utf8");
+const connectionStringMatch =
+  envContent.match(/DIRECT_URL="([^"]+)"/) ||
+  envContent.match(/DATABASE_URL="([^"]+)"/);
 
-const connectionString = connectionStringMatch![1].replace('pgbouncer=true', '').replace('?&', '?');
+const connectionString = connectionStringMatch![1]
+  .replace("pgbouncer=true", "")
+  .replace("?&", "?");
 const pool = new Pool({ connectionString });
 
 async function testQuery() {

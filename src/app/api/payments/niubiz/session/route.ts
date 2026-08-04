@@ -6,7 +6,9 @@ import { createNiubizSession } from "@/lib/services/niubiz";
 export async function POST(req: Request) {
   try {
     const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -15,7 +17,10 @@ export async function POST(req: Request) {
     const { amount, cartItems, shipping, invoiceDetails } = await req.json();
 
     if (!amount || Number(amount) <= 0) {
-      return NextResponse.json({ error: "Monto de transacción inválido" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Monto de transacción inválido" },
+        { status: 400 },
+      );
     }
 
     const numericAmount = Number(amount);
@@ -66,7 +71,10 @@ export async function POST(req: Request) {
     }
 
     // Obtener IP del cliente para CyberSource Fraud Prevention
-    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("x-real-ip") || "127.0.0.1";
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0] ||
+      req.headers.get("x-real-ip") ||
+      "127.0.0.1";
 
     // 1. Obtener clave de sesión desde la API de Niubiz
     const { sessionKey, merchantId, environment } = await createNiubizSession({
@@ -104,7 +112,10 @@ export async function POST(req: Request) {
       environment,
     });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Error al iniciar sesión de pago Niubiz";
+    const msg =
+      err instanceof Error
+        ? err.message
+        : "Error al iniciar sesión de pago Niubiz";
     console.error("Error en API /api/payments/niubiz/session:", err);
     return NextResponse.json({ error: msg }, { status: 500 });
   }

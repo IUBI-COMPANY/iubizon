@@ -53,7 +53,8 @@ export interface ShippingFormState {
 export default function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { items, addItem, removeItem, updateQuantity, clearCart, total } = useCart();
+  const { items, addItem, removeItem, updateQuantity, clearCart, total } =
+    useCart();
   const toast = useToast();
 
   const [step, setStep] = useState<number>(1);
@@ -61,7 +62,9 @@ export default function CartCheckoutPage() {
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [recsPage, setRecsPage] = useState<number>(1);
   const [recsHasMore, setRecsHasMore] = useState<boolean>(false);
-  const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">("progressive");
+  const [deliveryType, setDeliveryType] = useState<"progressive" | "complete">(
+    "progressive",
+  );
 
   // Comprobante de pago (Boleta vs Factura)
   const [invoiceType, setInvoiceType] = useState<InvoiceType>("boleta");
@@ -111,10 +114,16 @@ export default function CartCheckoutPage() {
         clearCart();
         localStorage.removeItem(STEP_STORAGE_KEY);
         localStorage.removeItem(FORM_STORAGE_KEY);
-        toast.success(`¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`, "Pago Confirmado");
+        toast.success(
+          `¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`,
+          "Pago Confirmado",
+        );
         router.push(`/user/orders/${sessionCode}`);
       } else if (errorMsg && errorMsg !== "Accept") {
-        toast.error(`No se pudo completar el pago: ${errorMsg}`, "Pago Rechazado");
+        toast.error(
+          `No se pudo completar el pago: ${errorMsg}`,
+          "Pago Rechazado",
+        );
       }
     }
   }, []);
@@ -178,7 +187,10 @@ export default function CartCheckoutPage() {
   // Cálculos Financieros Memoizados (Envío GRATIS por Promoción de Lanzamiento)
   const subtotal = total;
   const shippingCost = 0.0;
-  const grandTotal = useMemo(() => subtotal + shippingCost, [subtotal, shippingCost]);
+  const grandTotal = useMemo(
+    () => subtotal + shippingCost,
+    [subtotal, shippingCost],
+  );
 
   // Añadir un Order Bump al carrito de 1 solo clic
   const handleAddBump = (bump: OrderBump) => {
@@ -193,8 +205,15 @@ export default function CartCheckoutPage() {
 
   // Validaciones del formulario para avanzar al paso 3
   const handleProceedToStep3 = () => {
-    if (!shippingForm.name.trim() || !shippingForm.phone.trim() || !shippingForm.address.trim()) {
-      toast.error("Completa Nombre, Teléfono y Dirección para continuar.", "Datos incompletos");
+    if (
+      !shippingForm.name.trim() ||
+      !shippingForm.phone.trim() ||
+      !shippingForm.address.trim()
+    ) {
+      toast.error(
+        "Completa Nombre, Teléfono y Dirección para continuar.",
+        "Datos incompletos",
+      );
       return;
     }
     handleStepChange(3);
@@ -486,7 +505,9 @@ export default function CartCheckoutPage() {
                     </label>
                     <Input
                       value={shippingForm.phone}
-                      onChange={(e) => handleFormChange("phone", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("phone", e.target.value)
+                      }
                       placeholder="+51 999 999 999"
                       required
                     />
@@ -501,7 +522,9 @@ export default function CartCheckoutPage() {
                     <Input
                       type="email"
                       value={shippingForm.email}
-                      onChange={(e) => handleFormChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("email", e.target.value)
+                      }
                       placeholder="ejemplo@correo.com"
                     />
                   </div>
@@ -525,7 +548,9 @@ export default function CartCheckoutPage() {
                   </label>
                   <Input
                     value={shippingForm.address}
-                    onChange={(e) => handleFormChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleFormChange("address", e.target.value)
+                    }
                     placeholder="Av. Larco 1234, Dpto 501"
                     required
                   />
@@ -589,7 +614,8 @@ export default function CartCheckoutPage() {
                     <span>Selecciona el Método de Pago</span>
                   </h2>
                   <p className="text-xs text-[#64748b] mt-0.5">
-                    Pago 100% seguro con garantía de entrega directamente en tu puerta.
+                    Pago 100% seguro con garantía de entrega directamente en tu
+                    puerta.
                   </p>
                 </div>
 
@@ -681,9 +707,14 @@ export default function CartCheckoutPage() {
                     shippingForm={shippingForm}
                     invoiceDetails={{
                       doc_type: invoiceType,
-                      identity_type: invoiceType === "factura" ? "ruc" : docType,
-                      identity_number: invoiceType === "factura" ? invoiceRuc : invoiceDni,
-                      legal_name: invoiceType === "factura" ? invoiceCompanyName : shippingForm.name,
+                      identity_type:
+                        invoiceType === "factura" ? "ruc" : docType,
+                      identity_number:
+                        invoiceType === "factura" ? invoiceRuc : invoiceDni,
+                      legal_name:
+                        invoiceType === "factura"
+                          ? invoiceCompanyName
+                          : shippingForm.name,
                       tax_address: shippingForm.address,
                     }}
                     onSuccess={(sessionCode) => {

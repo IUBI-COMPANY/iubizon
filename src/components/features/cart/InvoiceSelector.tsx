@@ -176,18 +176,24 @@ function BoletaFields({
             {required ? (
               <span className="text-[#f25c05] ml-1">*</span>
             ) : (
-              <span className="text-[#94a3b8] font-normal ml-1">(opcional)</span>
+              <span className="text-[#94a3b8] font-normal ml-1">
+                (opcional)
+              </span>
             )}
           </FieldLabel>
           <Input
             id="invoiceDni"
             type="text"
             maxLength={docType === "dni" ? 8 : 20}
-            placeholder={docType === "dni" ? "Ej: 45678901" : "Número de documento"}
+            placeholder={
+              docType === "dni" ? "Ej: 45678901" : "Número de documento"
+            }
             value={invoiceDni}
             onChange={(e) => onDniChange(e.target.value.replace(/\D/g, ""))}
           />
-          <FieldHint>{docType === "dni" ? "8 dígitos" : "Hasta 20 caracteres"}</FieldHint>
+          <FieldHint>
+            {docType === "dni" ? "8 dígitos" : "Hasta 20 caracteres"}
+          </FieldHint>
         </div>
       </div>
     </div>
@@ -350,7 +356,12 @@ export function InvoiceSummaryText({
   return (
     <span>
       Boleta de Venta
-      {invoiceDni && <> — {DOC_LABELS[docType]}: {invoiceDni}</>}
+      {invoiceDni && (
+        <>
+          {" "}
+          — {DOC_LABELS[docType]}: {invoiceDni}
+        </>
+      )}
     </span>
   );
 }

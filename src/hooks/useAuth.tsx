@@ -92,8 +92,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const googleAvatar =
       supabaseUser.user_metadata?.avatar_url ??
       supabaseUser.user_metadata?.picture ??
-      (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.avatar_url ??
-      (supabaseUser.identities?.[0]?.identity_data as Record<string, string> | undefined)?.picture ??
+      (
+        supabaseUser.identities?.[0]?.identity_data as
+          Record<string, string> | undefined
+      )?.avatar_url ??
+      (
+        supabaseUser.identities?.[0]?.identity_data as
+          Record<string, string> | undefined
+      )?.picture ??
       null;
 
     if (profile) {
@@ -153,7 +159,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInWithGoogle = async (redirectPath?: string) => {
-    const target = redirectPath && redirectPath.startsWith('/') && !redirectPath.startsWith('//') ? redirectPath : '/user/dashboard';
+    const target =
+      redirectPath &&
+      redirectPath.startsWith("/") &&
+      !redirectPath.startsWith("//")
+        ? redirectPath
+        : "/user/dashboard";
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

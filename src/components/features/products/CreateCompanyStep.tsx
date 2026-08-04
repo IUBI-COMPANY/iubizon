@@ -73,7 +73,10 @@ export const CreateCompanyStep = ({
           .from("products")
           .getPublicUrl(fileName);
         if (publicUrlData?.publicUrl) {
-          setFormData((prev) => ({ ...prev, logo_url: publicUrlData.publicUrl }));
+          setFormData((prev) => ({
+            ...prev,
+            logo_url: publicUrlData.publicUrl,
+          }));
         }
       }
     } catch (err: unknown) {
@@ -132,7 +135,8 @@ export const CreateCompanyStep = ({
             </span>
           </div>
           <p className="text-xs text-[#64748b] mt-0.5">
-            Para empezar a vender en iubizon necesitas registrar la marca con la que publicarás tus productos.
+            Para empezar a vender en iubizon necesitas registrar la marca con la
+            que publicarás tus productos.
           </p>
         </div>
       </div>
@@ -267,7 +271,10 @@ export const CreateCompanyStep = ({
             <Input
               value={formData.description}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, description: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
               placeholder="Ej: Tienda especializada en tecnología y accesorios"
               className="text-xs"

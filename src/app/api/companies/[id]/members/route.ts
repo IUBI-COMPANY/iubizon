@@ -221,7 +221,10 @@ export async function PATCH(
     if (newRole === "owner") {
       if (currentUserMember.role !== "owner") {
         return NextResponse.json(
-          { error: "Solo el dueño actual puede transferir la propiedad de la empresa" },
+          {
+            error:
+              "Solo el dueño actual puede transferir la propiedad de la empresa",
+          },
           { status: 403 },
         );
       }
@@ -273,7 +276,10 @@ export async function PATCH(
 
     if (targetMember.role === "owner") {
       return NextResponse.json(
-        { error: "No puedes degradar al dueño directamente. Transfiere la propiedad primero." },
+        {
+          error:
+            "No puedes degradar al dueño directamente. Transfiere la propiedad primero.",
+        },
         { status: 400 },
       );
     }

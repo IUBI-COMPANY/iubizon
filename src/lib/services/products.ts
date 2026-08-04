@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@prisma/client';
-import type { Product, SearchFilters } from '@/types';
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import type { Product, SearchFilters } from "@/types";
 
 interface GetProductsOptions {
   limit?: number;
@@ -12,16 +12,16 @@ const productInclude = {
   category: true,
   seller: true,
   company: true,
-  images: { orderBy: { position: 'asc' as const } },
+  images: { orderBy: { position: "asc" as const } },
 };
 
 export async function getProducts(options: GetProductsOptions = {}) {
   const { limit = 20, offset = 0, filters } = options;
 
-  const where: Prisma.ProductWhereInput = { status: 'active' };
+  const where: Prisma.ProductWhereInput = { status: "active" };
 
   if (filters?.query) {
-    where.title = { contains: filters.query, mode: 'insensitive' };
+    where.title = { contains: filters.query, mode: "insensitive" };
   }
 
   if (filters?.categoryId) {
@@ -38,13 +38,13 @@ export async function getProducts(options: GetProductsOptions = {}) {
     where.condition = { in: filters.condition };
   }
 
-  let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: 'desc' };
-  if (filters?.sortBy === 'price_asc') {
-    orderBy = { price: 'asc' };
-  } else if (filters?.sortBy === 'price_desc') {
-    orderBy = { price: 'desc' };
-  } else if (filters?.sortBy === 'popular') {
-    orderBy = { favorites_count: 'desc' };
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: "desc" };
+  if (filters?.sortBy === "price_asc") {
+    orderBy = { price: "asc" };
+  } else if (filters?.sortBy === "price_desc") {
+    orderBy = { price: "desc" };
+  } else if (filters?.sortBy === "popular") {
+    orderBy = { favorites_count: "desc" };
   }
 
   const [products, total] = await Promise.all([
@@ -80,7 +80,7 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
     category: p.category
       ? {
           ...p.category,
-          icon: p.category.icon ?? '',
+          icon: p.category.icon ?? "",
           sort_order: p.category.sort_order ?? 0,
         }
       : undefined,
@@ -110,13 +110,16 @@ export async function getProductsByCategory(categorySlug: string, limit = 20) {
 
   if (!category) return { products: [], total: 0 };
 
-  const where: Prisma.ProductWhereInput = { category_id: category.id, status: 'active' };
+  const where: Prisma.ProductWhereInput = {
+    category_id: category.id,
+    status: "active",
+  };
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({
       where,
       include: productInclude,
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
       take: limit,
     }),
     prisma.product.count({ where }),
@@ -125,15 +128,19 @@ export async function getProductsByCategory(categorySlug: string, limit = 20) {
   return { products, total };
 }
 
-export async function getRelatedProducts(productId: string, categoryId: string, limit = 4) {
+export async function getRelatedProducts(
+  productId: string,
+  categoryId: string,
+  limit = 4,
+) {
   return prisma.product.findMany({
     where: {
       category_id: categoryId,
       id: { not: productId },
-      status: 'active',
+      status: "active",
     },
     include: productInclude,
-    orderBy: { favorites_count: 'desc' },
+    orderBy: { favorites_count: "desc" },
     take: limit,
   });
 }
@@ -143,8 +150,8 @@ export async function getUserProducts(userId: string) {
     where: { seller_id: userId },
     include: {
       category: true,
-      images: { orderBy: { position: 'asc' } },
+      images: { orderBy: { position: "asc" } },
     },
-    orderBy: { created_at: 'desc' },
+    orderBy: { created_at: "desc" },
   });
 }

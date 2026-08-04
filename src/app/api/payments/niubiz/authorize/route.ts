@@ -4,7 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { authorizeNiubizTransaction } from "@/lib/services/niubiz";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 
-function respondWithError(message: string, isFormPost: boolean, requestUrl: string, status = 400) {
+function respondWithError(
+  message: string,
+  isFormPost: boolean,
+  requestUrl: string,
+  status = 400,
+) {
   if (isFormPost) {
     const targetUrl = new URL("/cart", requestUrl);
     targetUrl.searchParams.set("error", message);
@@ -15,7 +20,8 @@ function respondWithError(message: string, isFormPost: boolean, requestUrl: stri
 
 function extractProductUuid(item: any): string | null {
   if (!item) return null;
-  const isUuid = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  const isUuid = (str: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
   const directId = item.product_id || item.productId || item.product?.id;
   if (typeof directId === "string" && isUuid(directId)) {
@@ -27,7 +33,9 @@ function extractProductUuid(item: any): string | null {
     return itemId;
   }
 
-  const match = itemId.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  const match = itemId.match(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+  );
   if (match) {
     return match[0];
   }
@@ -42,7 +50,9 @@ export async function POST(req: Request) {
     isFormPost = !contentType.includes("application/json");
 
     const supabase = await createServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     let transactionToken = "";
     let purchaseNumber = "";
@@ -65,8 +75,14 @@ export async function POST(req: Request) {
       invoiceDetails = body.invoiceDetails || {};
     } else {
       const formData = await req.formData();
-      transactionToken = String(formData.get("transactionToken") || formData.get("transactiontoken") || "");
-      purchaseNumber = String(formData.get("purchaseNumber") || formData.get("purchasenumber") || "");
+      transactionToken = String(
+        formData.get("transactionToken") ||
+          formData.get("transactiontoken") ||
+          "",
+      );
+      purchaseNumber = String(
+        formData.get("purchaseNumber") || formData.get("purchasenumber") || "",
+      );
       amount = Number(formData.get("amount")) || 0;
     }
 
@@ -79,7 +95,9 @@ export async function POST(req: Request) {
 
     // Buscar la transacción previa en BD para recuperar metadatos (cartItems, shipping, buyer_id)
     const existingTx = purchaseNumber
-      ? await prisma.paymentTransaction.findUnique({ where: { purchase_number: purchaseNumber } })
+      ? await prisma.paymentTransaction.findUnique({
+          where: { purchase_number: purchaseNumber },
+        })
       : await prisma.paymentTransaction.findFirst({
           where: { status: "pending", provider: "niubiz" },
           orderBy: { created_at: "desc" },
@@ -91,15 +109,24 @@ export async function POST(req: Request) {
       if (!purchaseNumber) purchaseNumber = existingTx.purchase_number;
       if (!amount) amount = Number(existingTx.amount);
 
-      if (existingTx.raw_response && typeof existingTx.raw_response === "object") {
+      if (
+        existingTx.raw_response &&
+        typeof existingTx.raw_response === "object"
+      ) {
         const meta = existingTx.raw_response as Record<string, any>;
-        if ((!cartItems || cartItems.length === 0) && Array.isArray(meta.cartItems)) {
+        if (
+          (!cartItems || cartItems.length === 0) &&
+          Array.isArray(meta.cartItems)
+        ) {
           cartItems = meta.cartItems;
         }
         if ((!shipping || !shipping.address) && meta.shipping) {
           shipping = meta.shipping;
         }
-        if ((!invoiceDetails || !invoiceDetails.doc_type) && meta.invoiceDetails) {
+        if (
+          (!invoiceDetails || !invoiceDetails.doc_type) &&
+          meta.invoiceDetails
+        ) {
           invoiceDetails = meta.invoiceDetails;
         }
         if (!storedBuyerId && meta.buyer_id) {
@@ -109,7 +136,12 @@ export async function POST(req: Request) {
     }
 
     if (!transactionToken || !purchaseNumber) {
-      return respondWithError("Datos de transacción incompletos", isFormPost, req.url, 400);
+      return respondWithError(
+        "Datos de transacción incompletos",
+        isFormPost,
+        req.url,
+        400,
+      );
     }
 
     // 1. Autorización financiera Server-to-Server en Niubiz
@@ -128,7 +160,9 @@ export async function POST(req: Request) {
           status: "denied",
           response_code: authResult.errorCode,
           response_message: authResult.errorMessage,
-          raw_response: authResult.rawResponse ? JSON.parse(JSON.stringify(authResult.rawResponse)) : undefined,
+          raw_response: authResult.rawResponse
+            ? JSON.parse(JSON.stringify(authResult.rawResponse))
+            : undefined,
         },
       });
 
@@ -136,7 +170,7 @@ export async function POST(req: Request) {
         authResult.errorMessage || "Pago rechazado por el banco emisor",
         isFormPost,
         req.url,
-        400
+        400,
       );
     }
 
@@ -155,7 +189,9 @@ export async function POST(req: Request) {
           card_last4: authResult.cardLast4,
           response_code: "000",
           response_message: "Transacción aprobada",
-          raw_response: authResult.rawResponse ? JSON.parse(JSON.stringify(authResult.rawResponse)) : undefined,
+          raw_response: authResult.rawResponse
+            ? JSON.parse(JSON.stringify(authResult.rawResponse))
+            : undefined,
         },
       });
 
@@ -163,7 +199,9 @@ export async function POST(req: Request) {
       const effectiveBuyerId = storedBuyerId || user?.id;
 
       if (!effectiveBuyerId) {
-        throw new Error("No se pudo determinar el usuario comprador para la orden.");
+        throw new Error(
+          "No se pudo determinar el usuario comprador para la orden.",
+        );
       }
 
       // b) Generar órdenes por cada ítem/paquete del carrito
@@ -213,8 +251,8 @@ export async function POST(req: Request) {
             shipping: {
               create: {
                 origin_address: "Almacén / Proveedor",
-                destination_address: `${shipping.address || ''}, ${shipping.city || 'Lima'} (Tel: ${shipping.phone || ''})`,
-                courier: `Contacto: ${shipping.name || ''} | Comprobante: ${invoiceDetails.doc_type?.toUpperCase() || 'BOLETA'} (${invoiceDetails.identity_number || ''})`,
+                destination_address: `${shipping.address || ""}, ${shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`,
+                courier: `Contacto: ${shipping.name || ""} | Comprobante: ${invoiceDetails.doc_type?.toUpperCase() || "BOLETA"} (${invoiceDetails.identity_number || ""})`,
                 tracking_number: null,
                 status: "pending",
               },
@@ -230,8 +268,10 @@ export async function POST(req: Request) {
               doc_type: invoiceDetails.doc_type || "boleta",
               identity_type: invoiceDetails.identity_type || "dni",
               identity_number: invoiceDetails.identity_number || "00000000",
-              legal_name: invoiceDetails.legal_name || shipping.name || "Cliente Final",
-              tax_address: invoiceDetails.tax_address || shipping.address || null,
+              legal_name:
+                invoiceDetails.legal_name || shipping.name || "Cliente Final",
+              tax_address:
+                invoiceDetails.tax_address || shipping.address || null,
               sunat_status: "pending",
             },
           });
@@ -252,7 +292,10 @@ export async function POST(req: Request) {
     });
 
     if (isFormPost) {
-      return NextResponse.redirect(new URL(`/cart/success?order_code=${purchaseNumber}`, req.url), 303);
+      return NextResponse.redirect(
+        new URL(`/cart/success?order_code=${purchaseNumber}`, req.url),
+        303,
+      );
     }
 
     return NextResponse.json({
@@ -263,7 +306,10 @@ export async function POST(req: Request) {
       authorizationCode: authResult.authorizationCode,
     });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Error al autorizar el pago con Niubiz";
+    const msg =
+      err instanceof Error
+        ? err.message
+        : "Error al autorizar el pago con Niubiz";
     console.error("Error en API /api/payments/niubiz/authorize:", err);
     return respondWithError(msg, isFormPost, req.url, 500);
   }

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 interface Coordinates {
   latitude: number;
@@ -18,7 +18,7 @@ export function useGeolocation() {
 
   const getLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setError({ message: 'Geolocalización no soportada en este navegador' });
+      setError({ message: "Geolocalización no soportada en este navegador" });
       return;
     }
 
@@ -41,7 +41,7 @@ export function useGeolocation() {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000,
-      }
+      },
     );
   }, []);
 
@@ -61,7 +61,7 @@ export function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;

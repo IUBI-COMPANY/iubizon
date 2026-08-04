@@ -1,16 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { Image as ImageIcon, X, Upload, Loader2, GripVertical, Star } from 'lucide-react';
+import { useState, useRef } from "react";
+import { createClient } from "@/lib/supabase/client";
+import {
+  Image as ImageIcon,
+  X,
+  Upload,
+  Loader2,
+  GripVertical,
+  Star,
+} from "lucide-react";
 
 interface ImageUploaderProps {
   productId?: string;
   images?: Array<{ id: string; url: string; position: number }>;
-  onImagesChange?: (images: Array<{ id: string; url: string; position: number }>) => void;
+  onImagesChange?: (
+    images: Array<{ id: string; url: string; position: number }>,
+  ) => void;
 }
 
-export function ImageUploader({ productId, images = [], onImagesChange }: ImageUploaderProps) {
+export function ImageUploader({
+  productId,
+  images = [],
+  onImagesChange,
+}: ImageUploaderProps) {
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -19,20 +32,20 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
 
   const savePositions = async (imgs: typeof localImages) => {
     if (!productId || imgs.length === 0) return;
-    
+
     const imagesWithPositions = imgs.map((img, idx) => ({
       id: img.id,
       position: idx,
     }));
 
     try {
-      await fetch('/api/products/images/positions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/products/images/positions", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ images: imagesWithPositions }),
       });
     } catch (error) {
-      console.error('Error saving positions:', error);
+      console.error("Error saving positions:", error);
     }
   };
 
@@ -41,7 +54,7 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
     if (!files || files.length === 0) return;
 
     if (!productId) {
-      alert('Primero guarda el producto para agregar imágenes');
+      alert("Primero guarda el producto para agregar imágenes");
       return;
     }
 
@@ -50,45 +63,52 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('product_id', productId);
+        formData.append("file", file);
+        formData.append("product_id", productId);
 
-        const response = await fetch('/api/products/images', {
-          method: 'POST',
+        const response = await fetch("/api/products/images", {
+          method: "POST",
           body: formData,
         });
 
         const result = await response.json();
 
         if (result.success) {
-          const newImages = [...localImages, { id: result.image.id, url: result.url, position: localImages.length }];
+          const newImages = [
+            ...localImages,
+            {
+              id: result.image.id,
+              url: result.url,
+              position: localImages.length,
+            },
+          ];
           setLocalImages(newImages);
           onImagesChange?.(newImages);
         }
       }
     } catch (error) {
-      console.error('Error uploading:', error);
-      alert('Error al subir imagen');
+      console.error("Error uploading:", error);
+      alert("Error al subir imagen");
     } finally {
       setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handleDelete = async (imageId: string) => {
     try {
       const response = await fetch(`/api/products/images?id=${imageId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
-        const newImages = localImages.filter(img => img.id !== imageId);
+        const newImages = localImages.filter((img) => img.id !== imageId);
         setLocalImages(newImages);
         onImagesChange?.(newImages);
         savePositions(newImages);
       }
     } catch (error) {
-      console.error('Error deleting:', error);
+      console.error("Error deleting:", error);
     }
   };
 
@@ -104,7 +124,7 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
     const draggedImage = newImages[draggedIndex];
     newImages.splice(draggedIndex, 1);
     newImages.splice(index, 0, draggedImage);
-    
+
     setLocalImages(newImages);
     setDraggedIndex(index);
   };
@@ -117,11 +137,11 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
 
   const setAsMainImage = async (index: number) => {
     if (index === 0) return;
-    
+
     const newImages = [...localImages];
     const [movedImage] = newImages.splice(index, 1);
     newImages.unshift(movedImage);
-    
+
     setLocalImages(newImages);
     onImagesChange?.(newImages);
     savePositions(newImages);
@@ -141,21 +161,23 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
         />
         <label
           htmlFor="image-upload"
-          className={`flex items-center gap-2 px-4 py-2 bg-[#f25c05] text-white rounded-lg hover:bg-[#d94d04] cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`flex items-center gap-2 px-4 py-2 bg-[#f25c05] text-white rounded-lg hover:bg-[#d94d04] cursor-pointer transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {uploading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <Upload className="w-4 h-4" />
           )}
-          {uploading ? 'Subiendo...' : 'Agregar imágenes'}
+          {uploading ? "Subiendo..." : "Agregar imágenes"}
         </label>
         <span className="text-sm text-[#64748b]">Máx 10MB por imagen</span>
       </div>
 
       {localImages.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm text-[#64748b]">Arrastra para reordenar. La primera imagen será la principal.</p>
+          <p className="text-sm text-[#64748b]">
+            Arrastra para reordenar. La primera imagen será la principal.
+          </p>
           <div className="grid grid-cols-4 gap-3">
             {localImages.map((image, index) => (
               <div
@@ -165,15 +187,15 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragEnd={handleDragEnd}
                 className={`relative aspect-square group cursor-move ${
-                  draggedIndex === index ? 'opacity-50' : ''
-                } ${index === 0 ? 'ring-2 ring-[#f25c05]' : ''}`}
+                  draggedIndex === index ? "opacity-50" : ""
+                } ${index === 0 ? "ring-2 ring-[#f25c05]" : ""}`}
               >
                 <img
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
                   className="w-full h-full object-cover rounded-lg"
                 />
-                
+
                 {/* Main image indicator */}
                 {index === 0 && (
                   <div className="absolute top-2 left-2 bg-[#f25c05] text-white text-xs px-2 py-1 rounded flex items-center gap-1">
@@ -181,7 +203,7 @@ export function ImageUploader({ productId, images = [], onImagesChange }: ImageU
                     Principal
                   </div>
                 )}
-                
+
                 {/* Actions */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
                   {index !== 0 && (

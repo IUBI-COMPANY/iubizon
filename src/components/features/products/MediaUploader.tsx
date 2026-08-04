@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useCallback } from 'react';
-import Image from 'next/image';
+import React, { useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import {
   ImagePlus,
   Video,
@@ -12,7 +12,7 @@ import {
   Play,
   Maximize2,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -21,16 +21,16 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   rectSortingStrategy,
   useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { useToast } from '@/context/ToastContext';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useToast } from "@/context/ToastContext";
 
 export interface UploadedImage {
   id: string;
@@ -48,9 +48,20 @@ interface SortableImageProps {
   isMain: boolean;
 }
 
-function SortableImageItem({ image, index, onRemove, isMain }: SortableImageProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: image.id });
+function SortableImageItem({
+  image,
+  index,
+  onRemove,
+  isMain,
+}: SortableImageProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -63,7 +74,9 @@ function SortableImageItem({ image, index, onRemove, isMain }: SortableImageProp
       ref={setNodeRef}
       style={style}
       className={`relative aspect-square rounded-xl overflow-hidden border bg-[#f8fafc] group select-none ${
-        isDragging ? 'opacity-50 ring-2 ring-[#f25c05] shadow-lg scale-105' : 'border-[#e2e8f0]'
+        isDragging
+          ? "opacity-50 ring-2 ring-[#f25c05] shadow-lg scale-105"
+          : "border-[#e2e8f0]"
       }`}
     >
       <Image
@@ -163,7 +176,7 @@ function VideoTileItem({ preview, onRemove, onOpenModal }: VideoTileItemProps) {
 }
 
 export interface MediaUploaderProps {
-  mode?: 'images-only' | 'video-only' | 'both';
+  mode?: "images-only" | "video-only" | "both";
   title?: string;
   subtitle?: string;
   maxImages?: number;
@@ -175,7 +188,7 @@ export interface MediaUploaderProps {
 }
 
 export function MediaUploader({
-  mode = 'both',
+  mode = "both",
   title,
   subtitle,
   maxImages = 10,
@@ -192,13 +205,15 @@ export function MediaUploader({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const acceptTypes = React.useMemo(() => {
-    if (mode === 'images-only') return 'image/jpeg,image/png,image/webp';
-    if (mode === 'video-only') return 'video/mp4,video/webm,video/quicktime';
-    return 'image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime';
+    if (mode === "images-only") return "image/jpeg,image/png,image/webp";
+    if (mode === "video-only") return "video/mp4,video/webm,video/quicktime";
+    return "image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime";
   }, [mode]);
 
   const handleFiles = useCallback(
@@ -209,30 +224,42 @@ export function MediaUploader({
       let newVideoPreview: string | null = null;
 
       fileList.forEach((file) => {
-        if (file.type.startsWith('image/')) {
-          if (mode === 'video-only') {
-            toast.error('Este campo solo admite videos.', 'Formato no permitido');
+        if (file.type.startsWith("image/")) {
+          if (mode === "video-only") {
+            toast.error(
+              "Este campo solo admite videos.",
+              "Formato no permitido",
+            );
             return;
           }
           if (images.length + newImages.length >= maxImages) {
-            toast.error(`Solo puedes subir hasta ${maxImages} imágenes.`, 'Límite alcanzado');
+            toast.error(
+              `Solo puedes subir hasta ${maxImages} imágenes.`,
+              "Límite alcanzado",
+            );
             return;
           }
           newImages.push({
             id: `temp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-            url: '',
+            url: "",
             position: images.length + newImages.length,
             file,
             preview: URL.createObjectURL(file),
             uploading: false,
           });
-        } else if (file.type.startsWith('video/')) {
-          if (mode === 'images-only') {
-            toast.error('Este campo solo admite imágenes.', 'Formato no permitido');
+        } else if (file.type.startsWith("video/")) {
+          if (mode === "images-only") {
+            toast.error(
+              "Este campo solo admite imágenes.",
+              "Formato no permitido",
+            );
             return;
           }
           if (file.size > maxVideoSizeMB * 1024 * 1024) {
-            toast.error(`El video no debe superar los ${maxVideoSizeMB} MB.`, 'Video pesado');
+            toast.error(
+              `El video no debe superar los ${maxVideoSizeMB} MB.`,
+              "Video pesado",
+            );
             return;
           }
           newVideoFile = file;
@@ -245,12 +272,12 @@ export function MediaUploader({
       }
       if (newVideoFile && onVideoChange) {
         onVideoChange(newVideoFile, newVideoPreview);
-        toast.success('Video cargado correctamente.', '¡Video listo!');
+        toast.success("Video cargado correctamente.", "¡Video listo!");
       }
 
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     },
-    [images, maxImages, maxVideoSizeMB, mode, onImagesChange, onVideoChange]
+    [images, maxImages, maxVideoSizeMB, mode, onImagesChange, onVideoChange],
   );
 
   const removeImage = (id: string) => {
@@ -277,24 +304,24 @@ export function MediaUploader({
       const newIndex = images.findIndex((i) => i.id === over.id);
       onImagesChange(arrayMove(images, oldIndex, newIndex));
     },
-    [images, onImagesChange]
+    [images, onImagesChange],
   );
 
   const defaultTitle =
     title ||
-    (mode === 'both'
-      ? 'Fotos y Video del Producto'
-      : mode === 'images-only'
-      ? 'Fotos del Producto'
-      : 'Video del Producto');
+    (mode === "both"
+      ? "Fotos y Video del Producto"
+      : mode === "images-only"
+        ? "Fotos del Producto"
+        : "Video del Producto");
 
   const defaultSubtitle =
     subtitle ||
-    (mode === 'both'
-      ? 'Arrastra fotos y video aquí. La primera foto será la imagen principal.'
-      : mode === 'images-only'
-      ? 'Arrastra fotos para reordenar. La primera foto será la portada principal.'
-      : 'Sube un video corto (15-30s) para mostrar tu producto en funcionamiento.');
+    (mode === "both"
+      ? "Arrastra fotos y video aquí. La primera foto será la imagen principal."
+      : mode === "images-only"
+        ? "Arrastra fotos para reordenar. La primera foto será la portada principal."
+        : "Sube un video corto (15-30s) para mostrar tu producto en funcionamiento.");
 
   const hasMedia = images.length > 0 || Boolean(videoPreview);
 
@@ -304,8 +331,10 @@ export function MediaUploader({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-[#112237]">{defaultTitle}</h2>
-            {mode === 'both' && (
+            <h2 className="text-base font-semibold text-[#112237]">
+              {defaultTitle}
+            </h2>
+            {mode === "both" && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f25c05]/10 text-[#f25c05]">
                 Fotos + Video
               </span>
@@ -314,12 +343,15 @@ export function MediaUploader({
           <p className="text-xs text-[#64748b] mt-0.5">{defaultSubtitle}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
-          {mode !== 'video-only' && (
+          {mode !== "video-only" && (
             <span>
-              Fotos: <strong className="text-[#112237]">{images.length}/{maxImages}</strong>
+              Fotos:{" "}
+              <strong className="text-[#112237]">
+                {images.length}/{maxImages}
+              </strong>
             </span>
           )}
-          {mode !== 'images-only' && Boolean(videoPreview) && (
+          {mode !== "images-only" && Boolean(videoPreview) && (
             <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 font-semibold text-[10px]">
               ✓ Video incluido
             </span>
@@ -331,7 +363,7 @@ export function MediaUploader({
         ref={fileInputRef}
         type="file"
         accept={acceptTypes}
-        multiple={mode !== 'video-only'}
+        multiple={mode !== "video-only"}
         onChange={(e) => e.target.files && handleFiles(e.target.files)}
         className="hidden"
       />
@@ -360,26 +392,29 @@ export function MediaUploader({
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 text-center ${
             isDragOver
-              ? 'border-[#f25c05] bg-[#f25c05]/10 scale-[1.01]'
-              : 'border-[#e2e8f0] hover:border-[#f25c05] hover:bg-[#f8fafc]'
+              ? "border-[#f25c05] bg-[#f25c05]/10 scale-[1.01]"
+              : "border-[#e2e8f0] hover:border-[#f25c05] hover:bg-[#f8fafc]"
           }`}
         >
           <div className="w-14 h-14 rounded-full bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center mb-3 shadow-xs">
-            {mode === 'video-only' ? (
+            {mode === "video-only" ? (
               <Video className="w-6 h-6 text-[#f25c05]" />
             ) : (
               <ImagePlus className="w-6 h-6 text-[#f25c05]" />
             )}
           </div>
           <p className="text-sm font-semibold text-[#112237] mb-1">
-            Arrastra tus archivos aquí o <span className="text-[#f25c05] underline">haz clic para buscar</span>
+            Arrastra tus archivos aquí o{" "}
+            <span className="text-[#f25c05] underline">
+              haz clic para buscar
+            </span>
           </p>
           <p className="text-xs text-[#94a3b8]">
-            {mode === 'both'
-              ? 'Admite imágenes (PNG, JPG, WEBP) y video corto (MP4, WEBM, MOV hasta 25MB)'
-              : mode === 'images-only'
-              ? `Sube hasta ${maxImages} fotos`
-              : `Sube 1 video corto de hasta ${maxVideoSizeMB} MB`}
+            {mode === "both"
+              ? "Admite imágenes (PNG, JPG, WEBP) y video corto (MP4, WEBM, MOV hasta 25MB)"
+              : mode === "images-only"
+                ? `Sube hasta ${maxImages} fotos`
+                : `Sube 1 video corto de hasta ${maxVideoSizeMB} MB`}
           </p>
         </div>
       ) : (
@@ -390,7 +425,10 @@ export function MediaUploader({
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext items={images.map((i) => i.id)} strategy={rectSortingStrategy}>
+            <SortableContext
+              items={images.map((i) => i.id)}
+              strategy={rectSortingStrategy}
+            >
               <div className="grid grid-cols-4 gap-2.5">
                 {/* 1. Imagenes cargadas */}
                 {images.map((img, index) => (
@@ -429,15 +467,18 @@ export function MediaUploader({
                       e.preventDefault();
                       e.stopPropagation();
                       setIsDragOver(false);
-                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      if (
+                        e.dataTransfer.files &&
+                        e.dataTransfer.files.length > 0
+                      ) {
                         handleFiles(e.dataTransfer.files);
                       }
                     }}
                     onClick={() => fileInputRef.current?.click()}
                     className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group ${
                       isDragOver
-                        ? 'border-[#f25c05] bg-[#f25c05]/10'
-                        : 'border-[#e2e8f0] hover:border-[#f25c05] hover:bg-[#f25c05]/5'
+                        ? "border-[#f25c05] bg-[#f25c05]/10"
+                        : "border-[#e2e8f0] hover:border-[#f25c05] hover:bg-[#f25c05]/5"
                     }`}
                   >
                     <div className="w-10 h-10 rounded-full bg-[#f8fafc] group-hover:bg-[#f25c05]/10 flex items-center justify-center transition-colors">

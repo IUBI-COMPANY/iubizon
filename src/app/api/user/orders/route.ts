@@ -216,7 +216,8 @@ export async function GET(req: Request) {
             provider: order.payment_method || "niubiz_card",
             cardBrand: order.paymentTransaction.card_brand || "VISA",
             cardLast4: order.paymentTransaction.card_last4 || null,
-            authorizationCode: order.paymentTransaction.authorization_code || mainOrderCode,
+            authorizationCode:
+              order.paymentTransaction.authorization_code || mainOrderCode,
             docType: order.invoiceDocument?.doc_type || null,
             identityNumber: order.invoiceDocument?.identity_number || null,
             legalName: order.invoiceDocument?.legal_name || null,

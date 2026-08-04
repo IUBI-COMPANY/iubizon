@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import type { Company } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+import type { Company } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
 
 interface CompanyContextType {
   companies: Company[];
@@ -20,7 +27,7 @@ const CompanyContext = createContext<CompanyContextType>({
   refreshCompanies: async () => {},
 });
 
-export const COMPANY_STORAGE_KEY = 'iubizon_active_company_id';
+export const COMPANY_STORAGE_KEY = "iubizon_active_company_id";
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -40,7 +47,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setIsLoadingCompanies(true);
-      const res = await fetch('/api/companies');
+      const res = await fetch("/api/companies");
       const data = await res.json();
 
       if (res.ok && Array.isArray(data.companies)) {
@@ -48,12 +55,17 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         setCompanies(fetchedCompanies);
 
         if (fetchedCompanies.length > 0) {
-          const savedId = typeof window !== 'undefined' ? localStorage.getItem(COMPANY_STORAGE_KEY) : null;
+          const savedId =
+            typeof window !== "undefined"
+              ? localStorage.getItem(COMPANY_STORAGE_KEY)
+              : null;
           const targetId = savedId || data.last_active_company_id;
-          const found = fetchedCompanies.find((c) => c.id === targetId) || fetchedCompanies[0];
+          const found =
+            fetchedCompanies.find((c) => c.id === targetId) ||
+            fetchedCompanies[0];
 
           setActiveCompany(found);
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             localStorage.setItem(COMPANY_STORAGE_KEY, found.id);
           }
         } else {
@@ -61,7 +73,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (err) {
-      console.error('Error al cargar empresas en CompanyContext:', err);
+      console.error("Error al cargar empresas en CompanyContext:", err);
     } finally {
       setIsLoadingCompanies(false);
     }
@@ -105,7 +117,13 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       setActiveCompanyId: handleSetActiveCompanyId,
       refreshCompanies: fetchCompanies,
     }),
-    [companies, activeCompany, isLoadingCompanies, handleSetActiveCompanyId, fetchCompanies],
+    [
+      companies,
+      activeCompany,
+      isLoadingCompanies,
+      handleSetActiveCompanyId,
+      fetchCompanies,
+    ],
   );
 
   return (

@@ -1,23 +1,34 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { PasswordInput } from '@/components/ui/PasswordInput';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Mail, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { useAuth } from "@/hooks/useAuth";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function getSanitizedRedirect(redirectParam: string | null): string {
-  if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//') && !redirectParam.includes('\\')) {
+  if (
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//") &&
+    !redirectParam.includes("\\")
+  ) {
     return redirectParam;
   }
-  return '/user/dashboard';
+  return "/user/dashboard";
 }
 
 function LoginForm() {
@@ -25,14 +36,14 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const { signIn, signInWithGoogle } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const redirectTarget = getSanitizedRedirect(searchParams.get('redirect'));
-  const justRegistered = searchParams.get('registered') === 'true';
-  const callbackError = searchParams.get('error') === 'callback_failed';
+  const redirectTarget = getSanitizedRedirect(searchParams.get("redirect"));
+  const justRegistered = searchParams.get("registered") === "true";
+  const callbackError = searchParams.get("error") === "callback_failed";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,10 +56,10 @@ function LoginForm() {
     const { error: authError } = await signIn(cleanEmail, password);
 
     if (authError) {
-      if (authError.message.includes('Email not confirmed')) {
-        setError('Debes confirmar tu email antes de iniciar sesión.');
-      } else if (authError.message.includes('Invalid login credentials')) {
-        setError('Email o contraseña incorrectos.');
+      if (authError.message.includes("Email not confirmed")) {
+        setError("Debes confirmar tu email antes de iniciar sesión.");
+      } else if (authError.message.includes("Invalid login credentials")) {
+        setError("Email o contraseña incorrectos.");
       } else {
         setError(authError.message);
       }
@@ -65,7 +76,7 @@ function LoginForm() {
 
     const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
-      setError('Error al conectar con Google. Intenta nuevamente.');
+      setError("Error al conectar con Google. Intenta nuevamente.");
       setIsLoading(false);
     }
   };
@@ -73,20 +84,26 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-lg border border-[#e2e8f0]">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-[#112237]">Bienvenido de nuevo</CardTitle>
-        <CardDescription>Inicia sesión para continuar en iubizon</CardDescription>
+        <CardTitle className="text-2xl font-bold text-[#112237]">
+          Bienvenido de nuevo
+        </CardTitle>
+        <CardDescription>
+          Inicia sesión para continuar en iubizon
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {justRegistered && (
             <div className="p-3 bg-[#f25c05]/10 border border-[#f25c05]/20 text-[#f25c05] text-xs font-medium rounded-lg">
-              ¡Cuenta creada con éxito! Revisa tu email para confirmar tu cuenta antes de iniciar sesión.
+              ¡Cuenta creada con éxito! Revisa tu email para confirmar tu cuenta
+              antes de iniciar sesión.
             </div>
           )}
 
           {(error || callbackError) && (
             <div className="p-3 bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#ef4444] text-xs font-medium rounded-lg">
-              {error || 'Hubo un error al autenticar. Por favor intenta de nuevo.'}
+              {error ||
+                "Hubo un error al autenticar. Por favor intenta de nuevo."}
             </div>
           )}
 
@@ -116,19 +133,26 @@ function LoginForm() {
           />
 
           <div className="flex justify-end">
-            <Link href="/auth/forgot-password" className="text-xs text-[#f25c05] hover:underline font-medium">
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs text-[#f25c05] hover:underline font-medium"
+            >
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
 
-          <Button type="submit" className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg"
+            disabled={isLoading}
+          >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Iniciando sesión...
               </span>
             ) : (
-              'Iniciar sesión'
+              "Iniciar sesión"
             )}
           </Button>
 
@@ -137,7 +161,9 @@ function LoginForm() {
               <div className="w-full border-t border-[#e2e8f0]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-[#94a3b8] font-medium">O</span>
+              <span className="bg-white px-3 text-[#94a3b8] font-medium">
+                O
+              </span>
             </div>
           </div>
 
@@ -171,8 +197,11 @@ function LoginForm() {
         </form>
 
         <p className="text-center text-xs text-[#64748b] mt-6">
-          ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-[#f25c05] font-semibold hover:underline">
+          ¿No tienes cuenta?{" "}
+          <Link
+            href="/auth/register"
+            className="text-[#f25c05] font-semibold hover:underline"
+          >
             Crear cuenta
           </Link>
         </p>

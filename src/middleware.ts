@@ -1,5 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -12,7 +12,13 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        setAll(
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }[],
+        ) {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
@@ -22,7 +28,7 @@ export async function middleware(request: NextRequest) {
           });
         },
       },
-    }
+    },
   );
 
   const {
@@ -30,7 +36,7 @@ export async function middleware(request: NextRequest) {
     error,
   } = await supabase.auth.getUser();
 
-  if (error && error.message !== 'Auth session missing!') {
+  if (error && error.message !== "Auth session missing!") {
     return supabaseResponse;
   }
 
@@ -38,25 +44,24 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAuthPage =
-    pathname.startsWith('/auth/login') ||
-    pathname.startsWith('/auth/register');
+    pathname.startsWith("/auth/login") || pathname.startsWith("/auth/register");
 
   const isProtectedPage =
-    pathname.startsWith('/user/dashboard') ||
-    pathname.startsWith('/user/profile') ||
-    pathname.startsWith('/favorites') ||
-    pathname.startsWith('/products/new') ||
-    pathname.startsWith('/products/edit');
+    pathname.startsWith("/user/dashboard") ||
+    pathname.startsWith("/user/profile") ||
+    pathname.startsWith("/favorites") ||
+    pathname.startsWith("/products/new") ||
+    pathname.startsWith("/products/edit");
 
   if (!isAuthenticated && isProtectedPage) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/auth/login';
-    redirectUrl.searchParams.set('redirect', pathname);
+    redirectUrl.pathname = "/auth/login";
+    redirectUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
   if (isAuthenticated && isAuthPage) {
-    return NextResponse.redirect(new URL('/user/dashboard', request.url));
+    return NextResponse.redirect(new URL("/user/dashboard", request.url));
   }
 
   return supabaseResponse;
@@ -64,6 +69,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|manifest\\.json|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|otf|ttf|woff2?)$).*)',
+    "/((?!_next/static|_next/image|favicon\\.ico|favicon\\.png|manifest\\.json|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|otf|ttf|woff2?)$).*)",
   ],
 };

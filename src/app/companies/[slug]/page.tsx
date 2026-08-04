@@ -51,7 +51,8 @@ export default async function PublicCompanyPage({ params }: Props) {
               Empresa no encontrada
             </h1>
             <p className="text-sm text-[#64748b] mb-6">
-              La marca o empresa que estás buscando no existe o ha cambiado de dirección.
+              La marca o empresa que estás buscando no existe o ha cambiado de
+              dirección.
             </p>
             <a
               href="/"
@@ -117,9 +118,9 @@ export default async function PublicCompanyPage({ params }: Props) {
           is_verified: company.is_verified ?? false,
         }}
         products={formattedProducts}
-       />
+      />
 
-       <Footer categories={categories} />
-     </div>
-   );
- }
+      <Footer categories={categories} />
+    </div>
+  );
+}

@@ -1,2 +1,2 @@
-export { CategoryCard } from './CategoryCard';
-export { CategoryNav } from './CategoryNav';
+export { CategoryCard } from "./CategoryCard";
+export { CategoryNav } from "./CategoryNav";

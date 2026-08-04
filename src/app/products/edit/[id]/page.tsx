@@ -139,7 +139,9 @@ export default function EditProductPage({ params }: Props) {
             data.stock !== undefined && data.stock !== null
               ? data.stock.toString()
               : "1",
-          warranty: fetchedWarranty || "6 meses por falla de fábrica (Garantía del vendedor)",
+          warranty:
+            fetchedWarranty ||
+            "6 meses por falla de fábrica (Garantía del vendedor)",
           warranty_conditions: fetchedConditions,
         });
 
@@ -230,7 +232,10 @@ export default function EditProductPage({ params }: Props) {
           availability_type: parsedStock > 1 ? "available" : "unique",
           video_url: videoUrl,
           warranty: formData.warranty,
-          warranty_conditions: hasWarranty && formData.warranty_conditions ? formData.warranty_conditions.trim() : null,
+          warranty_conditions:
+            hasWarranty && formData.warranty_conditions
+              ? formData.warranty_conditions.trim()
+              : null,
         }),
       });
 
@@ -550,7 +555,11 @@ export default function EditProductPage({ params }: Props) {
 
                   <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#e2e8f0] space-y-2 text-xs text-[#64748b]">
                     <p className="font-semibold text-[#112237]">
-                      ℹ️ Cobertura estándar: <span className="font-normal text-[#475569]">Fallas de fabricación y componentes defectuosos de origen.</span>
+                      ℹ️ Cobertura estándar:{" "}
+                      <span className="font-normal text-[#475569]">
+                        Fallas de fabricación y componentes defectuosos de
+                        origen.
+                      </span>
                     </p>
                     <div>
                       <Label

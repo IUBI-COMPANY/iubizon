@@ -1,10 +1,10 @@
-import { prisma } from '@/lib/prisma';
-import type { OrderStatus } from '@/types';
+import { prisma } from "@/lib/prisma";
+import type { OrderStatus } from "@/types";
 
 const orderInclude = {
   product: {
     include: {
-      images: { orderBy: { position: 'asc' as const } },
+      images: { orderBy: { position: "asc" as const } },
       category: true,
       seller: true,
     },
@@ -17,13 +17,10 @@ const orderInclude = {
 export async function getUserOrders(userId: string) {
   return prisma.order.findMany({
     where: {
-      OR: [
-        { buyer_id: userId },
-        { seller_id: userId },
-      ],
+      OR: [{ buyer_id: userId }, { seller_id: userId }],
     },
     include: orderInclude,
-    orderBy: { created_at: 'desc' },
+    orderBy: { created_at: "desc" },
   });
 }
 

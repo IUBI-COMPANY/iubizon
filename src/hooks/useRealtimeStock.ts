@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 export function useRealtimeStock(
   productId: string,
   initialStock: number,
-  initialStatus: string = "active"
+  initialStatus: string = "active",
 ) {
   const [stock, setStock] = useState<number>(initialStock);
   const [status, setStatus] = useState<string>(initialStatus);
@@ -36,7 +36,7 @@ export function useRealtimeStock(
               setStatus(payload.new.status);
             }
           }
-        }
+        },
       )
       .subscribe();
 

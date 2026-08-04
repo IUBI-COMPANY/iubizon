@@ -83,7 +83,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               const res = await fetch(`/api/products/${item.product_id}`);
               const data = await res.json();
               if (res.ok && data.product) {
-                const freshStock = typeof data.product.stock === "number" ? data.product.stock : 10;
+                const freshStock =
+                  typeof data.product.stock === "number"
+                    ? data.product.stock
+                    : 10;
                 const freshPrice = Number(data.product.price) || item.price;
                 return {
                   ...item,
@@ -96,15 +99,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               // fallback
             }
             return item;
-          })
+          }),
         );
 
         if (isMounted) {
           setItems((prev) => {
             let hasChanges = false;
             const nextItems = prev.map((prevItem) => {
-              const fresh = updated.find((u) => u.product_id === prevItem.product_id);
-              if (fresh && (prevItem.stock !== fresh.stock || prevItem.price !== fresh.price)) {
+              const fresh = updated.find(
+                (u) => u.product_id === prevItem.product_id,
+              );
+              if (
+                fresh &&
+                (prevItem.stock !== fresh.stock ||
+                  prevItem.price !== fresh.price)
+              ) {
                 hasChanges = true;
                 return {
                   ...prevItem,
@@ -151,7 +160,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const availableStock = product.stock ?? existingItem?.stock ?? 10;
 
         if (existingItem) {
-          const newQty = Math.min(existingItem.quantity + quantityToAdd, availableStock);
+          const newQty = Math.min(
+            existingItem.quantity + quantityToAdd,
+            availableStock,
+          );
           return prev.map((item) =>
             item.product_id === product.id
               ? { ...item, quantity: newQty, stock: availableStock }
@@ -182,8 +194,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const removeItem = useCallback((productId: string) => {
     setItems((prev) =>
       prev.filter(
-        (item) => item.product_id !== productId && item.id !== productId
-      )
+        (item) => item.product_id !== productId && item.id !== productId,
+      ),
     );
   }, []);
 
@@ -191,8 +203,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (quantity <= 0) {
       setItems((prev) =>
         prev.filter(
-          (item) => item.product_id !== productId && item.id !== productId
-        )
+          (item) => item.product_id !== productId && item.id !== productId,
+        ),
       );
     } else {
       setItems((prev) =>
@@ -206,7 +218,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             return { ...item, quantity: cappedQty };
           }
           return item;
-        })
+        }),
       );
     }
   }, []);

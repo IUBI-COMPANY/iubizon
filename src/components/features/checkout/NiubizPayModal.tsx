@@ -26,14 +26,17 @@ function loadNiubizScript(environment: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const scriptId = "niubiz-checkout-script";
     const existing = document.getElementById(scriptId);
-    
+
     const targetUrl =
       environment === "production"
         ? "https://static-content.vnforapps.com/v2/js/checkout.js"
         : "https://static-content-qas.vnforapps.com/v2/js/checkout.js";
 
     if (existing) {
-      if (existing.getAttribute("data-env") === environment && window.VisanetCheckout) {
+      if (
+        existing.getAttribute("data-env") === environment &&
+        window.VisanetCheckout
+      ) {
         resolve();
         return;
       }
@@ -46,7 +49,10 @@ function loadNiubizScript(environment: string): Promise<void> {
     script.src = targetUrl;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("No se pudo cargar el módulo de pago seguro de Niubiz."));
+    script.onerror = () =>
+      reject(
+        new Error("No se pudo cargar el módulo de pago seguro de Niubiz."),
+      );
     document.body.appendChild(script);
   });
 }
@@ -87,7 +93,9 @@ export function NiubizPayModal({
       await loadNiubizScript(data.environment);
 
       if (!window.VisanetCheckout) {
-        throw new Error("El módulo de pago de Niubiz no está disponible en este momento.");
+        throw new Error(
+          "El módulo de pago de Niubiz no está disponible en este momento.",
+        );
       }
 
       // c) Configurar e invocar el formulario seguro de Niubiz
@@ -104,7 +112,10 @@ export function NiubizPayModal({
         action: `${window.location.origin}/api/payments/niubiz/authorize?purchaseNumber=${data.purchaseNumber}&amount=${amount}`,
         complete: async (response: any) => {
           if (response && response.transactionToken) {
-            await processAuthorization(response.transactionToken, data.purchaseNumber);
+            await processAuthorization(
+              response.transactionToken,
+              data.purchaseNumber,
+            );
           } else {
             setLoadingSession(false);
             onError("No se obtuvo respuesta de autorización de la tarjeta.");
@@ -114,7 +125,8 @@ export function NiubizPayModal({
 
       window.VisanetCheckout.open();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al conectarse con Niubiz.";
+      const msg =
+        err instanceof Error ? err.message : "Error al conectarse con Niubiz.";
       onError(msg);
     } finally {
       setLoadingSession(false);
@@ -122,7 +134,10 @@ export function NiubizPayModal({
   };
 
   // 2. Procesar autorización Server-to-Server
-  const processAuthorization = async (transactionToken: string, purchaseNumber: string) => {
+  const processAuthorization = async (
+    transactionToken: string,
+    purchaseNumber: string,
+  ) => {
     try {
       setLoadingSession(true);
       const res = await fetch("/api/payments/niubiz/authorize", {
@@ -140,12 +155,15 @@ export function NiubizPayModal({
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "La tarjeta fue denegada por el banco emisor.");
+        throw new Error(
+          data.error || "La tarjeta fue denegada por el banco emisor.",
+        );
       }
 
       onSuccess(data.sessionCode);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al confirmar el pago.";
+      const msg =
+        err instanceof Error ? err.message : "Error al confirmar el pago.";
       onError(msg);
     } finally {
       setLoadingSession(false);
@@ -174,7 +192,10 @@ export function NiubizPayModal({
 
       <div className="w-full flex items-center justify-center gap-2 text-xs text-[#059669] bg-[#ecfdf5] py-2.5 px-4 rounded-xl border border-[#a7f3d0] text-center font-medium shadow-2xs">
         <Lock className="w-4 h-4 text-[#059669] shrink-0" />
-        <span>Pago 100% encriptado con certificación PCI-DSS y garantía de protección al comprador Iubizon</span>
+        <span>
+          Pago 100% encriptado con certificación PCI-DSS y garantía de
+          protección al comprador Iubizon
+        </span>
       </div>
     </div>
   );

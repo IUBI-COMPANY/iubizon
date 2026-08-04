@@ -55,7 +55,11 @@ export async function getNiubizCredentials(): Promise<NiubizConfig> {
     const setting = await prisma.platformSetting.findUnique({
       where: { key: "NIUBIZ_CONFIG" },
     });
-    if (setting && typeof setting.value === "object" && setting.value !== null) {
+    if (
+      setting &&
+      typeof setting.value === "object" &&
+      setting.value !== null
+    ) {
       const val = setting.value as Record<string, any>;
       if (val.merchantId) dbMerchantId = String(val.merchantId).trim();
       if (val.environment) dbEnvironment = String(val.environment).trim();
@@ -64,13 +68,24 @@ export async function getNiubizCredentials(): Promise<NiubizConfig> {
     // Continuar con fallback a env
   }
 
-  const envRaw = (dbEnvironment || process.env.NIUBIZ_ENVIRONMENT || "sandbox").trim();
+  const envRaw = (
+    dbEnvironment ||
+    process.env.NIUBIZ_ENVIRONMENT ||
+    "sandbox"
+  ).trim();
   const environment = envRaw === "production" ? "production" : "sandbox";
 
-  const defaultMerchantId = environment === "production" ? "651052554" : "341198210";
-  const merchantId = (dbMerchantId || process.env.NIUBIZ_MERCHANT_ID || defaultMerchantId).trim();
+  const defaultMerchantId =
+    environment === "production" ? "651052554" : "341198210";
+  const merchantId = (
+    dbMerchantId ||
+    process.env.NIUBIZ_MERCHANT_ID ||
+    defaultMerchantId
+  ).trim();
 
-  const user = (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim();
+  const user = (
+    process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe"
+  ).trim();
   const password = (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim();
 
   return {
@@ -89,7 +104,9 @@ export async function getNiubizSecurityToken(): Promise<string> {
   const baseUrl = getBaseUrl(config.environment);
   const endpoint = `${baseUrl}/api.security/v1/security`;
 
-  const authString = Buffer.from(`${config.user}:${config.password}`).toString("base64");
+  const authString = Buffer.from(`${config.user}:${config.password}`).toString(
+    "base64",
+  );
 
   const res = await fetch(endpoint, {
     method: "POST",
@@ -100,8 +117,13 @@ export async function getNiubizSecurityToken(): Promise<string> {
 
   if (!res.ok) {
     const errorText = await res.text();
-    console.error(`Error al obtener token de seguridad Niubiz (HTTP ${res.status}):`, errorText);
-    throw new Error(`Error de autenticación Niubiz (HTTP ${res.status}): ${errorText || "Credenciales inválidas"}`);
+    console.error(
+      `Error al obtener token de seguridad Niubiz (HTTP ${res.status}):`,
+      errorText,
+    );
+    throw new Error(
+      `Error de autenticación Niubiz (HTTP ${res.status}): ${errorText || "Credenciales inválidas"}`,
+    );
   }
 
   const token = (await res.text()).trim();
@@ -111,7 +133,9 @@ export async function getNiubizSecurityToken(): Promise<string> {
 /**
  * 2. Crea una Clave de Sesión (Session Key) para el checkout cliente JS
  */
-export async function createNiubizSession(params: CreateSessionParams): Promise<{
+export async function createNiubizSession(
+  params: CreateSessionParams,
+): Promise<{
   sessionKey: string;
   merchantId: string;
   environment: string;
@@ -165,7 +189,9 @@ export async function createNiubizSession(params: CreateSessionParams): Promise<
 /**
  * 3. Ejecuta la Autorización Financiera Final de la Tarjeta (Server-to-Server)
  */
-export async function authorizeNiubizTransaction(params: AuthorizeTransactionParams) {
+export async function authorizeNiubizTransaction(
+  params: AuthorizeTransactionParams,
+) {
   const config = await getNiubizCredentials();
   const securityToken = await getNiubizSecurityToken();
   const baseUrl = getBaseUrl(config.environment);
@@ -198,8 +224,15 @@ export async function authorizeNiubizTransaction(params: AuthorizeTransactionPar
   let resText = await res.text();
 
   // Si v3 falla con 404/406, probar fallback v2
-  if (res.status === 404 || res.status === 406 || resText.includes("RESTEASY") || resText.includes("Accept")) {
-    console.warn(`[Niubiz] Intento v3 falló (HTTP ${res.status}). Probando endpoint v2 fallback...`);
+  if (
+    res.status === 404 ||
+    res.status === 406 ||
+    resText.includes("RESTEASY") ||
+    resText.includes("Accept")
+  ) {
+    console.warn(
+      `[Niubiz] Intento v3 falló (HTTP ${res.status}). Probando endpoint v2 fallback...`,
+    );
     res = await fetch(endpointV2, {
       method: "POST",
       headers: {
@@ -211,7 +244,10 @@ export async function authorizeNiubizTransaction(params: AuthorizeTransactionPar
     resText = await res.text();
   }
 
-  console.log(`[Niubiz Authorization] Status final: ${res.status}, Response:`, resText);
+  console.log(
+    `[Niubiz Authorization] Status final: ${res.status}, Response:`,
+    resText,
+  );
 
   let responseData: any = {};
   try {
@@ -221,13 +257,16 @@ export async function authorizeNiubizTransaction(params: AuthorizeTransactionPar
     return {
       success: false,
       errorCode: `HTTP_${res.status}`,
-      errorMessage: "La tarjeta o transacción fue rechazada por el banco emisor.",
+      errorMessage:
+        "La tarjeta o transacción fue rechazada por el banco emisor.",
       rawResponse: { rawText: resText },
     };
   }
 
   const actionCode = String(responseData.dataMap?.ACTION_CODE || "").trim();
-  const isApproved = res.ok && (actionCode === "000" || actionCode === "00" || actionCode === "0");
+  const isApproved =
+    res.ok &&
+    (actionCode === "000" || actionCode === "00" || actionCode === "0");
 
   if (!isApproved) {
     const errorMsg =
@@ -289,10 +328,16 @@ export async function refundNiubizTransaction(params: RefundTransactionParams) {
   }
 
   const actionCode = String(data.dataMap?.ACTION_CODE || "").trim();
-  const isApproved = res.ok && (actionCode === "000" || actionCode === "00" || actionCode === "0");
+  const isApproved =
+    res.ok &&
+    (actionCode === "000" || actionCode === "00" || actionCode === "0");
 
   if (!isApproved) {
-    throw new Error(data.dataMap?.ACTION_DESCRIPTION || data.errorMessage || "Error al procesar el reembolso en Niubiz.");
+    throw new Error(
+      data.dataMap?.ACTION_DESCRIPTION ||
+        data.errorMessage ||
+        "Error al procesar el reembolso en Niubiz.",
+    );
   }
 
   return {

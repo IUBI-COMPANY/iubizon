@@ -33,18 +33,28 @@ async function main() {
       price: true,
     },
   });
-  console.log("PRODUCTOS EN BASE DE DATOS:\n", JSON.stringify(products, null, 2));
+  console.log(
+    "PRODUCTOS EN BASE DE DATOS:\n",
+    JSON.stringify(products, null, 2),
+  );
 
   // Actualizar stock de 'Proyector epson powerlite 97H' a 10
-  const epson = products.find((p) => p.title.toLowerCase().includes("proyector epson"));
+  const epson = products.find((p) =>
+    p.title.toLowerCase().includes("proyector epson"),
+  );
   if (epson) {
     console.log("\nPRODUCTO EPSON ENCONTRADO:", epson);
     const updated = await prisma.product.update({
       where: { id: epson.id },
       data: { stock: 10, availability_type: "available", status: "active" },
     });
-    console.log("STOCK DE PROYECTOR EPSON ACTUALIZADO A 10 DE FORMA EXITOSA!", updated);
+    console.log(
+      "STOCK DE PROYECTOR EPSON ACTUALIZADO A 10 DE FORMA EXITOSA!",
+      updated,
+    );
   }
 }
 
-main().catch(console.error).finally(() => pool.end());
+main()
+  .catch(console.error)
+  .finally(() => pool.end());

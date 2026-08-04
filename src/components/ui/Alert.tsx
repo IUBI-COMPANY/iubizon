@@ -58,7 +58,7 @@ export const Alert = ({
       className={twMerge(
         "flex items-start gap-3 rounded-2xl px-4 py-3.5 w-full",
         wrapper,
-        className
+        className,
       )}
       role="alert"
     >

@@ -8,7 +8,9 @@ export interface ParsedDispatchMeta {
   carrierPhone: string | null;
 }
 
-export function parseDispatchMeta(rawCourier?: string | null): ParsedDispatchMeta {
+export function parseDispatchMeta(
+  rawCourier?: string | null,
+): ParsedDispatchMeta {
   if (!rawCourier || !rawCourier.trim()) {
     return { carrierName: null, trackingUrl: null, carrierPhone: null };
   }

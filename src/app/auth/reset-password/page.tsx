@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { PasswordInput, validatePasswordStrict } from '@/components/ui/PasswordInput';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
+import {
+  PasswordInput,
+  validatePasswordStrict,
+} from "@/components/ui/PasswordInput";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -39,12 +48,14 @@ export default function ResetPasswordPage() {
     e.preventDefault();
 
     if (!isPasswordValid) {
-      setError('La contraseña no cumple con los requisitos mínimos de seguridad.');
+      setError(
+        "La contraseña no cumple con los requisitos mínimos de seguridad.",
+      );
       return;
     }
 
     if (!doPasswordsMatch) {
-      setError('Las contraseñas no coinciden.');
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -60,7 +71,7 @@ export default function ResetPasswordPage() {
     } else {
       setSuccess(true);
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push("/auth/login");
       }, 2000);
     }
 
@@ -72,16 +83,22 @@ export default function ResetPasswordPage() {
       <Card className="w-full max-w-md border border-[#e2e8f0]">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-[#112237]">
-            {success ? '¡Contraseña actualizada!' : checkingSession ? 'Verificando...' : hasSession ? 'Nueva contraseña' : 'Enlace inválido'}
+            {success
+              ? "¡Contraseña actualizada!"
+              : checkingSession
+                ? "Verificando..."
+                : hasSession
+                  ? "Nueva contraseña"
+                  : "Enlace inválido"}
           </CardTitle>
           <CardDescription>
             {success
-              ? 'Redirigiendo al inicio de sesión...'
+              ? "Redirigiendo al inicio de sesión..."
               : checkingSession
-              ? 'Verificando tu sesión...'
-              : hasSession
-              ? 'Ingresa tu nueva contraseña'
-              : 'El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo.'}
+                ? "Verificando tu sesión..."
+                : hasSession
+                  ? "Ingresa tu nueva contraseña"
+                  : "El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -126,7 +143,7 @@ export default function ResetPasswordPage() {
                 className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg"
                 disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
               >
-                {isLoading ? 'Actualizando...' : 'Actualizar contraseña'}
+                {isLoading ? "Actualizando..." : "Actualizar contraseña"}
               </Button>
             </form>
           ) : (
@@ -134,7 +151,10 @@ export default function ResetPasswordPage() {
               <div className="p-3 bg-[#fef2f2] text-[#ef4444] text-sm rounded-lg">
                 No se pudo verificar tu sesión. El enlace puede haber expirado.
               </div>
-              <Link href="/auth/forgot-password" className="text-[#f25c05] hover:underline text-sm">
+              <Link
+                href="/auth/forgot-password"
+                className="text-[#f25c05] hover:underline text-sm"
+              >
                 Solicitar un nuevo enlace
               </Link>
             </div>

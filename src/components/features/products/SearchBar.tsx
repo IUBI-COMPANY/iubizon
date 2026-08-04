@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, X } from 'lucide-react';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -15,8 +15,8 @@ interface SearchBarProps {
 }
 
 export const SearchBar = ({
-  initialQuery = '',
-  placeholder = 'Buscar productos...',
+  initialQuery = "",
+  placeholder = "Buscar productos...",
   className,
   onSearch,
 }: SearchBarProps) => {
@@ -39,17 +39,17 @@ export const SearchBar = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
   };
 
   return (
-    <div className={cn('flex gap-2', className)}>
+    <div className={cn("flex gap-2", className)}>
       <div className="relative flex-1">
         <Input
           type="text"

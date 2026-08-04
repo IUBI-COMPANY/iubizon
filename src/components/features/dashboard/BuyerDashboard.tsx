@@ -236,7 +236,9 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
         {loadingOrders ? (
           <div className="py-8 text-center">
             <Loader2 className="w-6 h-6 animate-spin text-[#f25c05] mx-auto mb-2" />
-            <p className="text-xs text-[#64748b]">Cargando compras recientes...</p>
+            <p className="text-xs text-[#64748b]">
+              Cargando compras recientes...
+            </p>
           </div>
         ) : recentSessions.length > 0 ? (
           <div className="divide-y divide-[#f1f5f9]">
@@ -244,8 +246,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
               const firstItem = session.packages[0]?.items[0];
               const totalItemsCount = session.packages.reduce(
                 (sum, p) =>
-                  sum +
-                  p.items.reduce((s, i) => s + (i.quantity || 1), 0),
+                  sum + p.items.reduce((s, i) => s + (i.quantity || 1), 0),
                 0,
               );
 
@@ -325,7 +326,9 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
         ) : (
           <div className="py-8 text-center">
             <ShoppingBag className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-xs font-bold text-[#112237]">Aún no has realizado compras</p>
+            <p className="text-xs font-bold text-[#112237]">
+              Aún no has realizado compras
+            </p>
             <p className="text-[11px] text-[#64748b] mt-0.5">
               Explora el catálogo y realiza tu primera compra contra entrega.
             </p>

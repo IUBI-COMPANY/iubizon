@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma';
-import { Navbar } from '@/components/features/layout/Navbar';
-import { Footer } from '@/components/features/layout/Footer';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { prisma } from "@/lib/prisma";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import {
   MapPin,
   Eye,
@@ -18,13 +18,13 @@ import {
   Clock,
   Info,
   FileText,
-} from 'lucide-react';
-import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
-import { ProductActionsBlock } from './ProductActionsBlock';
-import { FavoriteButton } from './FavoriteButton';
-import { getCategoryIcon } from '@/lib/utils/categoryIcons';
+} from "lucide-react";
+import { ProductImageGallery } from "@/components/features/products/ProductImageGallery";
+import { ProductActionsBlock } from "./ProductActionsBlock";
+import { FavoriteButton } from "./FavoriteButton";
+import { getCategoryIcon } from "@/lib/utils/categoryIcons";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -38,7 +38,7 @@ async function getProduct(id: string) {
         seller: true,
         company: true,
         category: true,
-        images: { orderBy: { position: 'asc' } },
+        images: { orderBy: { position: "asc" } },
       },
     });
 
@@ -48,20 +48,33 @@ async function getProduct(id: string) {
       ...raw,
       price: Number(raw.price),
       location: raw.seller?.location ?? null,
-      delivery_preference: ['pickup', 'delivery'],
-      availability_type: (raw.stock ?? 1) > 0 ? 'available' : 'on_order',
+      delivery_preference: ["pickup", "delivery"],
+      availability_type: (raw.stock ?? 1) > 0 ? "available" : "on_order",
     } as any;
   } catch (error) {
-    console.error('Error fetching product with Prisma:', error);
+    console.error("Error fetching product with Prisma:", error);
     return null;
   }
 }
 
-const conditionConfig: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  new: { label: 'Nuevo', color: '#10b981', bg: '#10b98110', icon: Sparkles },
-  like_new: { label: 'Como nuevo', color: '#3b82f6', bg: '#3b82f610', icon: ShieldCheck },
-  good: { label: 'Buen estado', color: '#f59e0b', bg: '#f59e0b10', icon: ThumbsUp },
-  fair: { label: 'Aceptable', color: '#ef4444', bg: '#ef444410', icon: Wrench },
+const conditionConfig: Record<
+  string,
+  { label: string; color: string; bg: string; icon: React.ElementType }
+> = {
+  new: { label: "Nuevo", color: "#10b981", bg: "#10b98110", icon: Sparkles },
+  like_new: {
+    label: "Como nuevo",
+    color: "#3b82f6",
+    bg: "#3b82f610",
+    icon: ShieldCheck,
+  },
+  good: {
+    label: "Buen estado",
+    color: "#f59e0b",
+    bg: "#f59e0b10",
+    icon: ThumbsUp,
+  },
+  fair: { label: "Aceptable", color: "#ef4444", bg: "#ef444410", icon: Wrench },
 };
 
 export default async function ProductDetailPage({ params }: Props) {
@@ -74,8 +87,12 @@ export default async function ProductDetailPage({ params }: Props) {
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-[#112237] mb-2">Producto no encontrado</h2>
-            <p className="text-[#64748b] mb-4">El producto que buscas no existe o ha sido eliminado.</p>
+            <h2 className="text-2xl font-bold text-[#112237] mb-2">
+              Producto no encontrado
+            </h2>
+            <p className="text-[#64748b] mb-4">
+              El producto que buscas no existe o ha sido eliminado.
+            </p>
             <Link href="/search">
               <Button>Ver catálogo de productos</Button>
             </Link>
@@ -88,16 +105,21 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const images = product.images || [];
   const condition = conditionConfig[product.condition];
-  const CategoryIcon = product.category ? getCategoryIcon(product.category.slug) : null;
+  const CategoryIcon = product.category
+    ? getCategoryIcon(product.category.slug)
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container py-6">
           <nav className="mb-6">
-            <Link href="/search" className="text-[#64748b] hover:text-[#f25c05] transition-colors text-sm">
+            <Link
+              href="/search"
+              className="text-[#64748b] hover:text-[#f25c05] transition-colors text-sm"
+            >
               ← Volver al catálogo
             </Link>
           </nav>
@@ -107,8 +129,11 @@ export default async function ProductDetailPage({ params }: Props) {
             <div className="lg:col-span-3 space-y-5">
               {/* Image Gallery */}
               <div className="bg-white rounded-2xl overflow-hidden border border-[#e2e8f0] p-3">
-                <ProductImageGallery 
-                  images={images.map((img: any) => ({ id: img.id, url: img.url }))}
+                <ProductImageGallery
+                  images={images.map((img: any) => ({
+                    id: img.id,
+                    url: img.url,
+                  }))}
                   title={product.title}
                   videoUrl={product.video_url}
                 />
@@ -116,18 +141,30 @@ export default async function ProductDetailPage({ params }: Props) {
 
               {/* Product Details */}
               <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
-                <h2 className="text-base font-semibold text-[#112237] mb-4">Detalles del producto</h2>
+                <h2 className="text-base font-semibold text-[#112237] mb-4">
+                  Detalles del producto
+                </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {/* Condition */}
-                  <div className={`flex items-center gap-2.5 p-3 rounded-xl ${condition ? '' : 'bg-[#f8fafc]'}`}>
+                  <div
+                    className={`flex items-center gap-2.5 p-3 rounded-xl ${condition ? "" : "bg-[#f8fafc]"}`}
+                  >
                     {condition ? (
                       <>
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: condition.bg }}>
-                          <condition.icon className="w-4.5 h-4.5" style={{ color: condition.color }} />
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: condition.bg }}
+                        >
+                          <condition.icon
+                            className="w-4.5 h-4.5"
+                            style={{ color: condition.color }}
+                          />
                         </div>
                         <div>
                           <p className="text-xs text-[#64748b]">Condición</p>
-                          <p className="text-sm font-medium text-[#112237]">{condition.label}</p>
+                          <p className="text-sm font-medium text-[#112237]">
+                            {condition.label}
+                          </p>
                         </div>
                       </>
                     ) : (
@@ -137,7 +174,9 @@ export default async function ProductDetailPage({ params }: Props) {
                         </div>
                         <div>
                           <p className="text-xs text-[#64748b]">Condición</p>
-                          <p className="text-sm font-medium text-[#112237]">{product.condition}</p>
+                          <p className="text-sm font-medium text-[#112237]">
+                            {product.condition}
+                          </p>
                         </div>
                       </>
                     )}
@@ -147,7 +186,9 @@ export default async function ProductDetailPage({ params }: Props) {
                   {product.category && (
                     <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#f8fafc]">
                       <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#f25c05]/10">
-                        {CategoryIcon && <CategoryIcon className="w-4.5 h-4.5 text-[#f25c05]" />}
+                        {CategoryIcon && (
+                          <CategoryIcon className="w-4.5 h-4.5 text-[#f25c05]" />
+                        )}
                       </div>
                       <div>
                         <p className="text-xs text-[#64748b]">Categoría</p>
@@ -169,7 +210,8 @@ export default async function ProductDetailPage({ params }: Props) {
                     <div>
                       <p className="text-xs text-[#64748b]">Stock disponible</p>
                       <p className="text-sm font-bold text-[#112237]">
-                        {product.stock || 1} {product.stock === 1 ? "unidad" : "unidades"}
+                        {product.stock || 1}{" "}
+                        {product.stock === 1 ? "unidad" : "unidades"}
                       </p>
                     </div>
                   </div>
@@ -182,7 +224,9 @@ export default async function ProductDetailPage({ params }: Props) {
                       </div>
                       <div>
                         <p className="text-xs text-[#64748b]">Ubicación</p>
-                        <p className="text-sm font-medium text-[#112237]">{product.location}</p>
+                        <p className="text-sm font-medium text-[#112237]">
+                          {product.location}
+                        </p>
                       </div>
                     </div>
                   )}
@@ -204,7 +248,9 @@ export default async function ProductDetailPage({ params }: Props) {
               {/* Description */}
               {product.description && (
                 <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5">
-                  <h2 className="text-base font-semibold text-[#112237] mb-3">Descripción</h2>
+                  <h2 className="text-base font-semibold text-[#112237] mb-3">
+                    Descripción
+                  </h2>
                   <div
                     className="tiptap-content prose prose-sm max-w-none text-[#112237] whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: product.description }}
@@ -272,7 +318,10 @@ export default async function ProductDetailPage({ params }: Props) {
                 {/* Bloque de Precio */}
                 <div className="py-1">
                   <p className="text-3xl font-black text-[#f25c05] leading-none">
-                    S/ {Number(product.price).toLocaleString("es-PE", { minimumFractionDigits: 2 })}
+                    S/{" "}
+                    {Number(product.price).toLocaleString("es-PE", {
+                      minimumFractionDigits: 2,
+                    })}
                   </p>
                 </div>
 
@@ -281,7 +330,10 @@ export default async function ProductDetailPage({ params }: Props) {
                   <div className="flex flex-wrap gap-2">
                     <span
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
-                      style={{ backgroundColor: condition.bg, color: condition.color }}
+                      style={{
+                        backgroundColor: condition.bg,
+                        color: condition.color,
+                      }}
                     >
                       <condition.icon className="w-3.5 h-3.5" />
                       {condition.label}
@@ -321,12 +373,19 @@ export default async function ProductDetailPage({ params }: Props) {
               {/* Garantía del Vendedor y Protección Iubizon */}
               {(() => {
                 const specs =
-                  product.specifications && typeof product.specifications === "object"
+                  product.specifications &&
+                  typeof product.specifications === "object"
                     ? (product.specifications as Record<string, unknown>)
                     : null;
-                const warrantyText = specs?.warranty ? String(specs.warranty) : null;
-                const warrantyConditions = specs?.warranty_conditions ? String(specs.warranty_conditions) : null;
-                const hasSellerWarranty = !!warrantyText && !warrantyText.toLowerCase().includes("sin garantía");
+                const warrantyText = specs?.warranty
+                  ? String(specs.warranty)
+                  : null;
+                const warrantyConditions = specs?.warranty_conditions
+                  ? String(specs.warranty_conditions)
+                  : null;
+                const hasSellerWarranty =
+                  !!warrantyText &&
+                  !warrantyText.toLowerCase().includes("sin garantía");
 
                 return (
                   <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm space-y-3.5">
@@ -344,12 +403,23 @@ export default async function ProductDetailPage({ params }: Props) {
                           </p>
                           <p className="text-[11px] text-[#64748b] flex items-center gap-1">
                             <Info className="w-3.5 h-3.5 text-[#f25c05] shrink-0 inline" />
-                            <span><strong className="text-[#334155]">Cobertura:</strong> Fallas de fabricación y componentes defectuosos de origen.</span>
+                            <span>
+                              <strong className="text-[#334155]">
+                                Cobertura:
+                              </strong>{" "}
+                              Fallas de fabricación y componentes defectuosos de
+                              origen.
+                            </span>
                           </p>
                           {warrantyConditions && (
                             <p className="text-[11px] text-[#64748b] flex items-center gap-1">
                               <FileText className="w-3.5 h-3.5 text-[#f25c05] shrink-0 inline" />
-                              <span><strong className="text-[#334155]">Condiciones:</strong> {warrantyConditions}</span>
+                              <span>
+                                <strong className="text-[#334155]">
+                                  Condiciones:
+                                </strong>{" "}
+                                {warrantyConditions}
+                              </span>
                             </p>
                           )}
                         </div>
@@ -364,7 +434,8 @@ export default async function ProductDetailPage({ params }: Props) {
                             Garantía del Vendedor
                           </p>
                           <p className="text-xs text-[#64748b] mt-0.5">
-                            Este producto no incluye garantía extendida adicional del vendedor.
+                            Este producto no incluye garantía extendida
+                            adicional del vendedor.
                           </p>
                         </div>
                       </div>
@@ -373,7 +444,11 @@ export default async function ProductDetailPage({ params }: Props) {
                     <div className="border-t border-[#f1f5f9] pt-3 flex items-start gap-2.5 text-xs text-[#64748b]">
                       <div className="w-2 h-2 rounded-full bg-[#10b981] shrink-0 mt-1.5" />
                       <span>
-                        <strong className="text-[#112237]">Protección al Comprador Iubizon:</strong> Cobertura de 7 días para verificar la entrega e idoneidad del producto.
+                        <strong className="text-[#112237]">
+                          Protección al Comprador Iubizon:
+                        </strong>{" "}
+                        Cobertura de 7 días para verificar la entrega e
+                        idoneidad del producto.
                       </span>
                     </div>
                   </div>

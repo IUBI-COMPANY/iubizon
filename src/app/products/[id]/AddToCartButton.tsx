@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ShoppingCart, Check } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { useCart } from '@/hooks/useCart';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { ShoppingCart, Check } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useCart } from "@/hooks/useCart";
+import { toast } from "sonner";
 
 interface AddToCartButtonProps {
   productId: string;
@@ -32,7 +32,7 @@ export function AddToCartButton({
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 
-  const isOutOfStock = (stock !== undefined && stock <= 0) || status === 'sold';
+  const isOutOfStock = (stock !== undefined && stock <= 0) || status === "sold";
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -45,13 +45,15 @@ export function AddToCartButton({
         images,
         stock,
       },
-      quantity
+      quantity,
     );
     setAdded(true);
     if (onAdded) {
       onAdded();
     } else {
-      toast.success(`¡${quantity} ${quantity === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito!`);
+      toast.success(
+        `¡${quantity} ${quantity === 1 ? "unidad agregada" : "unidades agregadas"} al carrito!`,
+      );
     }
 
     setTimeout(() => {
@@ -63,8 +65,8 @@ export function AddToCartButton({
     <Button
       className={`w-full font-semibold py-3 rounded-xl shadow-md transition-all ${
         isOutOfStock
-          ? 'bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200 shadow-none'
-          : 'bg-[#f25c05] hover:bg-[#d94d04] text-white'
+          ? "bg-slate-200 text-slate-500 cursor-not-allowed hover:bg-slate-200 shadow-none"
+          : "bg-[#f25c05] hover:bg-[#d94d04] text-white"
       }`}
       size="lg"
       disabled={isOutOfStock}

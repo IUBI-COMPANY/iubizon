@@ -197,7 +197,8 @@ function SearchContent() {
         if (effectiveCategoryId) params.set("category_id", effectiveCategoryId);
         if (minPrice) params.set("min_price", minPrice);
         if (maxPrice) params.set("max_price", maxPrice);
-        if (conditions.length > 0) params.set("condition", conditions.join(","));
+        if (conditions.length > 0)
+          params.set("condition", conditions.join(","));
         if (orderBy) params.set("order_by", orderBy);
         params.set("page", page.toString());
         params.set("limit", limit.toString());

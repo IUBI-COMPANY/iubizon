@@ -59,7 +59,7 @@ export const Checkbox = ({
               error
                 ? "border-red-500 focus:border-red-500"
                 : "border-[#e2e8f0] hover:border-[#f25c05] checked:bg-[#f25c05] checked:border-[#f25c05]",
-              className
+              className,
             )}
             aria-describedby={error && name ? `${name}-error` : undefined}
             aria-invalid={error}

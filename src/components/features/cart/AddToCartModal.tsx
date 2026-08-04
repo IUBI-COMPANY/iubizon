@@ -48,16 +48,56 @@ interface AddedProductInfo {
 }
 
 const CATEGORY_CAROUSEL_ITEMS = [
-  { id: "proyectores", name: "Proyectores y Ecrams", slug: "proyectores", icon: Projector },
-  { id: "laptops", name: "Laptops y Computadoras", slug: "laptops", icon: Laptop },
-  { id: "pantallas-interactivas", name: "Pantallas Interactivas", slug: "pantallas-interactivas", icon: Laptop },
-  { id: "moviles", name: "Celulares y Tablets", slug: "moviles", icon: Smartphone },
+  {
+    id: "proyectores",
+    name: "Proyectores y Ecrams",
+    slug: "proyectores",
+    icon: Projector,
+  },
+  {
+    id: "laptops",
+    name: "Laptops y Computadoras",
+    slug: "laptops",
+    icon: Laptop,
+  },
+  {
+    id: "pantallas-interactivas",
+    name: "Pantallas Interactivas",
+    slug: "pantallas-interactivas",
+    icon: Laptop,
+  },
+  {
+    id: "moviles",
+    name: "Celulares y Tablets",
+    slug: "moviles",
+    icon: Smartphone,
+  },
   { id: "audio", name: "Audio y Conferencia", slug: "audio", icon: Volume2 },
-  { id: "mobiliario", name: "Mobiliario Escolar y Oficina", slug: "mobiliario", icon: Armchair },
+  {
+    id: "mobiliario",
+    name: "Mobiliario Escolar y Oficina",
+    slug: "mobiliario",
+    icon: Armchair,
+  },
   { id: "redes", name: "Redes y Conectividad", slug: "redes", icon: Wifi },
-  { id: "electronica", name: "Electrónica e Impresión", slug: "electronica", icon: Cpu },
-  { id: "accesorios", name: "Accesorios y Periféricos", slug: "accesorios", icon: Smartphone },
-  { id: "utiles-suministros", name: "Útiles y Suministros", slug: "utiles-suministros", icon: Pencil },
+  {
+    id: "electronica",
+    name: "Electrónica e Impresión",
+    slug: "electronica",
+    icon: Cpu,
+  },
+  {
+    id: "accesorios",
+    name: "Accesorios y Periféricos",
+    slug: "accesorios",
+    icon: Smartphone,
+  },
+  {
+    id: "utiles-suministros",
+    name: "Útiles y Suministros",
+    slug: "utiles-suministros",
+    icon: Pencil,
+  },
   { id: "otros", name: "Otros", slug: "otros", icon: MoreHorizontal },
 ];
 
@@ -67,7 +107,11 @@ interface AddToCartModalProps {
   addedProduct: AddedProductInfo | null;
 }
 
-export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModalProps) {
+export function AddToCartModal({
+  isOpen,
+  onClose,
+  addedProduct,
+}: AddToCartModalProps) {
   const router = useRouter();
   const { items, total, itemCount, updateQuantity, removeItem } = useCart();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -163,7 +207,8 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#f25c05]" />
                 <h3 className="text-xs font-black text-[#112237] uppercase tracking-wider">
-                  Tu Paquete Armado ({itemCount} {itemCount === 1 ? "producto" : "productos"})
+                  Tu Paquete Armado ({itemCount}{" "}
+                  {itemCount === 1 ? "producto" : "productos"})
                 </h3>
               </div>
             </div>
@@ -171,7 +216,10 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
             {/* Lista Interactiva de ítems con controles de cantidad +/- y tachado */}
             <div className="max-h-[220px] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden divide-y divide-slate-100 pr-1">
               {items.map((item) => (
-                <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 group">
+                <div
+                  key={item.id}
+                  className="py-2.5 flex items-center justify-between gap-3 group"
+                >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="relative w-10 h-10 bg-white rounded-xl border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs">
                       {item.image_url ? (
@@ -191,7 +239,10 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
                         {item.title}
                       </p>
                       <p className="text-[11px] font-semibold text-[#f25c05]">
-                        {formatPrice(item.price)} <span className="text-[10px] text-slate-400 font-normal">c/u</span>
+                        {formatPrice(item.price)}{" "}
+                        <span className="text-[10px] text-slate-400 font-normal">
+                          c/u
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -209,7 +260,11 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
                           }
                         }}
                         className="w-6 h-6 rounded-lg flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:text-[#112237] transition-colors"
-                        title={item.quantity === 1 ? "Eliminar del paquete" : "Disminuir"}
+                        title={
+                          item.quantity === 1
+                            ? "Eliminar del paquete"
+                            : "Disminuir"
+                        }
                       >
                         {item.quantity === 1 ? (
                           <Trash2 className="w-3 h-3 text-red-500" />
@@ -242,8 +297,12 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
 
             {/* Total acumulado recalculado en vivo */}
             <div className="pt-2.5 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-600">Total acumulado del paquete:</span>
-              <span className="text-base font-black text-[#112237]">{formatPrice(total)}</span>
+              <span className="text-xs font-bold text-slate-600">
+                Total acumulado del paquete:
+              </span>
+              <span className="text-base font-black text-[#112237]">
+                {formatPrice(total)}
+              </span>
             </div>
           </div>
 
@@ -342,6 +401,6 @@ export function AddToCartModal({ isOpen, onClose, addedProduct }: AddToCartModal
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

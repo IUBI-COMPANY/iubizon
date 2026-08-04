@@ -14,21 +14,75 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
 
-  console.log(`🔍 Iniciando sincronización de datos base para ambiente: [${appEnv || 'default'}]`);
-  console.log("🌱 Sincronizando las 11 categorías oficiales y configuraciones globales en la base de datos...");
+  console.log(
+    `🔍 Iniciando sincronización de datos base para ambiente: [${appEnv || "default"}]`,
+  );
+  console.log(
+    "🌱 Sincronizando las 11 categorías oficiales y configuraciones globales en la base de datos...",
+  );
 
   // 1. Categorías del Sistema (Coincidentes con Producción)
   const defaultCategories = [
-    { name: "Proyectores y Ecrams", slug: "proyectores", icon: "projector", sort_order: 1 },
-    { name: "Laptops y Computadoras", slug: "laptops", icon: "laptop", sort_order: 2 },
-    { name: "Pantallas Interactivas", slug: "pantallas-interactivas", icon: "monitor", sort_order: 3 },
-    { name: "Celulares y Tablets", slug: "moviles", icon: "smartphone", sort_order: 4 },
-    { name: "Audio y Conferencia", slug: "audio", icon: "volume-2", sort_order: 5 },
-    { name: "Mobiliario Escolar y Oficina", slug: "mobiliario", icon: "armchair", sort_order: 6 },
-    { name: "Redes y Conectividad", slug: "redes", icon: "wifi", sort_order: 7 },
-    { name: "Electrónica e Impresión", slug: "electronica", icon: "cpu", sort_order: 8 },
-    { name: "Accesorios y Periféricos", slug: "accesorios", icon: "headphones", sort_order: 9 },
-    { name: "Útiles y Suministros", slug: "utiles-suministros", icon: "pencil", sort_order: 10 },
+    {
+      name: "Proyectores y Ecrams",
+      slug: "proyectores",
+      icon: "projector",
+      sort_order: 1,
+    },
+    {
+      name: "Laptops y Computadoras",
+      slug: "laptops",
+      icon: "laptop",
+      sort_order: 2,
+    },
+    {
+      name: "Pantallas Interactivas",
+      slug: "pantallas-interactivas",
+      icon: "monitor",
+      sort_order: 3,
+    },
+    {
+      name: "Celulares y Tablets",
+      slug: "moviles",
+      icon: "smartphone",
+      sort_order: 4,
+    },
+    {
+      name: "Audio y Conferencia",
+      slug: "audio",
+      icon: "volume-2",
+      sort_order: 5,
+    },
+    {
+      name: "Mobiliario Escolar y Oficina",
+      slug: "mobiliario",
+      icon: "armchair",
+      sort_order: 6,
+    },
+    {
+      name: "Redes y Conectividad",
+      slug: "redes",
+      icon: "wifi",
+      sort_order: 7,
+    },
+    {
+      name: "Electrónica e Impresión",
+      slug: "electronica",
+      icon: "cpu",
+      sort_order: 8,
+    },
+    {
+      name: "Accesorios y Periféricos",
+      slug: "accesorios",
+      icon: "headphones",
+      sort_order: 9,
+    },
+    {
+      name: "Útiles y Suministros",
+      slug: "utiles-suministros",
+      icon: "pencil",
+      sort_order: 10,
+    },
     { name: "Otros", slug: "otros", icon: "package", sort_order: 99 },
   ];
 
@@ -51,14 +105,17 @@ async function main() {
     });
   }
 
-  console.log("✅ Categorías obsoletas eliminadas y 11 categorías oficiales sincronizadas correctamente.");
+  console.log(
+    "✅ Categorías obsoletas eliminadas y 11 categorías oficiales sincronizadas correctamente.",
+  );
 
   // 3. Configuraciones Dinámicas de la Plataforma (Administrables desde BD por Admin/SuperAdmin)
   const defaultSettings = [
     {
       key: "COMMISSION_CONFIG",
-      value: { base_rate: 0.09, fixed_fee: 2.50, threshold_amount: 40.00 },
-      description: "Regla de comisión de la plataforma (9% plano >= S/ 40, o 9% + S/ 2.50 < S/ 40)",
+      value: { base_rate: 0.09, fixed_fee: 2.5, threshold_amount: 40.0 },
+      description:
+        "Regla de comisión de la plataforma (9% plano >= S/ 40, o 9% + S/ 2.50 < S/ 40)",
       category: "commission",
     },
     {
@@ -70,7 +127,8 @@ async function main() {
     {
       key: "BUYER_PROTECTION_DAYS",
       value: { days: 7 },
-      description: "Días de garantía y retención de pago al vendedor para protección al comprador",
+      description:
+        "Días de garantía y retención de pago al vendedor para protección al comprador",
       category: "features",
     },
   ];
@@ -78,12 +136,18 @@ async function main() {
   for (const set of defaultSettings) {
     await prisma.platformSetting.upsert({
       where: { key: set.key },
-      update: { value: set.value, description: set.description, category: set.category },
+      update: {
+        value: set.value,
+        description: set.description,
+        category: set.category,
+      },
       create: set,
     });
   }
 
-  console.log("✅ Configuraciones globales (platform_settings) verificadas/creadas correctamente.");
+  console.log(
+    "✅ Configuraciones globales (platform_settings) verificadas/creadas correctamente.",
+  );
 }
 
 main()

@@ -25,11 +25,7 @@ export type OrderStatus =
   | "cancelled"
   | string;
 export type ShippingStatus =
-  | "pending"
-  | "picked_up"
-  | "in_transit"
-  | "delivered"
-  | string;
+  "pending" | "picked_up" | "in_transit" | "delivered" | string;
 
 // ==========================================
 // 2. Helper de Serialización JSON para Frontend

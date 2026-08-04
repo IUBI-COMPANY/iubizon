@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const excludeIds = searchParams.get("exclude")?.split(",").filter(Boolean) || [];
+    const excludeIds =
+      searchParams.get("exclude")?.split(",").filter(Boolean) || [];
     const page = Number(searchParams.get("page") || "1");
     const limit = Number(searchParams.get("limit") || "6");
     const skip = (page - 1) * limit;
@@ -53,7 +54,8 @@ export async function GET(req: Request) {
       where: {
         status: "active",
         id: { notIn: excludeIds },
-        category: targetSlugs.length > 0 ? { slug: { in: targetSlugs } } : undefined,
+        category:
+          targetSlugs.length > 0 ? { slug: { in: targetSlugs } } : undefined,
       },
       select: { id: true },
       orderBy: { views: "desc" },
@@ -101,7 +103,7 @@ export async function GET(req: Request) {
     const productsMap = new Map(products.map((p) => [p.id, p]));
     const orderedProducts = paginatedIds
       .map((id) => productsMap.get(id))
-      .filter((p): p is typeof products[number] => !!p);
+      .filter((p): p is (typeof products)[number] => !!p);
 
     const formatted = orderedProducts.map((p) => ({
       id: p.id,
@@ -123,6 +125,9 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error("Error al obtener recomendaciones paginadas:", err);
-    return NextResponse.json({ recommendations: [], pagination: { page: 1, limit: 6, total: 0, hasMore: false } });
+    return NextResponse.json({
+      recommendations: [],
+      pagination: { page: 1, limit: 6, total: 0, hasMore: false },
+    });
   }
 }

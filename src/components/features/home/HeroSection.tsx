@@ -128,25 +128,25 @@ export const HeroSection = () => {
           <ChevronRight className="w-5 h-5" />
         </button>
 
-      {/* Slide Indicators Dots */}
-      <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              const newDir = index > currentSlideIndex ? 1 : -1;
-              setPage([index, newDir]);
-            }}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              currentSlideIndex === index
-                ? "w-6 bg-[#f25c05]"
-                : "w-2 bg-white/40 hover:bg-white/70"
-            }`}
-            aria-label={`Ir al slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </section>
-  </div>
-);
+        {/* Slide Indicators Dots */}
+        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                const newDir = index > currentSlideIndex ? 1 : -1;
+                setPage([index, newDir]);
+              }}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentSlideIndex === index
+                  ? "w-6 bg-[#f25c05]"
+                  : "w-2 bg-white/40 hover:bg-white/70"
+              }`}
+              aria-label={`Ir al slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 };

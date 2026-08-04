@@ -262,7 +262,11 @@ export const CompanyDashboard = ({
                       </p>
                       {product.created_at && (
                         <span className="text-[11px] text-[#64748b]">
-                          • Publicado el {new Date(product.created_at).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" })}
+                          • Publicado el{" "}
+                          {new Date(product.created_at).toLocaleDateString(
+                            "es-PE",
+                            { day: "2-digit", month: "short", year: "numeric" },
+                          )}
                         </span>
                       )}
                     </div>

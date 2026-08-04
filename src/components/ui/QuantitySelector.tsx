@@ -75,12 +75,14 @@ export function QuantitySelector({
   const alignClasses = align === "right" ? "items-end" : "items-start";
 
   return (
-    <div className={cn("inline-flex flex-col gap-1.5", alignClasses, className)}>
+    <div
+      className={cn("inline-flex flex-col gap-1.5", alignClasses, className)}
+    >
       <div
         className={cn(
           "inline-flex items-center gap-1.5 bg-[#f8fafc] border border-[#e2e8f0] p-1 shadow-xs transition-all",
           isDisabled && "opacity-50 bg-[#f1f5f9] cursor-not-allowed",
-          sizeClasses[size]
+          sizeClasses[size],
         )}
       >
         <button
@@ -90,7 +92,8 @@ export function QuantitySelector({
           className={cn(
             "flex items-center justify-center text-[#334155] hover:bg-white active:bg-[#e2e8f0] transition-colors shrink-0 shadow-xs",
             buttonSizeClasses[size],
-            (isDisabled || isMinReached) && "opacity-30 cursor-not-allowed hover:bg-transparent shadow-none"
+            (isDisabled || isMinReached) &&
+              "opacity-30 cursor-not-allowed hover:bg-transparent shadow-none",
           )}
           title={isMinReached ? `Cantidad mínima ${min}` : "Disminuir cantidad"}
         >
@@ -114,9 +117,14 @@ export function QuantitySelector({
           className={cn(
             "flex items-center justify-center text-[#334155] hover:bg-white active:bg-[#e2e8f0] transition-colors shrink-0 shadow-xs",
             buttonSizeClasses[size],
-            (isDisabled || isMaxReached) && "opacity-30 cursor-not-allowed hover:bg-transparent shadow-none"
+            (isDisabled || isMaxReached) &&
+              "opacity-30 cursor-not-allowed hover:bg-transparent shadow-none",
           )}
-          title={isMaxReached ? `Stock máximo alcanzado (${max})` : "Aumentar cantidad"}
+          title={
+            isMaxReached
+              ? `Stock máximo alcanzado (${max})`
+              : "Aumentar cantidad"
+          }
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
@@ -125,7 +133,9 @@ export function QuantitySelector({
       {isMaxReached && max > 0 && showLimitWarning && (
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#fffbeb] border border-[#fef3c7] text-[#92400e] text-xs font-medium shrink-0 animate-fadeIn">
           <AlertCircle className="w-4 h-4 text-[#f59e0b] shrink-0" />
-          <span>Solo puedes llevar {max} {max === 1 ? "unidad" : "unidades"}</span>
+          <span>
+            Solo puedes llevar {max} {max === 1 ? "unidad" : "unidades"}
+          </span>
         </div>
       )}
     </div>

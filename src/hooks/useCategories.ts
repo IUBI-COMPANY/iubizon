@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { Category } from '@/types';
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Category } from "@/types";
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -16,16 +16,18 @@ export const useCategories = () => {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
+        .from("categories")
+        .select("*")
+        .order("sort_order", { ascending: true });
 
       if (fetchError) throw fetchError;
 
       const categoriesWithChildren = buildCategoryTree(data as Category[]);
       setCategories(categoriesWithChildren);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar categorías');
+      setError(
+        err instanceof Error ? err.message : "Error al cargar categorías",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -51,16 +53,18 @@ export const useCategory = (slug: string) => {
 
       try {
         const { data, error: fetchError } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('slug', slug)
+          .from("categories")
+          .select("*")
+          .eq("slug", slug)
           .single();
 
         if (fetchError) throw fetchError;
 
         setCategory(data as Category);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error al cargar categoría');
+        setError(
+          err instanceof Error ? err.message : "Error al cargar categoría",
+        );
       } finally {
         setIsLoading(false);
       }

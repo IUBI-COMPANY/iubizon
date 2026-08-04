@@ -1,28 +1,28 @@
-import { prisma } from '@/lib/prisma';
-import { Navbar } from '@/components/features/layout/Navbar';
-import { Footer } from '@/components/features/layout/Footer';
-import Link from 'next/link';
+import { prisma } from "@/lib/prisma";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import Link from "next/link";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 async function getProducts(limit = 20) {
   try {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where: { status: 'active' },
+        where: { status: "active" },
         include: {
           category: true,
           seller: true,
-          images: { orderBy: { position: 'asc' } },
+          images: { orderBy: { position: "asc" } },
         },
-        orderBy: { created_at: 'desc' },
+        orderBy: { created_at: "desc" },
         take: limit,
       }),
-      prisma.product.count({ where: { status: 'active' } }),
+      prisma.product.count({ where: { status: "active" } }),
     ]);
     return { products, total };
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return { products: [], total: 0 };
   }
 }
@@ -33,31 +33,44 @@ export default async function ProductsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-[#f8fafc]">
         <div className="container py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-[#112237]">Todos los productos</h1>
+              <h1 className="text-2xl font-bold text-[#112237]">
+                Todos los productos
+              </h1>
               <p className="text-[#64748b]">{total} productos disponibles</p>
             </div>
-            <Link href="/products/new" className="bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]">
+            <Link
+              href="/products/new"
+              className="bg-[#f25c05] text-white px-4 py-2 rounded-lg hover:bg-[#d94d04]"
+            >
               + Publicar producto
             </Link>
           </div>
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {products.map(product => (
-                <Link key={product.id} href={`/products/${product.id}`} className="block">
+              {products.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="block"
+                >
                   <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 hover:shadow-lg transition-shadow">
                     <div className="aspect-square bg-[#f8fafc] rounded-lg mb-3 flex items-center justify-center text-4xl">
                       📦
                     </div>
-                    <h3 className="font-medium text-[#112237] truncate">{product.title}</h3>
-                    <p className="text-[#f25c05] font-bold">S/ {Number(product.price).toFixed(2)}</p>
+                    <h3 className="font-medium text-[#112237] truncate">
+                      {product.title}
+                    </h3>
+                    <p className="text-[#f25c05] font-bold">
+                      S/ {Number(product.price).toFixed(2)}
+                    </p>
                     <span className="text-xs text-[#64748b] capitalize">
-                      {(product.condition || '').replace('_', ' ')}
+                      {(product.condition || "").replace("_", " ")}
                     </span>
                   </div>
                 </Link>

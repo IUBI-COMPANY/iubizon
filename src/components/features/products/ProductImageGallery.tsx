@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, ZoomIn, Expand, Play } from 'lucide-react';
+import { useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  Expand,
+  Play,
+} from "lucide-react";
 
-import 'swiper/swiper-bundle.css';
+import "swiper/swiper-bundle.css";
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Thumbs } from 'swiper/modules';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, Thumbs } from "swiper/modules";
 
 interface ProductImage {
   id: string;
@@ -22,17 +29,30 @@ interface ProductImageGalleryProps {
   videoUrl?: string | null;
 }
 
-export function ProductImageGallery({ images, title, videoUrl }: ProductImageGalleryProps) {
+export function ProductImageGallery({
+  images,
+  title,
+  videoUrl,
+}: ProductImageGalleryProps) {
   const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const sortedImages = [...images].sort((a, b) => (a.position || 0) - (b.position || 0));
+  const sortedImages = [...images].sort(
+    (a, b) => (a.position || 0) - (b.position || 0),
+  );
 
   // Combinar imágenes y video
-  const mediaItems: Array<{ id: string; url: string; isVideo?: boolean; position?: number }> = [
+  const mediaItems: Array<{
+    id: string;
+    url: string;
+    isVideo?: boolean;
+    position?: number;
+  }> = [
     ...sortedImages,
-    ...(videoUrl ? [{ id: 'product-video', url: videoUrl, isVideo: true }] : []),
+    ...(videoUrl
+      ? [{ id: "product-video", url: videoUrl, isVideo: true }]
+      : []),
   ];
 
   if (mediaItems.length === 0) {
@@ -54,10 +74,13 @@ export function ProductImageGallery({ images, title, videoUrl }: ProductImageGal
       <div className="relative group/main">
         <Swiper
           modules={[Navigation, Pagination, Thumbs]}
-          thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+          thumbs={{
+            swiper:
+              thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
+          }}
           navigation={{
-            prevEl: '.gallery-prev',
-            nextEl: '.gallery-next',
+            prevEl: ".gallery-prev",
+            nextEl: ".gallery-next",
           }}
           pagination={{ clickable: true }}
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
@@ -129,14 +152,16 @@ export function ProductImageGallery({ images, title, videoUrl }: ProductImageGal
               <button
                 className={`relative w-full h-full rounded-lg overflow-hidden border-2 transition-all ${
                   idx === activeIndex
-                    ? 'border-[#f25c05] ring-2 ring-[#f25c05]/30'
-                    : 'border-[#e2e8f0] hover:border-[#f25c05]/50'
+                    ? "border-[#f25c05] ring-2 ring-[#f25c05]/30"
+                    : "border-[#e2e8f0] hover:border-[#f25c05]/50"
                 }`}
               >
                 {item.isVideo ? (
                   <div className="w-full h-full bg-[#112237] flex flex-col items-center justify-center text-white p-1">
                     <Play className="w-5 h-5 text-[#f25c05] fill-[#f25c05]" />
-                    <span className="text-[9px] font-semibold mt-0.5">Video</span>
+                    <span className="text-[9px] font-semibold mt-0.5">
+                      Video
+                    </span>
                   </div>
                 ) : (
                   <Image

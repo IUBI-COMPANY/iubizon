@@ -1,8 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from './useAuth';
+import {
+  useState,
+  useEffect,
+  useCallback,
+  createContext,
+  useContext,
+} from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "./useAuth";
 
 interface FavoritesContextType {
   favoriteIds: Set<string>;
@@ -11,7 +17,9 @@ interface FavoritesContextType {
   isFavorite: (productId: string) => boolean;
 }
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
+const FavoritesContext = createContext<FavoritesContextType | undefined>(
+  undefined,
+);
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -28,9 +36,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
       const supabase = createClient();
       const { data } = await supabase
-        .from('favorites')
-        .select('product_id')
-        .eq('user_id', user.id);
+        .from("favorites")
+        .select("product_id")
+        .eq("user_id", user.id);
 
       setFavoriteIds(new Set(data?.map((f) => f.product_id) ?? []));
       setIsLoading(false);
@@ -39,62 +47,70 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     loadFavorites();
   }, [user]);
 
-  const toggleFavorite = useCallback(async (productId: string): Promise<boolean> => {
-    if (!user) {
-      window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
-      return false;
-    }
-
-    const isFavorited = favoriteIds.has(productId);
-    const supabase = createClient();
-
-    setFavoriteIds((prev) => {
-      const next = new Set(prev);
-      if (isFavorited) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
+  const toggleFavorite = useCallback(
+    async (productId: string): Promise<boolean> => {
+      if (!user) {
+        window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        return false;
       }
-      return next;
-    });
 
-    try {
-      if (isFavorited) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('product_id', productId);
+      const isFavorited = favoriteIds.has(productId);
+      const supabase = createClient();
 
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, product_id: productId });
-
-        if (error) throw error;
-      }
-      return !isFavorited;
-    } catch {
       setFavoriteIds((prev) => {
         const next = new Set(prev);
         if (isFavorited) {
-          next.add(productId);
-        } else {
           next.delete(productId);
+        } else {
+          next.add(productId);
         }
         return next;
       });
-      return isFavorited;
-    }
-  }, [user, favoriteIds]);
 
-  const isFavorite = useCallback((productId: string): boolean => {
-    return favoriteIds.has(productId);
-  }, [favoriteIds]);
+      try {
+        if (isFavorited) {
+          const { error } = await supabase
+            .from("favorites")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_id", productId);
+
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from("favorites")
+            .insert({ user_id: user.id, product_id: productId });
+
+          if (error) throw error;
+        }
+        return !isFavorited;
+      } catch {
+        setFavoriteIds((prev) => {
+          const next = new Set(prev);
+          if (isFavorited) {
+            next.add(productId);
+          } else {
+            next.delete(productId);
+          }
+          return next;
+        });
+        return isFavorited;
+      }
+    },
+    [user, favoriteIds],
+  );
+
+  const isFavorite = useCallback(
+    (productId: string): boolean => {
+      return favoriteIds.has(productId);
+    },
+    [favoriteIds],
+  );
 
   return (
-    <FavoritesContext.Provider value={{ favoriteIds, isLoading, toggleFavorite, isFavorite }}>
+    <FavoritesContext.Provider
+      value={{ favoriteIds, isLoading, toggleFavorite, isFavorite }}
+    >
       {children}
     </FavoritesContext.Provider>
   );
@@ -103,7 +119,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 export function useFavoritesContext() {
   const context = useContext(FavoritesContext);
   if (!context) {
-    throw new Error('useFavoritesContext must be used within a FavoritesProvider');
+    throw new Error(
+      "useFavoritesContext must be used within a FavoritesProvider",
+    );
   }
   return context;
 }

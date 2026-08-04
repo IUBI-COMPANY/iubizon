@@ -132,10 +132,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const ctx: ToastContextValue = {
     toast: addToast,
-    success: (message, title) => addToast({ variant: "success", message, title }),
+    success: (message, title) =>
+      addToast({ variant: "success", message, title }),
     error: (message, title) => addToast({ variant: "error", message, title }),
     info: (message, title) => addToast({ variant: "info", message, title }),
-    warning: (message, title) => addToast({ variant: "warning", message, title }),
+    warning: (message, title) =>
+      addToast({ variant: "warning", message, title }),
   };
 
   return (

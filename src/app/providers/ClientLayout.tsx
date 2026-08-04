@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { AuthProvider } from '@/hooks/useAuth';
-import { CompanyProvider } from '@/context/CompanyContext';
-import { FavoritesProvider } from '@/hooks/useFavoritesContext';
-import { CartProvider } from '@/hooks/useCart';
-import { ToastProvider } from '@/context/ToastContext';
-import { WhatsAppFloatingButton } from '@/components/ui/WhatsAppFloatingButton';
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/next';
+import { AuthProvider } from "@/hooks/useAuth";
+import { CompanyProvider } from "@/context/CompanyContext";
+import { FavoritesProvider } from "@/hooks/useFavoritesContext";
+import { CartProvider } from "@/hooks/useCart";
+import { ToastProvider } from "@/context/ToastContext";
+import { WhatsAppFloatingButton } from "@/components/ui/WhatsAppFloatingButton";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -15,13 +15,13 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <CompanyProvider>
         <FavoritesProvider>
           <CartProvider>
-              <ToastProvider>
-                {children}
-                <SpeedInsights />
-                <Analytics />
-                <WhatsAppFloatingButton />
-              </ToastProvider>
-            </CartProvider>
+            <ToastProvider>
+              {children}
+              <SpeedInsights />
+              <Analytics />
+              <WhatsAppFloatingButton />
+            </ToastProvider>
+          </CartProvider>
         </FavoritesProvider>
       </CompanyProvider>
     </AuthProvider>

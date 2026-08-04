@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RatingStarsProps {
   rating: number;
   maxRating?: number;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showValue?: boolean;
   reviewCount?: number;
   interactive?: boolean;
@@ -14,15 +14,15 @@ interface RatingStarsProps {
 }
 
 const sizeClasses = {
-  sm: 'w-3 h-3',
-  md: 'w-4 h-4',
-  lg: 'w-5 h-5',
+  sm: "w-3 h-3",
+  md: "w-4 h-4",
+  lg: "w-5 h-5",
 };
 
 export const RatingStars = ({
   rating,
   maxRating = 5,
-  size = 'md',
+  size = "md",
   showValue = false,
   reviewCount,
   interactive = false,
@@ -47,15 +47,16 @@ export const RatingStars = ({
             disabled={!interactive}
             onClick={() => handleClick(index + 1)}
             className={cn(
-              interactive && 'cursor-pointer hover:scale-110 transition-transform'
+              interactive &&
+                "cursor-pointer hover:scale-110 transition-transform",
             )}
           >
             <Star
               className={cn(
                 sizeClasses[size],
                 isFilled || isHalf
-                  ? 'fill-[#f59e0b] text-[#f59e0b]'
-                  : 'fill-none text-[#e2e8f0]'
+                  ? "fill-[#f59e0b] text-[#f59e0b]"
+                  : "fill-none text-[#e2e8f0]",
               )}
             />
           </button>
@@ -69,9 +70,7 @@ export const RatingStars = ({
       )}
 
       {reviewCount !== undefined && (
-        <span className="text-sm text-[#64748b]">
-          ({reviewCount})
-        </span>
+        <span className="text-sm text-[#64748b]">({reviewCount})</span>
       )}
     </div>
   );

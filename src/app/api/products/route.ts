@@ -1,13 +1,15 @@
-import { createServerClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { createServerClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const supabase = await createServerClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   let title: string;
@@ -27,9 +29,9 @@ export async function POST(request: Request) {
   let warranty: string | null = null;
   let warranty_conditions: string | null = null;
 
-  const contentType = request.headers.get('content-type') || '';
+  const contentType = request.headers.get("content-type") || "";
 
-  if (contentType.includes('application/json')) {
+  if (contentType.includes("application/json")) {
     const body = await request.json();
     title = body.title;
     description = body.description || null;
@@ -49,30 +51,42 @@ export async function POST(request: Request) {
     warranty_conditions = body.warranty_conditions || null;
   } else {
     const formData = await request.formData();
-    title = formData.get('title') as string;
-    description = (formData.get('description') as string) || null;
-    price = parseFloat(formData.get('price') as string);
-    condition = formData.get('condition') as string;
-    category_id = formData.get('category_id') as string;
-    availability_type = (formData.get('availability_type') as string) || null;
-    stock = formData.get('stock') ? parseInt(formData.get('stock') as string) : 1;
-    location = (formData.get('location') as string) || null;
-    latitude = formData.get('latitude') ? parseFloat(formData.get('latitude') as string) : null;
-    longitude = formData.get('longitude') ? parseFloat(formData.get('longitude') as string) : null;
-    delivery_preference = (formData.get('delivery_preference') as string) || null;
-    brand = (formData.get('brand') as string) || null;
-    company_id = (formData.get('company_id') as string) || null;
-    video_url = (formData.get('video_url') as string) || null;
-    warranty = (formData.get('warranty') as string) || null;
-    warranty_conditions = (formData.get('warranty_conditions') as string) || null;
+    title = formData.get("title") as string;
+    description = (formData.get("description") as string) || null;
+    price = parseFloat(formData.get("price") as string);
+    condition = formData.get("condition") as string;
+    category_id = formData.get("category_id") as string;
+    availability_type = (formData.get("availability_type") as string) || null;
+    stock = formData.get("stock")
+      ? parseInt(formData.get("stock") as string)
+      : 1;
+    location = (formData.get("location") as string) || null;
+    latitude = formData.get("latitude")
+      ? parseFloat(formData.get("latitude") as string)
+      : null;
+    longitude = formData.get("longitude")
+      ? parseFloat(formData.get("longitude") as string)
+      : null;
+    delivery_preference =
+      (formData.get("delivery_preference") as string) || null;
+    brand = (formData.get("brand") as string) || null;
+    company_id = (formData.get("company_id") as string) || null;
+    video_url = (formData.get("video_url") as string) || null;
+    warranty = (formData.get("warranty") as string) || null;
+    warranty_conditions =
+      (formData.get("warranty_conditions") as string) || null;
   }
 
   if (!title || !price || !condition || !category_id) {
-    return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Faltan campos requeridos" },
+      { status: 400 },
+    );
   }
 
   if (description) {
-    const { detectForbiddenContactInfo } = await import('@/lib/utils/contactDetector');
+    const { detectForbiddenContactInfo } =
+      await import("@/lib/utils/contactDetector");
     const contactCheck = detectForbiddenContactInfo(description);
     if (contactCheck.hasViolation) {
       return NextResponse.json({ error: contactCheck.reason }, { status: 400 });
@@ -82,10 +96,10 @@ export async function POST(request: Request) {
   // Validar membresía de empresa o autodetectar la empresa activa del usuario
   if (company_id) {
     const { data: memberData } = await supabase
-      .from('company_members')
-      .select('id')
-      .eq('company_id', company_id)
-      .eq('user_id', user.id)
+      .from("company_members")
+      .select("id")
+      .eq("company_id", company_id)
+      .eq("user_id", user.id)
       .single();
 
     if (!memberData) {
@@ -95,18 +109,18 @@ export async function POST(request: Request) {
 
   if (!company_id) {
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('last_active_company_id')
-      .eq('id', user.id)
+      .from("profiles")
+      .select("last_active_company_id")
+      .eq("id", user.id)
       .single();
 
     if (profile?.last_active_company_id) {
       company_id = profile.last_active_company_id;
     } else {
       const { data: firstMember } = await supabase
-        .from('company_members')
-        .select('company_id')
-        .eq('user_id', user.id)
+        .from("company_members")
+        .select("company_id")
+        .eq("user_id", user.id)
         .limit(1)
         .maybeSingle();
 
@@ -116,39 +130,42 @@ export async function POST(request: Request) {
     }
   }
 
-  if (category_id === 'other') {
+  if (category_id === "other") {
     const { data: otrosCat } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', 'otros')
+      .from("categories")
+      .select("id")
+      .eq("slug", "otros")
       .single();
 
     if (otrosCat) {
       category_id = otrosCat.id;
     } else {
-      return NextResponse.json({ error: 'Categoría "Otros" no encontrada' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Categoría "Otros" no encontrada' },
+        { status: 400 },
+      );
     }
   }
 
   if (!location) {
     if (company_id) {
       const { data: comp } = await supabase
-        .from('companies')
-        .select('location')
-        .eq('id', company_id)
+        .from("companies")
+        .select("location")
+        .eq("id", company_id)
         .maybeSingle();
-      location = comp?.location || 'Lima, Perú';
+      location = comp?.location || "Lima, Perú";
     } else {
       const { data: prof } = await supabase
-        .from('profiles')
-        .select('location')
-        .eq('id', user.id)
+        .from("profiles")
+        .select("location")
+        .eq("id", user.id)
         .maybeSingle();
-      location = prof?.location || 'Lima, Perú';
+      location = prof?.location || "Lima, Perú";
     }
   }
 
-  const defaultWarranty = warranty || 'Sin garantía del vendedor';
+  const defaultWarranty = warranty || "Sin garantía del vendedor";
 
   const insertData: Record<string, unknown> = {
     title,
@@ -158,30 +175,31 @@ export async function POST(request: Request) {
     category_id,
     seller_id: user.id,
     company_id: company_id || null,
-    status: 'active',
+    status: "active",
     stock,
     location: location || null,
     latitude: latitude,
     longitude: longitude,
     brand: brand,
-    availability_type: availability_type || 'unique',
+    availability_type: availability_type || "unique",
     delivery_preference: delivery_preference || null,
     video_url: video_url || null,
     specifications: {
       warranty: defaultWarranty,
-      warranty_coverage: 'Fallas de fabricación y componentes defectuosos de origen',
+      warranty_coverage:
+        "Fallas de fabricación y componentes defectuosos de origen",
       warranty_conditions: warranty_conditions || null,
     },
   };
 
   const { data, error } = await supabase
-    .from('products')
+    .from("products")
     .insert(insertData)
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating product:', error);
+    console.error("Error creating product:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

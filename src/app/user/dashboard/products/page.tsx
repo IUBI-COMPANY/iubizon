@@ -83,14 +83,17 @@ export default function ProductsManagementPage() {
                 p.id === payload.new.id
                   ? {
                       ...p,
-                      stock: typeof payload.new.stock === "number" ? payload.new.stock : p.stock,
+                      stock:
+                        typeof payload.new.stock === "number"
+                          ? payload.new.stock
+                          : p.stock,
                       status: payload.new.status || p.status,
                     }
-                  : p
-              )
+                  : p,
+              ),
             );
           }
-        }
+        },
       )
       .subscribe();
 
@@ -174,7 +177,10 @@ export default function ProductsManagementPage() {
         {loading ? (
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 space-y-4 shadow-sm">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-[#f1f5f9] last:border-0">
+              <div
+                key={i}
+                className="flex items-center justify-between py-2 border-b border-[#f1f5f9] last:border-0"
+              >
                 <div className="flex items-center gap-3">
                   <Skeleton width={56} height={56} borderRadius={12} />
                   <div className="space-y-1.5">

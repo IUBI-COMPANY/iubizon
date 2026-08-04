@@ -1,23 +1,37 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { PasswordInput, validatePasswordStrict } from '@/components/ui/PasswordInput';
-import { useAuth } from '@/hooks/useAuth';
+import { useState, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Mail, Lock, User, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
+import {
+  PasswordInput,
+  validatePasswordStrict,
+} from "@/components/ui/PasswordInput";
+import { useAuth } from "@/hooks/useAuth";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function getSanitizedRedirect(redirectParam: string | null): string {
-  if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//') && !redirectParam.includes('\\')) {
+  if (
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//") &&
+    !redirectParam.includes("\\")
+  ) {
     return redirectParam;
   }
-  return '/user/dashboard';
+  return "/user/dashboard";
 }
 
 function RegisterForm() {
@@ -25,15 +39,15 @@ function RegisterForm() {
   const searchParams = useSearchParams();
   const { signUp, signIn, signInWithGoogle } = useAuth();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const redirectTarget = getSanitizedRedirect(searchParams.get('redirect'));
+  const redirectTarget = getSanitizedRedirect(searchParams.get("redirect"));
 
   const isPasswordValid = validatePasswordStrict(password);
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
@@ -41,9 +55,11 @@ function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isPasswordValid) return setError('La contraseña no cumple con los requisitos mínimos');
-    if (!doPasswordsMatch) return setError('Las contraseñas no coinciden');
-    if (!agreedToTerms) return setError('Debes aceptar los términos y condiciones');
+    if (!isPasswordValid)
+      return setError("La contraseña no cumple con los requisitos mínimos");
+    if (!doPasswordsMatch) return setError("Las contraseñas no coinciden");
+    if (!agreedToTerms)
+      return setError("Debes aceptar los términos y condiciones");
 
     setIsLoading(true);
     setError(null);
@@ -51,13 +67,20 @@ function RegisterForm() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = name.trim();
 
-    const { error: signUpError } = await signUp(cleanEmail, password, cleanName);
+    const { error: signUpError } = await signUp(
+      cleanEmail,
+      password,
+      cleanName,
+    );
 
     if (signUpError) {
-      if (signUpError.message.includes('rate limit')) {
-        setError('Límite de intentos alcanzado. Intenta más tarde.');
-      } else if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
-        setError('Este email ya está registrado.');
+      if (signUpError.message.includes("rate limit")) {
+        setError("Límite de intentos alcanzado. Intenta más tarde.");
+      } else if (
+        signUpError.message.includes("already registered") ||
+        signUpError.message.includes("already exists")
+      ) {
+        setError("Este email ya está registrado.");
       } else {
         setError(signUpError.message);
       }
@@ -67,9 +90,9 @@ function RegisterForm() {
 
     const { error: signInError } = await signIn(cleanEmail, password);
     if (signInError) {
-      const loginRedirect = searchParams.get('redirect')
-        ? `/auth/login?registered=true&redirect=${encodeURIComponent(searchParams.get('redirect')!)}`
-        : '/auth/login?registered=true';
+      const loginRedirect = searchParams.get("redirect")
+        ? `/auth/login?registered=true&redirect=${encodeURIComponent(searchParams.get("redirect")!)}`
+        : "/auth/login?registered=true";
       router.push(loginRedirect);
     } else {
       router.push(redirectTarget);
@@ -83,7 +106,7 @@ function RegisterForm() {
 
     const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
-      setError('Error al conectar con Google. Intenta nuevamente.');
+      setError("Error al conectar con Google. Intenta nuevamente.");
       setIsLoading(false);
     }
   };
@@ -91,8 +114,12 @@ function RegisterForm() {
   return (
     <Card className="w-full max-w-md shadow-lg border border-[#e2e8f0]">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-[#112237]">Crear cuenta</CardTitle>
-        <CardDescription>Únete a iubizon y empieza a comprar o vender</CardDescription>
+        <CardTitle className="text-2xl font-bold text-[#112237]">
+          Crear cuenta
+        </CardTitle>
+        <CardDescription>
+          Únete a iubizon y empieza a comprar o vender
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -163,26 +190,39 @@ function RegisterForm() {
               className="mt-0.5 w-4 h-4 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
               disabled={isLoading}
             />
-            <label htmlFor="terms" className="text-xs text-[#64748b] leading-tight">
-              Acepto los{' '}
-              <Link href="/terms" className="text-[#f25c05] hover:underline font-medium">
+            <label
+              htmlFor="terms"
+              className="text-xs text-[#64748b] leading-tight"
+            >
+              Acepto los{" "}
+              <Link
+                href="/terms"
+                className="text-[#f25c05] hover:underline font-medium"
+              >
                 Términos y condiciones
-              </Link>{' '}
-              y la{' '}
-              <Link href="/privacy" className="text-[#f25c05] hover:underline font-medium">
+              </Link>{" "}
+              y la{" "}
+              <Link
+                href="/privacy"
+                className="text-[#f25c05] hover:underline font-medium"
+              >
                 Política de privacidad
               </Link>
             </label>
           </div>
 
-          <Button type="submit" className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg"
+            disabled={isLoading}
+          >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Creando cuenta...
               </span>
             ) : (
-              'Crear cuenta'
+              "Crear cuenta"
             )}
           </Button>
 
@@ -191,7 +231,9 @@ function RegisterForm() {
               <div className="w-full border-t border-[#e2e8f0]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-[#94a3b8] font-medium">O</span>
+              <span className="bg-white px-3 text-[#94a3b8] font-medium">
+                O
+              </span>
             </div>
           </div>
 
@@ -225,8 +267,11 @@ function RegisterForm() {
         </form>
 
         <p className="text-center text-xs text-[#64748b] mt-6">
-          ¿Ya tienes cuenta?{' '}
-          <Link href="/auth/login" className="text-[#f25c05] font-semibold hover:underline">
+          ¿Ya tienes cuenta?{" "}
+          <Link
+            href="/auth/login"
+            className="text-[#f25c05] font-semibold hover:underline"
+          >
             Iniciar sesión
           </Link>
         </p>

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { MapPin, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { useGeolocation, calculateDistance } from '@/hooks/useGeolocation';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from "react";
+import { MapPin, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { useGeolocation, calculateDistance } from "@/hooks/useGeolocation";
+import { createClient } from "@/lib/supabase/client";
 
 interface LocationSelectorProps {
   userId: string;
@@ -22,7 +22,7 @@ export function LocationSelector({
   currentLongitude,
   onLocationUpdate,
 }: LocationSelectorProps) {
-  const [locationName, setLocationName] = useState(currentLocation || '');
+  const [locationName, setLocationName] = useState(currentLocation || "");
   const [saving, setSaving] = useState(false);
   const { coordinates, isLoading, error, refresh } = useGeolocation();
   const [showSuccess, setShowSuccess] = useState(false);
@@ -43,9 +43,9 @@ export function LocationSelector({
     }
 
     const { error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update(updates)
-      .eq('id', userId);
+      .eq("id", userId);
 
     setSaving(false);
 
@@ -60,9 +60,15 @@ export function LocationSelector({
     refresh();
   };
 
-  const distance = currentLatitude && currentLongitude && coordinates
-    ? calculateDistance(coordinates.latitude, coordinates.longitude, currentLatitude, currentLongitude)
-    : null;
+  const distance =
+    currentLatitude && currentLongitude && coordinates
+      ? calculateDistance(
+          coordinates.latitude,
+          coordinates.longitude,
+          currentLatitude,
+          currentLongitude,
+        )
+      : null;
 
   return (
     <div className="space-y-4">
@@ -78,20 +84,20 @@ export function LocationSelector({
           onChange={(e) => setLocationName(e.target.value)}
         />
 
-        {error && (
-          <p className="text-sm text-red-500">{error.message}</p>
-        )}
+        {error && <p className="text-sm text-red-500">{error.message}</p>}
 
         {currentLatitude && currentLongitude && (
           <p className="text-sm text-[#64748b]">
-            📍 Ubicación guardada: {currentLatitude.toFixed(4)}, {currentLongitude.toFixed(4)}
+            📍 Ubicación guardada: {currentLatitude.toFixed(4)},{" "}
+            {currentLongitude.toFixed(4)}
           </p>
         )}
 
         {coordinates && (
           <p className="text-sm text-green-600 flex items-center gap-1">
             ✓ Tu ubicación actual detectada
-            {distance !== null && ` (${distance.toFixed(1)} km de tu ubicación guardada)`}
+            {distance !== null &&
+              ` (${distance.toFixed(1)} km de tu ubicación guardada)`}
           </p>
         )}
 
@@ -108,15 +114,12 @@ export function LocationSelector({
                 Detectando...
               </>
             ) : (
-              'Detectar mi ubicación'
+              "Detectar mi ubicación"
             )}
           </Button>
 
-          <Button
-            onClick={handleSave}
-            disabled={saving || !locationName}
-          >
-            {saving ? 'Guardando...' : 'Guardar'}
+          <Button onClick={handleSave} disabled={saving || !locationName}>
+            {saving ? "Guardando..." : "Guardar"}
           </Button>
         </div>
 

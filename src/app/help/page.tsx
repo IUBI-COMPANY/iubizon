@@ -53,7 +53,11 @@ function HelpContent() {
         </div>
         <div className="container mx-auto max-w-5xl relative z-10">
           <Link href="/">
-            <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-white/10 mb-4 rounded-xl text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-slate-300 hover:text-white hover:bg-white/10 mb-4 rounded-xl text-xs"
+            >
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               Volver al Inicio
             </Button>
@@ -67,7 +71,9 @@ function HelpContent() {
             </h1>
           </div>
           <p className="text-slate-300 text-xs md:text-sm max-w-2xl mt-1">
-            Encuentra aquí todo sobre el funcionamiento de nuestra plataforma, guías de compra, beneficios para empresas vendedores, seguridad y normas legales.
+            Encuentra aquí todo sobre el funcionamiento de nuestra plataforma,
+            guías de compra, beneficios para empresas vendedores, seguridad y
+            normas legales.
           </p>
         </div>
       </div>
@@ -122,7 +128,8 @@ function HelpContent() {
                     Guía de Compra & Armado de Paquetes
                   </h2>
                   <p className="text-xs text-[#64748b] mt-1">
-                    Aprende cómo adquirir equipamiento tecnológico y armar tus combos ideales para tu empresa u hogar.
+                    Aprende cómo adquirir equipamiento tecnológico y armar tus
+                    combos ideales para tu empresa u hogar.
                   </p>
                 </div>
 
@@ -135,7 +142,9 @@ function HelpContent() {
                       Arma tu Set o Paquete Tecnológico
                     </h3>
                     <p className="text-xs text-[#64748b]">
-                      Selecciona productos complementarios (Laptops, Proyectores, Impresoras o Accesorios) y agrégalos a tu paquete en un solo pago unificado.
+                      Selecciona productos complementarios (Laptops,
+                      Proyectores, Impresoras o Accesorios) y agrégalos a tu
+                      paquete en un solo pago unificado.
                     </p>
                   </div>
 
@@ -147,7 +156,9 @@ function HelpContent() {
                       Cotización Oficial en PDF
                     </h3>
                     <p className="text-xs text-[#64748b]">
-                      ¿Necesitas aprobación en tu institución o empresa? Genera y descarga al instante una Cotización con RUC emitida por <strong>IUBIZON COMPANY S.A.C.</strong>
+                      ¿Necesitas aprobación en tu institución o empresa? Genera
+                      y descarga al instante una Cotización con RUC emitida por{" "}
+                      <strong>IUBIZON COMPANY S.A.C.</strong>
                     </p>
                   </div>
 
@@ -159,7 +170,8 @@ function HelpContent() {
                       Pasarela de Pagos 100% Segura
                     </h3>
                     <p className="text-xs text-[#64748b]">
-                      Paga mediante tarjetas de crédito o débito a través de Niubiz con encriptación bancaria de alta seguridad.
+                      Paga mediante tarjetas de crédito o débito a través de
+                      Niubiz con encriptación bancaria de alta seguridad.
                     </p>
                   </div>
 
@@ -171,7 +183,8 @@ function HelpContent() {
                       Despacho & Seguimiento
                     </h3>
                     <p className="text-xs text-[#64748b]">
-                      Monitorea el estado de tu pedido desde tu panel de usuario hasta recibirlo con garantía oficial de marca.
+                      Monitorea el estado de tu pedido desde tu panel de usuario
+                      hasta recibirlo con garantía oficial de marca.
                     </p>
                   </div>
                 </div>
@@ -187,7 +200,8 @@ function HelpContent() {
                     Vender en iubizon (Empresas y Vendedores)
                   </h2>
                   <p className="text-xs text-[#64748b] mt-1">
-                    Conecta tus productos tecnológicos con miles de compradores institucionales y personas en todo el Perú.
+                    Conecta tus productos tecnológicos con miles de compradores
+                    institucionales y personas en todo el Perú.
                   </p>
                 </div>
 
@@ -198,7 +212,9 @@ function HelpContent() {
                       <strong className="text-[#112237] block mb-0.5 text-sm">
                         Crea tu Perfil de Empresa
                       </strong>
-                      Registra tu marca o empresa con RUC, personaliza tu catálogo comercial y gestiona tu equipo de trabajo de forma independiente.
+                      Registra tu marca o empresa con RUC, personaliza tu
+                      catálogo comercial y gestiona tu equipo de trabajo de
+                      forma independiente.
                     </div>
                   </div>
 
@@ -208,7 +224,9 @@ function HelpContent() {
                       <strong className="text-[#112237] block mb-0.5 text-sm">
                         Cobros y Transferencias Bancarias Directas
                       </strong>
-                      Registra tu cuenta de ahorros o cuenta corriente (BCP, Interbank, BBVA, etc.) en el panel de finanzas. Iubizon liquida y transfiere tus ventas de forma transparente.
+                      Registra tu cuenta de ahorros o cuenta corriente (BCP,
+                      Interbank, BBVA, etc.) en el panel de finanzas. Iubizon
+                      liquida y transfiere tus ventas de forma transparente.
                     </div>
                   </div>
 
@@ -218,7 +236,9 @@ function HelpContent() {
                       <strong className="text-[#112237] block mb-0.5 text-sm">
                         Gestión de Pedidos & Despachos
                       </strong>
-                      Recibe notificaciones inmediatas ante cada venta, actualiza el código de seguimiento del envío y mantén la reputación de tu tienda alta.
+                      Recibe notificaciones inmediatas ante cada venta,
+                      actualiza el código de seguimiento del envío y mantén la
+                      reputación de tu tienda alta.
                     </div>
                   </div>
                 </div>
@@ -234,7 +254,8 @@ function HelpContent() {
                     Protección iubizon & Garantías
                   </h2>
                   <p className="text-xs text-[#64748b] mt-1">
-                    Compostura legal y técnica diseñada para respaldar cada transacción comercial en la plataforma.
+                    Compostura legal y técnica diseñada para respaldar cada
+                    transacción comercial en la plataforma.
                   </p>
                 </div>
 
@@ -245,7 +266,10 @@ function HelpContent() {
                       Protección en Compras y Garantía de Fábrica
                     </h3>
                     <p>
-                      Todos los productos comercializados cuentan con respaldo y garantía oficial contra fallas de fabricación. iubizon facilita la mediación directa para que recibas el producto exacto prometido.
+                      Todos los productos comercializados cuentan con respaldo y
+                      garantía oficial contra fallas de fabricación. iubizon
+                      facilita la mediación directa para que recibas el producto
+                      exacto prometido.
                     </p>
                   </div>
 
@@ -254,7 +278,10 @@ function HelpContent() {
                       Prevención contra Transacciones Fraudulentas
                     </h3>
                     <p>
-                      Auditamos las solicitudes de venta y las empresas asociadas para garantizar que los pagos procesados sean legítimos, protegiendo tanto los fondos del comprador como las retribuciones del vendedor.
+                      Auditamos las solicitudes de venta y las empresas
+                      asociadas para garantizar que los pagos procesados sean
+                      legítimos, protegiendo tanto los fondos del comprador como
+                      las retribuciones del vendedor.
                     </p>
                   </div>
                 </div>
@@ -270,7 +297,8 @@ function HelpContent() {
                     Términos y Condiciones de Uso
                   </h2>
                   <p className="text-xs text-[#64748b] mt-1">
-                    Última actualización: 2026. Documento regulador de servicios para la plataforma iubizon.
+                    Última actualización: 2026. Documento regulador de servicios
+                    para la plataforma iubizon.
                   </p>
                 </div>
 
@@ -280,7 +308,10 @@ function HelpContent() {
                       1. Aceptación del Servicio
                     </h3>
                     <p>
-                      Al acceder, explorar o realizar compras a través del sitio web iubizon.com, el usuario acepta de manera íntegra los presentes Términos y Condiciones administrados por <strong>IUBIZON COMPANY S.A.C.</strong> (RUC 20614600374).
+                      Al acceder, explorar o realizar compras a través del sitio
+                      web iubizon.com, el usuario acepta de manera íntegra los
+                      presentes Términos y Condiciones administrados por{" "}
+                      <strong>IUBIZON COMPANY S.A.C.</strong> (RUC 20614600374).
                     </p>
                   </div>
 
@@ -289,7 +320,13 @@ function HelpContent() {
                       2. Rol de la Plataforma y Responsabilidad de Catálogo
                     </h3>
                     <p>
-                      iubizon opera como una plataforma tecnológica conector entre empresas comercializadoras, marcas y compradores. Los vendedores son los únicos responsables del estado físico, especificaciones y stock real de los productos publicados. iubizon se reserva el derecho de retirar cualquier publicación que no cumpla los estándares de calidad.
+                      iubizon opera como una plataforma tecnológica conector
+                      entre empresas comercializadoras, marcas y compradores.
+                      Los vendedores son los únicos responsables del estado
+                      físico, especificaciones y stock real de los productos
+                      publicados. iubizon se reserva el derecho de retirar
+                      cualquier publicación que no cumpla los estándares de
+                      calidad.
                     </p>
                   </div>
 
@@ -298,7 +335,13 @@ function HelpContent() {
                       3. Pagos, Precios y Comisiones
                     </h3>
                     <p>
-                      Todos los precios están expresados en Soles (S/) e incluyen los impuestos de ley (IGV) salvo que se especifique lo contrario. iubizon procesa las transacciones a través de pasarelas reguladas. El cobro por servicio o comisión por uso de plataforma es retenido automáticamente según las condiciones pactadas con cada vendedor.
+                      Todos los precios están expresados en Soles (S/) e
+                      incluyen los impuestos de ley (IGV) salvo que se
+                      especifique lo contrario. iubizon procesa las
+                      transacciones a través de pasarelas reguladas. El cobro
+                      por servicio o comisión por uso de plataforma es retenido
+                      automáticamente según las condiciones pactadas con cada
+                      vendedor.
                     </p>
                   </div>
 
@@ -307,7 +350,11 @@ function HelpContent() {
                       4. Suspensión de Cuentas por Incumplimiento
                     </h3>
                     <p>
-                      iubizon se reserva la facultad discrecional de suspender temporal o definitivamente la cuenta de cualquier usuario o empresa que intente realizar maniobras fraudulentas, suplantación de identidad o incumplimiento reiterado en las entregas.
+                      iubizon se reserva la facultad discrecional de suspender
+                      temporal o definitivamente la cuenta de cualquier usuario
+                      o empresa que intente realizar maniobras fraudulentas,
+                      suplantación de identidad o incumplimiento reiterado en
+                      las entregas.
                     </p>
                   </div>
                 </div>
@@ -323,7 +370,8 @@ function HelpContent() {
                     Política de Privacidad de Datos
                   </h2>
                   <p className="text-xs text-[#64748b] mt-1">
-                    Protección de datos personales conforme a la Ley N° 29733 del Perú.
+                    Protección de datos personales conforme a la Ley N° 29733
+                    del Perú.
                   </p>
                 </div>
 
@@ -333,7 +381,11 @@ function HelpContent() {
                       Tratamiento de la Información
                     </h3>
                     <p>
-                      <strong>IUBIZON COMPANY S.A.C.</strong> recopila datos como nombres, documento de identidad, dirección de entrega y correo electrónico con el único fin de procesar transacciones comerciales, emitir cotizaciones y coordinar la entrega de productos.
+                      <strong>IUBIZON COMPANY S.A.C.</strong> recopila datos
+                      como nombres, documento de identidad, dirección de entrega
+                      y correo electrónico con el único fin de procesar
+                      transacciones comerciales, emitir cotizaciones y coordinar
+                      la entrega de productos.
                     </p>
                   </div>
 
@@ -342,7 +394,10 @@ function HelpContent() {
                       Seguridad y Confidencialidad
                     </h3>
                     <p>
-                      Tus datos personales no son comercializados con terceros. La información financiera o de tarjetas es procesada directamente por pasarelas certificadas con cifrado SSL sin ser almacenada en nuestros servidores.
+                      Tus datos personales no son comercializados con terceros.
+                      La información financiera o de tarjetas es procesada
+                      directamente por pasarelas certificadas con cifrado SSL
+                      sin ser almacenada en nuestros servidores.
                     </p>
                   </div>
                 </div>
