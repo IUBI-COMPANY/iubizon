@@ -102,6 +102,7 @@ export async function GET(req: Request) {
         price: true,
         seller_id: true,
         company_id: true,
+        stock: true,
         images: {
           orderBy: { position: "asc" },
           take: 1,
@@ -121,6 +122,7 @@ export async function GET(req: Request) {
       price: Number(p.price),
       seller_id: p.seller_id,
       company_id: p.company_id,
+      stock: p.stock,
       image_url: p.images[0]?.url || null,
     }));
 

@@ -208,7 +208,9 @@ export default function CartCheckoutPage() {
       price: bump.price,
       seller_id: bump.seller_id,
       images: bump.image_url ? [{ url: bump.image_url }] : [],
+      stock: typeof bump.stock === "number" ? bump.stock : 10,
     });
+    toast.success(`"${bump.title}" agregado al paquete`, "¡Producto Añadido!");
   };
 
   // Validaciones del formulario para avanzar al paso 3

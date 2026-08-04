@@ -17,6 +17,7 @@ export interface OrderBump {
   seller_id: string;
   company_id?: string | null;
   image_url?: string | null;
+  stock?: number | null;
 }
 
 interface CartOrderBumpsProps {

@@ -176,7 +176,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const availableStock =
           typeof product.stock === "number"
             ? product.stock
-            : (existingItem?.stock ?? 0);
+            : typeof existingItem?.stock === "number"
+              ? existingItem.stock
+              : 10;
 
         if (availableStock <= 0) {
           return prev;
