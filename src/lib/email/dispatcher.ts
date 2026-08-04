@@ -4,6 +4,7 @@ import { resend, DEFAULT_FROM_EMAIL } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
+import { getShippingConfig } from "@/lib/services/platformSettings";
 import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
 
 export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
@@ -72,6 +73,8 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
           },
         },
         shipping: true,
+        paymentTransaction: true,
+        invoiceDocument: true,
       },
     });
 
@@ -86,19 +89,40 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     const orderCode =
       primaryOrder.payment_id || primaryOrder.id.slice(0, 8).toUpperCase();
 
-    // Parsear información del comprador y envío
+    // Extraer datos adicionales del registro de transacción de Niubiz (si existe)
+    const paymentRaw =
+      typeof primaryOrder.paymentTransaction?.raw_response === "object" &&
+      primaryOrder.paymentTransaction?.raw_response
+        ? (primaryOrder.paymentTransaction.raw_response as Record<string, any>)
+        : {};
+
+    const rawShipping = paymentRaw.shipping || {};
+    const rawInvoice = paymentRaw.invoiceDetails || {};
+
     const destinationAddress =
+      rawShipping.address ||
       primaryOrder.shipping?.destination_address ||
       primaryOrder.buyer.location ||
       "Dirección no especificada";
 
     const shippingForm = {
-      name: primaryOrder.buyer.name || "Cliente",
-      phone: primaryOrder.buyer.phone || "No especificado",
-      email: primaryOrder.buyer.email,
+      name: rawShipping.name || primaryOrder.buyer.name || "Cliente",
+      phone: rawShipping.phone || primaryOrder.buyer.phone || "No especificado",
+      email: rawShipping.email || primaryOrder.buyer.email,
       address: destinationAddress,
-      city: "Lima",
+      city: rawShipping.city || "Lima",
+      notes: rawShipping.notes || undefined,
     };
+
+    const deliveryType = rawShipping.deliveryType || "progressive";
+    const invoiceType =
+      rawInvoice.doc_type ||
+      primaryOrder.invoiceDocument?.doc_type ||
+      undefined;
+    const invoiceNumber =
+      rawInvoice.identity_number ||
+      primaryOrder.invoiceDocument?.identity_number ||
+      undefined;
 
     const createdAtFormatted = primaryOrder.created_at
       ? new Date(primaryOrder.created_at).toLocaleDateString("es-PE", {
@@ -125,7 +149,10 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
-    const shippingCost = 0; // Promoción de envío gratis por defecto
+
+    // Obtener costo de envío dinámico de platform_settings
+    const shippingCfg = await getShippingConfig();
+    const shippingCost = shippingCfg.is_free ? 0.0 : shippingCfg.default_cost;
     const grandTotal = subtotalCalculated + shippingCost;
 
     const buyerData: BuyerEmailData = {
@@ -138,7 +165,9 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       shippingCost,
       total: grandTotal,
       shippingForm,
-      deliveryType: "progressive",
+      deliveryType,
+      invoiceType,
+      invoiceNumber,
     };
 
     // 3. Agrupar productos por vendedor para enviar una alerta a cada uno
