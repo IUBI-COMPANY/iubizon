@@ -21,14 +21,13 @@ export const Footer = ({ categories = [] }: FooterProps) => {
     vender: [{ label: "Publicar producto", href: "/products/new" }],
     ayuda: [
       { label: "Centro de ayuda", href: "/help" },
-      { label: "Cómo comprar", href: "/help/how-to-buy" },
-      { label: "Cómo vender", href: "/help/how-to-sell" },
-      { label: "Seguridad", href: "/help/security" },
+      { label: "Cómo comprar", href: "/help?tab=comprar" },
+      { label: "Cómo vender", href: "/help?tab=vender" },
+      { label: "Seguridad", href: "/help?tab=seguridad" },
     ],
     legal: [
-      { label: "Términos y condiciones", href: "/terms" },
-      { label: "Política de privacidad", href: "/privacy" },
-      { label: "Política deCookies", href: "/cookies" },
+      { label: "Términos y condiciones", href: "/help?tab=terminos" },
+      { label: "Política de privacidad", href: "/help?tab=privacidad" },
     ],
   };
 
@@ -132,7 +131,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
               </li>
               <li className="flex items-center gap-2 text-[#94a3b8] text-sm">
                 <Mail className="w-4 h-4" />
-                <span>hola@iubizon.com</span>
+                <span>iubizon.company@gmail.com</span>
               </li>
               <li className="flex items-center gap-2 text-[#94a3b8] text-sm">
                 <MapPin className="w-4 h-4" />

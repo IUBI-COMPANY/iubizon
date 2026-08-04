@@ -16,6 +16,8 @@ import {
   Sparkles,
   Wrench,
   Clock,
+  Info,
+  FileText,
 } from 'lucide-react';
 import { ProductImageGallery } from '@/components/features/products/ProductImageGallery';
 import { ProductActionsBlock } from './ProductActionsBlock';
@@ -340,12 +342,14 @@ export default async function ProductDetailPage({ params }: Props) {
                           <p className="text-xs text-[#334155] font-semibold">
                             {warrantyText}
                           </p>
-                          <p className="text-[11px] text-[#64748b]">
-                            ℹ️ <strong className="text-[#334155]">Cobertura:</strong> Fallas de fabricación y componentes defectuosos de origen.
+                          <p className="text-[11px] text-[#64748b] flex items-center gap-1">
+                            <Info className="w-3.5 h-3.5 text-[#f25c05] shrink-0 inline" />
+                            <span><strong className="text-[#334155]">Cobertura:</strong> Fallas de fabricación y componentes defectuosos de origen.</span>
                           </p>
                           {warrantyConditions && (
-                            <p className="text-[11px] text-[#64748b]">
-                              📋 <strong className="text-[#334155]">Condiciones:</strong> {warrantyConditions}
+                            <p className="text-[11px] text-[#64748b] flex items-center gap-1">
+                              <FileText className="w-3.5 h-3.5 text-[#f25c05] shrink-0 inline" />
+                              <span><strong className="text-[#334155]">Condiciones:</strong> {warrantyConditions}</span>
                             </p>
                           )}
                         </div>

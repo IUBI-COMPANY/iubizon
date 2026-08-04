@@ -4,6 +4,7 @@ import React from "react";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { Info } from "lucide-react";
 
 export type ItemType = "product" | "service" | "item";
 
@@ -146,8 +147,9 @@ export const WarrantyField: React.FC<WarrantyFieldProps> = ({
           )}
 
           <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#e2e8f0] space-y-2 mt-3 text-xs text-[#64748b]">
-            <p className="font-semibold text-[#112237]">
-              ℹ️ Cobertura estándar:{" "}
+            <p className="font-semibold text-[#112237] flex items-center gap-1">
+              <Info className="w-3.5 h-3.5 text-[#f25c05] shrink-0" />
+              <span>Cobertura estándar:</span>{" "}
               <span className="font-normal text-[#475569]">{coverageText}</span>
             </p>
             <div>

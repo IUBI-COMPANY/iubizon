@@ -180,22 +180,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 
   const removeItem = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((item) => item.product_id !== productId));
+    setItems((prev) =>
+      prev.filter(
+        (item) => item.product_id !== productId && item.id !== productId
+      )
+    );
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems((prev) => prev.filter((item) => item.product_id !== productId));
+      setItems((prev) =>
+        prev.filter(
+          (item) => item.product_id !== productId && item.id !== productId
+        )
+      );
     } else {
       setItems((prev) =>
         prev.map((item) => {
-          if (item.product_id === productId) {
-            const maxStock = typeof item.stock === "number" && item.stock > 0 ? item.stock : 99;
+          if (item.product_id === productId || item.id === productId) {
+            const maxStock =
+              typeof item.stock === "number" && item.stock > 0
+                ? item.stock
+                : 99;
             const cappedQty = Math.min(quantity, maxStock);
             return { ...item, quantity: cappedQty };
           }
           return item;
-        }),
+        })
       );
     }
   }, []);
