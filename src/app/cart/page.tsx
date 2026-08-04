@@ -230,6 +230,39 @@ export default function CartCheckoutPage() {
     handleStepChange(3);
   };
 
+  // Validación de datos de factura/boleta antes de abrir la pasarela Niubiz
+  const validateInvoiceDetails = (): boolean => {
+    if (invoiceType === "factura") {
+      const cleanRuc = invoiceRuc.trim();
+      if (!cleanRuc || cleanRuc.length !== 11) {
+        toast.error(
+          "El número de RUC es obligatorio y debe tener exactamente 11 dígitos para emitir Factura.",
+          "Comprobante Requerido",
+        );
+        return false;
+      }
+      if (!invoiceCompanyName.trim()) {
+        toast.error(
+          "La Razón Social de la empresa es obligatoria para emitir Factura.",
+          "Comprobante Requerido",
+        );
+        return false;
+      }
+    } else if (invoiceType === "boleta") {
+      if (grandTotal > 700) {
+        const cleanDni = invoiceDni.trim();
+        if (!cleanDni || (docType === "dni" && cleanDni.length !== 8)) {
+          toast.error(
+            `El número de ${docType.toUpperCase()} es obligatorio para compras mayores a S/ 700 (Exigencia SUNAT).`,
+            "Comprobante Requerido",
+          );
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
       <Navbar />
@@ -735,6 +768,7 @@ export default function CartCheckoutPage() {
                     amount={grandTotal}
                     cartItems={items}
                     shippingForm={shippingForm}
+                    onValidate={validateInvoiceDetails}
                     invoiceDetails={{
                       doc_type: invoiceType,
                       identity_type:
