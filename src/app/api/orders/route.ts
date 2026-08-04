@@ -277,7 +277,7 @@ export async function POST(req: Request) {
                 create: {
                   origin_address: "Almacén / Proveedor",
                   destination_address: supplierDestination,
-                  courier: `Cliente: ${shipping.name} | Tel: ${shipping.phone} | ${invoiceDetails}`,
+                  courier: null,
                   tracking_number: null,
                   status: "pending",
                 },

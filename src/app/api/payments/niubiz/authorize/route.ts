@@ -255,7 +255,7 @@ export async function POST(req: Request) {
               create: {
                 origin_address: "Almacén / Proveedor",
                 destination_address: `${shipping.address || ""}, ${shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`,
-                courier: `Contacto: ${shipping.name || ""} | Comprobante: ${invoiceDetails.doc_type?.toUpperCase() || "BOLETA"} (${invoiceDetails.identity_number || ""})`,
+                courier: null,
                 tracking_number: null,
                 status: "pending",
               },

@@ -16,15 +16,18 @@ export function parseDispatchMeta(
   }
 
   const trimmed = rawCourier.trim();
+  const lower = trimmed.toLowerCase();
 
-  // Si contiene notas o datos del cliente/comprobante guardados en el campo courier, ignorarlos
+  // Si contiene notas o datos del cliente/comprobante guardados históricamente en el campo courier, ignorarlos
   if (
-    trimmed.startsWith("Cliente:") ||
-    trimmed.includes("Boleta") ||
-    trimmed.includes("Factura") ||
-    trimmed.includes("DNI:") ||
-    trimmed.includes("RUC:") ||
-    trimmed.includes("Tel:")
+    lower.includes("contacto:") ||
+    lower.includes("comprobante:") ||
+    lower.includes("cliente:") ||
+    lower.includes("boleta") ||
+    lower.includes("factura") ||
+    lower.includes("dni:") ||
+    lower.includes("ruc:") ||
+    lower.includes("tel:")
   ) {
     return { carrierName: null, trackingUrl: null, carrierPhone: null };
   }

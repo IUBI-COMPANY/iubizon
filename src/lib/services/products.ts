@@ -31,18 +31,70 @@ const productInclude = {
   images: { orderBy: { position: "asc" as const } },
 };
 
+function getSearchVariants(rawQuery: string): string[] {
+  const trimmed = rawQuery.trim();
+  if (!trimmed) return [];
+
+  const variants = new Set<string>();
+  variants.add(trimmed);
+
+  const noSpace = trimmed.replace(/\s+/g, "");
+  if (noSpace) variants.add(noSpace);
+
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  for (const word of words) {
+    variants.add(word);
+
+    // Variantes plurales / singulares comunes en español (proyectores/proyector, celulares/celular, etc.)
+    if (word.length > 4 && word.endsWith("es")) {
+      variants.add(word.slice(0, -2));
+    } else if (word.length > 3 && word.endsWith("s")) {
+      variants.add(word.slice(0, -1));
+    } else if (word.length > 3 && !/[aeiouáéíóú]$/i.test(word)) {
+      variants.add(word + "es");
+    } else if (word.length > 2) {
+      variants.add(word + "s");
+    }
+  }
+
+  return Array.from(variants).filter((v) => v.length >= 2);
+}
+
 export async function getProducts(options: GetProductsOptions = {}) {
   const { limit = 20, offset = 0, filters } = options;
 
   const where: Prisma.ProductWhereInput = { status: "active" };
 
   if (filters?.query) {
-    const q = filters.query.trim();
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-      { brand: { contains: q, mode: "insensitive" } },
-    ];
+    const rawQuery = filters.query.trim();
+    const variants = getSearchVariants(rawQuery);
+
+    // Buscar también categorías que coincidan con la búsqueda (ej: "proyectores", "celulares", "laptops", "accesorios")
+    const matchingCategories = await prisma.category.findMany({
+      where: {
+        OR: variants.flatMap((v) => [
+          { name: { contains: v, mode: "insensitive" as const } },
+          { slug: { contains: v, mode: "insensitive" as const } },
+        ]),
+      },
+      select: { id: true },
+    });
+
+    const categoryIds = matchingCategories.map((c) => c.id);
+
+    const searchConditions: Prisma.ProductWhereInput[] = variants.flatMap(
+      (v) => [
+        { title: { contains: v, mode: "insensitive" as const } },
+        { description: { contains: v, mode: "insensitive" as const } },
+        { brand: { contains: v, mode: "insensitive" as const } },
+      ],
+    );
+
+    if (categoryIds.length > 0) {
+      searchConditions.push({ category_id: { in: categoryIds } });
+    }
+
+    where.OR = searchConditions;
   }
 
   if (filters?.categoryId) {
@@ -82,8 +134,27 @@ export async function getProducts(options: GetProductsOptions = {}) {
     prisma.product.count({ where }),
   ]);
 
+  const serializedProducts = products.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    is_bundle: false,
+    favorites: p.favorites_count ?? 0,
+    location: p.seller?.location ?? null,
+    created_at: p.created_at?.toISOString() || new Date().toISOString(),
+    updated_at: p.updated_at?.toISOString() || new Date().toISOString(),
+    seller: p.seller
+      ? {
+          ...p.seller,
+          rating: Number(p.seller.rating || 0),
+          is_pro: p.seller.is_pro ?? false,
+          total_sales: p.seller.total_sales ?? 0,
+          positive_reviews: p.seller.positive_reviews ?? 0,
+        }
+      : undefined,
+  }));
+
   return {
-    products,
+    products: serializedProducts,
     total,
     hasMore: total > offset + limit,
   };
@@ -99,8 +170,14 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
     location: p.seller?.location ?? null,
     latitude: null,
     longitude: null,
-    created_at: p.created_at?.toISOString() || new Date().toISOString(),
-    updated_at: p.updated_at?.toISOString() || new Date().toISOString(),
+    created_at:
+      typeof p.created_at === "string"
+        ? p.created_at
+        : (p.created_at as any)?.toISOString?.() || new Date().toISOString(),
+    updated_at:
+      typeof p.updated_at === "string"
+        ? p.updated_at
+        : (p.updated_at as any)?.toISOString?.() || new Date().toISOString(),
     category: p.category
       ? {
           ...p.category,

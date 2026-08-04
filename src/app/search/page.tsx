@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUpDown,
@@ -184,31 +184,7 @@ function SearchContent() {
     categories.find((c) => c.id === effectiveCategoryId)?.slug ===
       "proyectores";
 
-  // Clave de cambios de parámetros para recarga eficiente
-  const paramsKey = useMemo(
-    () =>
-      `${keywords}|${categoryId}|${orderBy}|${urlMinPrice}|${urlMaxPrice}|${conditions.join(",")}|${resolutionSpecs.join(",")}|${lumensSpecs.join(",")}|${technologySpecs.join(",")}|${brandSpecs.join(",")}|${page}`,
-    [
-      keywords,
-      categoryId,
-      orderBy,
-      urlMinPrice,
-      urlMaxPrice,
-      conditions,
-      resolutionSpecs,
-      lumensSpecs,
-      technologySpecs,
-      brandSpecs,
-      page,
-    ],
-  );
-
-  const lastParamsKey = useRef("");
-
   useEffect(() => {
-    if (paramsKey === lastParamsKey.current) return;
-    lastParamsKey.current = paramsKey;
-
     let mounted = true;
 
     const fetchProducts = async () => {
@@ -216,7 +192,7 @@ function SearchContent() {
       try {
         const params = new URLSearchParams();
         if (keywords) params.set("keywords", keywords);
-        if (effectiveCategoryId) params.set("category_id", effectiveCategoryId);
+        if (categoryId) params.set("category_id", categoryId);
         if (urlMinPrice) params.set("min_price", urlMinPrice);
         if (urlMaxPrice) params.set("max_price", urlMaxPrice);
         if (conditions.length > 0)
@@ -226,16 +202,27 @@ function SearchContent() {
         params.set("limit", limit.toString());
 
         const res = await fetch(`/api/products/search?${params.toString()}`);
-        const { products: data, total: totalCount } = await res.json();
+        if (!res.ok) {
+          throw new Error("Respuesta no válida del servidor");
+        }
+        const json = await res.json();
+        const data = Array.isArray(json.products) ? json.products : [];
+        const totalCount = typeof json.total === "number" ? json.total : 0;
 
-        if (mounted && data) {
+        if (mounted) {
           setProducts(data);
-          setTotal(totalCount || 0);
+          setTotal(totalCount);
         }
       } catch (err) {
         console.error("Error al buscar productos:", err);
+        if (mounted) {
+          setProducts([]);
+          setTotal(0);
+        }
       } finally {
-        if (mounted) setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -245,9 +232,8 @@ function SearchContent() {
       mounted = false;
     };
   }, [
-    paramsKey,
     keywords,
-    effectiveCategoryId,
+    categoryId,
     urlMinPrice,
     urlMaxPrice,
     conditions,
