@@ -27,10 +27,7 @@ import {
   Plus,
   Minus,
   Trash2,
-  Truck,
-  ShieldCheck,
   FileText,
-  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/hooks/useCart";

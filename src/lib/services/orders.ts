@@ -57,3 +57,45 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus) {
     include: orderInclude,
   });
 }
+
+export async function getOrCreateBuyerProfile(params: {
+  userId?: string | null;
+  email?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  txPrisma?: any;
+}) {
+  const client = params.txPrisma || prisma;
+
+  if (params.userId) {
+    const existing = await client.profile.findUnique({
+      where: { id: params.userId },
+      select: { id: true },
+    });
+    if (existing) return existing.id;
+  }
+
+  const email = params.email?.trim() || "invitado@iubizon.com";
+  const name = params.name?.trim() || "Cliente Invitado";
+  const phone = params.phone?.trim() || null;
+
+  let profile = await client.profile.findFirst({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (!profile) {
+    const guestId = params.userId || crypto.randomUUID();
+    profile = await client.profile.create({
+      data: {
+        id: guestId,
+        email,
+        name,
+        phone,
+      },
+      select: { id: true },
+    });
+  }
+
+  return profile.id;
+}

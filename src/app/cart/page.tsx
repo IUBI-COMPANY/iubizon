@@ -208,10 +208,11 @@ export default function CartCheckoutPage() {
     if (
       !shippingForm.name.trim() ||
       !shippingForm.phone.trim() ||
+      !shippingForm.email.trim() ||
       !shippingForm.address.trim()
     ) {
       toast.error(
-        "Completa Nombre, Teléfono y Dirección para continuar.",
+        "Completa tu Nombre, Teléfono, Correo electrónico y Dirección para continuar.",
         "Datos incompletos",
       );
       return;
@@ -479,6 +480,24 @@ export default function CartCheckoutPage() {
 
               {/* FORMULARIO DE DATOS */}
               <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 sm:p-8 shadow-sm space-y-5">
+                {!user && (
+                  <div className="bg-orange-50 border border-orange-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs text-[#112237]">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#f25c05] shrink-0" />
+                      <span>
+                        <strong>Compra como Invitado activa:</strong> No
+                        necesitas registrarte ni crear contraseña para comprar.
+                      </span>
+                    </div>
+                    <Link
+                      href="/auth/login?redirectTo=/cart"
+                      className="text-[#f25c05] font-bold hover:underline shrink-0 text-[11px]"
+                    >
+                      ¿Ya tienes cuenta? Iniciar sesión
+                    </Link>
+                  </div>
+                )}
+
                 <div className="border-b border-[#f1f5f9] pb-4">
                   <h2 className="font-bold text-[#112237] text-base flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#f25c05]" />
@@ -517,7 +536,7 @@ export default function CartCheckoutPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-[#112237] mb-1.5">
-                      Correo Electrónico
+                      Correo Electrónico (para tu comprobante) *
                     </label>
                     <Input
                       type="email"
@@ -526,6 +545,7 @@ export default function CartCheckoutPage() {
                         handleFormChange("email", e.target.value)
                       }
                       placeholder="ejemplo@correo.com"
+                      required
                     />
                   </div>
 

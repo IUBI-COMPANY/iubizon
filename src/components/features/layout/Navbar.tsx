@@ -36,8 +36,24 @@ export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isNonProd, setIsNonProd] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      const isProdDomain =
+        hostname === "iubizon.com" || hostname === "www.iubizon.com";
+      const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV;
+      const isDev =
+        !isProdDomain ||
+        (Boolean(vercelEnv) && vercelEnv !== "production") ||
+        process.env.NODE_ENV !== "production";
+
+      setIsNonProd(isDev);
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,7 +114,7 @@ export const Navbar = () => {
                 style={{ width: "auto" }}
                 priority
               />
-              {process.env.NODE_ENV !== "production" && (
+              {isNonProd && (
                 <span className="text-[9px] font-black text-white bg-[#f25c05] px-1.5 py-[1px] rounded tracking-wider leading-none mt-0.5 shadow-sm">
                   DEV
                 </span>

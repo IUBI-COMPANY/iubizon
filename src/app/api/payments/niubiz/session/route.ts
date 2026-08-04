@@ -10,10 +10,6 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
     const { amount, cartItems, shipping, invoiceDetails } = await req.json();
 
     if (!amount || Number(amount) <= 0) {
@@ -23,10 +19,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // Para compras como invitado sin estar autenticado
+    const guestEmail = shipping?.email?.trim();
+    const guestName = shipping?.name?.trim();
+
+    if (!user && (!guestEmail || !guestName)) {
+      return NextResponse.json(
+        {
+          error:
+            "Por favor completa tu Nombre y Correo electrónico de contacto para proceder con tu compra como invitado.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const customerEmail = user?.email || guestEmail || "cliente@iubizon.com";
     const numericAmount = Number(amount);
 
-    // Validar prevención de auto-compra (Self-Purchase Prevention)
-    if (Array.isArray(cartItems) && cartItems.length > 0) {
+    // Validar prevención de auto-compra para usuarios logueados
+    if (user && Array.isArray(cartItems) && cartItems.length > 0) {
       const productIds = cartItems
         .map((i: { id?: string; product_id?: string }) => i.product_id || i.id)
         .filter((id): id is string => Boolean(id));
@@ -80,7 +91,7 @@ export async function POST(req: Request) {
     const { sessionKey, merchantId, environment } = await createNiubizSession({
       amount: numericAmount,
       purchaseNumber,
-      customerEmail: user.email || "cliente@iubizon.com",
+      customerEmail,
       customerIp: clientIp,
     });
 
@@ -98,8 +109,8 @@ export async function POST(req: Request) {
           cartItems: cartItems || [],
           shipping: shipping || {},
           invoiceDetails: invoiceDetails || {},
-          buyer_id: user.id,
-          buyer_email: user.email,
+          buyer_id: user?.id || null,
+          buyer_email: customerEmail,
         },
       },
     });

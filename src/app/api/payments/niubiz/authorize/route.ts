@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeNiubizTransaction } from "@/lib/services/niubiz";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
+import { getOrCreateBuyerProfile } from "@/lib/services/orders";
 
 function respondWithError(
   message: string,
@@ -196,13 +197,15 @@ export async function POST(req: Request) {
       });
 
       const ordersList = [];
-      const effectiveBuyerId = storedBuyerId || user?.id;
-
-      if (!effectiveBuyerId) {
-        throw new Error(
-          "No se pudo determinar el usuario comprador para la orden.",
-        );
-      }
+      const effectiveBuyerId = await getOrCreateBuyerProfile({
+        userId: storedBuyerId || user?.id,
+        email:
+          shipping?.email ||
+          (existingTx?.raw_response as Record<string, any>)?.buyer_email,
+        name: shipping?.name,
+        phone: shipping?.phone,
+        txPrisma: tx,
+      });
 
       // b) Generar órdenes por cada ítem/paquete del carrito
       for (const item of cartItems) {

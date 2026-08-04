@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
+import { getOrCreateBuyerProfile } from "@/lib/services/orders";
 
 export async function POST(req: Request) {
   try {
@@ -9,13 +10,6 @@ export async function POST(req: Request) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Debes iniciar sesión para procesar tu pedido" },
-        { status: 401 },
-      );
-    }
 
     const body = await req.json();
     const {
@@ -29,6 +23,13 @@ export async function POST(req: Request) {
       invoice_ruc,
       invoice_company_name,
     } = body;
+
+    const buyerId = await getOrCreateBuyerProfile({
+      userId: user?.id,
+      email: shipping?.email,
+      name: shipping?.name,
+      phone: shipping?.phone,
+    });
 
     // ── Validaciones de entrada ──────────────────────────────────────────────
 
@@ -112,18 +113,18 @@ export async function POST(req: Request) {
     };
     const sessionCode = await generateSessionCode();
 
-    // Garantizar perfil del comprador
+    // Garantizar perfil del comprador (usuario o invitado)
     await prisma.profile.upsert({
-      where: { id: user.id },
+      where: { id: buyerId },
       update: {
-        email: user.email || shipping.email || "",
-        name: shipping.name || user.user_metadata?.name || null,
+        email: user?.email || shipping.email || "",
+        name: shipping.name || user?.user_metadata?.name || null,
         phone: shipping.phone || null,
       },
       create: {
-        id: user.id,
-        email: user.email || shipping.email || "",
-        name: shipping.name || user.user_metadata?.name || null,
+        id: buyerId,
+        email: user?.email || shipping.email || "",
+        name: shipping.name || user?.user_metadata?.name || null,
         phone: shipping.phone || null,
       },
     });
@@ -263,7 +264,7 @@ export async function POST(req: Request) {
           const order = await tx.order.create({
             data: {
               product_id: product.id,
-              buyer_id: user.id,
+              buyer_id: buyerId,
               seller_id: product.seller_id,
               company_id: validCompanyId,
               amount: itemSubtotal,
