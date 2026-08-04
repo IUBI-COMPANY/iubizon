@@ -50,7 +50,16 @@ export interface SearchFilters {
   condition?: ProductCondition[];
   location?: string;
   isBundle?: boolean;
-  sortBy?: "newest" | "price_asc" | "price_desc" | "popular";
+  sortBy?:
+    | "most_relevance"
+    | "most_recent"
+    | "price_low"
+    | "price_high"
+    | "newest"
+    | "price_asc"
+    | "price_desc"
+    | "popular"
+    | string;
 }
 
 export interface PaginatedResponse<T> {

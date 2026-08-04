@@ -2,12 +2,20 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, MapPin, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Package,
+  RotateCcw,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
 import { createClient } from "@/lib/supabase/client";
 import type { ProductCondition } from "@/types";
 
@@ -23,7 +31,6 @@ const sortOptions = [
   { value: "most_recent", label: "Más recientes" },
   { value: "price_low", label: "Menor precio" },
   { value: "price_high", label: "Mayor precio" },
-  { value: "nearest", label: "Más cercano" },
 ];
 
 const projectorResolutionOptions = [
@@ -37,12 +44,12 @@ const projectorResolutionOptions = [
 ];
 
 const projectorLumensOptions = [
-  { value: "under_1000", label: "Menos de 1000 lúmenes" },
-  { value: "1000_2000", label: "1000 - 2000 lúmenes" },
-  { value: "2000_3000", label: "2000 - 3000 lúmenes" },
-  { value: "3000_4000", label: "3000 - 4000 lúmenes" },
-  { value: "4000_5000", label: "4000 - 5000 lúmenes" },
-  { value: "over_5000", label: "Más de 5000 lúmenes" },
+  { value: "under_1000", label: "Menos de 1000 lm" },
+  { value: "1000_2000", label: "1000 - 2000 lm" },
+  { value: "2000_3000", label: "2000 - 3000 lm" },
+  { value: "3000_4000", label: "3000 - 4000 lm" },
+  { value: "4000_5000", label: "4000 - 5000 lm" },
+  { value: "over_5000", label: "Más de 5000 lm" },
 ];
 
 const projectorTechnologyOptions = [
@@ -76,48 +83,93 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  // URL Parameters
   const keywords = searchParams.get("keywords") || "";
   const categoryId = searchParams.get("category_id") || "";
   const orderBy = searchParams.get("order_by") || "most_relevance";
-  const minPrice = searchParams.get("min_price") || "";
-  const maxPrice = searchParams.get("max_price") || "";
-  const conditions =
-    searchParams.get("condition")?.split(",").filter(Boolean) || [];
-  const urlLat = searchParams.get("lat");
-  const urlLng = searchParams.get("lng");
-  const maxDistance = searchParams.get("distance") || "";
-  const locationFilter = searchParams.get("location") || "";
+  const urlMinPrice = searchParams.get("min_price") || "";
+  const urlMaxPrice = searchParams.get("max_price") || "";
+  const conditions = useMemo(
+    () => searchParams.get("condition")?.split(",").filter(Boolean) || [],
+    [searchParams],
+  );
 
-  const urlCoords = useMemo(() => {
-    if (urlLat && urlLng) {
-      return { latitude: parseFloat(urlLat), longitude: parseFloat(urlLng) };
-    }
-    return null;
-  }, [urlLat, urlLng]);
+  const resolutionSpecs = useMemo(
+    () => searchParams.get("resolution")?.split(",").filter(Boolean) || [],
+    [searchParams],
+  );
+  const lumensSpecs = useMemo(
+    () => searchParams.get("lumens")?.split(",").filter(Boolean) || [],
+    [searchParams],
+  );
+  const technologySpecs = useMemo(
+    () => searchParams.get("technology")?.split(",").filter(Boolean) || [],
+    [searchParams],
+  );
+  const brandSpecs = useMemo(
+    () => searchParams.get("brand")?.split(",").filter(Boolean) || [],
+    [searchParams],
+  );
 
+  // Local state for Price Inputs (Prevents lag/reload while typing)
+  const [minPriceInput, setMinPriceInput] = useState(urlMinPrice);
+  const [maxPriceInput, setMaxPriceInput] = useState(urlMaxPrice);
+
+  useEffect(() => {
+    setMinPriceInput(urlMinPrice);
+  }, [urlMinPrice]);
+
+  useEffect(() => {
+    setMaxPriceInput(urlMaxPrice);
+  }, [urlMaxPrice]);
+
+  // Debounce automático de 500ms para aplicar filtro de precio al pausar la escritura
+  useEffect(() => {
+    if (minPriceInput === urlMinPrice && maxPriceInput === urlMaxPrice) return;
+
+    const timer = setTimeout(() => {
+      handleApplyPriceFilter();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [minPriceInput, maxPriceInput, urlMinPrice, urlMaxPrice]);
+
+  // UI state
   const [products, setProducts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [initialLoad, setInitialLoad] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-
-  const resolutionSpecs =
-    searchParams.get("resolution")?.split(",").filter(Boolean) || [];
-  const lumensSpecs =
-    searchParams.get("lumens")?.split(",").filter(Boolean) || [];
-  const technologySpecs =
-    searchParams.get("technology")?.split(",").filter(Boolean) || [];
-  const brandSpecs =
-    searchParams.get("brand")?.split(",").filter(Boolean) || [];
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const limit = 20;
 
-  // Create category maps dynamically
+  // Cargar categorías desde BD
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("categories")
+        .select("id, name, slug")
+        .order("sort_order", { ascending: true });
+      if (data) setCategories(data as Category[]);
+    };
+    fetchCategories();
+  }, []);
+
+  // Mapeos dinámicos de categorías
   const categorySlugToId = useMemo(() => {
     const map: Record<string, string> = {};
     categories.forEach((cat) => {
       map[cat.slug] = cat.id;
+    });
+    return map;
+  }, [categories]);
+
+  const categoryIdToName = useMemo(() => {
+    const map: Record<string, string> = {};
+    categories.forEach((cat) => {
+      map[cat.id] = cat.name;
     });
     return map;
   }, [categories]);
@@ -132,44 +184,17 @@ function SearchContent() {
     categories.find((c) => c.id === effectiveCategoryId)?.slug ===
       "proyectores";
 
-  // Fetch categories from DB
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("categories")
-        .select("id, name, slug")
-        .order("sort_order", { ascending: true });
-      if (data) setCategories(data as Category[]);
-    };
-    fetchCategories();
-  }, []);
-
-  const categoryIdToName = useMemo(() => {
-    const map: Record<string, string> = {};
-    categories.forEach((cat) => {
-      map[cat.id] = cat.name;
-    });
-    return map;
-  }, [categories]);
-
-  // Force re-render after params are available
-  useEffect(() => {
-    setInitialLoad(true);
-  }, []);
-
+  // Clave de cambios de parámetros para recarga eficiente
   const paramsKey = useMemo(
     () =>
-      `${keywords}|${categoryId}|${orderBy}|${minPrice}|${maxPrice}|${conditions.join(",")}|${maxDistance}|${locationFilter}|${resolutionSpecs.join(",")}|${lumensSpecs.join(",")}|${technologySpecs.join(",")}|${brandSpecs.join(",")}|${page}`,
+      `${keywords}|${categoryId}|${orderBy}|${urlMinPrice}|${urlMaxPrice}|${conditions.join(",")}|${resolutionSpecs.join(",")}|${lumensSpecs.join(",")}|${technologySpecs.join(",")}|${brandSpecs.join(",")}|${page}`,
     [
       keywords,
       categoryId,
       orderBy,
-      minPrice,
-      maxPrice,
+      urlMinPrice,
+      urlMaxPrice,
       conditions,
-      maxDistance,
-      locationFilter,
       resolutionSpecs,
       lumensSpecs,
       technologySpecs,
@@ -181,9 +206,6 @@ function SearchContent() {
   const lastParamsKey = useRef("");
 
   useEffect(() => {
-    // Wait for initial load
-    if (!initialLoad) return;
-
     if (paramsKey === lastParamsKey.current) return;
     lastParamsKey.current = paramsKey;
 
@@ -195,8 +217,8 @@ function SearchContent() {
         const params = new URLSearchParams();
         if (keywords) params.set("keywords", keywords);
         if (effectiveCategoryId) params.set("category_id", effectiveCategoryId);
-        if (minPrice) params.set("min_price", minPrice);
-        if (maxPrice) params.set("max_price", maxPrice);
+        if (urlMinPrice) params.set("min_price", urlMinPrice);
+        if (urlMaxPrice) params.set("max_price", urlMaxPrice);
         if (conditions.length > 0)
           params.set("condition", conditions.join(","));
         if (orderBy) params.set("order_by", orderBy);
@@ -211,7 +233,7 @@ function SearchContent() {
           setTotal(totalCount || 0);
         }
       } catch (err) {
-        console.error("Error searching products:", err);
+        console.error("Error al buscar productos:", err);
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -222,512 +244,568 @@ function SearchContent() {
     return () => {
       mounted = false;
     };
-  }, [paramsKey, initialLoad]);
+  }, [
+    paramsKey,
+    keywords,
+    effectiveCategoryId,
+    urlMinPrice,
+    urlMaxPrice,
+    conditions,
+    orderBy,
+    page,
+  ]);
 
   const totalPages = Math.ceil(total / limit);
 
-  const handleFilterChange = (key: string, value: string) => {
+  // Manejador centralizado de cambio de URL
+  const updateUrlParams = (
+    updater: (params: URLSearchParams) => void,
+    resetPage = true,
+  ) => {
     const params = new URLSearchParams(searchParams);
-
-    if (key === "category") {
-      if (value) params.set("category_id", value);
-      else params.delete("category_id");
-    } else if (key === "sort") {
-      if (value && value !== "most_relevance") params.set("order_by", value);
-      else params.delete("order_by");
-    } else if (key === "minPrice") {
-      if (value) params.set("min_price", value);
-      else params.delete("min_price");
-    } else if (key === "maxPrice") {
-      if (value) params.set("max_price", value);
-      else params.delete("max_price");
-    } else if (key === "distance") {
-      if (value) params.set("distance", value);
-      else params.delete("distance");
-    } else if (key === "location") {
-      if (value) params.set("location", value);
-      else params.delete("location");
+    updater(params);
+    if (resetPage) {
+      setPage(1);
     }
-
     router.push(`/search?${params.toString()}`, { scroll: false });
   };
 
+  const handleCategorySelect = (id: string) => {
+    updateUrlParams((params) => {
+      if (id) params.set("category_id", id);
+      else params.delete("category_id");
+    });
+  };
+
+  const handleSortChange = (sortValue: string) => {
+    updateUrlParams((params) => {
+      if (sortValue && sortValue !== "most_relevance") {
+        params.set("order_by", sortValue);
+      } else {
+        params.delete("order_by");
+      }
+    });
+  };
+
+  const handleApplyPriceFilter = () => {
+    updateUrlParams((params) => {
+      if (minPriceInput.trim()) params.set("min_price", minPriceInput.trim());
+      else params.delete("min_price");
+
+      if (maxPriceInput.trim()) params.set("max_price", maxPriceInput.trim());
+      else params.delete("max_price");
+    });
+  };
+
+  const handleClearPriceFilter = () => {
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    updateUrlParams((params) => {
+      params.delete("min_price");
+      params.delete("max_price");
+    });
+  };
+
   const handleConditionToggle = (cond: string) => {
-    const params = new URLSearchParams(searchParams);
-    const currentConditions =
-      params.get("condition")?.split(",").filter(Boolean) || [];
+    updateUrlParams((params) => {
+      const current = params.get("condition")?.split(",").filter(Boolean) || [];
+      const updated = current.includes(cond)
+        ? current.filter((c) => c !== cond)
+        : [...current, cond];
 
-    const newConditions = currentConditions.includes(cond)
-      ? currentConditions.filter((c) => c !== cond)
-      : [...currentConditions, cond];
-
-    if (newConditions.length > 0) {
-      params.set("condition", newConditions.join(","));
-    } else {
-      params.delete("condition");
-    }
-
-    router.push(`/search?${params.toString()}`, { scroll: false });
+      if (updated.length > 0) params.set("condition", updated.join(","));
+      else params.delete("condition");
+    });
   };
 
   const handleSpecToggle = (
     specType: "resolution" | "lumens" | "technology" | "brand",
     value: string,
   ) => {
-    const params = new URLSearchParams(searchParams);
-    const current = params.get(specType)?.split(",").filter(Boolean) || [];
+    updateUrlParams((params) => {
+      const current = params.get(specType)?.split(",").filter(Boolean) || [];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
 
-    const newValues = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
-
-    if (newValues.length > 0) {
-      params.set(specType, newValues.join(","));
-    } else {
-      params.delete(specType);
-    }
-
-    router.push(`/search?${params.toString()}`, { scroll: false });
+      if (updated.length > 0) params.set(specType, updated.join(","));
+      else params.delete(specType);
+    });
   };
 
-  const clearFilters = () => {
+  const clearAllFilters = () => {
+    setMinPriceInput("");
+    setMaxPriceInput("");
+    setPage(1);
     router.push("/search", { scroll: false });
   };
 
+  // Conteo de filtros activos
   const activeFiltersCount = [
-    categoryId,
-    minPrice || maxPrice,
+    Boolean(keywords),
+    Boolean(categoryId),
+    Boolean(urlMinPrice || urlMaxPrice),
     conditions.length > 0,
-    maxDistance,
-    locationFilter,
     resolutionSpecs.length > 0,
     lumensSpecs.length > 0,
     technologySpecs.length > 0,
     brandSpecs.length > 0,
   ].filter(Boolean).length;
 
-  return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navbar />
-      <div className="container py-6 flex-1">
-        <div className="flex gap-8">
-          <aside className="w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg border border-[#e2e8f0] p-4 sticky top-24 max-h-[calc(100vh-140px)] overflow-y-auto scrollbar-hide">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#112237]">Filtros</h3>
-                {activeFiltersCount > 0 && (
-                  <span className="text-xs bg-[#f25c05] text-white px-2 py-0.5 rounded-full">
-                    {activeFiltersCount}
-                  </span>
+  // Componente Reutilizable de Filtros (Sidebar Desktop & Mobile Drawer)
+  const FilterSidebarControls = () => (
+    <div className="space-y-6 text-[#112237]">
+      {/* 1. Categorías */}
+      <div>
+        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+          Categoría
+        </h4>
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => handleCategorySelect("")}
+            className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-xl transition-all font-semibold ${
+              !categoryId
+                ? "bg-orange-50 text-[#f25c05] font-bold"
+                : "text-[#475569] hover:bg-[#f8fafc]"
+            }`}
+          >
+            <span>Todas las categorías</span>
+            {!categoryId && (
+              <span className="w-1.5 h-1.5 rounded-full bg-[#f25c05]" />
+            )}
+          </button>
+          {categories.map((cat) => {
+            const isSelected = categoryId === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => handleCategorySelect(cat.id)}
+                className={`w-full flex items-center justify-between text-xs px-3 py-2 rounded-xl transition-all ${
+                  isSelected
+                    ? "bg-orange-50 text-[#f25c05] font-extrabold"
+                    : "text-[#475569] hover:bg-[#f8fafc] font-medium"
+                }`}
+              >
+                <span className="truncate">{cat.name}</span>
+                {isSelected && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f25c05]" />
                 )}
-              </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-              <div className="space-y-6">
-                {/* Categoría - Radio buttons */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Categoría
-                  </h4>
-                  <div className="space-y-1">
-                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]">
-                      <input
-                        type="radio"
-                        name="category"
-                        value=""
-                        checked={categoryId === ""}
-                        onChange={(e) =>
-                          handleFilterChange("category", e.target.value)
-                        }
-                        className="w-4 h-4 text-[#f25c05] accent-[#f25c05]"
-                      />
-                      <span className="text-sm text-[#475569]">Todas</span>
-                    </label>
-                    {categories.slice(0, 6).map((cat) => (
-                      <label
-                        key={cat.id}
-                        className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                      >
-                        <input
-                          type="radio"
-                          name="category"
-                          value={cat.id}
-                          checked={categoryId === cat.id}
-                          onChange={(e) =>
-                            handleFilterChange("category", e.target.value)
-                          }
-                          className="w-4 h-4 text-[#f25c05] accent-[#f25c05]"
-                        />
-                        <span className="text-sm text-[#475569]">
-                          {cat.name}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+      {/* 2. Rango de Precio (con inputs locales sin lag) */}
+      <div className="pt-4 border-t border-[#f1f5f9]">
+        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
+          <span>Rango de Precio</span>
+          {(urlMinPrice || urlMaxPrice) && (
+            <button
+              onClick={handleClearPriceFilter}
+              className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize"
+            >
+              Limpiar
+            </button>
+          )}
+        </h4>
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
+                S/
+              </span>
+              <input
+                type="number"
+                placeholder="Mínimo"
+                value={minPriceInput}
+                onChange={(e) => setMinPriceInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyPriceFilter()}
+                className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+              />
+            </div>
+            <span className="text-[#94a3b8] text-xs font-bold">-</span>
+            <div className="relative flex-1">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
+                S/
+              </span>
+              <input
+                type="number"
+                placeholder="Máximo"
+                value={maxPriceInput}
+                onChange={(e) => setMaxPriceInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyPriceFilter()}
+                className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+              />
+            </div>
+          </div>
+          <Button
+            onClick={handleApplyPriceFilter}
+            size="sm"
+            className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all"
+          >
+            Aplicar Precio
+          </Button>
+        </div>
+      </div>
 
-                {/* Precio - Range inputs */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Precio
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs">
-                        S/
-                      </span>
-                      <input
-                        type="number"
-                        placeholder="Min"
-                        value={minPrice}
-                        onChange={(e) =>
-                          handleFilterChange("minPrice", e.target.value)
-                        }
-                        className="w-full pl-6 pr-2 py-2 text-sm border border-[#e2e8f0] rounded-md focus:ring-2 focus:ring-[#f25c05] focus:border-transparent"
-                      />
-                    </div>
-                    <span className="text-[#94a3b8]">-</span>
-                    <div className="relative flex-1">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs">
-                        S/
-                      </span>
-                      <input
-                        type="number"
-                        placeholder="Max"
-                        value={maxPrice}
-                        onChange={(e) =>
-                          handleFilterChange("maxPrice", e.target.value)
-                        }
-                        className="w-full pl-6 pr-2 py-2 text-sm border border-[#e2e8f0] rounded-md focus:ring-2 focus:ring-[#f25c05] focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                </div>
+      {/* 3. Condición del Producto */}
+      <div className="pt-4 border-t border-[#f1f5f9]">
+        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+          Condición
+        </h4>
+        <div className="space-y-1.5">
+          {conditionOptions.map((opt) => (
+            <label
+              key={opt.value}
+              className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc] transition-colors"
+            >
+              <Checkbox
+                checked={conditions.includes(opt.value)}
+                onCheckedChange={() => handleConditionToggle(opt.value)}
+                className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
+              />
+              <span className="text-xs font-medium text-[#334155]">
+                {opt.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
 
-                {/* Condición - Checkboxes */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Condición
-                  </h4>
-                  <div className="space-y-1">
-                    {conditionOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                      >
-                        <Checkbox
-                          checked={conditions.includes(opt.value)}
-                          onCheckedChange={() =>
-                            handleConditionToggle(opt.value)
-                          }
-                          className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-                        />
-                        <span className="text-sm text-[#475569]">
-                          {opt.label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Filtros específicos para Proyectores */}
-                {isProjectorCategory && (
-                  <>
-                    {/* Resolución */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                        Resolución
-                      </h4>
-                      <div className="space-y-1">
-                        {projectorResolutionOptions.map((opt) => (
-                          <label
-                            key={opt.value}
-                            className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                          >
-                            <Checkbox
-                              checked={resolutionSpecs.includes(opt.value)}
-                              onCheckedChange={() =>
-                                handleSpecToggle("resolution", opt.value)
-                              }
-                              className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-                            />
-                            <span className="text-sm text-[#475569]">
-                              {opt.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Luminosidad */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                        Luminosidad (lúmenes)
-                      </h4>
-                      <div className="space-y-1">
-                        {projectorLumensOptions.map((opt) => (
-                          <label
-                            key={opt.value}
-                            className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                          >
-                            <Checkbox
-                              checked={lumensSpecs.includes(opt.value)}
-                              onCheckedChange={() =>
-                                handleSpecToggle("lumens", opt.value)
-                              }
-                              className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-                            />
-                            <span className="text-sm text-[#475569]">
-                              {opt.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Tecnología */}
-                    <div>
-                      <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                        Tecnología
-                      </h4>
-                      <div className="space-y-1">
-                        {projectorTechnologyOptions.map((opt) => (
-                          <label
-                            key={opt.value}
-                            className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                          >
-                            <Checkbox
-                              checked={technologySpecs.includes(opt.value)}
-                              onCheckedChange={() =>
-                                handleSpecToggle("technology", opt.value)
-                              }
-                              className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-                            />
-                            <span className="text-sm text-[#475569]">
-                              {opt.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Marca */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Marca
-                  </h4>
-                  <div className="space-y-1 max-h-40 overflow-y-auto scrollbar-hide">
-                    {projectorBrandOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                      >
-                        <Checkbox
-                          checked={brandSpecs.includes(opt.value)}
-                          onCheckedChange={() =>
-                            handleSpecToggle("brand", opt.value)
-                          }
-                          className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-                        />
-                        <span className="text-sm text-[#475569]">
-                          {opt.label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Ubicación / Distrito */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Ubicación / Distrito
-                  </h4>
-                  <input
-                    type="text"
-                    placeholder="Ej: Miraflores, Surco..."
-                    value={locationFilter}
-                    onChange={(e) =>
-                      handleFilterChange("location", e.target.value)
-                    }
-                    className="w-full pl-3 pr-2 py-2 text-sm border border-[#e2e8f0] rounded-md focus:ring-2 focus:ring-[#f25c05] focus:border-transparent"
-                  />
-                </div>
-
-                {/* Ordenar por - Radio buttons */}
-                <div>
-                  <h4 className="text-sm font-semibold text-[#334155] mb-3">
-                    Ordenar por
-                  </h4>
-                  <div className="space-y-1">
-                    {sortOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-[#f8fafc]"
-                      >
-                        <input
-                          type="radio"
-                          name="sort"
-                          value={opt.value}
-                          checked={orderBy === opt.value}
-                          onChange={(e) =>
-                            handleFilterChange("sort", e.target.value)
-                          }
-                          className="w-4 h-4 text-[#f25c05] accent-[#f25c05]"
-                        />
-                        <span className="text-sm text-[#475569]">
-                          {opt.label}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Distancia - Range slider */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-[#334155]">
-                      Distancia
-                    </h4>
-                    <span className="text-xs font-medium text-[#f25c05] bg-[#fff7ed] px-2 py-1 rounded">
-                      {!maxDistance || Number(maxDistance) >= 100
-                        ? "Sin límite"
-                        : `${maxDistance} km`}
-                    </span>
-                  </div>
-
-                  {urlCoords ? (
-                    <>
-                      <input
-                        key={maxDistance || "no-distance"}
-                        type="range"
-                        min="5"
-                        max="100"
-                        step="5"
-                        defaultValue={maxDistance ? parseInt(maxDistance) : 100}
-                        onMouseUp={(e) => {
-                          const value = parseInt(
-                            (e.target as HTMLInputElement).value,
-                          );
-                          handleFilterChange(
-                            "distance",
-                            value >= 100 ? "" : value.toString(),
-                          );
-                        }}
-                        onTouchEnd={(e) => {
-                          const value = parseInt(
-                            (e.target as HTMLInputElement).value,
-                          );
-                          handleFilterChange(
-                            "distance",
-                            value >= 100 ? "" : value.toString(),
-                          );
-                        }}
-                        className="w-full h-2 bg-[#e2e8f0] rounded-lg appearance-none cursor-pointer accent-[#f25c05]"
-                      />
-
-                      <div className="flex justify-between text-xs text-[#94a3b8] mt-2">
-                        <span>5 km</span>
-                        <span>50 km</span>
-                        <span>100 km</span>
-                      </div>
-
-                      <div className="mt-3 p-2 bg-[#f0fdf4] rounded-md border border-[#86efac]">
-                        <div className="flex items-center gap-2 text-xs text-[#166534]">
-                          <MapPin className="w-3 h-3" />
-                          <span>Tu ubicación detectada</span>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="p-3 bg-[#f8fafc] rounded-md border border-[#e2e8f0]">
-                      <div className="flex items-center gap-2 text-xs text-[#94a3b8]">
-                        <MapPin className="w-3 h-3" />
-                        <span>
-                          Activa tu ubicación para filtrar por distancia
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {activeFiltersCount > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="w-full mt-6 border-[#f25c05] text-[#f25c05] hover:bg-[#fff7ed]"
+      {/* 4. Filtros Específicos para Proyectores */}
+      {isProjectorCategory && (
+        <>
+          <div className="pt-4 border-t border-[#f1f5f9]">
+            <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+              Resolución
+            </h4>
+            <div className="space-y-1.5">
+              {projectorResolutionOptions.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc]"
                 >
-                  <X className="w-4 h-4 mr-2" />
-                  Limpiar {activeFiltersCount} filtro
-                  {activeFiltersCount > 1 ? "s" : ""}
-                </Button>
+                  <Checkbox
+                    checked={resolutionSpecs.includes(opt.value)}
+                    onCheckedChange={() =>
+                      handleSpecToggle("resolution", opt.value)
+                    }
+                    className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
+                  />
+                  <span className="text-xs font-medium text-[#334155]">
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-[#f1f5f9]">
+            <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+              Luminosidad
+            </h4>
+            <div className="space-y-1.5">
+              {projectorLumensOptions.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc]"
+                >
+                  <Checkbox
+                    checked={lumensSpecs.includes(opt.value)}
+                    onCheckedChange={() =>
+                      handleSpecToggle("lumens", opt.value)
+                    }
+                    className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
+                  />
+                  <span className="text-xs font-medium text-[#334155]">
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-[#f1f5f9]">
+            <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+              Tecnología
+            </h4>
+            <div className="space-y-1.5">
+              {projectorTechnologyOptions.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc]"
+                >
+                  <Checkbox
+                    checked={technologySpecs.includes(opt.value)}
+                    onCheckedChange={() =>
+                      handleSpecToggle("technology", opt.value)
+                    }
+                    className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
+                  />
+                  <span className="text-xs font-medium text-[#334155]">
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* 5. Marcas */}
+      <div className="pt-4 border-t border-[#f1f5f9]">
+        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
+          Marca
+        </h4>
+        <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin pr-1">
+          {projectorBrandOptions.map((opt) => (
+            <label
+              key={opt.value}
+              className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc]"
+            >
+              <Checkbox
+                checked={brandSpecs.includes(opt.value)}
+                onCheckedChange={() => handleSpecToggle("brand", opt.value)}
+                className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
+              />
+              <span className="text-xs font-medium text-[#334155]">
+                {opt.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+      <Navbar />
+
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-7xl">
+        {/* Barra Superior: Título & Selector de Ordenamiento */}
+        <div className="bg-white rounded-3xl border border-[#e2e8f0] p-4 sm:p-6 mb-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black text-[#112237] tracking-tight">
+                {keywords ? (
+                  <span>
+                    Búsqueda:{" "}
+                    <span className="text-[#f25c05]">
+                      &quot;{keywords}&quot;
+                    </span>
+                  </span>
+                ) : categoryId && categoryIdToName[categoryId] ? (
+                  <span>Categoría: {categoryIdToName[categoryId]}</span>
+                ) : (
+                  "Catálogo Completo de Productos"
+                )}
+              </h1>
+            </div>
+            <p className="text-xs font-semibold text-[#64748b] mt-1">
+              {isLoading ? (
+                <span>Cargando catálogo...</span>
+              ) : (
+                <span>
+                  Mostrando <strong>{products.length}</strong> de{" "}
+                  <strong>{total}</strong> productos disponibles
+                </span>
               )}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Botón de Filtros para Móviles */}
+            <Button
+              onClick={() => setIsMobileDrawerOpen(true)}
+              variant="outline"
+              className="md:hidden flex items-center gap-2 text-xs font-bold border-[#e2e8f0] text-[#112237]"
+            >
+              <SlidersHorizontal className="w-4 h-4 text-[#f25c05]" />
+              <span>Filtros</span>
+              {activeFiltersCount > 0 && (
+                <span className="bg-[#f25c05] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Selector Ordenar por */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-[#94a3b8] hidden sm:block" />
+              <div className="relative">
+                <select
+                  value={orderBy}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="appearance-none bg-[#f8fafc] border border-[#e2e8f0] text-xs font-bold text-[#112237] py-2.5 pl-3 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 cursor-pointer shadow-sm"
+                >
+                  {sortOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#64748b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BARRA DE FILTROS ACTIVOS (CHIPS / PILLS CON BORRADO RÁPIDO) */}
+        {activeFiltersCount > 0 && (
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] p-3 mb-6 shadow-sm flex flex-wrap items-center gap-2">
+            <span className="text-xs font-bold text-[#64748b] mr-1">
+              Filtros activos:
+            </span>
+
+            {keywords && (
+              <Badge className="bg-orange-50 text-[#f25c05] border border-orange-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5">
+                <span>Búsqueda: &quot;{keywords}&quot;</span>
+                <button
+                  onClick={() => updateUrlParams((p) => p.delete("keywords"))}
+                  className="hover:bg-orange-200/60 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            )}
+
+            {categoryId && categoryIdToName[categoryId] && (
+              <Badge className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5">
+                <span>Categoría: {categoryIdToName[categoryId]}</span>
+                <button
+                  onClick={() => handleCategorySelect("")}
+                  className="hover:bg-slate-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            )}
+
+            {(urlMinPrice || urlMaxPrice) && (
+              <Badge className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5">
+                <span>
+                  Precio: S/ {urlMinPrice || "0"} - S/ {urlMaxPrice || "∞"}
+                </span>
+                <button
+                  onClick={handleClearPriceFilter}
+                  className="hover:bg-slate-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            )}
+
+            {conditions.map((cond) => (
+              <Badge
+                key={cond}
+                className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5"
+              >
+                <span>
+                  {conditionOptions.find((c) => c.value === cond)?.label ||
+                    cond}
+                </span>
+                <button
+                  onClick={() => handleConditionToggle(cond)}
+                  className="hover:bg-slate-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+
+            {resolutionSpecs.map((res) => (
+              <Badge
+                key={res}
+                className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5"
+              >
+                <span>
+                  Res:{" "}
+                  {projectorResolutionOptions.find((r) => r.value === res)
+                    ?.label || res}
+                </span>
+                <button
+                  onClick={() => handleSpecToggle("resolution", res)}
+                  className="hover:bg-slate-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+
+            {brandSpecs.map((brand) => (
+              <Badge
+                key={brand}
+                className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5"
+              >
+                <span>
+                  Marca:{" "}
+                  {projectorBrandOptions.find((b) => b.value === brand)
+                    ?.label || brand}
+                </span>
+                <button
+                  onClick={() => handleSpecToggle("brand", brand)}
+                  className="hover:bg-slate-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+
+            <button
+              onClick={clearAllFilters}
+              className="text-xs font-extrabold text-[#f25c05] hover:underline flex items-center gap-1 ml-auto px-2 py-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Limpiar todo</span>
+            </button>
+          </div>
+        )}
+
+        {/* CONTENEDOR PRINCIPAL: SIDEBAR DE FILTROS + GRID DE RESULTADOS */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          {/* SIDEBAR DESKTOP */}
+          <aside className="hidden md:block md:col-span-3 sticky top-24">
+            <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm max-h-[calc(100vh-120px)] overflow-y-auto scrollbar-thin">
+              <div className="flex items-center justify-between mb-5 border-b border-[#f1f5f9] pb-3">
+                <h3 className="font-extrabold text-[#112237] text-sm flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-[#f25c05]" />
+                  <span>Filtrar Productos</span>
+                </h3>
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-[11px] font-bold text-[#f25c05] hover:underline"
+                  >
+                    Limpiar ({activeFiltersCount})
+                  </button>
+                )}
+              </div>
+
+              <FilterSidebarControls />
             </div>
           </aside>
 
-          <main className="flex-1">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h1 className="text-xl font-bold text-[#112237]">
-                  {keywords
-                    ? `Resultados para "${keywords}"`
-                    : "Todos los productos"}
-                </h1>
-                <p className="text-[#64748b]">{total} productos encontrados</p>
-              </div>
-              {urlCoords && (
-                <div className="text-sm text-[#64748b] flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  Productos cercanos a ti
-                </div>
-              )}
-            </div>
-
-            {(categoryId || minPrice || maxPrice || conditions.length > 0) && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {categoryId && (
-                  <Badge className="bg-[#e2e8f0] text-[#112237]">
-                    {categoryIdToName[categoryId] || categoryId}
-                    <button
-                      onClick={() => handleFilterChange("category", "")}
-                      className="ml-1"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                {(minPrice || maxPrice) && (
-                  <Badge className="bg-[#e2e8f0] text-[#112237]">
-                    S/ {minPrice || "0"} - S/ {maxPrice || "∞"}
-                    <button
-                      onClick={() => {
-                        handleFilterChange("minPrice", "");
-                        handleFilterChange("maxPrice", "");
-                      }}
-                      className="ml-1"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                {conditions.map((c) => (
-                  <Badge key={c} className="bg-[#e2e8f0] text-[#112237]">
-                    {conditionOptions.find((o) => o.value === c)?.label}
-                    <button
-                      onClick={() => handleConditionToggle(c)}
-                      className="ml-1"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-
+          {/* GRID DE RESULTADOS */}
+          <main className="md:col-span-9">
             {isLoading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white rounded-2xl border border-[#e2e8f0] p-4 h-72 animate-pulse flex flex-col justify-between"
+                  >
+                    <div className="w-full h-36 bg-slate-100 rounded-xl" />
+                    <div className="space-y-2 mt-3">
+                      <div className="h-3.5 bg-slate-100 rounded w-3/4" />
+                      <div className="h-3 bg-slate-100 rounded w-1/2" />
+                    </div>
+                    <div className="h-5 bg-slate-100 rounded w-1/3 mt-4" />
+                  </div>
+                ))}
               </div>
             ) : products.length > 0 ? (
               <>
@@ -736,22 +814,28 @@ function SearchContent() {
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
+
+                {/* PAGINACIÓN */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center gap-2 mt-8">
+                  <div className="flex items-center justify-center gap-3 mt-10">
                     <Button
                       variant="outline"
                       disabled={page === 1}
-                      onClick={() => setPage((p) => p - 1)}
+                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                      size="sm"
+                      className="rounded-xl font-bold text-xs border-[#e2e8f0] text-[#112237]"
                     >
                       Anterior
                     </Button>
-                    <span className="flex items-center px-4">
+                    <span className="text-xs font-bold text-[#64748b] bg-white border border-[#e2e8f0] px-3.5 py-1.5 rounded-xl shadow-sm">
                       Página {page} de {totalPages}
                     </span>
                     <Button
                       variant="outline"
                       disabled={page >= totalPages}
                       onClick={() => setPage((p) => p + 1)}
+                      size="sm"
+                      className="rounded-xl font-bold text-xs border-[#e2e8f0] text-[#112237]"
                     >
                       Siguiente
                     </Button>
@@ -759,20 +843,71 @@ function SearchContent() {
                 )}
               </>
             ) : (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
-                <h2 className="text-xl font-semibold text-[#112237] mb-2">
-                  No se encontraron productos
-                </h2>
-                <p className="text-[#64748b] mb-4">
-                  Intenta con otros términos o filtros
+              /* ESTADO VACÍO CUANDO NO HAY PRODUCTOS */
+              <div className="bg-white rounded-3xl border border-[#e2e8f0] p-12 text-center shadow-sm max-w-md mx-auto my-8">
+                <div className="w-16 h-16 bg-orange-50 text-[#f25c05] rounded-3xl flex items-center justify-center mx-auto mb-4">
+                  <Package className="w-8 h-8" />
+                </div>
+                <h3 className="font-extrabold text-[#112237] text-base mb-1">
+                  No se encontraron coincidencias
+                </h3>
+                <p className="text-xs text-[#64748b] mb-6 leading-relaxed">
+                  Intenta ajustando tus términos de búsqueda o prueba removiendo
+                  algunos filtros aplicados.
                 </p>
-                <Button onClick={clearFilters}>Limpiar filtros</Button>
+                <Button
+                  onClick={clearAllFilters}
+                  className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all"
+                >
+                  Limpiar todos los filtros
+                </Button>
               </div>
             )}
           </main>
         </div>
-      </div>
+      </main>
+
+      {/* MODAL DRAWER DE FILTROS PARA MÓVILES */}
+      {isMobileDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm md:hidden animate-fade-in">
+          <div className="w-full max-w-xs bg-white h-full shadow-2xl flex flex-col justify-between">
+            <div className="p-4 border-b border-[#f1f5f9] flex items-center justify-between">
+              <h3 className="font-extrabold text-[#112237] text-sm flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-[#f25c05]" />
+                <span>Filtrar Productos</span>
+              </h3>
+              <button
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="p-1 text-[#94a3b8] hover:text-[#112237] rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 flex-1 overflow-y-auto scrollbar-thin">
+              <FilterSidebarControls />
+            </div>
+
+            <div className="p-4 border-t border-[#f1f5f9] bg-slate-50 flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                className="flex-1 text-xs font-bold rounded-xl border-slate-300"
+              >
+                Limpiar
+              </Button>
+              <Button
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="flex-1 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-extrabold rounded-xl shadow-md"
+              >
+                Ver resultados
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Footer />
     </div>
   );
 }
@@ -781,7 +916,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
           <div className="animate-spin w-8 h-8 border-4 border-[#f25c05] border-t-transparent rounded-full" />
         </div>
       }

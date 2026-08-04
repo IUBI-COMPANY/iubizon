@@ -9,9 +9,25 @@ interface GetProductsOptions {
 }
 
 const productInclude = {
-  category: true,
-  seller: true,
-  company: true,
+  category: {
+    select: { id: true, name: true, slug: true, icon: true, sort_order: true },
+  },
+  seller: {
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar_url: true,
+      location: true,
+      rating: true,
+      is_pro: true,
+      total_sales: true,
+      positive_reviews: true,
+    },
+  },
+  company: {
+    select: { id: true, name: true, slug: true, logo_url: true },
+  },
   images: { orderBy: { position: "asc" as const } },
 };
 
@@ -21,7 +37,12 @@ export async function getProducts(options: GetProductsOptions = {}) {
   const where: Prisma.ProductWhereInput = { status: "active" };
 
   if (filters?.query) {
-    where.title = { contains: filters.query, mode: "insensitive" };
+    const q = filters.query.trim();
+    where.OR = [
+      { title: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { brand: { contains: q, mode: "insensitive" } },
+    ];
   }
 
   if (filters?.categoryId) {
@@ -39,12 +60,15 @@ export async function getProducts(options: GetProductsOptions = {}) {
   }
 
   let orderBy: Prisma.ProductOrderByWithRelationInput = { created_at: "desc" };
-  if (filters?.sortBy === "price_asc") {
+  const sort = filters?.sortBy;
+  if (sort === "price_asc" || sort === "price_low") {
     orderBy = { price: "asc" };
-  } else if (filters?.sortBy === "price_desc") {
+  } else if (sort === "price_desc" || sort === "price_high") {
     orderBy = { price: "desc" };
-  } else if (filters?.sortBy === "popular") {
+  } else if (sort === "popular") {
     orderBy = { favorites_count: "desc" };
+  } else if (sort === "most_recent" || sort === "newest") {
+    orderBy = { created_at: "desc" };
   }
 
   const [products, total] = await Promise.all([
