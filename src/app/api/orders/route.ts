@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getOrCreateBuyerProfile } from "@/lib/services/orders";
+import { getShippingConfig } from "@/lib/services/platformSettings";
 
 export async function POST(req: Request) {
   try {
@@ -309,7 +310,8 @@ export async function POST(req: Request) {
       (sum, i) => sum + Number(i.price) * Number(i.quantity || 1),
       0,
     );
-    const shippingCost = 50.0;
+    const shippingCfg = await getShippingConfig();
+    const shippingCost = shippingCfg.is_free ? 0.0 : shippingCfg.default_cost;
     const totalTax = 0;
     const totalAmount = subtotal + shippingCost;
     const totalCommission = subtotal * 0.1;

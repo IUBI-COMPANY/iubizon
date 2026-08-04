@@ -541,8 +541,10 @@ export default function OrderDetailPage({
               </p>
               <p className="flex justify-between border-b border-slate-100 pb-1.5">
                 <span>Envío Total de la Compra:</span>
-                <strong className="text-[#112237]">
-                  S/ {session.shippingCost.toFixed(2)}
+                <strong className="text-emerald-600 font-extrabold">
+                  {session.shippingCost === 0
+                    ? "GRATIS (Promoción)"
+                    : `S/ ${session.shippingCost.toFixed(2)}`}
                 </strong>
               </p>
               <p className="flex justify-between border-b border-slate-100 pb-1.5">

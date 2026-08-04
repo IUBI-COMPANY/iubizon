@@ -131,6 +131,17 @@ async function main() {
         "Días de garantía y retención de pago al vendedor para protección al comprador",
       category: "features",
     },
+    {
+      key: "SHIPPING_CONFIG",
+      value: {
+        is_free: true,
+        default_cost: 0.0,
+        promotion_label: "Promoción de Lanzamiento (Envío GRATIS)",
+      },
+      description:
+        "Configuración global del costo de envío y promociones de despacho",
+      category: "shipping",
+    },
   ];
 
   for (const set of defaultSettings) {

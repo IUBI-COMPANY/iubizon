@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { parseDispatchMeta } from "@/lib/shippingHelper";
 import { ensureSellerPayoutForOrders } from "@/lib/payoutService";
+import { getShippingConfig } from "@/lib/services/platformSettings";
 
 export interface PackageItem {
   id: string;
@@ -293,6 +294,8 @@ export async function GET(req: Request) {
 
     const purchaseSessions: PurchaseOrderSession[] = [];
 
+    const shippingCfg = await getShippingConfig();
+
     for (const session of Array.from(sessionMap.values())) {
       const packagesList: TrackingPackage[] = [];
       let sessionSubtotal = 0;
@@ -302,7 +305,9 @@ export async function GET(req: Request) {
 
       for (const tempPkg of Array.from(session.packageMap.values())) {
         const taxAmount = 0;
-        const shippingCost = 50.0;
+        const shippingCost = shippingCfg.is_free
+          ? 0.0
+          : shippingCfg.default_cost;
         const totalAmount = tempPkg.subtotal + shippingCost;
 
         sessionSubtotal += tempPkg.subtotal;
@@ -335,7 +340,9 @@ export async function GET(req: Request) {
       }
 
       const sessionTax = 0;
-      const sessionShipping = 50.0;
+      const sessionShipping = shippingCfg.is_free
+        ? 0.0
+        : shippingCfg.default_cost;
       const sessionTotal = sessionSubtotal + sessionShipping;
 
       purchaseSessions.push({
