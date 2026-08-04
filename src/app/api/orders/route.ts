@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getOrCreateBuyerProfile } from "@/lib/services/orders";
 import { getShippingConfig } from "@/lib/services/platformSettings";
+import { sendOrderConfirmationEmails } from "@/lib/email";
 
 export async function POST(req: Request) {
   try {
@@ -300,6 +301,16 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "No se pudieron procesar los productos del carrito" },
         { status: 400 },
+      );
+    }
+
+    // Despacho de correos en segundo plano (no bloqueante)
+    if (createdOrders[0]?.id) {
+      sendOrderConfirmationEmails(createdOrders[0].id).catch((err) =>
+        console.error(
+          `[API Orders Email Error] Error enviando emails para orden ${createdOrders[0].id}:`,
+          err,
+        ),
       );
     }
 

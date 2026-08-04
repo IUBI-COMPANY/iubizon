@@ -5,7 +5,11 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const excludeIds =
-      searchParams.get("exclude")?.split(",").filter(Boolean) || [];
+      searchParams
+        .get("exclude")
+        ?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || [];
     const page = Number(searchParams.get("page") || "1");
     const limit = Number(searchParams.get("limit") || "6");
     const skip = (page - 1) * limit;
@@ -49,11 +53,12 @@ export async function GET(req: Request) {
     // Eliminar duplicados
     targetSlugs = Array.from(new Set(targetSlugs));
 
-    // 3. Obtener listas de IDs ordenadas por afinidad
+    // 3. Obtener listas de IDs ordenadas por afinidad (excluyendo estrictamente los productos en carrito)
     const affinityProducts = await prisma.product.findMany({
       where: {
         status: "active",
-        id: { notIn: excludeIds },
+        stock: { gt: 0 },
+        id: excludeIds.length > 0 ? { notIn: excludeIds } : undefined,
         category:
           targetSlugs.length > 0 ? { slug: { in: targetSlugs } } : undefined,
       },
@@ -66,7 +71,8 @@ export async function GET(req: Request) {
     const fallbackProducts = await prisma.product.findMany({
       where: {
         status: "active",
-        id: { notIn: [...excludeIds, ...affinityIds] },
+        stock: { gt: 0 },
+        id: { notIn: Array.from(new Set([...excludeIds, ...affinityIds])) },
       },
       select: { id: true },
       orderBy: { views: "desc" },
@@ -84,7 +90,11 @@ export async function GET(req: Request) {
     // 4. Consultar detalles de los productos paginados
     const products = await prisma.product.findMany({
       where: {
-        id: { in: paginatedIds },
+        id: {
+          in: paginatedIds,
+          ...(excludeIds.length > 0 ? { notIn: excludeIds } : {}),
+        },
+        stock: { gt: 0 },
       },
       select: {
         id: true,

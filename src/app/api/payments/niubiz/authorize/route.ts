@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { authorizeNiubizTransaction } from "@/lib/services/niubiz";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getOrCreateBuyerProfile } from "@/lib/services/orders";
+import { sendOrderConfirmationEmails } from "@/lib/email";
 
 function respondWithError(
   message: string,
@@ -293,6 +294,14 @@ export async function POST(req: Request) {
 
       return ordersList;
     });
+
+    // Despacho de correos en segundo plano (no bloqueante)
+    sendOrderConfirmationEmails(purchaseNumber).catch((err) =>
+      console.error(
+        `[Niubiz Authorize Email Error] Error enviando emails para ${purchaseNumber}:`,
+        err,
+      ),
+    );
 
     if (isFormPost) {
       return NextResponse.redirect(

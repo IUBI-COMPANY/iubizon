@@ -3,7 +3,16 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Mail, Lock, User, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Check,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -282,7 +291,17 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] p-4">
+      <div className="w-full max-w-md mb-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] hover:text-[#f25c05] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm transition-all hover:shadow-md"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#f25c05]" />
+          <span>Volver al Inicio</span>
+        </Link>
+      </div>
+
       <Suspense
         fallback={
           <Card className="w-full max-w-md p-8 text-center">

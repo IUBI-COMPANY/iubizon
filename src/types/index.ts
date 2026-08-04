@@ -50,6 +50,7 @@ export interface SearchFilters {
   condition?: ProductCondition[];
   location?: string;
   isBundle?: boolean;
+  includeOutOfStock?: boolean;
   sortBy?:
     | "most_relevance"
     | "most_recent"

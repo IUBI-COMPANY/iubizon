@@ -161,7 +161,10 @@ export default function CartCheckoutPage() {
     async (pageToFetch = 1) => {
       try {
         setLoadingRecs(true);
-        const excludeIds = items.map((i) => i.product_id).join(",");
+        const excludeIds = items
+          .map((i) => i.product_id)
+          .filter(Boolean)
+          .join(",");
         const res = await fetch(
           `/api/products/recommendations?exclude=${excludeIds}&page=${pageToFetch}&limit=6`,
         );
@@ -179,6 +182,11 @@ export default function CartCheckoutPage() {
     },
     [items],
   );
+
+  const filteredRecommendations = useMemo(() => {
+    const cartProductIds = new Set(items.map((i) => i.product_id));
+    return recommendations.filter((rec) => !cartProductIds.has(rec.id));
+  }, [recommendations, items]);
 
   useEffect(() => {
     fetchRecommendations(1);
@@ -353,7 +361,7 @@ export default function CartCheckoutPage() {
 
               {/* Order Bumps / Productos Complementarios */}
               <CartOrderBumps
-                recommendations={recommendations}
+                recommendations={filteredRecommendations}
                 loading={loadingRecs}
                 onAddBump={handleAddBump}
                 page={recsPage}

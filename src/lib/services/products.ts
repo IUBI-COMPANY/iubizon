@@ -65,6 +65,10 @@ export async function getProducts(options: GetProductsOptions = {}) {
 
   const where: Prisma.ProductWhereInput = { status: "active" };
 
+  if (!filters?.includeOutOfStock) {
+    where.stock = { gt: 0 };
+  }
+
   if (filters?.query) {
     const rawQuery = filters.query.trim();
     const variants = getSearchVariants(rawQuery);
@@ -239,6 +243,7 @@ export async function getRelatedProducts(
       category_id: categoryId,
       id: { not: productId },
       status: "active",
+      stock: { gt: 0 },
     },
     include: productInclude,
     orderBy: { favorites_count: "desc" },

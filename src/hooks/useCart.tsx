@@ -17,7 +17,7 @@ interface CartItem {
   image_url?: string;
   quantity: number;
   seller_id: string;
-  stock?: number;
+  stock?: number | null;
 }
 
 interface CartContextType {
@@ -30,8 +30,8 @@ interface CartContextType {
           title: string;
           price: number;
           seller_id: string;
-          images?: { url: string }[];
-          stock?: number;
+          images?: any[];
+          stock?: number | null;
         },
     quantityToAdd?: number,
   ) => void;
@@ -86,7 +86,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 const freshStock =
                   typeof data.product.stock === "number"
                     ? data.product.stock
-                    : 10;
+                    : 0;
                 const freshPrice = Number(data.product.price) || item.price;
                 return {
                   ...item,
@@ -105,16 +105,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (isMounted) {
           setItems((prev) => {
             let hasChanges = false;
-            const nextItems = prev.map((prevItem) => {
+            const updatedItems = prev.map((prevItem) => {
               const fresh = updated.find(
                 (u) => u.product_id === prevItem.product_id,
               );
-              if (
-                fresh &&
-                (prevItem.stock !== fresh.stock ||
-                  prevItem.price !== fresh.price)
-              ) {
-                hasChanges = true;
+              if (fresh) {
+                if (
+                  prevItem.stock !== fresh.stock ||
+                  prevItem.price !== fresh.price ||
+                  prevItem.quantity !== fresh.quantity
+                ) {
+                  hasChanges = true;
+                }
                 return {
                   ...prevItem,
                   stock: fresh.stock,
@@ -124,7 +126,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               }
               return prevItem;
             });
-            return hasChanges ? nextItems : prev;
+
+            // Eliminar de forma automática productos que se hayan quedado sin stock
+            const validItems = updatedItems.filter(
+              (item) =>
+                (item.stock === undefined ||
+                  item.stock === null ||
+                  item.stock > 0) &&
+                item.quantity > 0,
+            );
+
+            if (validItems.length !== prev.length) {
+              hasChanges = true;
+            }
+
+            return hasChanges ? validItems : prev;
           });
         }
       } catch (e) {
@@ -147,8 +163,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             title: string;
             price: number;
             seller_id: string;
-            images?: { url: string }[];
-            stock?: number;
+            images?: any[];
+            stock?: number | null;
           },
       quantityToAdd: number = 1,
     ) => {
@@ -157,13 +173,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           (item) => item.product_id === product.id,
         );
 
-        const availableStock = product.stock ?? existingItem?.stock ?? 10;
+        const availableStock =
+          typeof product.stock === "number"
+            ? product.stock
+            : (existingItem?.stock ?? 0);
+
+        if (availableStock <= 0) {
+          return prev;
+        }
 
         if (existingItem) {
           const newQty = Math.min(
             existingItem.quantity + quantityToAdd,
             availableStock,
           );
+          if (newQty <= 0) {
+            return prev.filter((item) => item.product_id !== product.id);
+          }
           return prev.map((item) =>
             item.product_id === product.id
               ? { ...item, quantity: newQty, stock: availableStock }
@@ -208,17 +234,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
     } else {
       setItems((prev) =>
-        prev.map((item) => {
-          if (item.product_id === productId || item.id === productId) {
-            const maxStock =
-              typeof item.stock === "number" && item.stock > 0
-                ? item.stock
-                : 99;
-            const cappedQty = Math.min(quantity, maxStock);
-            return { ...item, quantity: cappedQty };
-          }
-          return item;
-        }),
+        prev
+          .map((item) => {
+            if (item.product_id === productId || item.id === productId) {
+              const maxStock = typeof item.stock === "number" ? item.stock : 99;
+              if (maxStock <= 0) {
+                return { ...item, quantity: 0 };
+              }
+              const cappedQty = Math.min(quantity, maxStock);
+              return { ...item, quantity: cappedQty };
+            }
+            return item;
+          })
+          .filter(
+            (item) =>
+              (item.stock === undefined ||
+                item.stock === null ||
+                item.stock > 0) &&
+              item.quantity > 0,
+          ),
       );
     }
   }, []);

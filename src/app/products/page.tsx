@@ -9,7 +9,7 @@ async function getProducts(limit = 20) {
   try {
     const [products, total] = await Promise.all([
       prisma.product.findMany({
-        where: { status: "active" },
+        where: { status: "active", stock: { gt: 0 } },
         include: {
           category: true,
           seller: true,
@@ -18,7 +18,7 @@ async function getProducts(limit = 20) {
         orderBy: { created_at: "desc" },
         take: limit,
       }),
-      prisma.product.count({ where: { status: "active" } }),
+      prisma.product.count({ where: { status: "active", stock: { gt: 0 } } }),
     ]);
     return { products, total };
   } catch (error) {

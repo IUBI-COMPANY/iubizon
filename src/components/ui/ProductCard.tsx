@@ -62,9 +62,15 @@ export const ProductCard = ({
     await toggleFavorite(product.id);
   };
 
+  const isOutOfStock = typeof product.stock === "number" && product.stock <= 0;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) {
+      toast.error("Producto agotado sin stock disponible.");
+      return;
+    }
     if (isOwner) {
       toast.error(
         "Esta es tu propia publicación. No puedes agregarla al carrito.",
@@ -77,6 +83,7 @@ export const ProductCard = ({
       price: product.price,
       seller_id: product.seller_id,
       images: product.images || [],
+      stock: product.stock,
     });
     setIsModalOpen(true);
   };
@@ -191,15 +198,24 @@ export const ProductCard = ({
             <div className="mt-3 pt-1 transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0">
               <button
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
                 className={cn(
                   "w-full text-xs font-bold py-2.5 px-4 rounded-full shadow-md flex items-center justify-center gap-2 transition-colors",
-                  isOwner
-                    ? "bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300"
-                    : "bg-[#112237] hover:bg-[#f25c05] text-white",
+                  isOutOfStock
+                    ? "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300 shadow-none"
+                    : isOwner
+                      ? "bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300"
+                      : "bg-[#112237] hover:bg-[#f25c05] text-white",
                 )}
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
-                <span>{isOwner ? "Tu publicación" : "Agregar al Carro"}</span>
+                <span>
+                  {isOutOfStock
+                    ? "Agotado"
+                    : isOwner
+                      ? "Tu publicación"
+                      : "Agregar al Carro"}
+                </span>
               </button>
             </div>
           </div>
