@@ -9,17 +9,17 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const createPrismaClient = () => {
-  if (connectionString && connectionString.trim() !== "") {
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaPg(pool);
-    return new PrismaClient({
-      adapter,
-      log:
-        process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
-  }
+  const connStr =
+    connectionString && connectionString.trim() !== ""
+      ? connectionString
+      : "postgresql://postgres:postgres@localhost:5432/postgres";
+
+  const pool = new Pool({ connectionString: connStr });
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    adapter,
+    log:
+      process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 };
 
