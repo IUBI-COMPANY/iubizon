@@ -1,6 +1,6 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
-import { resend, DEFAULT_FROM_EMAIL } from "./client";
+import { getResendClient, DEFAULT_FROM_EMAIL } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
@@ -9,31 +9,26 @@ import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
 
 export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
   try {
-    // 1. Consultar la orden de referencia para obtener identificadores del pago/sesión
-    const targetOrder = await prisma.order.findFirst({
+    const resend = getResendClient();
+
+    // 1. Consultar transacciones de pago y órdenes coincidentes por ID, payment_id o purchase_number
+    const paymentTx = await prisma.paymentTransaction.findFirst({
       where: {
-        OR: [{ id: orderIdOrCode }, { payment_id: orderIdOrCode }],
+        OR: [{ purchase_number: orderIdOrCode }, { id: orderIdOrCode }],
       },
-      select: {
-        id: true,
-        payment_id: true,
-        payment_transaction_id: true,
-      },
+      select: { id: true, purchase_number: true },
     });
 
-    if (!targetOrder) {
-      console.warn(`[Email Dispatcher] Orden ${orderIdOrCode} no encontrada.`);
-      return;
-    }
+    const whereOr: any[] = [
+      { id: orderIdOrCode },
+      { payment_id: orderIdOrCode },
+    ];
 
-    const whereOr: any[] = [{ id: targetOrder.id }];
-    if (targetOrder.payment_id) {
-      whereOr.push({ payment_id: targetOrder.payment_id });
-    }
-    if (targetOrder.payment_transaction_id) {
-      whereOr.push({
-        payment_transaction_id: targetOrder.payment_transaction_id,
-      });
+    if (paymentTx) {
+      whereOr.push({ payment_transaction_id: paymentTx.id });
+      if (paymentTx.purchase_number) {
+        whereOr.push({ payment_id: paymentTx.purchase_number });
+      }
     }
 
     const orders = await prisma.order.findMany({
@@ -89,7 +84,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     const orderCode =
       primaryOrder.payment_id || primaryOrder.id.slice(0, 8).toUpperCase();
 
-    // Extraer datos adicionales del registro de transacción de Niubiz (si existe)
+    // Extraer datos de envío y facturación
     const paymentRaw =
       typeof primaryOrder.paymentTransaction?.raw_response === "object" &&
       primaryOrder.paymentTransaction?.raw_response
@@ -150,7 +145,6 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       0,
     );
 
-    // Obtener costo de envío dinámico de platform_settings
     const shippingCfg = await getShippingConfig();
     const shippingCost = shippingCfg.is_free ? 0.0 : shippingCfg.default_cost;
     const grandTotal = subtotalCalculated + shippingCost;
@@ -170,7 +164,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       invoiceNumber,
     };
 
-    // 3. Agrupar productos por vendedor para enviar una alerta a cada uno
+    // 3. Agrupar productos por vendedor
     const itemsBySeller = new Map<
       string,
       {
@@ -230,7 +224,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     const sendBuyerPromise = (async () => {
       try {
         if (resend && buyerData.buyerEmail) {
-          const { error } = await resend.emails.send({
+          const { data, error } = await resend.emails.send({
             from: DEFAULT_FROM_EMAIL,
             to: [buyerData.buyerEmail],
             subject: `Confirmación de compra N° ${buyerData.orderCode} - iubizon`,
@@ -241,14 +235,22 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
               `[Email Dispatcher] Error al enviar email a comprador (${buyerData.buyerEmail}):`,
               error,
             );
+            if (
+              error.message &&
+              error.message.includes("testing emails to your own email address")
+            ) {
+              console.warn(
+                `[Resend Notice] Con onboarding@resend.dev solo se pueden enviar correos de prueba a tu email registrado en Resend. Para enviar a otros destinatarios, verifica tu dominio en resend.com/domains.`,
+              );
+            }
           } else {
             console.log(
-              `[Email Dispatcher] Email de compra enviado a ${buyerData.buyerEmail} (${buyerData.orderCode})`,
+              `[Email Dispatcher] Email de compra enviado exitosamente a ${buyerData.buyerEmail} (ID: ${data?.id})`,
             );
           }
         } else {
           console.log(
-            `[Email Dispatcher - DEV MODE] Email para comprador ${buyerData.buyerEmail} (${buyerData.orderCode}) simulado.`,
+            `[Email Dispatcher - DEV MODE] RESEND_API_KEY no detectada. Email para comprador ${buyerData.buyerEmail} (${buyerData.orderCode}) simulado.`,
           );
         }
       } catch (err) {
@@ -282,7 +284,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
           };
 
           if (resend && sellerGroup.sellerEmail) {
-            const { error } = await resend.emails.send({
+            const { data, error } = await resend.emails.send({
               from: DEFAULT_FROM_EMAIL,
               to: [sellerGroup.sellerEmail],
               subject: `¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
@@ -295,7 +297,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
               );
             } else {
               console.log(
-                `[Email Dispatcher] Email de venta enviado a vendedor ${sellerGroup.sellerEmail} (${packageCode})`,
+                `[Email Dispatcher] Email de venta enviado exitosamente a vendedor ${sellerGroup.sellerEmail} (ID: ${data?.id})`,
               );
             }
           } else {
