@@ -262,6 +262,7 @@ export const PublicCompanyStorefront = ({
             setCompanyData((prev) => ({
               ...prev,
               ...updatedCompany,
+              slug: updatedCompany.slug || prev.slug,
             }));
             refreshCompanies();
             if (updatedCompany.slug && updatedCompany.slug !== companyData.slug) {

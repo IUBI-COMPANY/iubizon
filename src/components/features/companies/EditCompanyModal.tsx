@@ -11,6 +11,7 @@ interface EditCompanyModalProps {
   company: {
     id: string;
     name: string;
+    slug?: string | null;
     tax_id: string | null;
     logo_url: string | null;
     description: string | null;
@@ -23,6 +24,7 @@ interface EditCompanyModalProps {
   onSuccess: (updatedCompany: {
     id: string;
     name: string;
+    slug?: string | null;
     tax_id: string | null;
     logo_url: string | null;
     description: string | null;
