@@ -43,7 +43,7 @@ export interface SellerPackage {
   items: SellerPackageItem[];
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = await createServerClient();
     const {
@@ -54,13 +54,58 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const orders = await prisma.order.findMany({
-      where: {
+    const { searchParams } = new URL(request.url);
+    let companyIdParam = searchParams.get("company_id");
+
+    // Si no se especificó company_id, consultar la empresa activa del usuario desde su Perfil
+    if (!companyIdParam) {
+      const profile = await prisma.profile.findUnique({
+        where: { id: user.id },
+        select: { last_active_company_id: true },
+      });
+
+      if (profile?.last_active_company_id) {
+        companyIdParam = profile.last_active_company_id;
+      }
+    }
+
+    let whereClause: any;
+
+    if (
+      companyIdParam &&
+      companyIdParam !== "personal" &&
+      companyIdParam !== "none"
+    ) {
+      const membership = await prisma.companyMember.findFirst({
+        where: {
+          company_id: companyIdParam,
+          user_id: user.id,
+        },
+      });
+
+      if (!membership) {
+        return NextResponse.json(
+          { error: "No tienes permisos para ver las ventas de esta empresa." },
+          { status: 403 },
+        );
+      }
+
+      whereClause = {
         OR: [
-          { seller_id: user.id },
-          { company: { companyMembers: { some: { user_id: user.id } } } },
+          { company_id: companyIdParam },
+          { product: { company_id: companyIdParam } },
         ],
-      },
+      };
+    } else {
+      // Modo personal (ventas del usuario sin empresa asignada)
+      whereClause = {
+        seller_id: user.id,
+        company_id: null,
+      };
+    }
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
       orderBy: { created_at: "desc" },
       include: {
         buyer: {

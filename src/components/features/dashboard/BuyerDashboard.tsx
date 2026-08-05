@@ -229,7 +229,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
             href="/user/orders"
             className="text-xs font-semibold text-[#f25c05] hover:underline"
           >
-            Ver historial completo ➔
+            Ver historial completo
           </Link>
         </div>
 

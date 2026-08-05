@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -75,6 +76,7 @@ function formatFullDate(isoString: string) {
 
 function OrdersContent() {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeCompany, isLoadingCompanies } = useCompany();
   const router = useRouter();
 
   const [packages, setPackages] = useState<SellerPackage[]>([]);
@@ -94,11 +96,15 @@ function OrdersContent() {
   }, [user, authLoading, router]);
 
   const fetchOrders = useCallback(async () => {
-    if (!user) return;
+    if (!user || isLoadingCompanies) return;
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/seller/orders");
+      const url = activeCompany?.id
+        ? `/api/seller/orders?company_id=${activeCompany.id}`
+        : `/api/seller/orders?company_id=personal`;
+
+      const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Error al cargar las ventas.");
@@ -111,13 +117,13 @@ function OrdersContent() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isLoadingCompanies, activeCompany?.id]);
 
   useEffect(() => {
-    if (user) {
+    if (user && !isLoadingCompanies) {
       fetchOrders();
     }
-  }, [user, fetchOrders]);
+  }, [user, isLoadingCompanies, activeCompany?.id, fetchOrders]);
 
   const filteredPackages = packages.filter((pkg) => {
     if (statusTab === "all") return true;
@@ -141,7 +147,7 @@ function OrdersContent() {
     0,
   );
 
-  if (authLoading || loading) {
+  if (authLoading || isLoadingCompanies || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
@@ -165,11 +171,13 @@ function OrdersContent() {
           </Link>
           <div>
             <h1 className="text-2xl font-black text-[#112237]">
-              Gestión de Pedidos & Ventas
+              Gestión de Pedidos & Ventas{" "}
+              {activeCompany ? `de ${activeCompany.name}` : ""}
             </h1>
             <p className="text-xs text-[#64748b] mt-0.5">
-              Administra los despachos asignados y consulta el estado de cada
-              venta.
+              {activeCompany
+                ? `Administra los despachos y consulta las ventas de ${activeCompany.name}.`
+                : "Administra los despachos asignados y consulta el estado de cada venta."}
             </p>
           </div>
         </div>

@@ -125,7 +125,7 @@ export function LocationSelector({
 
         {showSuccess && (
           <p className="text-sm text-green-600 font-medium">
-            ✓ Ubicación guardada correctamente
+            Ubicación guardada correctamente
           </p>
         )}
       </div>

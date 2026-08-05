@@ -292,7 +292,7 @@ export const CreateCompanyStep = ({
 
           {formData.logo_url ? (
             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 mt-1.5">
-              ✓ Logotipo listo para guardar
+              Logotipo listo para guardar
             </span>
           ) : (
             <p className="text-[10px] text-[#94a3b8] mt-1.5">

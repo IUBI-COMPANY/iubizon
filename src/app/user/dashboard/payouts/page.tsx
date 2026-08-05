@@ -120,7 +120,10 @@ function PayoutsContent() {
     if (!user) return;
     try {
       setIsLoading(true);
-      const res = await fetch("/api/seller/payouts");
+      const url = activeCompany?.id
+        ? `/api/seller/payouts?company_id=${activeCompany.id}`
+        : `/api/seller/payouts?company_id=personal`;
+      const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
         setPayouts(data.payouts || []);
@@ -131,7 +134,7 @@ function PayoutsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, activeCompany?.id]);
 
   useEffect(() => {
     if (user) {

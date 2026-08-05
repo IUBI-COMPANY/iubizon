@@ -15,7 +15,7 @@ interface CompanyContextType {
   companies: Company[];
   activeCompany: Company | null;
   isLoadingCompanies: boolean;
-  setActiveCompanyId: (companyId: string) => void;
+  setActiveCompanyId: (companyId: string | null) => void;
   refreshCompanies: () => Promise<void>;
 }
 
@@ -84,7 +84,16 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   }, [fetchCompanies]);
 
   const handleSetActiveCompanyId = useCallback(
-    async (companyId: string) => {
+    async (companyId: string | null) => {
+      if (!companyId) {
+        setActiveCompany(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(COMPANY_STORAGE_KEY);
+          window.location.reload();
+        }
+        return;
+      }
+
       const target = companies.find((c) => c.id === companyId);
       if (target) {
         setActiveCompany(target);

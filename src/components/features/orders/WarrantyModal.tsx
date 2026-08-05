@@ -125,7 +125,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-[#64748b]">
-              ℹ️ <strong>Cobertura:</strong> Fallas de fabricación y componentes
+              <strong>Cobertura:</strong> Fallas de fabricación y componentes
               defectuosos de origen.
             </p>
             {warrantyConditions && (

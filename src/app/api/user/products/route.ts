@@ -52,17 +52,6 @@ export async function GET(req: Request) {
       if (membership) {
         isCompanyMode = true;
         targetCompany = membership.company;
-
-        // Auto-vincular cualquier producto sin empresa del usuario a su empresa activa
-        await prisma.product.updateMany({
-          where: {
-            seller_id: user.id,
-            company_id: null,
-          },
-          data: {
-            company_id: companyId,
-          },
-        });
       }
     }
 

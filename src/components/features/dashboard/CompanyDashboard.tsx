@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,11 +11,13 @@ import {
   Loader2,
   Package,
   Plus,
+  Settings,
   ShoppingCart,
   Users,
   Wallet,
 } from "lucide-react";
 import type { Company } from "@/types";
+import { EditCompanyModal } from "@/components/features/companies/EditCompanyModal";
 
 interface CompanyDashboardProps {
   activeCompany: Company;
@@ -44,6 +47,8 @@ export const CompanyDashboard = ({
   recentProducts,
   loading,
 }: CompanyDashboardProps) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   return (
     <div className="space-y-8">
       {/* Cabecera Comercial de la Empresa */}
@@ -83,13 +88,20 @@ export const CompanyDashboard = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#f8fafc] text-[#334155] border border-[#e2e8f0] font-semibold px-3.5 py-2.5 rounded-xl transition-all text-xs shadow-sm flex-1 sm:flex-initial"
+          >
+            <Settings className="w-4 h-4 text-[#f25c05]" />
+            Ajustes / Editar
+          </button>
           <Link
             href={`/companies/${activeCompany.slug || activeCompany.id}`}
             target="_blank"
             className="flex items-center justify-center gap-1.5 bg-white hover:bg-[#f8fafc] text-[#334155] border border-[#e2e8f0] font-semibold px-3.5 py-2.5 rounded-xl transition-all text-xs shadow-sm flex-1 sm:flex-initial"
           >
             <Building2 className="w-4 h-4 text-[#f25c05]" />
-            Ver perfil de empresa
+            Ver perfil
           </Link>
           <Link
             href={`/user/companies/${activeCompany.id}/members`}
@@ -161,7 +173,7 @@ export const CompanyDashboard = ({
             Liquidación de Entregas
           </p>
           <p className="text-xs text-[#64748b] mt-1">
-            Consultar retribuciones por abonar ➔
+            Consultar retribuciones por abonar
           </p>
         </Link>
 
@@ -310,6 +322,15 @@ export const CompanyDashboard = ({
           </div>
         )}
       </div>
+
+      <EditCompanyModal
+        company={activeCompany}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => {
+          setIsEditModalOpen(false);
+        }}
+      />
     </div>
   );
 };
