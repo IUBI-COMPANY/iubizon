@@ -65,12 +65,29 @@ export function SellerSaleEmail(data: SellerEmailData) {
           <strong>Dirección de Entrega:</strong> {data.buyerInfo.address},{" "}
           {data.buyerInfo.city}
         </Text>
+        {(data.buyerInfo.department ||
+          data.buyerInfo.province ||
+          data.buyerInfo.district) && (
+          <Text style={buyerTextStyle}>
+            <strong>Ubigeo:</strong>{" "}
+            {[data.buyerInfo.district, data.buyerInfo.province, data.buyerInfo.department]
+              .filter(Boolean)
+              .join(", ")}
+          </Text>
+        )}
         <Text style={buyerTextStyle}>
           <strong>Teléfono de Contacto:</strong> {data.buyerInfo.phone}
         </Text>
         <Text style={buyerTextStyle}>
           <strong>Email:</strong> {data.buyerInfo.email}
         </Text>
+        {data.buyerInfo.documentType && data.buyerInfo.documentNumber && (
+          <Text style={buyerTextStyle}>
+            <strong>Documento para entrega:</strong>{" "}
+            {data.buyerInfo.documentType.toUpperCase()}{" "}
+            {data.buyerInfo.documentNumber}
+          </Text>
+        )}
         {data.buyerInfo.notes && (
           <Text style={buyerTextStyle}>
             <strong>Notas especiales de entrega:</strong> {data.buyerInfo.notes}

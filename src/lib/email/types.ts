@@ -28,6 +28,11 @@ export interface BuyerEmailData {
     email: string;
     address: string;
     city: string;
+    department?: string;
+    province?: string;
+    district?: string;
+    documentType?: string;
+    documentNumber?: string;
     notes?: string;
   };
   deliveryType: "progressive" | "complete" | string;
@@ -55,6 +60,11 @@ export interface SellerEmailData {
     email: string;
     address: string;
     city: string;
+    department?: string;
+    province?: string;
+    district?: string;
+    documentType?: string;
+    documentNumber?: string;
     notes?: string;
   };
 }

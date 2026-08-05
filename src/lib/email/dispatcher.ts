@@ -102,6 +102,28 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
 
     const rawShipping = paymentRaw.shipping || {};
     const rawInvoice = paymentRaw.invoiceDetails || {};
+    const shippingDepartment = String(rawShipping.department || "").trim();
+    const shippingProvince = String(rawShipping.province || "").trim();
+    const shippingDistrict = String(rawShipping.district || "").trim();
+    const shippingDocumentType = String(
+      rawShipping.documentType ||
+        rawShipping.document_type ||
+        rawInvoice.shipping_document_type ||
+        rawInvoice.identity_type ||
+        "",
+    )
+      .trim()
+      .toLowerCase();
+    const shippingDocumentNumber = String(
+      rawShipping.documentNumber ||
+        rawShipping.document_number ||
+        rawInvoice.shipping_document_number ||
+        rawInvoice.identity_number ||
+        "",
+    ).trim();
+    const ubigeoLabel = [shippingDistrict, shippingProvince, shippingDepartment]
+      .filter(Boolean)
+      .join(", ");
 
     const destinationAddress =
       rawShipping.address ||
@@ -116,8 +138,13 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
         rawShipping.email?.trim() ||
         paymentRaw.buyer_email?.trim() ||
         primaryOrder.buyer.email,
-      address: destinationAddress,
-      city: rawShipping.city || "Lima",
+      address: rawShipping.address || destinationAddress,
+      city: ubigeoLabel || rawShipping.city || "Lima",
+      department: shippingDepartment || undefined,
+      province: shippingProvince || undefined,
+      district: shippingDistrict || undefined,
+      documentType: shippingDocumentType || undefined,
+      documentNumber: shippingDocumentNumber || undefined,
       notes: rawShipping.notes || undefined,
     };
 

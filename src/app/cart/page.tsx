@@ -79,10 +79,49 @@ const shippingFormSchema = z.object({
   department: z.string().min(1, "Selecciona un departamento."),
   province: z.string().min(1, "Selecciona una provincia."),
   district: z.string().min(1, "Selecciona un distrito."),
+  documentType: z.enum(["dni", "ruc"]).optional(),
+  documentNumber: z.string().trim().optional(),
   /** Derivado de departamento/provincia/distrito. Se mantiene por compatibilidad
    * con la construcción de destination_address y las plantillas de correo. */
   city: z.string(),
   notes: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const isProvinceDelivery =
+    data.department.trim().toLowerCase() !== "lima";
+  if (!isProvinceDelivery) return;
+
+  if (!data.documentType) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["documentType"],
+      message:
+        "Para envíos fuera de Lima, selecciona DNI o RUC del destinatario.",
+    });
+    return;
+  }
+
+  const docNumber = (data.documentNumber || "").trim();
+  if (!docNumber) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["documentNumber"],
+      message: "Para envíos a provincia, el documento es obligatorio.",
+    });
+    return;
+  }
+
+  const isDniValid = data.documentType === "dni" && /^\d{8}$/.test(docNumber);
+  const isRucValid = data.documentType === "ruc" && /^\d{11}$/.test(docNumber);
+  if (!isDniValid && !isRucValid) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["documentNumber"],
+      message:
+        data.documentType === "dni"
+          ? "El DNI debe tener exactamente 8 dígitos."
+          : "El RUC debe tener exactamente 11 dígitos.",
+    });
+  }
 });
 
 export type ShippingFormState = z.infer<typeof shippingFormSchema>;
@@ -129,6 +168,8 @@ export default function CartCheckoutPage() {
       department: "Lima",
       province: "Lima",
       district: "",
+      documentType: "dni",
+      documentNumber: "",
       city: "Lima",
       notes: "",
     },
@@ -220,6 +261,17 @@ export default function CartCheckoutPage() {
         ?.districts || [],
     [provincesForDepartment, shippingForm.province],
   );
+  const isProvinceDelivery = useMemo(
+    () => shippingForm.department?.trim().toLowerCase() !== "lima",
+    [shippingForm.department],
+  );
+  const hasValidProvinceDocument = useMemo(() => {
+    const docTypeValue = shippingForm.documentType;
+    const docNumber = (shippingForm.documentNumber || "").trim();
+    const isDniValid = docTypeValue === "dni" && /^\d{8}$/.test(docNumber);
+    const isRucValid = docTypeValue === "ruc" && /^\d{11}$/.test(docNumber);
+    return isDniValid || isRucValid;
+  }, [shippingForm.documentType, shippingForm.documentNumber]);
 
   // Selección en cascada Departamento -> Provincia -> Distrito. Al elegir un nivel
   // se reinician los niveles hijos y se recalcula el "city" derivado (compatibilidad
@@ -318,6 +370,19 @@ export default function CartCheckoutPage() {
 
   // Validación de datos de factura/boleta antes de abrir la pasarela Niubiz
   const validateInvoiceDetails = (): boolean => {
+    if (isProvinceDelivery) {
+      const docTypeValue = shippingForm.documentType;
+      const docNumber = (shippingForm.documentNumber || "").trim();
+
+      if (!docTypeValue || !docNumber || !hasValidProvinceDocument) {
+        toast.error(
+          "Para envíos a provincia debes registrar un DNI (8) o RUC (11) válido.",
+          "Documento requerido",
+        );
+        return false;
+      }
+    }
+
     if (invoiceType === "factura") {
       const cleanRuc = invoiceRuc.trim();
       if (!cleanRuc || cleanRuc.length !== 11) {
@@ -376,7 +441,8 @@ export default function CartCheckoutPage() {
                 shippingForm.address &&
                 shippingForm.department &&
                 shippingForm.province &&
-                shippingForm.district,
+                shippingForm.district &&
+                (!isProvinceDelivery || hasValidProvinceDocument)
               )
             }
           />
@@ -789,6 +855,72 @@ export default function CartCheckoutPage() {
                   )}
                 </div>
 
+                {isProvinceDelivery && (
+                  <div className="space-y-4 rounded-2xl border border-[#f59e0b]/30 bg-amber-50/50 p-4">
+                    <p className="text-xs text-[#92400e] leading-relaxed">
+                      Para envíos a provincia (fuera de Lima), necesitamos el{" "}
+                      <strong>DNI o RUC</strong> del destinatario para una
+                      entrega segura.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                          Tipo de Documento *
+                        </label>
+                        <Select
+                          value={shippingForm.documentType || undefined}
+                          onValueChange={(value) =>
+                            setValue("documentType", value as "dni" | "ruc", {
+                              shouldValidate: true,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dni">DNI</SelectItem>
+                            <SelectItem value="ruc">RUC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors.documentType && (
+                          <p className="text-xs text-red-500 font-medium mt-1">
+                            {errors.documentType.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                          Número de Documento *
+                        </label>
+                        <Input
+                          placeholder={
+                            shippingForm.documentType === "ruc"
+                              ? "Ej: 20601234567"
+                              : "Ej: 45678901"
+                          }
+                          maxLength={
+                            shippingForm.documentType === "ruc" ? 11 : 8
+                          }
+                          {...register("documentNumber")}
+                          onChange={(e) => {
+                            const digitsOnly = e.target.value.replace(/\D/g, "");
+                            setValue("documentNumber", digitsOnly, {
+                              shouldValidate: true,
+                            });
+                          }}
+                        />
+                        {errors.documentNumber && (
+                          <p className="text-xs text-red-500 font-medium mt-1">
+                            {errors.documentNumber.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-[#112237] mb-1.5">
                     Referencia o Instrucciones de Entrega (Opcional)
@@ -914,6 +1046,17 @@ export default function CartCheckoutPage() {
                     <strong className="text-[#112237]">Dirección:</strong>{" "}
                     {shippingForm.address}, {shippingForm.city}
                   </p>
+                  {isProvinceDelivery &&
+                    shippingForm.documentType &&
+                    shippingForm.documentNumber && (
+                      <p className="text-[#334155]">
+                        <strong className="text-[#112237]">
+                          Documento de entrega:
+                        </strong>{" "}
+                        {shippingForm.documentType.toUpperCase()}:{" "}
+                        {shippingForm.documentNumber}
+                      </p>
+                    )}
                   <p className="text-[#334155]">
                     <strong className="text-[#112237]">Comprobante:</strong>{" "}
                     <InvoiceSummaryText
@@ -949,6 +1092,8 @@ export default function CartCheckoutPage() {
                           ? invoiceCompanyName
                           : shippingForm.name,
                       tax_address: shippingForm.address,
+                      shipping_document_type: shippingForm.documentType,
+                      shipping_document_number: shippingForm.documentNumber,
                     }}
                     onSuccess={(sessionCode) => {
                       toast.success(

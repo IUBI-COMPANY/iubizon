@@ -52,6 +52,29 @@ export async function POST(req: Request) {
       );
     }
 
+    const shippingDepartment = String(shipping.department || "").trim();
+    const isProvinceDelivery =
+      shippingDepartment.length > 0 &&
+      shippingDepartment.toLowerCase() !== "lima";
+    if (isProvinceDelivery) {
+      const shippingDocType = String(shipping.documentType || "").trim();
+      const shippingDocNumber = String(shipping.documentNumber || "").trim();
+      const isValidDni =
+        shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
+      const isValidRuc =
+        shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
+
+      if (!isValidDni && !isValidRuc) {
+        return NextResponse.json(
+          {
+            error:
+              "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
     if (invoice_type === "factura") {
       if (!invoice_ruc || String(invoice_ruc).trim().length !== 11) {
         return NextResponse.json(
@@ -94,9 +117,16 @@ export async function POST(req: Request) {
 
     const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
     const isCompleteDelivery = delivery_type === "complete";
+    const destinationUbigeo = [
+      String(shipping.district || "").trim(),
+      String(shipping.province || "").trim(),
+      String(shipping.department || "").trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
     const supplierDestination = isCompleteDelivery
       ? IUBIZON_WAREHOUSE
-      : `${shipping.address}, ${shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
+      : `${shipping.address}, ${destinationUbigeo || shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
 
     const invoiceDetails =
       invoice_type === "factura"

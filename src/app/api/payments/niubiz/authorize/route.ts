@@ -146,6 +146,27 @@ export async function POST(req: Request) {
       );
     }
 
+    const shippingDepartment = String(shipping?.department || "").trim();
+    const isProvinceDelivery =
+      shippingDepartment.length > 0 &&
+      shippingDepartment.toLowerCase() !== "lima";
+    if (isProvinceDelivery) {
+      const shippingDocType = String(shipping?.documentType || "").trim();
+      const shippingDocNumber = String(shipping?.documentNumber || "").trim();
+      const isValidDni =
+        shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
+      const isValidRuc =
+        shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
+      if (!isValidDni && !isValidRuc) {
+        return respondWithError(
+          "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
+          isFormPost,
+          req.url,
+          400,
+        );
+      }
+    }
+
     const effectiveEmail =
       shipping?.email?.trim() ||
       (
@@ -257,6 +278,13 @@ export async function POST(req: Request) {
 
         const itemSubtotal = Number(product.price) * itemQuantity;
         const commissionAmount = calculateIubizonCommission(itemSubtotal);
+        const destinationUbigeo = [
+          String(shipping?.district || "").trim(),
+          String(shipping?.province || "").trim(),
+          String(shipping?.department || "").trim(),
+        ]
+          .filter(Boolean)
+          .join(", ");
 
         const order = await tx.order.create({
           data: {
@@ -275,7 +303,7 @@ export async function POST(req: Request) {
             shipping: {
               create: {
                 origin_address: "Almacén / Proveedor",
-                destination_address: `${shipping.address || ""}, ${shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`,
+                destination_address: `${shipping.address || ""}, ${destinationUbigeo || shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`,
                 courier: null,
                 tracking_number: null,
                 status: "pending",

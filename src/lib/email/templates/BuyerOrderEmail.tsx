@@ -148,9 +148,30 @@ export function BuyerOrderEmail(data: BuyerEmailData) {
           <strong>Dirección:</strong> {data.shippingForm.address},{" "}
           {data.shippingForm.city}
         </Text>
+        {(data.shippingForm.department ||
+          data.shippingForm.province ||
+          data.shippingForm.district) && (
+          <Text style={shippingTextStyle}>
+            <strong>Ubigeo:</strong>{" "}
+            {[
+              data.shippingForm.district,
+              data.shippingForm.province,
+              data.shippingForm.department,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          </Text>
+        )}
         <Text style={shippingTextStyle}>
           <strong>Teléfono:</strong> {data.shippingForm.phone}
         </Text>
+        {data.shippingForm.documentType && data.shippingForm.documentNumber && (
+          <Text style={shippingTextStyle}>
+            <strong>Documento del destinatario:</strong>{" "}
+            {data.shippingForm.documentType.toUpperCase()}{" "}
+            {data.shippingForm.documentNumber}
+          </Text>
+        )}
         {data.deliveryType && (
           <Text style={shippingTextStyle}>
             <strong>Modalidad:</strong>{" "}
