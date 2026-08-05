@@ -40,9 +40,10 @@ export const getPrisma = (): PrismaClient => {
 };
 
 export const prisma = new Proxy({} as PrismaClient, {
-  get(_target, prop) {
+  get(_target, prop, receiver) {
+    if (prop === "then" || prop === "toJSON") return undefined;
     const client = getPrisma() as any;
-    const value = client[prop];
+    const value = Reflect.get(client, prop, receiver);
     return typeof value === "function" ? value.bind(client) : value;
   },
 });
