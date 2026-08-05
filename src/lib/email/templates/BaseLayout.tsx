@@ -28,7 +28,7 @@ export function BaseLayout({ previewText, children }: BaseLayoutProps) {
           {/* Header Bar con Logo de iubizon */}
           <Section style={headerSectionStyle}>
             <Link href={baseUrl} style={logoTextStyle}>
-              iubizon<span style={orangeDotStyle}>.</span>
+              iubizon<span style={orangeDotStyle}>.com</span>
             </Link>
             <Text style={taglineStyle}>
               Marketplace para Colegios y Empresas

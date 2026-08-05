@@ -6,5 +6,9 @@ export const getResendClient = (): Resend | null => {
   return new Resend(apiKey);
 };
 
+export const getDefaultFromEmail = (): string => {
+  return process.env.EMAIL_FROM || "iubizon <notificaciones@iubizon.com>";
+};
+
 export const DEFAULT_FROM_EMAIL =
-  process.env.EMAIL_FROM || "iubizon <onboarding@resend.dev>";
+  process.env.EMAIL_FROM || "iubizon <notificaciones@iubizon.com>";

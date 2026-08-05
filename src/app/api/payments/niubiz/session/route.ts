@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const customerEmail = user?.email || guestEmail || "cliente@iubizon.com";
+    const customerEmail = guestEmail || user?.email || "cliente@iubizon.com";
     const numericAmount = Number(amount);
 
     // Validar prevención de auto-compra para usuarios logueados

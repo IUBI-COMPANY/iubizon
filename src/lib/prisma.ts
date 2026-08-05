@@ -2,19 +2,24 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
-const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
-
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaConnStr: string | undefined;
 };
 
-const createPrismaClient = () => {
+export const createPrismaClient = (): PrismaClient => {
   const connStr =
-    connectionString && connectionString.trim() !== ""
-      ? connectionString
-      : "postgresql://postgres:postgres@localhost:5432/postgres";
+    process.env.DATABASE_URL?.trim() ||
+    process.env.DIRECT_URL?.trim() ||
+    "postgresql://postgres:postgres@localhost:5432/postgres";
 
-  const pool = new Pool({ connectionString: connStr });
+  const pool = new Pool({
+    connectionString: connStr,
+    ssl: connStr.includes("supabase.com")
+      ? { rejectUnauthorized: false }
+      : undefined,
+  });
+
   const adapter = new PrismaPg(pool);
   return new PrismaClient({
     adapter,
@@ -22,6 +27,22 @@ const createPrismaClient = () => {
   });
 };
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+export const getPrisma = (): PrismaClient => {
+  const currentConnStr = process.env.DATABASE_URL || process.env.DIRECT_URL;
+  if (
+    !globalForPrisma.prisma ||
+    globalForPrisma.prismaConnStr !== currentConnStr
+  ) {
+    globalForPrisma.prisma = createPrismaClient();
+    globalForPrisma.prismaConnStr = currentConnStr;
+  }
+  return globalForPrisma.prisma;
+};
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrisma() as any;
+    const value = client[prop];
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});

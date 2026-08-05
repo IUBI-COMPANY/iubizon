@@ -1,28 +1,40 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
-import { getResendClient, DEFAULT_FROM_EMAIL } from "./client";
+import { getResendClient, getDefaultFromEmail } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getShippingConfig } from "@/lib/services/platformSettings";
-import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
+import type {
+  BuyerEmailData,
+  SellerEmailData,
+  EmailOrderItem,
+} from "./types";
+
+const isUuid = (str: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
   try {
     const resend = getResendClient();
+    const fromEmail = getDefaultFromEmail();
+    const isParamUuid = isUuid(orderIdOrCode);
 
-    // 1. Consultar transacciones de pago y órdenes coincidentes por ID, payment_id o purchase_number
+    // 1. Consultar transacciones de pago y órdenes coincidentes por ID (UUID), payment_id o purchase_number
+    const txWhereOr: any[] = [{ purchase_number: orderIdOrCode }];
+    if (isParamUuid) {
+      txWhereOr.push({ id: orderIdOrCode });
+    }
+
     const paymentTx = await prisma.paymentTransaction.findFirst({
-      where: {
-        OR: [{ purchase_number: orderIdOrCode }, { id: orderIdOrCode }],
-      },
+      where: { OR: txWhereOr },
       select: { id: true, purchase_number: true },
     });
 
-    const whereOr: any[] = [
-      { id: orderIdOrCode },
-      { payment_id: orderIdOrCode },
-    ];
+    const whereOr: any[] = [{ payment_id: orderIdOrCode }];
+    if (isParamUuid) {
+      whereOr.push({ id: orderIdOrCode });
+    }
 
     if (paymentTx) {
       whereOr.push({ payment_transaction_id: paymentTx.id });
@@ -103,7 +115,10 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     const shippingForm = {
       name: rawShipping.name || primaryOrder.buyer.name || "Cliente",
       phone: rawShipping.phone || primaryOrder.buyer.phone || "No especificado",
-      email: rawShipping.email || primaryOrder.buyer.email,
+      email:
+        rawShipping.email?.trim() ||
+        paymentRaw.buyer_email?.trim() ||
+        primaryOrder.buyer.email,
       address: destinationAddress,
       city: rawShipping.city || "Lima",
       notes: rawShipping.notes || undefined,
@@ -111,9 +126,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
 
     const deliveryType = rawShipping.deliveryType || "progressive";
     const invoiceType =
-      rawInvoice.doc_type ||
-      primaryOrder.invoiceDocument?.doc_type ||
-      undefined;
+      rawInvoice.doc_type || primaryOrder.invoiceDocument?.doc_type || undefined;
     const invoiceNumber =
       rawInvoice.identity_number ||
       primaryOrder.invoiceDocument?.identity_number ||
@@ -225,7 +238,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       try {
         if (resend && buyerData.buyerEmail) {
           const { data, error } = await resend.emails.send({
-            from: DEFAULT_FROM_EMAIL,
+            from: fromEmail,
             to: [buyerData.buyerEmail],
             subject: `Confirmación de compra N° ${buyerData.orderCode} - iubizon`,
             react: React.createElement(BuyerOrderEmail, buyerData),
@@ -249,7 +262,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
                 `[Resend Notice] Modo Sandbox activo. Redireccionando copia de prueba a ${accountOwnerEmail}...`,
               );
               await resend.emails.send({
-                from: DEFAULT_FROM_EMAIL,
+                from: fromEmail,
                 to: [accountOwnerEmail],
                 subject: `[PRUEBA -> ${buyerData.buyerEmail}] Confirmación de compra N° ${buyerData.orderCode} - iubizon`,
                 react: React.createElement(BuyerOrderEmail, buyerData),
@@ -260,7 +273,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
             }
           } else {
             console.log(
-              `[Email Dispatcher] Email de compra enviado exitosamente a ${buyerData.buyerEmail} (ID: ${data?.id})`,
+              `[Email Dispatcher] Email de compra enviado exitosamente a ${buyerData.buyerEmail} (ID: ${data?.id}) desde ${fromEmail}`,
             );
           }
         } else {
@@ -300,7 +313,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
 
           if (resend && sellerGroup.sellerEmail) {
             const { data, error } = await resend.emails.send({
-              from: DEFAULT_FROM_EMAIL,
+              from: fromEmail,
               to: [sellerGroup.sellerEmail],
               subject: `¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
               react: React.createElement(SellerSaleEmail, sellerData),
@@ -326,7 +339,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
                   `[Resend Notice] Modo Sandbox activo. Redireccionando copia de venta de vendedor a ${accountOwnerEmail}...`,
                 );
                 await resend.emails.send({
-                  from: DEFAULT_FROM_EMAIL,
+                  from: fromEmail,
                   to: [accountOwnerEmail],
                   subject: `[PRUEBA -> Vendedor: ${sellerGroup.sellerEmail}] ¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
                   react: React.createElement(SellerSaleEmail, sellerData),
@@ -337,7 +350,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
               }
             } else {
               console.log(
-                `[Email Dispatcher] Email de venta enviado exitosamente a vendedor ${sellerGroup.sellerEmail} (ID: ${data?.id})`,
+                `[Email Dispatcher] Email de venta enviado exitosamente a vendedor ${sellerGroup.sellerEmail} (ID: ${data?.id}) desde ${fromEmail}`,
               );
             }
           } else {

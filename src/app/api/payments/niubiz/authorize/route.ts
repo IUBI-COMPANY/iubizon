@@ -146,12 +146,19 @@ export async function POST(req: Request) {
       );
     }
 
+    const effectiveEmail =
+      shipping?.email?.trim() ||
+      (existingTx?.raw_response as Record<string, any>)?.shipping?.email?.trim() ||
+      (existingTx?.raw_response as Record<string, any>)?.buyer_email?.trim() ||
+      user?.email ||
+      "cliente@iubizon.com";
+
     // 1. Autorización financiera Server-to-Server en Niubiz
     const authResult = await authorizeNiubizTransaction({
       transactionToken,
       purchaseNumber,
       amount: Number(amount),
-      customerEmail: user?.email || "cliente@iubizon.com",
+      customerEmail: effectiveEmail,
     });
 
     // 2. Si la tarjeta fue rechazada o denegada
@@ -180,7 +187,12 @@ export async function POST(req: Request) {
     const sessionCode = purchaseNumber;
 
     const createdOrders = await prisma.$transaction(async (tx) => {
-      // a) Actualizar el registro del pago a 'authorized'
+      const previousRaw =
+        typeof existingTx?.raw_response === "object" && existingTx?.raw_response
+          ? (existingTx.raw_response as Record<string, any>)
+          : {};
+
+      // a) Actualizar el registro del pago a 'authorized' manteniendo los datos de envío y facturación
       const paymentRecord = await tx.paymentTransaction.update({
         where: { purchase_number: purchaseNumber },
         data: {
@@ -191,18 +203,22 @@ export async function POST(req: Request) {
           card_last4: authResult.cardLast4,
           response_code: "000",
           response_message: "Transacción aprobada",
-          raw_response: authResult.rawResponse
-            ? JSON.parse(JSON.stringify(authResult.rawResponse))
-            : undefined,
+          raw_response: {
+            ...previousRaw,
+            shipping: shipping || previousRaw.shipping || {},
+            invoiceDetails: invoiceDetails || previousRaw.invoiceDetails || {},
+            buyer_email: effectiveEmail,
+            niubiz_auth: authResult.rawResponse
+              ? JSON.parse(JSON.stringify(authResult.rawResponse))
+              : undefined,
+          },
         },
       });
 
       const ordersList = [];
       const effectiveBuyerId = await getOrCreateBuyerProfile({
         userId: storedBuyerId || user?.id,
-        email:
-          shipping?.email ||
-          (existingTx?.raw_response as Record<string, any>)?.buyer_email,
+        email: effectiveEmail,
         name: shipping?.name,
         phone: shipping?.phone,
         txPrisma: tx,
