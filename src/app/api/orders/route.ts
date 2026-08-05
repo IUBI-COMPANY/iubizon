@@ -261,7 +261,8 @@ export async function POST(req: Request) {
             if (companyExists) validCompanyId = companyExists.id;
           }
 
-          const itemSubtotal = Number(product.price) * itemQuantity;
+          const unitPrice = Number(product.price);
+          const itemSubtotal = unitPrice * itemQuantity;
 
           const order = await tx.order.create({
             data: {
@@ -269,6 +270,8 @@ export async function POST(req: Request) {
               buyer_id: buyerId,
               seller_id: product.seller_id,
               company_id: validCompanyId,
+              quantity: itemQuantity,
+              unit_price: unitPrice,
               amount: itemSubtotal,
               commission: calculateIubizonCommission(itemSubtotal),
               status: "pending",

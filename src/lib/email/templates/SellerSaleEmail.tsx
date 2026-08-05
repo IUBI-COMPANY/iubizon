@@ -28,7 +28,9 @@ export function SellerSaleEmail(data: SellerEmailData) {
       <Section style={saleBannerStyle}>
         <Text style={saleBadgeStyle}>¡NUEVA VENTA REGISTRADA!</Text>
         <Heading style={mainHeadingStyle}>
-          ¡Hola {data.sellerName}! Tienes productos por despachar
+          {data.isCompanyRecipient
+            ? `¡Hola equipo de ${data.recipientName}! Tienen productos por despachar`
+            : `¡Hola ${data.recipientName}! Tienes productos por despachar`}
         </Heading>
         <Text style={subtitleStyle}>
           Un cliente ha realizado un pago exitoso por productos de tu catálogo.
@@ -103,6 +105,11 @@ export function SellerSaleEmail(data: SellerEmailData) {
                     Cantidad a enviar: <strong>{item.quantity} un.</strong> (S/{" "}
                     {item.price.toFixed(2)} c/u)
                   </Text>
+                  {data.isCompanyRecipient && item.sellerName && (
+                    <Text style={itemSellerStyle}>
+                      Publicado por: {item.sellerName}
+                    </Text>
+                  )}
                 </Column>
                 <Column
                   style={{
@@ -281,6 +288,13 @@ const itemMetaStyle: React.CSSProperties = {
   color: "#64748b",
   fontSize: "12px",
   margin: "0",
+};
+
+const itemSellerStyle: React.CSSProperties = {
+  color: "#94a3b8",
+  fontSize: "11px",
+  fontStyle: "italic",
+  margin: "2px 0 0 0",
 };
 
 const itemSubtotalStyle: React.CSSProperties = {

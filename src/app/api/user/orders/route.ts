@@ -10,6 +10,7 @@ export interface PackageItem {
   productId: string;
   title: string;
   price: number;
+  quantity: number;
   image: string | null;
   company: {
     id: string;
@@ -279,6 +280,7 @@ export async function GET(req: Request) {
           productId: order.product.id,
           title: order.product.title,
           price: itemPrice,
+          quantity: order.quantity,
           image: order.product.images?.[0]?.url || null,
           company: order.company
             ? {
@@ -311,7 +313,10 @@ export async function GET(req: Request) {
         const totalAmount = tempPkg.subtotal + shippingCost;
 
         sessionSubtotal += tempPkg.subtotal;
-        sessionItemsCount += tempPkg.items.length;
+        sessionItemsCount += tempPkg.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        );
         if (!mainDestination && tempPkg.destinationAddress) {
           mainDestination = tempPkg.destinationAddress;
         }

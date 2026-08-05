@@ -41,6 +41,9 @@ export interface SellerEmailData {
   sellerName: string;
   sellerEmail: string;
   companyName?: string | null;
+  recipientName: string;
+  recipientEmail: string;
+  isCompanyRecipient: boolean;
   createdAt: string;
   items: EmailOrderItem[];
   packageSubtotal: number;

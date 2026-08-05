@@ -37,12 +37,19 @@ export async function createOrder(orderData: {
   seller_id: string;
   amount: number;
   payment_method: string;
+  quantity?: number;
+  unit_price?: number;
 }) {
+  const quantity = orderData.quantity ?? 1;
+  const unit_price = orderData.unit_price ?? orderData.amount / quantity;
+
   return prisma.order.create({
     data: {
       product_id: orderData.product_id,
       buyer_id: orderData.buyer_id,
       seller_id: orderData.seller_id,
+      quantity,
+      unit_price,
       amount: orderData.amount,
       payment_method: orderData.payment_method,
     },

@@ -265,6 +265,8 @@ export async function POST(req: Request) {
             seller_id: product.seller_id,
             company_id: validCompanyId,
             payment_transaction_id: paymentRecord.id,
+            quantity: itemQuantity,
+            unit_price: Number(product.price),
             amount: itemSubtotal,
             commission: commissionAmount,
             status: "paid",

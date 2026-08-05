@@ -62,6 +62,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
           select: {
             id: true,
             name: true,
+            email: true,
           },
         },
         product: {
@@ -144,8 +145,8 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     const allEmailItems: EmailOrderItem[] = orders.map((ord) => ({
       id: ord.id,
       title: ord.product.title,
-      price: Number(ord.amount),
-      quantity: 1,
+      price: Number(ord.unit_price),
+      quantity: ord.quantity,
       imageUrl: ord.product.images[0]?.url || null,
       sellerName: ord.seller.name || "Vendedor iubizon",
       companyName: ord.company?.name || null,
@@ -175,12 +176,15 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       invoiceNumber,
     };
 
-    // 3. Agrupar productos por vendedor
+    // 3. Agrupar productos por Empresa (entidad principal) o por Vendedor individual si no pertenece a una empresa
     const itemsBySeller = new Map<
       string,
       {
-        sellerEmail: string;
+        recipientEmail: string;
+        recipientName: string;
+        isCompanyRecipient: boolean;
         sellerName: string;
+        sellerEmail: string;
         companyName?: string | null;
         items: EmailOrderItem[];
         subtotal: number;
@@ -189,43 +193,75 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     >();
 
     for (const ord of orders) {
-      const sellerId = ord.seller_id;
       const sellerEmail = ord.seller.email;
       const sellerName = ord.seller.name || "Vendedor iubizon";
+      const companyEmail = ord.company?.email?.trim() || null;
       const companyName = ord.company?.name || null;
 
-      if (!sellerEmail) continue;
+      // La empresa es la entidad principal cuando el producto está vinculado a una:
+      // se agrupa por company_id (consolida ítems de todos sus miembros) y el
+      // correo se despacha a la casilla corporativa, no a la del vendedor individual.
+      const isCompanyRecipient = Boolean(ord.company_id && companyEmail);
+      const groupKey = ord.company_id || ord.seller_id;
+      const recipientEmail = isCompanyRecipient ? companyEmail! : sellerEmail;
+      const recipientName = isCompanyRecipient
+        ? companyName || sellerName
+        : sellerName;
 
-      const itemPrice = Number(ord.amount);
+      if (!recipientEmail) continue;
+
+      const itemAmount = Number(ord.amount);
       const itemCommission =
         ord.commission !== null
           ? Number(ord.commission)
-          : calculateIubizonCommission(itemPrice);
+          : calculateIubizonCommission(itemAmount);
 
       const emailItem: EmailOrderItem = {
         id: ord.id,
         title: ord.product.title,
-        price: itemPrice,
-        quantity: 1,
+        price: Number(ord.unit_price),
+        quantity: ord.quantity,
         imageUrl: ord.product.images[0]?.url || null,
         sellerName,
         companyName,
       };
 
-      if (!itemsBySeller.has(sellerId)) {
-        itemsBySeller.set(sellerId, {
-          sellerEmail,
+      if (!itemsBySeller.has(groupKey)) {
+        itemsBySeller.set(groupKey, {
+          recipientEmail,
+          recipientName,
+          isCompanyRecipient,
           sellerName,
+          sellerEmail,
           companyName,
           items: [emailItem],
-          subtotal: itemPrice,
+          subtotal: itemAmount,
           commissionTotal: itemCommission,
         });
       } else {
-        const existing = itemsBySeller.get(sellerId)!;
+        const existing = itemsBySeller.get(groupKey)!;
         existing.items.push(emailItem);
-        existing.subtotal += itemPrice;
+        existing.subtotal += itemAmount;
         existing.commissionTotal += itemCommission;
+      }
+    }
+
+    // 3b. Obtener correos de los miembros de las empresas destinatarias (para copiar/CC)
+    const companyGroupIds = Array.from(itemsBySeller.entries())
+      .filter(([, group]) => group.isCompanyRecipient)
+      .map(([groupKey]) => groupKey);
+
+    const memberEmailsByCompany = new Map<string, string[]>();
+    if (companyGroupIds.length > 0) {
+      const members = await prisma.companyMember.findMany({
+        where: { company_id: { in: companyGroupIds } },
+        select: { company_id: true, user: { select: { email: true } } },
+      });
+      for (const member of members) {
+        if (!member.user?.email) continue;
+        const list = memberEmailsByCompany.get(member.company_id) || [];
+        list.push(member.user.email);
+        memberEmailsByCompany.set(member.company_id, list);
       }
     }
 
@@ -287,9 +323,9 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       }
     })();
 
-    // B. Correos a cada vendedor participante
+    // B. Correos a cada Empresa o Vendedor individual participante
     const sendSellersPromises = Array.from(itemsBySeller.entries()).map(
-      async ([sellerId, sellerGroup], idx) => {
+      async ([groupKey, sellerGroup], idx) => {
         try {
           const packageCode = `${orderCode}-P${idx + 1}`;
           const commissionAmount = sellerGroup.commissionTotal;
@@ -301,6 +337,9 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
             sellerName: sellerGroup.sellerName,
             sellerEmail: sellerGroup.sellerEmail,
             companyName: sellerGroup.companyName,
+            recipientName: sellerGroup.recipientName,
+            recipientEmail: sellerGroup.recipientEmail,
+            isCompanyRecipient: sellerGroup.isCompanyRecipient,
             createdAt: createdAtFormatted,
             items: sellerGroup.items,
             packageSubtotal: sellerGroup.subtotal,
@@ -309,17 +348,35 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
             buyerInfo: shippingForm,
           };
 
-          if (resend && sellerGroup.sellerEmail) {
+          // CC a los miembros de la empresa (si aplica), excluyendo duplicados del destinatario principal
+          const rawMemberEmails = sellerGroup.isCompanyRecipient
+            ? memberEmailsByCompany.get(groupKey) || []
+            : [];
+          const ccEmails = Array.from(
+            new Set(
+              rawMemberEmails
+                .map((e) => e.trim())
+                .filter(
+                  (e) =>
+                    e.length > 0 &&
+                    e.toLowerCase() !==
+                      sellerGroup.recipientEmail.trim().toLowerCase(),
+                ),
+            ),
+          );
+
+          if (resend && sellerGroup.recipientEmail) {
             const { data, error } = await resend.emails.send({
               from: fromEmail,
-              to: [sellerGroup.sellerEmail],
+              to: [sellerGroup.recipientEmail],
+              ...(ccEmails.length > 0 ? { cc: ccEmails } : {}),
               subject: `¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
               react: React.createElement(SellerSaleEmail, sellerData),
             });
 
             if (error) {
               console.error(
-                `[Email Dispatcher] Error enviando email a vendedor (${sellerGroup.sellerEmail}):`,
+                `[Email Dispatcher] Error enviando email a ${sellerGroup.isCompanyRecipient ? "empresa" : "vendedor"} (${sellerGroup.recipientEmail}):`,
                 error,
               );
 
@@ -334,12 +391,12 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
                   error.message.match(/\(([^)]+)\)/)?.[1] ||
                   "iubizon.company@gmail.com";
                 console.warn(
-                  `[Resend Notice] Modo Sandbox activo. Redireccionando copia de venta de vendedor a ${accountOwnerEmail}...`,
+                  `[Resend Notice] Modo Sandbox activo. Redireccionando copia de venta a ${accountOwnerEmail}...`,
                 );
                 await resend.emails.send({
                   from: fromEmail,
                   to: [accountOwnerEmail],
-                  subject: `[PRUEBA -> Vendedor: ${sellerGroup.sellerEmail}] ¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
+                  subject: `[PRUEBA -> ${sellerGroup.recipientEmail}] ¡Nueva Venta por Despachar! Paquete ${packageCode} - iubizon`,
                   react: React.createElement(SellerSaleEmail, sellerData),
                 });
                 console.log(
@@ -348,17 +405,17 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
               }
             } else {
               console.log(
-                `[Email Dispatcher] Email de venta enviado exitosamente a vendedor ${sellerGroup.sellerEmail} (ID: ${data?.id}) desde ${fromEmail}`,
+                `[Email Dispatcher] Email de venta enviado exitosamente a ${sellerGroup.isCompanyRecipient ? "empresa" : "vendedor"} ${sellerGroup.recipientEmail}${ccEmails.length > 0 ? ` (CC: ${ccEmails.join(", ")})` : ""} (ID: ${data?.id}) desde ${fromEmail}`,
               );
             }
           } else {
             console.log(
-              `[Email Dispatcher - DEV MODE] Email para vendedor ${sellerGroup.sellerEmail} (${packageCode}) simulado.`,
+              `[Email Dispatcher - DEV MODE] Email para ${sellerGroup.recipientEmail} (${packageCode}) simulado.`,
             );
           }
         } catch (err) {
           console.error(
-            `[Email Dispatcher] Excepción enviando email a vendedor ${sellerId}:`,
+            `[Email Dispatcher] Excepción enviando email a grupo ${groupKey}:`,
             err,
           );
         }

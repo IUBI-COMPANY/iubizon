@@ -155,7 +155,9 @@ model Order {
   seller_id              String              @db.Uuid
   company_id             String?             @db.Uuid
   payment_transaction_id String?             @db.Uuid
-  amount                 Decimal             @db.Decimal(10, 2)
+  quantity               Int                 @default(1)
+  unit_price             Decimal             @default(0) @db.Decimal(10, 2)
+  amount                 Decimal             @db.Decimal(10, 2) // unit_price * quantity
   commission             Decimal?            @default(0) @db.Decimal(10, 2)
   status                 String              @default("pending")
   payment_method         String?

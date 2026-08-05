@@ -9,6 +9,8 @@ export interface SellerPackageItem {
   productId: string;
   title: string;
   price: number;
+  quantity: number;
+  subtotal: number;
   image: string | null;
   status: string;
 }
@@ -259,7 +261,9 @@ export async function GET(request: Request) {
           id: order.id,
           productId: order.product.id,
           title: order.product.title,
-          price: itemPrice,
+          price: Number(order.unit_price),
+          quantity: order.quantity,
+          subtotal: itemPrice,
           image: order.product.images?.[0]?.url || null,
           status: order.status,
         });
