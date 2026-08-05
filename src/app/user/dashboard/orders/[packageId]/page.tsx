@@ -297,7 +297,11 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   pkg.destinationDepartment) && (
                   <p>
                     <strong>Ubigeo:</strong>{" "}
-                    {[pkg.destinationDistrict, pkg.destinationProvince, pkg.destinationDepartment]
+                    {[
+                      pkg.destinationDistrict,
+                      pkg.destinationProvince,
+                      pkg.destinationDepartment,
+                    ]
                       .filter(Boolean)
                       .join(", ")}
                   </p>

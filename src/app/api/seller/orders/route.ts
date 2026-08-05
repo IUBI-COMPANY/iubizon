@@ -226,10 +226,16 @@ export async function GET(request: Request) {
       const destinationProvince = String(rawShipping.province || "").trim();
       const destinationDistrict = String(rawShipping.district || "").trim();
       const buyerDocumentType = String(rawShipping.documentType || "").trim();
-      const buyerDocumentNumber = String(rawShipping.documentNumber || "").trim();
+      const buyerDocumentNumber = String(
+        rawShipping.documentNumber || "",
+      ).trim();
       const destinationReference = String(rawShipping.notes || "").trim();
-      const buyerPhone = String(rawShipping.phone || order.buyer?.phone || "").trim();
-      const buyerEmail = String(rawShipping.email || order.buyer?.email || "").trim();
+      const buyerPhone = String(
+        rawShipping.phone || order.buyer?.phone || "",
+      ).trim();
+      const buyerEmail = String(
+        rawShipping.email || order.buyer?.email || "",
+      ).trim();
 
       const payInfo = {
         provider: order.payment_method || "niubiz_card",
