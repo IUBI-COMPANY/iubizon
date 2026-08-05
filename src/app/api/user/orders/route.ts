@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { parseDispatchMeta } from "@/lib/shippingHelper";
 import { ensureSellerPayoutForOrders } from "@/lib/payoutService";
 import { getShippingConfig } from "@/lib/services/platformSettings";
+import { getOrderSessionCode, normalizeOrderCode } from "@/lib/utils/orderCode";
 
 export interface PackageItem {
   id: string;
@@ -66,6 +67,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const orderCodeParam = searchParams.get("code");
+    const normalizedOrderCodeParam = normalizeOrderCode(orderCodeParam);
 
     const supabase = await createServerClient();
     const {
@@ -185,28 +187,12 @@ export async function GET(req: Request) {
 
     const sessionMap = new Map<string, TempSession>();
 
-    const getSessionCode = (order: (typeof orders)[0]) => {
-      if (order.payment_id && order.payment_id.trim() !== "") {
-        return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
-      }
-      if (order.created_at) {
-        const timeKey = order.created_at.toISOString().slice(0, 16);
-        let hash = 0;
-        for (let i = 0; i < timeKey.length; i++) {
-          hash = (hash << 5) - hash + timeKey.charCodeAt(i);
-          hash |= 0;
-        }
-        return Math.abs(hash)
-          .toString(36)
-          .toUpperCase()
-          .padStart(6, "0")
-          .slice(0, 6);
-      }
-      return order.id.slice(0, 6).toUpperCase();
-    };
-
     for (const order of orders) {
-      const mainOrderCode = getSessionCode(order);
+      const mainOrderCode = getOrderSessionCode({
+        id: order.id,
+        paymentId: order.payment_id,
+        createdAt: order.created_at,
+      });
       const pkgKey = `${mainOrderCode}_${order.seller_id}`;
 
       const { carrierName, trackingUrl } = parseDispatchMeta(
@@ -364,10 +350,8 @@ export async function GET(req: Request) {
       });
     }
 
-    const filteredSessions = orderCodeParam
-      ? purchaseSessions.filter(
-          (s) => s.orderCode.toLowerCase() === orderCodeParam.toLowerCase(),
-        )
+    const filteredSessions = normalizedOrderCodeParam
+      ? purchaseSessions.filter((s) => s.orderCode === normalizedOrderCodeParam)
       : purchaseSessions;
 
     return NextResponse.json({

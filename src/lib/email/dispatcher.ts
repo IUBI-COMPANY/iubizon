@@ -5,39 +5,24 @@ import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getShippingConfig } from "@/lib/services/platformSettings";
+import { getOrderSessionCode, normalizeOrderCode } from "@/lib/utils/orderCode";
 import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
 
 const isUuid = (str: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-
-const getSessionCode = (order: {
-  id: string;
-  payment_id: string | null;
-  created_at: Date | null;
-}): string => {
-  if (order.payment_id && order.payment_id.trim() !== "") {
-    return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
-  }
-  if (order.created_at) {
-    const timeKey = order.created_at.toISOString().slice(0, 16);
-    let hash = 0;
-    for (let i = 0; i < timeKey.length; i++) {
-      hash = (hash << 5) - hash + timeKey.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash).toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
-  }
-  return order.id.slice(0, 6).toUpperCase();
-};
 
 export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
   try {
     const resend = getResendClient();
     const fromEmail = getDefaultFromEmail();
     const isParamUuid = isUuid(orderIdOrCode);
+    const normalizedOrderCode = normalizeOrderCode(orderIdOrCode);
 
     // 1. Consultar transacciones de pago y órdenes coincidentes por ID (UUID), payment_id o purchase_number
     const txWhereOr: any[] = [{ purchase_number: orderIdOrCode }];
+    if (normalizedOrderCode && normalizedOrderCode !== orderIdOrCode) {
+      txWhereOr.push({ purchase_number: normalizedOrderCode });
+    }
     if (isParamUuid) {
       txWhereOr.push({ id: orderIdOrCode });
     }
@@ -48,6 +33,9 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     });
 
     const whereOr: any[] = [{ payment_id: orderIdOrCode }];
+    if (normalizedOrderCode && normalizedOrderCode !== orderIdOrCode) {
+      whereOr.push({ payment_id: normalizedOrderCode });
+    }
     if (isParamUuid) {
       whereOr.push({ id: orderIdOrCode });
     }
@@ -110,7 +98,11 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     }
 
     const primaryOrder = orders[0];
-    const orderCode = getSessionCode(primaryOrder);
+    const orderCode = getOrderSessionCode({
+      id: primaryOrder.id,
+      paymentId: primaryOrder.payment_id,
+      createdAt: primaryOrder.created_at,
+    });
 
     // Extraer datos de envío y facturación
     const paymentRaw =
@@ -243,7 +235,11 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     >();
 
     for (const ord of orders) {
-      const packageCode = `${getSessionCode(ord)}_${ord.seller_id}`;
+      const packageCode = `${getOrderSessionCode({
+        id: ord.id,
+        paymentId: ord.payment_id,
+        createdAt: ord.created_at,
+      })}_${ord.seller_id}`;
       const sellerEmail = ord.seller.email;
       const sellerName = ord.seller.name || "Vendedor iubizon";
       const companyEmail = ord.company?.email?.trim() || null;

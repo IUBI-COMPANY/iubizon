@@ -61,68 +61,70 @@ const buildCityLabel = (
   return [district, province, department].filter(Boolean).join(", ");
 };
 
-const shippingFormSchema = z.object({
-  name: z.string().trim().min(1, "El nombre completo es obligatorio."),
-  phone: z
-    .string()
-    .trim()
-    .min(6, "Ingresa un teléfono/WhatsApp de contacto válido."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "El correo electrónico es obligatorio.")
-    .email("Ingresa un correo electrónico válido."),
-  address: z
-    .string()
-    .trim()
-    .min(1, "La dirección completa de entrega es obligatoria."),
-  department: z.string().min(1, "Selecciona un departamento."),
-  province: z.string().min(1, "Selecciona una provincia."),
-  district: z.string().min(1, "Selecciona un distrito."),
-  documentType: z.enum(["dni", "ruc"]).optional(),
-  documentNumber: z.string().trim().optional(),
-  /** Derivado de departamento/provincia/distrito. Se mantiene por compatibilidad
-   * con la construcción de destination_address y las plantillas de correo. */
-  city: z.string(),
-  notes: z.string().optional(),
-}).superRefine((data, ctx) => {
-  const isProvinceDelivery =
-    data.department.trim().toLowerCase() !== "lima";
-  if (!isProvinceDelivery) return;
+const shippingFormSchema = z
+  .object({
+    name: z.string().trim().min(1, "El nombre completo es obligatorio."),
+    phone: z
+      .string()
+      .trim()
+      .min(6, "Ingresa un teléfono/WhatsApp de contacto válido."),
+    email: z
+      .string()
+      .trim()
+      .min(1, "El correo electrónico es obligatorio.")
+      .email("Ingresa un correo electrónico válido."),
+    address: z
+      .string()
+      .trim()
+      .min(1, "La dirección completa de entrega es obligatoria."),
+    department: z.string().min(1, "Selecciona un departamento."),
+    province: z.string().min(1, "Selecciona una provincia."),
+    district: z.string().min(1, "Selecciona un distrito."),
+    documentType: z.enum(["dni", "ruc"]).optional(),
+    documentNumber: z.string().trim().optional(),
+    /** Derivado de departamento/provincia/distrito. Se mantiene por compatibilidad
+     * con la construcción de destination_address y las plantillas de correo. */
+    city: z.string(),
+    notes: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const isProvinceDelivery = data.department.trim().toLowerCase() !== "lima";
+    if (!isProvinceDelivery) return;
 
-  if (!data.documentType) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["documentType"],
-      message:
-        "Para envíos fuera de Lima, selecciona DNI o RUC del destinatario.",
-    });
-    return;
-  }
+    if (!data.documentType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["documentType"],
+        message:
+          "Para envíos fuera de Lima, selecciona DNI o RUC del destinatario.",
+      });
+      return;
+    }
 
-  const docNumber = (data.documentNumber || "").trim();
-  if (!docNumber) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["documentNumber"],
-      message: "Para envíos a provincia, el documento es obligatorio.",
-    });
-    return;
-  }
+    const docNumber = (data.documentNumber || "").trim();
+    if (!docNumber) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["documentNumber"],
+        message: "Para envíos a provincia, el documento es obligatorio.",
+      });
+      return;
+    }
 
-  const isDniValid = data.documentType === "dni" && /^\d{8}$/.test(docNumber);
-  const isRucValid = data.documentType === "ruc" && /^\d{11}$/.test(docNumber);
-  if (!isDniValid && !isRucValid) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["documentNumber"],
-      message:
-        data.documentType === "dni"
-          ? "El DNI debe tener exactamente 8 dígitos."
-          : "El RUC debe tener exactamente 11 dígitos.",
-    });
-  }
-});
+    const isDniValid = data.documentType === "dni" && /^\d{8}$/.test(docNumber);
+    const isRucValid =
+      data.documentType === "ruc" && /^\d{11}$/.test(docNumber);
+    if (!isDniValid && !isRucValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["documentNumber"],
+        message:
+          data.documentType === "dni"
+            ? "El DNI debe tener exactamente 8 dígitos."
+            : "El RUC debe tener exactamente 11 dígitos.",
+      });
+    }
+  });
 
 export type ShippingFormState = z.infer<typeof shippingFormSchema>;
 
@@ -442,7 +444,7 @@ export default function CartCheckoutPage() {
                 shippingForm.department &&
                 shippingForm.province &&
                 shippingForm.district &&
-                (!isProvinceDelivery || hasValidProvinceDocument)
+                (!isProvinceDelivery || hasValidProvinceDocument),
               )
             }
           />
@@ -905,7 +907,10 @@ export default function CartCheckoutPage() {
                           }
                           {...register("documentNumber")}
                           onChange={(e) => {
-                            const digitsOnly = e.target.value.replace(/\D/g, "");
+                            const digitsOnly = e.target.value.replace(
+                              /\D/g,
+                              "",
+                            );
                             setValue("documentNumber", digitsOnly, {
                               shouldValidate: true,
                             });

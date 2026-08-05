@@ -70,7 +70,11 @@ export function SellerSaleEmail(data: SellerEmailData) {
           data.buyerInfo.district) && (
           <Text style={buyerTextStyle}>
             <strong>Ubigeo:</strong>{" "}
-            {[data.buyerInfo.district, data.buyerInfo.province, data.buyerInfo.department]
+            {[
+              data.buyerInfo.district,
+              data.buyerInfo.province,
+              data.buyerInfo.department,
+            ]
               .filter(Boolean)
               .join(", ")}
           </Text>

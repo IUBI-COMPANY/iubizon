@@ -5,6 +5,7 @@ import { authorizeNiubizTransaction } from "@/lib/services/niubiz";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getOrCreateBuyerProfile } from "@/lib/services/orders";
 import { sendOrderConfirmationEmails } from "@/lib/email";
+import { normalizeOrderCode } from "@/lib/utils/orderCode";
 
 function respondWithError(
   message: string,
@@ -93,6 +94,10 @@ export async function POST(req: Request) {
     if (!purchaseNumber && searchPurchaseNumber) {
       purchaseNumber = searchPurchaseNumber;
     }
+    const normalizedPurchaseNumber = normalizeOrderCode(purchaseNumber);
+    if (normalizedPurchaseNumber) {
+      purchaseNumber = normalizedPurchaseNumber;
+    }
     purchaseNumberForError = purchaseNumber;
     if (!amount && searchAmount) {
       amount = Number(searchAmount);
@@ -144,6 +149,14 @@ export async function POST(req: Request) {
     if (!transactionToken || !purchaseNumber) {
       return respondWithError(
         "Datos de transacción incompletos",
+        isFormPost,
+        req.url,
+        400,
+      );
+    }
+    if (!/^\d{6}$/.test(purchaseNumber)) {
+      return respondWithError(
+        "El código de orden debe tener 6 dígitos numéricos.",
         isFormPost,
         req.url,
         400,

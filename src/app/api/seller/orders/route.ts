@@ -3,6 +3,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { parseDispatchMeta, formatDispatchMeta } from "@/lib/shippingHelper";
 import { refundNiubizTransaction } from "@/lib/services/niubiz";
+import { getOrderSessionCode } from "@/lib/utils/orderCode";
 
 export interface SellerPackageItem {
   id: string;
@@ -44,26 +45,6 @@ export interface SellerPackage {
   orderIds: string[];
   items: SellerPackageItem[];
 }
-
-const getOrderSessionCode = (order: {
-  id: string;
-  payment_id: string | null;
-  created_at: Date | null;
-}): string => {
-  if (order.payment_id && order.payment_id.trim() !== "") {
-    return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
-  }
-  if (order.created_at) {
-    const timeKey = order.created_at.toISOString().slice(0, 16);
-    let hash = 0;
-    for (let i = 0; i < timeKey.length; i++) {
-      hash = (hash << 5) - hash + timeKey.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash).toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
-  }
-  return order.id.slice(0, 6).toUpperCase();
-};
 
 export async function GET(request: Request) {
   try {
@@ -205,7 +186,11 @@ export async function GET(request: Request) {
     const packageMap = new Map<string, TempPackage>();
 
     for (const order of orders) {
-      const sessionCode = getOrderSessionCode(order);
+      const sessionCode = getOrderSessionCode({
+        id: order.id,
+        paymentId: order.payment_id,
+        createdAt: order.created_at,
+      });
       const groupKey = `${sessionCode}_${order.seller_id}`;
 
       const { carrierName, trackingUrl, carrierPhone } = parseDispatchMeta(
@@ -384,7 +369,11 @@ export async function PATCH(req: Request) {
       orderIds = sellerOrders
         .filter((o) => {
           if (o.id === packageId) return true;
-          const sessionCode = getOrderSessionCode(o);
+          const sessionCode = getOrderSessionCode({
+            id: o.id,
+            paymentId: o.payment_id,
+            createdAt: o.created_at,
+          });
           const groupKey = `${sessionCode}_${o.seller_id}`;
           return groupKey === packageId || sessionCode === packageId;
         })

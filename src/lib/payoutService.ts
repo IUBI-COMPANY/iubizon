@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
+import { getOrderSessionCode } from "@/lib/utils/orderCode";
 
 /**
  * Servicio para la generación automática de registros de pago a vendedores (Seller Payouts)
@@ -32,7 +33,11 @@ export async function ensureSellerPayoutForOrders(orderIds: string[]) {
 
     for (const order of orders) {
       const trackingNumber = order.shipping?.tracking_number || null;
-      const orderCode = order.payment_id || order.id.slice(0, 6).toUpperCase();
+      const orderCode = getOrderSessionCode({
+        id: order.id,
+        paymentId: order.payment_id,
+        createdAt: order.created_at,
+      });
       const groupKey = `${order.seller_id}_${trackingNumber || orderCode}`;
 
       if (!groupMap.has(groupKey)) {
