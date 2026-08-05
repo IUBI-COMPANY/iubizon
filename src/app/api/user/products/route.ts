@@ -61,9 +61,34 @@ export async function GET(req: Request) {
 
     const products = await prisma.product.findMany({
       where,
-      include: {
-        images: { orderBy: { position: "asc" } },
-        category: true,
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        condition: true,
+        status: true,
+        stock: true,
+        views: true,
+        created_at: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        images: {
+          orderBy: { position: "asc" },
+          take: 1,
+          select: {
+            id: true,
+            url: true,
+            position: true,
+          },
+        },
+        _count: {
+          select: {
+            images: true,
+          },
+        },
       },
       orderBy: { updated_at: "desc" },
     });
@@ -80,6 +105,7 @@ export async function GET(req: Request) {
         stock: p.stock ?? 1,
         views: p.views || 0,
         category: p.category?.name || null,
+        imageCount: p._count.images,
         images: p.images.map((img) => ({
           id: img.id,
           url: img.url,

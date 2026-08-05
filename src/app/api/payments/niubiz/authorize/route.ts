@@ -47,6 +47,8 @@ function extractProductUuid(item: any): string | null {
 
 export async function POST(req: Request) {
   let isFormPost = false;
+  let purchaseNumberForError = "";
+  let paymentAuthorized = false;
   try {
     const contentType = req.headers.get("content-type") || "";
     isFormPost = !contentType.includes("application/json");
@@ -91,6 +93,7 @@ export async function POST(req: Request) {
     if (!purchaseNumber && searchPurchaseNumber) {
       purchaseNumber = searchPurchaseNumber;
     }
+    purchaseNumberForError = purchaseNumber;
     if (!amount && searchAmount) {
       amount = Number(searchAmount);
     }
@@ -109,6 +112,7 @@ export async function POST(req: Request) {
 
     if (existingTx) {
       if (!purchaseNumber) purchaseNumber = existingTx.purchase_number;
+      purchaseNumberForError = purchaseNumber;
       if (!amount) amount = Number(existingTx.amount);
 
       if (
@@ -146,6 +150,15 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      return respondWithError(
+        "No se encontraron productos en la compra.",
+        isFormPost,
+        req.url,
+        400,
+      );
+    }
+
     const shippingDepartment = String(shipping?.department || "").trim();
     const isProvinceDelivery =
       shippingDepartment.length > 0 &&
@@ -160,6 +173,52 @@ export async function POST(req: Request) {
       if (!isValidDni && !isValidRuc) {
         return respondWithError(
           "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
+          isFormPost,
+          req.url,
+          400,
+        );
+      }
+    }
+
+    const requestedItems = cartItems
+      .map((item) => ({
+        productId: extractProductUuid(item),
+        quantity: Number(item?.quantity) || 1,
+      }))
+      .filter((item): item is { productId: string; quantity: number } =>
+        Boolean(item.productId),
+      );
+
+    if (requestedItems.length === 0) {
+      return respondWithError(
+        "Los productos del carrito no son válidos o ya no están disponibles.",
+        isFormPost,
+        req.url,
+        400,
+      );
+    }
+
+    const productsBeforeAuth = await prisma.product.findMany({
+      where: { id: { in: requestedItems.map((item) => item.productId) } },
+      select: { id: true, title: true, status: true, stock: true },
+    });
+    const productsBeforeAuthMap = new Map(
+      productsBeforeAuth.map((product) => [product.id, product]),
+    );
+
+    for (const item of requestedItems) {
+      const product = productsBeforeAuthMap.get(item.productId);
+      if (!product || product.status !== "active") {
+        return respondWithError(
+          "Uno o más productos de tu carrito ya no están disponibles.",
+          isFormPost,
+          req.url,
+          400,
+        );
+      }
+      if (product.stock !== null && product.stock < item.quantity) {
+        return respondWithError(
+          `Stock insuficiente para "${product.title}". Quedan ${Math.max(product.stock, 0)} unidades disponibles.`,
           isFormPost,
           req.url,
           400,
@@ -205,9 +264,17 @@ export async function POST(req: Request) {
         400,
       );
     }
+    paymentAuthorized = true;
 
     // 3. Pago APROBADO: Transacción atómica en PostgreSQL
     const sessionCode = purchaseNumber;
+    const destinationUbigeo = [
+      String(shipping?.district || "").trim(),
+      String(shipping?.province || "").trim(),
+      String(shipping?.department || "").trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
 
     const createdOrders = await prisma.$transaction(async (tx) => {
       const previousRaw =
@@ -257,14 +324,20 @@ export async function POST(req: Request) {
           where: { id: productId },
           select: {
             id: true,
+            title: true,
             seller_id: true,
             company_id: true,
+            status: true,
             stock: true,
             price: true,
           },
         });
 
-        if (!product) continue;
+        if (!product || product.status !== "active") {
+          throw new Error(
+            "Uno o más productos de tu carrito ya no están disponibles.",
+          );
+        }
 
         let validCompanyId: string | null = null;
         const targetCompanyId = product.company_id || item.company_id;
@@ -278,13 +351,34 @@ export async function POST(req: Request) {
 
         const itemSubtotal = Number(product.price) * itemQuantity;
         const commissionAmount = calculateIubizonCommission(itemSubtotal);
-        const destinationUbigeo = [
-          String(shipping?.district || "").trim(),
-          String(shipping?.province || "").trim(),
-          String(shipping?.department || "").trim(),
-        ]
-          .filter(Boolean)
-          .join(", ");
+
+        if (product.stock !== null) {
+          const stockUpdated = await tx.product.updateMany({
+            where: {
+              id: product.id,
+              status: "active",
+              stock: { gte: itemQuantity },
+            },
+            data: { stock: { decrement: itemQuantity } },
+          });
+
+          if (stockUpdated.count === 0) {
+            throw new Error(
+              `El producto "${product.title}" se agotó mientras procesabas tu pedido.`,
+            );
+          }
+
+          const afterStockUpdate = await tx.product.findUnique({
+            where: { id: product.id },
+            select: { stock: true },
+          });
+          if ((afterStockUpdate?.stock ?? 0) <= 0) {
+            await tx.product.update({
+              where: { id: product.id },
+              data: { status: "sold" },
+            });
+          }
+        }
 
         const order = await tx.order.create({
           data: {
@@ -328,16 +422,13 @@ export async function POST(req: Request) {
             },
           });
         }
-
-        // d) Descontar stock
-        if (product.stock !== null && product.stock >= itemQuantity) {
-          await tx.product.update({
-            where: { id: product.id },
-            data: { stock: product.stock - itemQuantity },
-          });
-        }
-
         ordersList.push(order);
+      }
+
+      if (ordersList.length === 0) {
+        throw new Error(
+          "No se pudo registrar ninguna orden para los productos pagados.",
+        );
       }
 
       return ordersList;
@@ -370,6 +461,22 @@ export async function POST(req: Request) {
       err instanceof Error
         ? err.message
         : "Error al autorizar el pago con Niubiz";
+    if (paymentAuthorized && purchaseNumberForError) {
+      try {
+        await prisma.paymentTransaction.updateMany({
+          where: { purchase_number: purchaseNumberForError },
+          data: {
+            status: "failed",
+            response_message: msg,
+          },
+        });
+      } catch (paymentUpdateError) {
+        console.error(
+          "Error actualizando paymentTransaction tras fallo post-autorización:",
+          paymentUpdateError,
+        );
+      }
+    }
     console.error("Error en API /api/payments/niubiz/authorize:", err);
     return respondWithError(msg, isFormPost, req.url, 500);
   }

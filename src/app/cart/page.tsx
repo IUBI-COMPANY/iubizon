@@ -212,7 +212,7 @@ export default function CartCheckoutPage() {
           `¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`,
           "Pago Confirmado",
         );
-        router.push(`/user/orders/${sessionCode}`);
+        router.push(`/cart/success?order_code=${sessionCode}`);
       } else if (errorMsg && errorMsg !== "Accept") {
         toast.error(
           `No se pudo completar el pago: ${errorMsg}`,
@@ -693,7 +693,7 @@ export default function CartCheckoutPage() {
                       </span>
                     </div>
                     <Link
-                      href="/auth/login?redirectTo=/cart"
+                      href="/auth/login?redirect=/cart"
                       className="text-[#f25c05] font-bold hover:underline shrink-0 text-[11px]"
                     >
                       ¿Ya tienes cuenta? Iniciar sesión
@@ -1105,7 +1105,7 @@ export default function CartCheckoutPage() {
                         localStorage.removeItem(STEP_STORAGE_KEY);
                         localStorage.removeItem(FORM_STORAGE_KEY);
                       }
-                      router.push(`/user/orders/${sessionCode}`);
+                      router.push(`/cart/success?order_code=${sessionCode}`);
                     }}
                     onError={(errorMessage) => {
                       toast.error(errorMessage, "Error al procesar el pago");

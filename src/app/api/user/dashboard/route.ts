@@ -44,6 +44,15 @@ export async function GET(req: Request) {
     const orderWhere = isCompanyMode
       ? { company_id: companyId! }
       : { buyer_id: user.id };
+    const pendingOrderWhere = {
+      ...orderWhere,
+      status: { in: ["pending", "paid"] },
+      shipping: {
+        is: {
+          tracking_number: null,
+        },
+      },
+    };
 
     // Consultas ultrarrápidas y optimizadas en paralelo directo desde PostgreSQL
     const [
@@ -51,7 +60,9 @@ export async function GET(req: Request) {
       activeProducts,
       productSums,
       recentProductsRaw,
-      orders,
+      totalOrders,
+      pendingOrdersCount,
+      personalOrderPackages,
       totalFavorites,
     ] = await Promise.all([
       // 1. Conteo total de productos
@@ -87,18 +98,27 @@ export async function GET(req: Request) {
         orderBy: { created_at: "desc" },
         take: 3,
       }),
-      // 5. Registros de pedidos
-      prisma.order.findMany({
+      // 5. Conteo total de pedidos
+      prisma.order.count({
         where: orderWhere,
-        select: {
-          id: true,
-          status: true,
-          shipping: {
-            select: { tracking_number: true },
-          },
-        },
       }),
-      // 6. Conteo de favoritos en modo personal
+      // 6. Conteo de pedidos pendientes de tracking
+      prisma.order.count({
+        where: pendingOrderWhere,
+      }),
+      // 7. Solo para modo personal: paquetes únicos (por tracking o por order id)
+      isCompanyMode
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where: orderWhere,
+            select: {
+              id: true,
+              shipping: {
+                select: { tracking_number: true },
+              },
+            },
+          }),
+      // 8. Conteo de favoritos en modo personal
       isCompanyMode
         ? 0
         : prisma.favorite.count({
@@ -106,17 +126,11 @@ export async function GET(req: Request) {
           }),
     ]);
 
-    const pendingOrdersCount = orders.filter(
-      (o) =>
-        (o.status === "pending" || o.status === "paid") &&
-        !o.shipping?.tracking_number,
-    ).length;
-
     const totalViews = productSums._sum.views || 0;
     const companyFavorites = productSums._sum.favorites_count || 0;
 
     const uniquePackages = new Set(
-      orders.map((o) => o.shipping?.tracking_number || o.id),
+      personalOrderPackages.map((o) => o.shipping?.tracking_number || o.id),
     );
 
     const recentProducts = recentProductsRaw.map((p) => ({
@@ -135,7 +149,7 @@ export async function GET(req: Request) {
       stats: {
         totalProducts,
         activeProducts,
-        totalOrders: orders.length,
+        totalOrders,
         totalPurchases: isCompanyMode ? 0 : uniquePackages.size,
         pendingDeliveries: pendingOrdersCount,
         pendingOrders: isCompanyMode ? pendingOrdersCount : 0,

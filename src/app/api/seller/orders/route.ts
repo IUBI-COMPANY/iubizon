@@ -45,6 +45,26 @@ export interface SellerPackage {
   items: SellerPackageItem[];
 }
 
+const getOrderSessionCode = (order: {
+  id: string;
+  payment_id: string | null;
+  created_at: Date | null;
+}): string => {
+  if (order.payment_id && order.payment_id.trim() !== "") {
+    return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
+  }
+  if (order.created_at) {
+    const timeKey = order.created_at.toISOString().slice(0, 16);
+    let hash = 0;
+    for (let i = 0; i < timeKey.length; i++) {
+      hash = (hash << 5) - hash + timeKey.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
+  }
+  return order.id.slice(0, 6).toUpperCase();
+};
+
 export async function GET(request: Request) {
   try {
     const supabase = await createServerClient();
@@ -68,6 +88,14 @@ export async function GET(request: Request) {
 
       if (profile?.last_active_company_id) {
         companyIdParam = profile.last_active_company_id;
+      } else {
+        const firstMembership = await prisma.companyMember.findFirst({
+          where: { user_id: user.id },
+          select: { company_id: true },
+        });
+        if (firstMembership?.company_id) {
+          companyIdParam = firstMembership.company_id;
+        }
       }
     }
 
@@ -176,28 +204,8 @@ export async function GET(request: Request) {
 
     const packageMap = new Map<string, TempPackage>();
 
-    const getSessionCode = (order: (typeof orders)[0]) => {
-      if (order.payment_id && order.payment_id.trim() !== "") {
-        return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
-      }
-      if (order.created_at) {
-        const timeKey = order.created_at.toISOString().slice(0, 16);
-        let hash = 0;
-        for (let i = 0; i < timeKey.length; i++) {
-          hash = (hash << 5) - hash + timeKey.charCodeAt(i);
-          hash |= 0;
-        }
-        return Math.abs(hash)
-          .toString(36)
-          .toUpperCase()
-          .padStart(6, "0")
-          .slice(0, 6);
-      }
-      return order.id.slice(0, 6).toUpperCase();
-    };
-
     for (const order of orders) {
-      const sessionCode = getSessionCode(order);
+      const sessionCode = getOrderSessionCode(order);
       const groupKey = `${sessionCode}_${order.seller_id}`;
 
       const { carrierName, trackingUrl, carrierPhone } = parseDispatchMeta(
@@ -376,11 +384,7 @@ export async function PATCH(req: Request) {
       orderIds = sellerOrders
         .filter((o) => {
           if (o.id === packageId) return true;
-          const sessionCode = o.payment_id
-            ? o.payment_id.toUpperCase()
-            : o.created_at
-              ? o.created_at.toISOString().slice(0, 16)
-              : o.id.slice(0, 6).toUpperCase();
+          const sessionCode = getOrderSessionCode(o);
           const groupKey = `${sessionCode}_${o.seller_id}`;
           return groupKey === packageId || sessionCode === packageId;
         })

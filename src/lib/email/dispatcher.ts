@@ -10,6 +10,26 @@ import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
 const isUuid = (str: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
+const getSessionCode = (order: {
+  id: string;
+  payment_id: string | null;
+  created_at: Date | null;
+}): string => {
+  if (order.payment_id && order.payment_id.trim() !== "") {
+    return order.payment_id.trim().replace(/^NIUBIZ-/i, "");
+  }
+  if (order.created_at) {
+    const timeKey = order.created_at.toISOString().slice(0, 16);
+    let hash = 0;
+    for (let i = 0; i < timeKey.length; i++) {
+      hash = (hash << 5) - hash + timeKey.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36).toUpperCase().padStart(6, "0").slice(0, 6);
+  }
+  return order.id.slice(0, 6).toUpperCase();
+};
+
 export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
   try {
     const resend = getResendClient();
@@ -90,8 +110,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     }
 
     const primaryOrder = orders[0];
-    const orderCode =
-      primaryOrder.payment_id || primaryOrder.id.slice(0, 8).toUpperCase();
+    const orderCode = getSessionCode(primaryOrder);
 
     // Extraer datos de envío y facturación
     const paymentRaw =
@@ -203,10 +222,14 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
       invoiceNumber,
     };
 
-    // 3. Agrupar productos por Empresa (entidad principal) o por Vendedor individual si no pertenece a una empresa
-    const itemsBySeller = new Map<
+    // 3. Agrupar por paquete operativo del dashboard del vendedor:
+    //    `${sessionCode}_${seller_id}` para que el enlace del email abra
+    //    exactamente el paquete que debe despachar.
+    const itemsByPackage = new Map<
       string,
       {
+        packageCode: string;
+        companyId: string | null;
         recipientEmail: string;
         recipientName: string;
         isCompanyRecipient: boolean;
@@ -220,16 +243,15 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     >();
 
     for (const ord of orders) {
+      const packageCode = `${getSessionCode(ord)}_${ord.seller_id}`;
       const sellerEmail = ord.seller.email;
       const sellerName = ord.seller.name || "Vendedor iubizon";
       const companyEmail = ord.company?.email?.trim() || null;
       const companyName = ord.company?.name || null;
 
-      // La empresa es la entidad principal cuando el producto está vinculado a una:
-      // se agrupa por company_id (consolida ítems de todos sus miembros) y el
-      // correo se despacha a la casilla corporativa, no a la del vendedor individual.
+      // La empresa es la entidad principal del destinatario cuando el producto está
+      // vinculado a una y tiene email corporativo.
       const isCompanyRecipient = Boolean(ord.company_id && companyEmail);
-      const groupKey = ord.company_id || ord.seller_id;
       const recipientEmail = isCompanyRecipient ? companyEmail! : sellerEmail;
       const recipientName = isCompanyRecipient
         ? companyName || sellerName
@@ -253,8 +275,10 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
         companyName,
       };
 
-      if (!itemsBySeller.has(groupKey)) {
-        itemsBySeller.set(groupKey, {
+      if (!itemsByPackage.has(packageCode)) {
+        itemsByPackage.set(packageCode, {
+          packageCode,
+          companyId: ord.company_id || null,
           recipientEmail,
           recipientName,
           isCompanyRecipient,
@@ -266,7 +290,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
           commissionTotal: itemCommission,
         });
       } else {
-        const existing = itemsBySeller.get(groupKey)!;
+        const existing = itemsByPackage.get(packageCode)!;
         existing.items.push(emailItem);
         existing.subtotal += itemAmount;
         existing.commissionTotal += itemCommission;
@@ -274,9 +298,13 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     }
 
     // 3b. Obtener correos de los miembros de las empresas destinatarias (para copiar/CC)
-    const companyGroupIds = Array.from(itemsBySeller.entries())
-      .filter(([, group]) => group.isCompanyRecipient)
-      .map(([groupKey]) => groupKey);
+    const companyGroupIds = Array.from(
+      new Set(
+        Array.from(itemsByPackage.values())
+          .map((group) => group.companyId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
 
     const memberEmailsByCompany = new Map<string, string[]>();
     if (companyGroupIds.length > 0) {
@@ -351,10 +379,10 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
     })();
 
     // B. Correos a cada Empresa o Vendedor individual participante
-    const sendSellersPromises = Array.from(itemsBySeller.entries()).map(
-      async ([groupKey, sellerGroup], idx) => {
+    const sendSellersPromises = Array.from(itemsByPackage.entries()).map(
+      async ([groupKey, sellerGroup]) => {
         try {
-          const packageCode = `${orderCode}-P${idx + 1}`;
+          const packageCode = sellerGroup.packageCode;
           const commissionAmount = sellerGroup.commissionTotal;
           const netPayoutEstimate = sellerGroup.subtotal - commissionAmount;
 
@@ -377,7 +405,7 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
 
           // CC a los miembros de la empresa (si aplica), excluyendo duplicados del destinatario principal
           const rawMemberEmails = sellerGroup.isCompanyRecipient
-            ? memberEmailsByCompany.get(groupKey) || []
+            ? memberEmailsByCompany.get(sellerGroup.companyId || "") || []
             : [];
           const ccEmails = Array.from(
             new Set(

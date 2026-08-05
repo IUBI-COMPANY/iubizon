@@ -3,10 +3,19 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Clock, Loader2, ShoppingBag, Truck } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Mail,
+  MessageCircle,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 
 type TrackingGroup = {
   sellerId: string;
@@ -59,6 +68,14 @@ function SuccessContent() {
   const orderCode = searchParams.get("order_code") || "";
   const [trackingGroups, setTrackingGroups] = useState<TrackingGroup[]>([]);
   const { clearCart } = useCart();
+  const { user, isLoading } = useAuth();
+  const detailHref = orderCode
+    ? user
+      ? `/user/orders/${orderCode}`
+      : `/auth/login?redirect=${encodeURIComponent(`/user/orders/${orderCode}`)}`
+    : user
+      ? "/user/orders"
+      : "/auth/login?redirect=/user/orders";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -143,14 +160,48 @@ function SuccessContent() {
           </ul>
         </div>
 
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 space-y-3">
+          <p className="text-xs font-bold text-[#112237] uppercase tracking-wider">
+            Importante
+          </p>
+          <p className="text-xs text-[#475569]">
+            Revisa tu correo para confirmar los detalles de tu compra. Si tienes
+            algún problema, contáctanos por soporte:
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a
+              href="mailto:iubizon.company@gmail.com"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#112237] hover:text-[#f25c05]"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              iubizon.company@gmail.com
+            </a>
+            <a
+              href="https://wa.me/51972300301?text=Hola%20iubizon%20necesito%20asistencia"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#112237] hover:text-[#f25c05]"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              WhatsApp: +51 972 300 301
+            </a>
+          </div>
+        </div>
+
         {/* Botones */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
-            href={orderCode ? `/user/orders/${orderCode}` : "/user/orders"}
+            href={detailHref}
             className="w-full sm:w-auto bg-[#f25c05] hover:bg-[#d94d04] text-white font-extrabold px-8 py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Ver Detalle del Pedido #{orderCode || ""}</span>
+            <span>
+              {isLoading
+                ? "Abriendo detalle..."
+                : user
+                  ? `Ver Detalle del Pedido #${orderCode || ""}`
+                  : "Iniciar sesión para ver tu pedido"}
+            </span>
           </Link>
           <Link
             href="/search"

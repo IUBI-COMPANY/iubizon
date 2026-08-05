@@ -29,6 +29,7 @@ interface UserProduct {
   stock?: number | null;
   views: number;
   category: string | null;
+  imageCount: number;
   images: Array<{ id: string; url: string; position: number }>;
   created_at: string;
 }
@@ -227,9 +228,9 @@ export default function ProductsManagementPage() {
                               className="object-cover"
                               unoptimized
                             />
-                            {product.images.length > 1 && (
+                            {product.imageCount > 1 && (
                               <div className="absolute bottom-1 right-1 bg-[#f25c05] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-md shadow-sm">
-                                +{product.images.length - 1}
+                                +{product.imageCount - 1}
                               </div>
                             )}
                           </>
