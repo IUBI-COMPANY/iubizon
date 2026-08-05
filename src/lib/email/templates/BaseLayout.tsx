@@ -31,7 +31,7 @@ export function BaseLayout({ previewText, children }: BaseLayoutProps) {
               iubizon<span style={orangeDotStyle}>.com</span>
             </Link>
             <Text style={taglineStyle}>
-              Marketplace para Colegios y Empresas
+              Tecnología para educar y trabajar.
             </Text>
           </Section>
 
@@ -56,12 +56,16 @@ export function BaseLayout({ previewText, children }: BaseLayoutProps) {
               </Link>
             </Text>
             <Text style={footerSubTextStyle}>
-              <Link href={`${baseUrl}/terms`} style={footerLinkStyle}>
+              <Link href={`${baseUrl}/help?tab=terminos`} style={footerLinkStyle}>
                 Términos y Condiciones
               </Link>{" "}
               |{" "}
-              <Link href={`${baseUrl}/privacy`} style={footerLinkStyle}>
+              <Link href={`${baseUrl}/help?tab=privacidad`} style={footerLinkStyle}>
                 Política de Privacidad
+              </Link>{" "}
+              |{" "}
+              <Link href={`${baseUrl}/help`} style={footerLinkStyle}>
+                Centro de Ayuda
               </Link>
             </Text>
           </Section>
