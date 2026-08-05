@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Mail, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -15,21 +18,38 @@ import {
 } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
 
+const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El email es obligatorio.")
+    .email("Ingresa un email válido."),
+});
+
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: "" },
+  });
+
+  const onSubmit = async (values: ForgotPasswordFormValues) => {
     setError(null);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      values.email.trim(),
+      {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      },
+    );
 
     if (error) {
       if (error.message.includes("rate limit")) {
@@ -42,8 +62,6 @@ export default function ForgotPasswordPage() {
     } else {
       setSent(true);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -82,7 +100,7 @@ export default function ForgotPasswordPage() {
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {error && (
                 <div className="p-3 bg-[#ef4444]/10 text-[#ef4444] text-sm rounded-lg">
                   {error}
@@ -97,16 +115,19 @@ export default function ForgotPasswordPage() {
                     id="email"
                     type="email"
                     placeholder="tu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
-                    required
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-xs text-red-500 font-medium">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Enviando..." : "Enviar enlace de recuperación"}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Enviando..." : "Enviar enlace de recuperación"}
               </Button>
 
               <div className="text-center">

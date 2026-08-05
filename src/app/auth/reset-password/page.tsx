@@ -3,6 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -17,19 +20,40 @@ import {
 } from "@/components/ui/PasswordInput";
 import { createClient } from "@/lib/supabase/client";
 
+const resetPasswordSchema = z
+  .object({
+    password: z.string().refine(validatePasswordStrict, {
+      message:
+        "La contraseña no cumple con los requisitos mínimos de seguridad.",
+    }),
+    confirmPassword: z.string().min(1, "Confirma tu nueva contraseña."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
 
-  const isPasswordValid = validatePasswordStrict(password);
-  const doPasswordsMatch = password === confirmPassword && password.length > 0;
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { password: "", confirmPassword: "" },
+  });
+
+  const passwordValue = watch("password");
 
   useEffect(() => {
     // detectSessionInUrl auto-processes the access_token from the hash
@@ -44,26 +68,11 @@ export default function ResetPasswordPage() {
     checkSession();
   }, [supabase]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isPasswordValid) {
-      setError(
-        "La contraseña no cumple con los requisitos mínimos de seguridad.",
-      );
-      return;
-    }
-
-    if (!doPasswordsMatch) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    setIsLoading(true);
+  const onSubmit = async (values: ResetPasswordFormValues) => {
     setError(null);
 
     const { error } = await supabase.auth.updateUser({
-      password,
+      password: values.password,
     });
 
     if (error) {
@@ -74,8 +83,6 @@ export default function ResetPasswordPage() {
         router.push("/auth/login");
       }, 2000);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -113,37 +120,47 @@ export default function ResetPasswordPage() {
               </div>
             </div>
           ) : hasSession ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {error && (
                 <div className="p-3 bg-[#ef4444]/10 text-[#ef4444] text-sm rounded-lg">
                   {error}
                 </div>
               )}
 
-              <PasswordInput
-                label="Nueva contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                showRequirements
-                disabled={isLoading}
-                required
-              />
+              <div>
+                <PasswordInput
+                  label="Nueva contraseña"
+                  showRequirements
+                  disabled={isSubmitting}
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-              <PasswordInput
-                label="Confirmar nueva contraseña"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                confirmValue={password}
-                disabled={isLoading}
-                required
-              />
+              <div>
+                <PasswordInput
+                  label="Confirmar nueva contraseña"
+                  confirmValue={passwordValue}
+                  disabled={isSubmitting}
+                  {...register("confirmPassword")}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
 
               <Button
                 type="submit"
                 className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg"
-                disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
+                disabled={isSubmitting}
               >
-                {isLoading ? "Actualizando..." : "Actualizar contraseña"}
+                {isSubmitting ? "Actualizando..." : "Actualizar contraseña"}
               </Button>
             </form>
           ) : (

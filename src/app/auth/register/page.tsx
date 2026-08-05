@@ -3,16 +3,10 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Mail,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  Check,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Mail, User, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -43,42 +37,69 @@ function getSanitizedRedirect(redirectParam: string | null): string {
   return "/user/dashboard";
 }
 
+const registerFormSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "El nombre debe tener al menos 2 caracteres."),
+    email: z
+      .string()
+      .min(1, "El email es obligatorio.")
+      .email("Ingresa un email válido."),
+    password: z.string().refine(validatePasswordStrict, {
+      message: "La contraseña no cumple con los requisitos mínimos.",
+    }),
+    confirmPassword: z.string().min(1, "Confirma tu contraseña."),
+    agreedToTerms: z.boolean().refine((v) => v === true, {
+      message: "Debes aceptar los términos y condiciones.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormValues = z.infer<typeof registerFormSchema>;
+
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signUp, signIn, signInWithGoogle } = useAuth();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      agreedToTerms: false,
+    },
+  });
+
+  const passwordValue = watch("password");
+  const isLoading = isSubmitting || isGoogleLoading;
 
   const redirectTarget = getSanitizedRedirect(searchParams.get("redirect"));
 
-  const isPasswordValid = validatePasswordStrict(password);
-  const doPasswordsMatch = password === confirmPassword && password.length > 0;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isPasswordValid)
-      return setError("La contraseña no cumple con los requisitos mínimos");
-    if (!doPasswordsMatch) return setError("Las contraseñas no coinciden");
-    if (!agreedToTerms)
-      return setError("Debes aceptar los términos y condiciones");
-
-    setIsLoading(true);
+  const onSubmit = async (values: RegisterFormValues) => {
     setError(null);
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = name.trim();
+    const cleanEmail = values.email.trim().toLowerCase();
+    const cleanName = values.name.trim();
 
     const { error: signUpError } = await signUp(
       cleanEmail,
-      password,
+      values.password,
       cleanName,
     );
 
@@ -93,11 +114,10 @@ function RegisterForm() {
       } else {
         setError(signUpError.message);
       }
-      setIsLoading(false);
       return;
     }
 
-    const { error: signInError } = await signIn(cleanEmail, password);
+    const { error: signInError } = await signIn(cleanEmail, values.password);
     if (signInError) {
       const loginRedirect = searchParams.get("redirect")
         ? `/auth/login?registered=true&redirect=${encodeURIComponent(searchParams.get("redirect")!)}`
@@ -110,13 +130,13 @@ function RegisterForm() {
 
   const handleGoogleSignIn = async () => {
     if (isLoading) return;
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     setError(null);
 
     const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
       setError("Error al conectar con Google. Intenta nuevamente.");
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -131,7 +151,7 @@ function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {error && (
             <div className="p-3 bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#ef4444] text-xs font-medium rounded-lg">
               {error}
@@ -146,13 +166,16 @@ function RegisterForm() {
                 id="name"
                 type="text"
                 placeholder="Juan Pérez"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
                 className="pl-10 text-sm"
-                required
                 disabled={isLoading}
+                {...register("name")}
               />
             </div>
+            {errors.name && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.name.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -163,41 +186,53 @@ function RegisterForm() {
                 id="email"
                 type="email"
                 placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 text-sm"
-                required
                 disabled={isLoading}
+                {...register("email")}
               />
             </div>
+            {errors.email && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
-          <PasswordInput
-            label="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            showRequirements
-            disabled={isLoading}
-            required
-          />
+          <div>
+            <PasswordInput
+              label="Contraseña"
+              showRequirements
+              disabled={isLoading}
+              {...register("password")}
+            />
+            {errors.password && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
 
-          <PasswordInput
-            label="Confirmar contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            confirmValue={password}
-            disabled={isLoading}
-            required
-          />
+          <div>
+            <PasswordInput
+              label="Confirmar contraseña"
+              confirmValue={passwordValue}
+              disabled={isLoading}
+              {...register("confirmPassword")}
+            />
+            {errors.confirmPassword && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
 
           <div className="flex items-start gap-2 pt-1">
             <input
               type="checkbox"
               id="terms"
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
               className="mt-0.5 w-4 h-4 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
               disabled={isLoading}
+              {...register("agreedToTerms")}
             />
             <label
               htmlFor="terms"
@@ -219,6 +254,11 @@ function RegisterForm() {
               </Link>
             </label>
           </div>
+          {errors.agreedToTerms && (
+            <p className="text-xs text-red-500 font-medium -mt-2">
+              {errors.agreedToTerms.message}
+            </p>
+          )}
 
           <Button
             type="submit"

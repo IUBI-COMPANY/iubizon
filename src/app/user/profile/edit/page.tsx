@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   User,
   Phone,
@@ -19,24 +22,42 @@ import { Navbar } from "@/components/features/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
 
+const profileFormSchema = z.object({
+  name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres."),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  bio: z
+    .string()
+    .max(500, "La descripción no puede superar los 500 caracteres.")
+    .optional(),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
 export default function ProfileEditPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const supabase = createClient();
 
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    bio: "",
-    location: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: { name: "", phone: "", bio: "", location: "" },
   });
+
+  const nameValue = watch("name");
+  const bioValue = watch("bio") || "";
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -61,7 +82,7 @@ export default function ProfileEditPage() {
         .single();
 
       if (data) {
-        setFormData({
+        reset({
           name: data.name || "",
           phone: data.phone || "",
           bio: data.bio || "",
@@ -88,9 +109,7 @@ export default function ProfileEditPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
+  const onSubmit = async (values: ProfileFormValues) => {
     setMessage(null);
 
     try {
@@ -118,10 +137,10 @@ export default function ProfileEditPage() {
       const { error } = await supabase
         .from("profiles")
         .update({
-          name: formData.name,
-          phone: formData.phone,
-          bio: formData.bio,
-          location: formData.location,
+          name: values.name,
+          phone: values.phone || null,
+          bio: values.bio || null,
+          location: values.location || null,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         })
@@ -140,8 +159,6 @@ export default function ProfileEditPage() {
         type: "error",
         text: "Error al guardar el perfil. Intenta de nuevo.",
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -186,7 +203,7 @@ export default function ProfileEditPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="flex flex-col items-center">
               <div className="relative">
                 <div className="w-28 h-28 rounded-full overflow-hidden bg-[#f8fafc] border-4 border-white shadow-lg">
@@ -200,7 +217,7 @@ export default function ProfileEditPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl text-[#94a3b8]">
-                      {formData.name?.charAt(0)?.toUpperCase() || "U"}
+                      {nameValue?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                   )}
                 </div>
@@ -225,14 +242,15 @@ export default function ProfileEditPage() {
                 Nombre
               </label>
               <Input
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
                 placeholder="Tu nombre"
-                required
                 className="w-full"
+                {...register("name")}
               />
+              {errors.name && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -241,16 +259,18 @@ export default function ProfileEditPage() {
                 Teléfono
               </label>
               <Input
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
                 placeholder="+51 999 999 999"
                 className="w-full"
+                {...register("phone")}
               />
               <p className="text-xs text-[#94a3b8] mt-1">
                 Este número se mostrará a los compradores interesados
               </p>
+              {errors.phone && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -259,13 +279,15 @@ export default function ProfileEditPage() {
                 Ubicación
               </label>
               <Input
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
                 placeholder="Lima, Perú"
                 className="w-full"
+                {...register("location")}
               />
+              {errors.location && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.location.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -273,25 +295,27 @@ export default function ProfileEditPage() {
                 Descripción
               </label>
               <Textarea
-                value={formData.bio}
-                onChange={(e) =>
-                  setFormData({ ...formData, bio: e.target.value })
-                }
                 placeholder="Cuéntanos sobre ti..."
                 rows={4}
                 className="w-full"
+                {...register("bio")}
               />
               <p className="text-xs text-[#94a3b8] mt-1">
-                {formData.bio.length}/500 caracteres
+                {bioValue.length}/500 caracteres
               </p>
+              {errors.bio && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.bio.message}
+                </p>
+              )}
             </div>
 
             <Button
               type="submit"
               className="w-full bg-[#f25c05] hover:bg-[#e55100]"
-              disabled={isSaving}
+              disabled={isSubmitting}
             >
-              {isSaving ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Guardando...

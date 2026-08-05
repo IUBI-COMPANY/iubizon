@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +51,29 @@ function formatDateForInput(dateStr?: string | null): string {
   }
 }
 
+const dispatchFormSchema = z.object({
+  carrierName: z
+    .string()
+    .trim()
+    .min(1, "La empresa de transporte es obligatoria."),
+  trackingNumber: z
+    .string()
+    .trim()
+    .min(1, "El número de seguimiento / guía es obligatorio."),
+  estimatedDelivery: z
+    .string()
+    .min(1, "La fecha estimada de llegada es obligatoria."),
+  carrierPhone: z.string().optional(),
+  trackingUrl: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^https?:\/\//.test(val), {
+      message: "Ingresa una URL válida (debe iniciar con http:// o https://).",
+    }),
+});
+
+type DispatchFormValues = z.infer<typeof dispatchFormSchema>;
+
 export function DispatchModal({
   isOpen,
   onClose,
@@ -60,25 +86,33 @@ export function DispatchModal({
   currentTrackingUrl,
   onSuccess,
 }: DispatchModalProps) {
-  const [carrierName, setCarrierName] = useState(currentCarrierName || "");
-  const [trackingNumber, setTrackingNumber] = useState(
-    currentTrackingNumber || "",
-  );
-  const [estimatedDelivery, setEstimatedDelivery] = useState(
-    formatDateForInput(currentEstimatedDelivery),
-  );
-  const [carrierPhone, setCarrierPhone] = useState(currentCarrierPhone || "");
-  const [trackingUrl, setTrackingUrl] = useState(currentTrackingUrl || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<DispatchFormValues>({
+    resolver: zodResolver(dispatchFormSchema),
+    defaultValues: {
+      carrierName: currentCarrierName || "",
+      trackingNumber: currentTrackingNumber || "",
+      estimatedDelivery: formatDateForInput(currentEstimatedDelivery),
+      carrierPhone: currentCarrierPhone || "",
+      trackingUrl: currentTrackingUrl || "",
+    },
+  });
 
   useEffect(() => {
     if (isOpen) {
-      setCarrierName(currentCarrierName || "");
-      setTrackingNumber(currentTrackingNumber || "");
-      setEstimatedDelivery(formatDateForInput(currentEstimatedDelivery));
-      setCarrierPhone(currentCarrierPhone || "");
-      setTrackingUrl(currentTrackingUrl || "");
+      reset({
+        carrierName: currentCarrierName || "",
+        trackingNumber: currentTrackingNumber || "",
+        estimatedDelivery: formatDateForInput(currentEstimatedDelivery),
+        carrierPhone: currentCarrierPhone || "",
+        trackingUrl: currentTrackingUrl || "",
+      });
       setError(null);
     }
   }, [
@@ -89,19 +123,11 @@ export function DispatchModal({
     currentEstimatedDelivery,
     currentCarrierPhone,
     currentTrackingUrl,
+    reset,
   ]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!carrierName.trim() || !trackingNumber.trim() || !estimatedDelivery) {
-      setError(
-        "Por favor completa la empresa de transporte, el número de seguimiento y la fecha estimada.",
-      );
-      return;
-    }
-
+  const onSubmit = async (values: DispatchFormValues) => {
     try {
-      setIsSubmitting(true);
       setError(null);
 
       const res = await fetch("/api/seller/orders", {
@@ -111,12 +137,12 @@ export function DispatchModal({
           packageId,
           orderIds: orderIds && orderIds.length > 0 ? orderIds : undefined,
           action: "dispatch",
-          carrierName: carrierName.trim(),
-          courier: carrierName.trim(),
-          trackingNumber: trackingNumber.trim(),
-          estimatedDelivery,
-          carrierPhone: carrierPhone.trim() || undefined,
-          trackingUrl: trackingUrl.trim() || undefined,
+          carrierName: values.carrierName.trim(),
+          courier: values.carrierName.trim(),
+          trackingNumber: values.trackingNumber.trim(),
+          estimatedDelivery: values.estimatedDelivery,
+          carrierPhone: values.carrierPhone?.trim() || undefined,
+          trackingUrl: values.trackingUrl?.trim() || undefined,
         }),
       });
 
@@ -131,8 +157,6 @@ export function DispatchModal({
       setError(
         err instanceof Error ? err.message : "Error al guardar despacho",
       );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -144,7 +168,7 @@ export function DispatchModal({
             Confirmar Despacho del Pedido
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <p className="text-xs text-[#64748b]">
             Ingresa la información proporcionada por la agencia de transporte al
             momento de realizar el envío.
@@ -162,11 +186,14 @@ export function DispatchModal({
             </Label>
             <Input
               placeholder="Ej: Shalom Courier, Olva Courier, Marvisur"
-              value={carrierName}
-              onChange={(e) => setCarrierName(e.target.value)}
               className="text-xs"
-              required
+              {...register("carrierName")}
             />
+            {errors.carrierName && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.carrierName.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -175,11 +202,14 @@ export function DispatchModal({
             </Label>
             <Input
               placeholder="Ej: SHA-9842104"
-              value={trackingNumber}
-              onChange={(e) => setTrackingNumber(e.target.value)}
               className="text-xs"
-              required
+              {...register("trackingNumber")}
             />
+            {errors.trackingNumber && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.trackingNumber.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5 w-full">
@@ -189,13 +219,16 @@ export function DispatchModal({
             <div className="relative w-full">
               <Input
                 type="datetime-local"
-                value={estimatedDelivery}
-                onChange={(e) => setEstimatedDelivery(e.target.value)}
                 className="w-full text-xs pl-3.5 pr-10 cursor-pointer font-medium text-[#112237] rounded-xl [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                required
+                {...register("estimatedDelivery")}
               />
               <Calendar className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
+            {errors.estimatedDelivery && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.estimatedDelivery.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -206,9 +239,8 @@ export function DispatchModal({
               <Input
                 type="tel"
                 placeholder="Ej: 987654321"
-                value={carrierPhone}
-                onChange={(e) => setCarrierPhone(e.target.value)}
                 className="text-xs pl-9"
+                {...register("carrierPhone")}
               />
               <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             </div>
@@ -222,12 +254,16 @@ export function DispatchModal({
               <Input
                 type="url"
                 placeholder="https://shalom.pe/rastreo/..."
-                value={trackingUrl}
-                onChange={(e) => setTrackingUrl(e.target.value)}
                 className="text-xs pl-9"
+                {...register("trackingUrl")}
               />
               <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             </div>
+            {errors.trackingUrl && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.trackingUrl.message}
+              </p>
+            )}
           </div>
 
           <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">

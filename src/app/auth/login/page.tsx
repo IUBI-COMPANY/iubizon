@@ -3,6 +3,9 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -31,29 +34,44 @@ function getSanitizedRedirect(redirectParam: string | null): string {
   return "/user/dashboard";
 }
 
+const loginFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El email es obligatorio.")
+    .email("Ingresa un email válido."),
+  password: z.string().min(1, "La contraseña es obligatoria."),
+});
+
+type LoginFormValues = z.infer<typeof loginFormSchema>;
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signInWithGoogle } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  const isLoading = isSubmitting || isGoogleLoading;
 
   const redirectTarget = getSanitizedRedirect(searchParams.get("redirect"));
   const justRegistered = searchParams.get("registered") === "true";
   const callbackError = searchParams.get("error") === "callback_failed";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isLoading) return;
-
-    setIsLoading(true);
+  const onSubmit = async (values: LoginFormValues) => {
     setError(null);
 
-    const cleanEmail = email.trim().toLowerCase();
-    const { error: authError } = await signIn(cleanEmail, password);
+    const cleanEmail = values.email.trim().toLowerCase();
+    const { error: authError } = await signIn(cleanEmail, values.password);
 
     if (authError) {
       if (authError.message.includes("Email not confirmed")) {
@@ -63,7 +81,6 @@ function LoginForm() {
       } else {
         setError(authError.message);
       }
-      setIsLoading(false);
     } else {
       router.push(redirectTarget);
     }
@@ -71,13 +88,13 @@ function LoginForm() {
 
   const handleGoogleSignIn = async () => {
     if (isLoading) return;
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     setError(null);
 
     const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
       setError("Error al conectar con Google. Intenta nuevamente.");
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -92,7 +109,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {justRegistered && (
             <div className="p-3 bg-[#f25c05]/10 border border-[#f25c05]/20 text-[#f25c05] text-xs font-medium rounded-lg">
               ¡Cuenta creada con éxito! Revisa tu email para confirmar tu cuenta
@@ -115,22 +132,28 @@ function LoginForm() {
                 id="email"
                 type="email"
                 placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 text-sm"
-                required
                 disabled={isLoading}
+                {...register("email")}
               />
             </div>
+            {errors.email && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <PasswordInput
             label="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
-            required
+            {...register("password")}
           />
+          {errors.password && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.password.message}
+            </p>
+          )}
 
           <div className="flex justify-end">
             <Link

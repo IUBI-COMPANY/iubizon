@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   CreditCard,
   Building2,
@@ -28,6 +31,23 @@ interface BankAccountModalProps {
   onSuccess: () => void;
 }
 
+const bankAccountFormSchema = z.object({
+  bank_name: z.string().min(1, "Selecciona un banco."),
+  account_type: z.enum(["corriente", "ahorros"]),
+  account_number: z
+    .string()
+    .trim()
+    .min(1, "El número de cuenta es obligatorio."),
+  cci: z.string().optional(),
+  holder_name: z
+    .string()
+    .trim()
+    .min(1, "El nombre / razón social del titular es obligatorio."),
+  holder_doc: z.string().optional(),
+});
+
+type BankAccountFormValues = z.infer<typeof bankAccountFormSchema>;
+
 export function BankAccountModal({
   isOpen,
   onClose,
@@ -35,51 +55,53 @@ export function BankAccountModal({
   initialData,
   onSuccess,
 }: BankAccountModalProps) {
-  const [bankName, setBankName] = useState(initialData?.bank_name || "BCP");
-  const [accountType, setAccountType] = useState(
-    initialData?.account_type || "corriente",
-  );
-  const [accountNumber, setAccountNumber] = useState(
-    initialData?.account_number || "",
-  );
-  const [cci, setCci] = useState(initialData?.cci || "");
-  const [holderName, setHolderName] = useState(initialData?.holder_name || "");
-  const [holderDoc, setHolderDoc] = useState(initialData?.holder_doc || "");
-  const [isSaving, setIsSaving] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<BankAccountFormValues>({
+    resolver: zodResolver(bankAccountFormSchema),
+    defaultValues: {
+      bank_name: initialData?.bank_name || "BCP",
+      account_type:
+        (initialData?.account_type as "corriente" | "ahorros") || "corriente",
+      account_number: initialData?.account_number || "",
+      cci: initialData?.cci || "",
+      holder_name: initialData?.holder_name || "",
+      holder_doc: initialData?.holder_doc || "",
+    },
+  });
 
   useEffect(() => {
     if (initialData) {
-      setBankName(initialData.bank_name || "BCP");
-      setAccountType(initialData.account_type || "corriente");
-      setAccountNumber(initialData.account_number || "");
-      setCci(initialData.cci || "");
-      setHolderName(initialData.holder_name || "");
-      setHolderDoc(initialData.holder_doc || "");
+      reset({
+        bank_name: initialData.bank_name || "BCP",
+        account_type:
+          (initialData.account_type as "corriente" | "ahorros") || "corriente",
+        account_number: initialData.account_number || "",
+        cci: initialData.cci || "",
+        holder_name: initialData.holder_name || "",
+        holder_doc: initialData.holder_doc || "",
+      });
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!accountNumber.trim() || !holderName.trim()) {
-      toast.error("Por favor ingresa el número de cuenta y el titular.");
-      return;
-    }
-
+  const onSubmit = async (values: BankAccountFormValues) => {
     try {
-      setIsSaving(true);
       const res = await fetch("/api/seller/bank-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           company_id: companyId || null,
-          bank_name: bankName,
-          account_type: accountType,
-          account_number: accountNumber.trim(),
-          cci: cci.trim(),
-          holder_name: holderName.trim(),
-          holder_doc: holderDoc.trim(),
+          bank_name: values.bank_name,
+          account_type: values.account_type,
+          account_number: values.account_number.trim(),
+          cci: (values.cci || "").trim(),
+          holder_name: values.holder_name.trim(),
+          holder_doc: (values.holder_doc || "").trim(),
         }),
       });
 
@@ -94,8 +116,6 @@ export function BankAccountModal({
     } catch (err) {
       console.error("Error al guardar cuenta bancaria:", err);
       toast.error("Error al guardar los datos bancarios");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -126,7 +146,7 @@ export function BankAccountModal({
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex items-start gap-3 text-xs text-amber-900">
             <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <p>
@@ -142,9 +162,8 @@ export function BankAccountModal({
                 Banco / Entidad Financiera *
               </label>
               <select
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
                 className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 text-xs font-semibold text-[#112237] focus:ring-2 focus:ring-[#f25c05] focus:outline-none"
+                {...register("bank_name")}
               >
                 <option value="BCP">BCP - Banco de Crédito del Perú</option>
                 <option value="Interbank">Interbank</option>
@@ -155,6 +174,11 @@ export function BankAccountModal({
                 <option value="Caja Arequipa">Caja Arequipa</option>
                 <option value="Otro">Otro Banco / Financiera</option>
               </select>
+              {errors.bank_name && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.bank_name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -162,13 +186,17 @@ export function BankAccountModal({
                 Tipo de Cuenta *
               </label>
               <select
-                value={accountType}
-                onChange={(e) => setAccountType(e.target.value)}
                 className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 text-xs font-semibold text-[#112237] focus:ring-2 focus:ring-[#f25c05] focus:outline-none"
+                {...register("account_type")}
               >
                 <option value="corriente">Cuenta Corriente</option>
                 <option value="ahorros">Cuenta de Ahorros</option>
               </select>
+              {errors.account_type && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.account_type.message}
+                </p>
+              )}
             </div>
           </div>
 
@@ -177,14 +205,15 @@ export function BankAccountModal({
               Número de Cuenta *
             </label>
             <Input
-              value={accountNumber}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setAccountNumber(e.target.value)
-              }
               placeholder="Ej: 191-98765432-0-12 ó 987654321"
-              required
               className="text-xs"
+              {...register("account_number")}
             />
+            {errors.account_number && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.account_number.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -192,12 +221,9 @@ export function BankAccountModal({
               Código CCI (Interbancario - 20 dígitos)
             </label>
             <Input
-              value={cci}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setCci(e.target.value)
-              }
               placeholder="Ej: 00219100987654320124 (Opcional)"
               className="text-xs"
+              {...register("cci")}
             />
           </div>
 
@@ -207,14 +233,15 @@ export function BankAccountModal({
                 Nombre / Razón Social del Titular *
               </label>
               <Input
-                value={holderName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setHolderName(e.target.value)
-                }
                 placeholder="Ej: SigmaSkill Store S.A.C."
-                required
                 className="text-xs"
+                {...register("holder_name")}
               />
+              {errors.holder_name && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.holder_name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -222,12 +249,9 @@ export function BankAccountModal({
                 RUC o DNI del Titular
               </label>
               <Input
-                value={holderDoc}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setHolderDoc(e.target.value)
-                }
                 placeholder="Ej: 20634600385"
                 className="text-xs"
+                {...register("holder_doc")}
               />
             </div>
           </div>
@@ -237,17 +261,17 @@ export function BankAccountModal({
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={isSaving}
+              disabled={isSubmitting}
               className="text-xs font-semibold"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              disabled={isSaving}
+              disabled={isSubmitting}
               className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md"
             >
-              {isSaving ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Guardando...

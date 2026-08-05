@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,18 +40,52 @@ import {
   type DocType,
 } from "@/components/features/cart/InvoiceSelector";
 import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
+import { peruUbigeo } from "@/data-list/ubigeos";
 
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
 const FORM_STORAGE_KEY = "iubizon_checkout_form";
 
-export interface ShippingFormState {
-  name: string;
-  phone: string;
-  email: string;
-  address: string;
-  city: string;
-  notes: string;
-}
+/** Compone el texto de ubicación mostrado al vendedor a partir del ubigeo elegido. */
+const buildCityLabel = (
+  department: string,
+  province: string,
+  district: string,
+): string => {
+  return [district, province, department].filter(Boolean).join(", ");
+};
+
+const shippingFormSchema = z.object({
+  name: z.string().trim().min(1, "El nombre completo es obligatorio."),
+  phone: z
+    .string()
+    .trim()
+    .min(6, "Ingresa un teléfono/WhatsApp de contacto válido."),
+  email: z
+    .string()
+    .trim()
+    .min(1, "El correo electrónico es obligatorio.")
+    .email("Ingresa un correo electrónico válido."),
+  address: z
+    .string()
+    .trim()
+    .min(1, "La dirección completa de entrega es obligatoria."),
+  department: z.string().min(1, "Selecciona un departamento."),
+  province: z.string().min(1, "Selecciona una provincia."),
+  district: z.string().min(1, "Selecciona un distrito."),
+  /** Derivado de departamento/provincia/distrito. Se mantiene por compatibilidad
+   * con la construcción de destination_address y las plantillas de correo. */
+  city: z.string(),
+  notes: z.string().optional(),
+});
+
+export type ShippingFormState = z.infer<typeof shippingFormSchema>;
 
 export default function CartCheckoutPage() {
   const router = useRouter();
@@ -73,15 +110,31 @@ export default function CartCheckoutPage() {
   const [invoiceRuc, setInvoiceRuc] = useState("");
   const [invoiceCompanyName, setInvoiceCompanyName] = useState("");
 
-  // Formulario de envío con Auto-Guardado en LocalStorage
-  const [shippingForm, setShippingForm] = useState<ShippingFormState>({
-    name: user?.name || "",
-    phone: "",
-    email: user?.email || "",
-    address: "",
-    city: "Lima",
-    notes: "",
+  // Formulario de envío validado con Zod + React Hook Form, con Auto-Guardado en LocalStorage
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    reset,
+    formState: { errors },
+  } = useForm<ShippingFormState>({
+    resolver: zodResolver(shippingFormSchema),
+    defaultValues: {
+      name: user?.name || "",
+      phone: "",
+      email: user?.email || "",
+      address: "",
+      department: "Lima",
+      province: "Lima",
+      district: "",
+      city: "Lima",
+      notes: "",
+    },
   });
+
+  const shippingForm = watch();
 
   // Restaurar paso y datos del formulario desde LocalStorage al montar
   useEffect(() => {
@@ -98,7 +151,7 @@ export default function CartCheckoutPage() {
       if (savedForm) {
         try {
           const parsedForm = JSON.parse(savedForm);
-          setShippingForm((prev) => ({ ...prev, ...parsedForm }));
+          reset((prev) => ({ ...prev, ...parsedForm }));
         } catch (e) {
           console.error("Error al restaurar formulario de checkout:", e);
         }
@@ -128,14 +181,21 @@ export default function CartCheckoutPage() {
     }
   }, []);
 
+  // Persistir los campos del formulario en LocalStorage mientras se escribe
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(value));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
   // Sincronizar email/nombre cuando el usuario inicie sesión
   useEffect(() => {
     if (user) {
-      setShippingForm((prev) => ({
-        ...prev,
-        name: prev.name || user.name || "",
-        email: prev.email || user.email || "",
-      }));
+      if (!getValues("name")) setValue("name", user.name || "");
+      if (!getValues("email")) setValue("email", user.email || "");
     }
   }, [user]);
 
@@ -147,13 +207,42 @@ export default function CartCheckoutPage() {
     }
   };
 
-  // Persistir inputs del formulario en LocalStorage mientras se escribe
-  const handleFormChange = (field: keyof ShippingFormState, value: string) => {
-    const updated = { ...shippingForm, [field]: value };
-    setShippingForm(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(updated));
-    }
+  // Provincias/distritos disponibles según el departamento/provincia seleccionados (ubigeo)
+  const provincesForDepartment = useMemo(
+    () =>
+      peruUbigeo.find((d) => d.name === shippingForm.department)?.provinces ||
+      [],
+    [shippingForm.department],
+  );
+  const districtsForProvince = useMemo(
+    () =>
+      provincesForDepartment.find((p) => p.name === shippingForm.province)
+        ?.districts || [],
+    [provincesForDepartment, shippingForm.province],
+  );
+
+  // Selección en cascada Departamento -> Provincia -> Distrito. Al elegir un nivel
+  // se reinician los niveles hijos y se recalcula el "city" derivado (compatibilidad
+  // con destination_address y las plantillas de correo del vendedor).
+  const handleDepartmentChange = (department: string) => {
+    setValue("department", department, { shouldValidate: true });
+    setValue("province", "", { shouldValidate: true });
+    setValue("district", "", { shouldValidate: true });
+    setValue("city", buildCityLabel(department, "", ""));
+  };
+
+  const handleProvinceChange = (province: string) => {
+    setValue("province", province, { shouldValidate: true });
+    setValue("district", "", { shouldValidate: true });
+    setValue("city", buildCityLabel(shippingForm.department, province, ""));
+  };
+
+  const handleDistrictChange = (district: string) => {
+    setValue("district", district, { shouldValidate: true });
+    setValue(
+      "city",
+      buildCityLabel(shippingForm.department, shippingForm.province, district),
+    );
   };
 
   // Cargar productos complementarios (Order Bumps) con Paginación
@@ -213,22 +302,19 @@ export default function CartCheckoutPage() {
     toast.success(`"${bump.title}" agregado al paquete`, "¡Producto Añadido!");
   };
 
-  // Validaciones del formulario para avanzar al paso 3
-  const handleProceedToStep3 = () => {
-    if (
-      !shippingForm.name.trim() ||
-      !shippingForm.phone.trim() ||
-      !shippingForm.email.trim() ||
-      !shippingForm.address.trim()
-    ) {
+  // Validación del formulario de envío (Zod + RHF) para avanzar al paso 3
+  const handleProceedToStep3 = handleSubmit(
+    () => {
+      handleStepChange(3);
+    },
+    (formErrors) => {
+      const firstError = Object.values(formErrors)[0];
       toast.error(
-        "Completa tu Nombre, Teléfono, Correo electrónico y Dirección para continuar.",
+        firstError?.message || "Completa los datos de envío para continuar.",
         "Datos incompletos",
       );
-      return;
-    }
-    handleStepChange(3);
-  };
+    },
+  );
 
   // Validación de datos de factura/boleta antes de abrir la pasarela Niubiz
   const validateInvoiceDetails = (): boolean => {
@@ -284,7 +370,15 @@ export default function CartCheckoutPage() {
             step={step}
             onStepChange={handleStepChange}
             canGoToStep2={items.length > 0}
-            canGoToStep3={items.length > 0 && Boolean(shippingForm.address)}
+            canGoToStep3={
+              items.length > 0 &&
+              Boolean(
+                shippingForm.address &&
+                shippingForm.department &&
+                shippingForm.province &&
+                shippingForm.district,
+              )
+            }
           />
         </div>
 
@@ -554,11 +648,14 @@ export default function CartCheckoutPage() {
                       Nombre Completo *
                     </label>
                     <Input
-                      value={shippingForm.name}
-                      onChange={(e) => handleFormChange("name", e.target.value)}
                       placeholder="Ej: Juan Carlos Pérez"
-                      required
+                      {...register("name")}
                     />
+                    {errors.name && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.name.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -566,13 +663,14 @@ export default function CartCheckoutPage() {
                       Teléfono / WhatsApp *
                     </label>
                     <Input
-                      value={shippingForm.phone}
-                      onChange={(e) =>
-                        handleFormChange("phone", e.target.value)
-                      }
                       placeholder="+51 999 999 999"
-                      required
+                      {...register("phone")}
                     />
+                    {errors.phone && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.phone.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -583,25 +681,96 @@ export default function CartCheckoutPage() {
                     </label>
                     <Input
                       type="email"
-                      value={shippingForm.email}
-                      onChange={(e) =>
-                        handleFormChange("email", e.target.value)
-                      }
                       placeholder="ejemplo@correo.com"
-                      required
+                      {...register("email")}
                     />
+                    {errors.email && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                      Departamento *
+                    </label>
+                    <Select
+                      value={shippingForm.department || undefined}
+                      onValueChange={handleDepartmentChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {peruUbigeo.map((dep) => (
+                          <SelectItem key={dep.name} value={dep.name}>
+                            {dep.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.department && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.department.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-[#112237] mb-1.5">
-                      Provincia / Distrito *
+                      Provincia *
                     </label>
-                    <Input
-                      value={shippingForm.city}
-                      onChange={(e) => handleFormChange("city", e.target.value)}
-                      placeholder="Lima, Miraflores"
-                      required
-                    />
+                    <Select
+                      value={shippingForm.province || undefined}
+                      onValueChange={handleProvinceChange}
+                      disabled={!shippingForm.department}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {provincesForDepartment.map((prov) => (
+                          <SelectItem key={prov.name} value={prov.name}>
+                            {prov.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.province && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.province.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                      Distrito *
+                    </label>
+                    <Select
+                      value={shippingForm.district || undefined}
+                      onValueChange={handleDistrictChange}
+                      disabled={!shippingForm.province}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {districtsForProvince.map((dist) => (
+                          <SelectItem key={dist.name} value={dist.name}>
+                            {dist.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.district && (
+                      <p className="text-xs text-red-500 font-medium mt-1">
+                        {errors.district.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -610,13 +779,14 @@ export default function CartCheckoutPage() {
                     Dirección Completa de Entrega *
                   </label>
                   <Input
-                    value={shippingForm.address}
-                    onChange={(e) =>
-                      handleFormChange("address", e.target.value)
-                    }
                     placeholder="Av. Larco 1234, Dpto 501"
-                    required
+                    {...register("address")}
                   />
+                  {errors.address && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.address.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -624,10 +794,9 @@ export default function CartCheckoutPage() {
                     Referencia o Instrucciones de Entrega (Opcional)
                   </label>
                   <Textarea
-                    value={shippingForm.notes}
-                    onChange={(e) => handleFormChange("notes", e.target.value)}
                     placeholder="Frente al parque principal o entregar en portería..."
                     rows={3}
+                    {...register("notes")}
                   />
                 </div>
 
