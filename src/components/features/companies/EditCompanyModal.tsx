@@ -77,6 +77,7 @@ export const EditCompanyModal = ({
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [freshCompany, setFreshCompany] = useState(company);
 
   // Estados para modal de confirmación de eliminación
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -106,19 +107,63 @@ export const EditCompanyModal = ({
     },
   });
 
+  // Cada vez que cambia la empresa o se abre el modal: resetear inmediatamente
+  // con los datos del context (disponibles síncronamente) y luego refinar
+  // con datos frescos del servidor para evitar datos obsoletos o campos vacíos.
   useEffect(() => {
-    if (company) {
-      reset({
-        name: company.name || "",
-        tax_id: company.tax_id ? company.tax_id.replace(/\D/g, "") : "",
-        logo_url: company.logo_url || "",
-        phone: company.phone || "",
-        email: company.email || "",
-        location: company.location || "",
-        description: company.description || "",
+    if (!isOpen || !company?.id) return;
+
+    // 1. Limpiar errores previos
+    setServerError(null);
+    setDeleteError(null);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmInput("");
+
+    // 2. Reset INMEDIATO con los datos del context (síncrono — sin esperar al fetch)
+    const rawTaxIdImmediate = company.tax_id
+      ? company.tax_id.replace(/RUC\d+:\s*/i, "").replace(/\D/g, "")
+      : "";
+    setFreshCompany(company);
+    reset({
+      name: company.name || "",
+      tax_id: rawTaxIdImmediate,
+      logo_url: company.logo_url || "",
+      phone: company.phone || "",
+      email: company.email || "",
+      location: company.location || "",
+      description: company.description || "",
+    });
+
+    // 3. Refrescar desde el servidor en segundo plano para asegurar datos actualizados
+    const controller = new AbortController();
+
+    fetch(`/api/companies/${company.id}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data?.company) return;
+        const c = data.company;
+        setFreshCompany(c);
+        const rawTaxId = c.tax_id
+          ? c.tax_id.replace(/RUC\d+:\s*/i, "").replace(/\D/g, "")
+          : "";
+        reset({
+          name: c.name || "",
+          tax_id: rawTaxId,
+          logo_url: c.logo_url || "",
+          phone: c.phone || "",
+          email: c.email || "",
+          location: c.location || "",
+          description: c.description || "",
+        });
+      })
+      .catch(() => {
+        // El AbortController cancela el fetch cuando el companyId cambia — ignorar ese error
       });
-    }
-  }, [company, reset]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [company.id, isOpen, reset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!isOpen) return null;
 
@@ -160,27 +205,33 @@ export const EditCompanyModal = ({
       setSaving(true);
       setServerError(null);
 
-      const cleanDoc = (values.tax_id || company.tax_id || "").replace(
-        /\D/g,
-        "",
-      );
-      const formattedTaxId = cleanDoc
-        ? cleanDoc.startsWith("20")
-          ? `RUC20: ${cleanDoc}`
-          : `RUC10: ${cleanDoc}`
-        : company.tax_id;
+      // Construir tax_id: mantener el de la BD si ya existe; solo formatearlo si es nuevo
+      const existingTaxId = freshCompany.tax_id;
+      let finalTaxId: string | null = existingTaxId;
+
+      if (!existingTaxId) {
+        // Solo si aún no tiene RUC, intentamos guardar el que el usuario escribió
+        const cleanDoc = (values.tax_id || "").replace(/\D/g, "");
+        if (cleanDoc) {
+          finalTaxId = cleanDoc.startsWith("20")
+            ? `RUC20: ${cleanDoc}`
+            : `RUC10: ${cleanDoc}`;
+        } else {
+          finalTaxId = null;
+        }
+      }
 
       const payload = {
         name: values.name.trim(),
-        tax_id: formattedTaxId,
-        logo_url: values.logo_url,
+        tax_id: finalTaxId,
+        logo_url: values.logo_url || null,
         phone: values.phone.trim(),
         email: values.email.trim(),
         location: values.location.trim(),
         description: values.description ? values.description.trim() : null,
       };
 
-      const res = await fetch(`/api/companies/${company.id}`, {
+      const res = await fetch(`/api/companies/${freshCompany.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

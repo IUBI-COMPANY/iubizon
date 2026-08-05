@@ -3,12 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { FieldError } from "@/components/ui/FieldError";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
@@ -29,6 +33,46 @@ import {
   Package,
 } from "lucide-react";
 
+const editProductSchema = z.object({
+  title: z
+    .string()
+    .min(3, "El título debe tener al menos 3 caracteres.")
+    .max(100, "El título no puede superar los 100 caracteres."),
+  price: z
+    .string()
+    .min(1, "Ingresa un precio válido.")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+      message: "El precio debe ser mayor a S/ 0.00.",
+    }),
+  condition: z.string().min(1, "Selecciona la condición del producto."),
+  category_id: z.string().min(1, "Selecciona una categoría."),
+  status: z.string().min(1, "Selecciona el estado de la publicación."),
+  stock: z
+    .string()
+    .min(1, "Ingresa una cantidad de stock.")
+    .refine((val) => !isNaN(parseInt(val, 10)) && parseInt(val, 10) >= 0, {
+      message: "El stock debe ser 0 o más.",
+    }),
+  hasWarranty: z.boolean(),
+  warranty: z.string().optional(),
+  warranty_conditions: z.string().optional(),
+  description: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || !val.trim()) return true;
+        return !detectForbiddenContactInfo(val).hasViolation;
+      },
+      {
+        message:
+          "No se permite incluir datos de contacto (teléfonos, correos, etc.) en la descripción.",
+      },
+    ),
+});
+
+type EditProductValues = z.infer<typeof editProductSchema>;
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -37,33 +81,48 @@ export default function EditProductPage({ params }: Props) {
   const router = useRouter();
   const toast = useToast();
   const supabase = createClient();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [productId, setProductId] = useState<string>("");
+
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    price: "",
-    condition: "",
-    category_id: "",
-    status: "active",
-    stock: "1",
-    warranty: "6 meses por falla de fábrica (Garantía del vendedor)",
-    warranty_conditions: "",
-  });
-
-  const [hasWarranty, setHasWarranty] = useState(false);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [initialImageIds, setInitialImageIds] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<EditProductValues>({
+    resolver: zodResolver(editProductSchema) as any,
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+      condition: "",
+      category_id: "",
+      status: "active",
+      stock: "1",
+      hasWarranty: false,
+      warranty: "6 meses por falla de fábrica (Garantía del vendedor)",
+      warranty_conditions: "",
+    },
+  });
+
+  const formValues = watch();
 
   useEffect(() => {
     let mounted = true;
@@ -72,7 +131,6 @@ export default function EditProductPage({ params }: Props) {
       try {
         const { id } = await params;
         if (!mounted) return;
-
         setProductId(id);
 
         const {
@@ -85,23 +143,18 @@ export default function EditProductPage({ params }: Props) {
           return;
         }
 
-        // Cargar Categorías
         const { data: catsData } = await supabase
           .from("categories")
           .select("id, name")
           .order("name");
-        if (mounted && catsData) {
-          setCategories(catsData);
-        }
+        if (mounted && catsData) setCategories(catsData);
 
-        // Cargar Producto via API interna
         const prodRes = await fetch(`/api/products/${id}`);
         const prodResult = await prodRes.json();
-
         if (!mounted) return;
 
         if (!prodRes.ok || !prodResult.product) {
-          setError(prodResult.error || "Producto no encontrado");
+          setLoadError(prodResult.error || "Producto no encontrado");
           setLoading(false);
           return;
         }
@@ -126,9 +179,7 @@ export default function EditProductPage({ params }: Props) {
           !!fetchedWarranty &&
           !fetchedWarranty.toLowerCase().includes("sin garantía");
 
-        setHasWarranty(initialHasWarranty);
-
-        setFormData({
+        reset({
           title: data.title || "",
           description: data.description || "",
           price: data.price ? data.price.toString() : "0",
@@ -139,6 +190,7 @@ export default function EditProductPage({ params }: Props) {
             data.stock !== undefined && data.stock !== null
               ? data.stock.toString()
               : "1",
+          hasWarranty: initialHasWarranty,
           warranty:
             fetchedWarranty ||
             "6 meses por falla de fábrica (Garantía del vendedor)",
@@ -157,27 +209,20 @@ export default function EditProductPage({ params }: Props) {
           setInitialImageIds(loadedImages.map((img: { id: string }) => img.id));
         }
 
-        if (data.video_url) {
-          setVideoPreview(data.video_url);
-        }
+        if (data.video_url) setVideoPreview(data.video_url);
       } catch (err) {
         console.error("Error al cargar producto:", err);
-        if (mounted) {
-          setError("Error de conexión al cargar la publicación");
-        }
+        if (mounted) setLoadError("Error de conexión al cargar la publicación");
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
     loadProductAndCategories();
-
     return () => {
       mounted = false;
     };
-  }, [params, supabase]);
+  }, [params, supabase, router, reset]);
 
   const parseResponseJson = async (res: Response) => {
     try {
@@ -188,27 +233,12 @@ export default function EditProductPage({ params }: Props) {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validar restricción de datos de contacto
-    if (formData.description.trim()) {
-      const contactCheck = detectForbiddenContactInfo(formData.description);
-      if (contactCheck.hasViolation) {
-        const reason =
-          contactCheck.reason || "Información de contacto no permitida";
-        setError(reason);
-        toast.error(reason, "Revisa la descripción");
-        return;
-      }
-    }
-
+  const onSubmit = async (values: EditProductValues) => {
     setSaving(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
-      // Sincronizar imágenes y video de forma unificada
-      const { videoUrl } = await syncProductMedia({
+      const { videoUrl: uploadedVideoUrl } = await syncProductMedia({
         productId,
         images,
         initialImageIds,
@@ -216,25 +246,27 @@ export default function EditProductPage({ params }: Props) {
         videoPreview,
       });
 
-      const parsedStock = parseInt(formData.stock) || 1;
+      const parsedStock = parseInt(values.stock, 10) || 0;
       const response = await fetch(`/api/products/${productId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: productId,
-          title: formData.title,
-          description: formData.description,
-          price: parseFloat(formData.price),
-          condition: formData.condition,
-          category_id: formData.category_id,
-          status: formData.status,
+          title: values.title,
+          description: values.description || null,
+          price: parseFloat(values.price),
+          condition: values.condition,
+          category_id: values.category_id,
+          status: values.status,
           stock: parsedStock,
           availability_type: parsedStock > 1 ? "available" : "unique",
-          video_url: videoUrl,
-          warranty: formData.warranty,
+          video_url: uploadedVideoUrl,
+          warranty: values.hasWarranty
+            ? (values.warranty ?? null)
+            : "Sin garantía del vendedor",
           warranty_conditions:
-            hasWarranty && formData.warranty_conditions
-              ? formData.warranty_conditions.trim()
+            values.hasWarranty && values.warranty_conditions?.trim()
+              ? values.warranty_conditions.trim()
               : null,
         }),
       });
@@ -242,13 +274,16 @@ export default function EditProductPage({ params }: Props) {
       const result = await parseResponseJson(response);
 
       if (!response.ok) {
-        setError(result.error || "Error al guardar los cambios");
+        setSubmitError(result.error || "Error al guardar los cambios");
         setSaving(false);
         return;
       }
 
       setSuccess(true);
-      toast.success("Publicación actualizada correctamente", "¡Éxito!");
+      toast.success(
+        "Publicación actualizada correctamente",
+        "Cambios Guardados",
+      );
       setTimeout(() => {
         router.push("/user/dashboard/products");
         router.refresh();
@@ -259,7 +294,8 @@ export default function EditProductPage({ params }: Props) {
         err instanceof Error
           ? err.message
           : "Error de conexión al guardar los cambios";
-      setError(msg);
+      setSubmitError(msg);
+      toast.error(msg, "Error al guardar");
     } finally {
       setSaving(false);
     }
@@ -277,14 +313,16 @@ export default function EditProductPage({ params }: Props) {
     );
   }
 
-  if (error && !formData.title) {
+  if (loadError && !formValues.title) {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <div className="flex-1 flex items-center justify-center py-12">
           <div className="text-center bg-white border border-[#e2e8f0] p-8 rounded-3xl max-w-md shadow-sm">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-            <h2 className="text-xl font-bold text-[#112237] mb-2">{error}</h2>
+            <h2 className="text-xl font-bold text-[#112237] mb-2">
+              {loadError}
+            </h2>
             <p className="text-xs text-[#64748b] mb-6">
               Verifica tus permisos o regresa a la lista de publicaciones.
             </p>
@@ -334,14 +372,14 @@ export default function EditProductPage({ params }: Props) {
           </div>
         )}
 
-        {error && (
+        {submitError && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-2xl mb-6 flex items-center gap-3 text-xs font-semibold shadow-sm">
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-            <span>{error}</span>
+            <span>{submitError}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
           {/* CARD MULTIMEDIA: Fotos + Video unificados */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm">
             <MediaUploader
@@ -374,13 +412,9 @@ export default function EditProductPage({ params }: Props) {
               </Label>
               <Input
                 id="title"
-                name="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
                 placeholder="Ej: Proyector Epson PowerLite 97H"
-                required
+                {...register("title")}
+                error={errors.title?.message}
                 className="mt-1"
               />
             </div>
@@ -395,13 +429,10 @@ export default function EditProductPage({ params }: Props) {
                 </Label>
                 <select
                   id="category_id"
-                  name="category_id"
-                  className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
-                  value={formData.category_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, category_id: e.target.value })
-                  }
-                  required
+                  {...register("category_id")}
+                  className={`flex h-11 w-full rounded-xl border bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1 ${
+                    errors.category_id ? "border-red-400" : "border-[#e2e8f0]"
+                  }`}
                 >
                   <option value="">Selecciona una categoría...</option>
                   {categories.map((cat) => (
@@ -410,6 +441,7 @@ export default function EditProductPage({ params }: Props) {
                     </option>
                   ))}
                 </select>
+                <FieldError message={errors.category_id?.message} />
               </div>
 
               <div>
@@ -422,13 +454,10 @@ export default function EditProductPage({ params }: Props) {
                 </Label>
                 <select
                   id="condition"
-                  name="condition"
-                  className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
-                  value={formData.condition}
-                  onChange={(e) =>
-                    setFormData({ ...formData, condition: e.target.value })
-                  }
-                  required
+                  {...register("condition")}
+                  className={`flex h-11 w-full rounded-xl border bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1 ${
+                    errors.condition ? "border-red-400" : "border-[#e2e8f0]"
+                  }`}
                 >
                   <option value="">Selecciona la condición...</option>
                   <option value="new">Nuevo (Sin uso, empaque original)</option>
@@ -438,6 +467,7 @@ export default function EditProductPage({ params }: Props) {
                   <option value="good">Buen estado (Uso normal)</option>
                   <option value="fair">Aceptable (Funcional)</option>
                 </select>
+                <FieldError message={errors.condition?.message} />
               </div>
             </div>
           </div>
@@ -459,11 +489,12 @@ export default function EditProductPage({ params }: Props) {
                 </Label>
                 <CurrencyInput
                   id="price"
-                  name="price"
                   currency="PEN"
-                  value={formData.price}
-                  onChange={(val) => setFormData({ ...formData, price: val })}
-                  required
+                  value={formValues.price}
+                  onChange={(val) =>
+                    setValue("price", val, { shouldValidate: true })
+                  }
+                  error={errors.price?.message}
                 />
               </div>
 
@@ -476,16 +507,12 @@ export default function EditProductPage({ params }: Props) {
                 </Label>
                 <Input
                   id="stock"
-                  name="stock"
                   type="number"
                   min="0"
                   placeholder="Ej: 10"
                   icon={<Package className="w-4 h-4 text-[#64748b]" />}
-                  value={formData.stock}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stock: e.target.value })
-                  }
-                  required
+                  {...register("stock")}
+                  error={errors.stock?.message}
                   className="mt-1"
                 />
               </div>
@@ -499,12 +526,8 @@ export default function EditProductPage({ params }: Props) {
                 </Label>
                 <select
                   id="status"
-                  name="status"
+                  {...register("status")}
                   className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
                 >
                   <option value="active">Activo (Visible)</option>
                   <option value="inactive">Inactivo (Pausado)</option>
@@ -515,15 +538,13 @@ export default function EditProductPage({ params }: Props) {
 
             <div className="pt-2 border-t border-[#f1f5f9] space-y-3">
               <Checkbox
-                name="hasWarranty"
-                checked={hasWarranty}
+                checked={formValues.hasWarranty}
                 onChange={(checked) => {
-                  setHasWarranty(checked);
+                  setValue("hasWarranty", checked, { shouldValidate: true });
                   if (!checked) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      warranty: "Sin garantía del vendedor",
-                    }));
+                    setValue("warranty", "Sin garantía del vendedor", {
+                      shouldValidate: true,
+                    });
                   }
                 }}
               >
@@ -532,7 +553,7 @@ export default function EditProductPage({ params }: Props) {
                 </span>
               </Checkbox>
 
-              {hasWarranty && (
+              {formValues.hasWarranty && (
                 <div className="space-y-3">
                   <div>
                     <Label
@@ -543,19 +564,15 @@ export default function EditProductPage({ params }: Props) {
                     </Label>
                     <Input
                       id="warranty"
-                      name="warranty"
                       placeholder="Ej: 6 meses por falla de fábrica (Garantía del vendedor)"
-                      value={formData.warranty}
-                      onChange={(e) =>
-                        setFormData({ ...formData, warranty: e.target.value })
-                      }
+                      {...register("warranty")}
                       className="text-xs"
                     />
                   </div>
 
                   <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#e2e8f0] space-y-2 text-xs text-[#64748b]">
                     <p className="font-semibold text-[#112237]">
-                      ℹ️ Cobertura estándar:{" "}
+                      Cobertura estándar:{" "}
                       <span className="font-normal text-[#475569]">
                         Fallas de fabricación y componentes defectuosos de
                         origen.
@@ -570,15 +587,8 @@ export default function EditProductPage({ params }: Props) {
                       </Label>
                       <Input
                         id="warranty_conditions"
-                        name="warranty_conditions"
                         placeholder="Ej: Conservar empaque original y comprobante."
-                        value={formData.warranty_conditions}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            warranty_conditions: e.target.value,
-                          })
-                        }
+                        {...register("warranty_conditions")}
                         className="bg-white text-xs"
                       />
                     </div>
@@ -596,15 +606,19 @@ export default function EditProductPage({ params }: Props) {
             </h2>
             <Label className="text-xs font-semibold text-[#112237]">
               Detalles, especificaciones y accesorios incluidos
+              <span className="text-[#94a3b8] font-normal ml-1.5">
+                (opcional)
+              </span>
             </Label>
             <RichTextEditor
-              content={formData.description}
+              content={formValues.description || ""}
               onChange={(newDesc) =>
-                setFormData({ ...formData, description: newDesc })
+                setValue("description", newDesc, { shouldValidate: true })
               }
               placeholder="Describe las características principales, garantía, qué incluye el paquete..."
               maxLength={2000}
             />
+            <FieldError message={errors.description?.message} />
           </div>
 
           {/* Acciones */}

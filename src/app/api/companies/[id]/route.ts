@@ -3,6 +3,66 @@ import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { generateUniqueCompanySlug } from "@/lib/services/companies";
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { id: companyId } = await params;
+
+    // Verificar membresía
+    const membership = await prisma.companyMember.findFirst({
+      where: { company_id: companyId, user_id: user.id },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "No tienes acceso a esta empresa" },
+        { status: 403 },
+      );
+    }
+
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        tax_id: true,
+        logo_url: true,
+        description: true,
+        phone: true,
+        email: true,
+        location: true,
+      },
+    });
+
+    if (!company) {
+      return NextResponse.json(
+        { error: "Empresa no encontrada" },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ company });
+  } catch (err) {
+    console.error("Error al obtener empresa:", err);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -47,24 +107,31 @@ export async function PATCH(
       );
     }
 
+    // Determinar el slug correcto:
+    // - Si el nombre cambió → generar slug nuevo
+    // - Si el slug actual es null → generar uno nuevo basado en el nombre actual
+    // - Si el nombre no cambió y slug existe → mantenerlo tal cual
     let updatedSlug = existingCompany.slug;
-    if (body.name && body.name.trim() !== existingCompany.name) {
-      updatedSlug = await generateUniqueCompanySlug(
-        body.name.trim(),
-        companyId,
-      );
+    const newName =
+      body.name !== undefined ? body.name.trim() : existingCompany.name;
+
+    if (!updatedSlug) {
+      // La empresa no tiene slug — generarlo ahora
+      updatedSlug = await generateUniqueCompanySlug(newName, companyId);
+    } else if (body.name !== undefined && newName !== existingCompany.name) {
+      // El nombre cambió → regenerar slug
+      updatedSlug = await generateUniqueCompanySlug(newName, companyId);
     }
+
+    // tax_id: nunca modificar si ya existe en la BD
+    const finalTaxId = existingCompany.tax_id ?? (body.tax_id?.trim() || null);
 
     const updatedCompany = await prisma.company.update({
       where: { id: companyId },
       data: {
-        name: body.name !== undefined ? body.name.trim() : undefined,
+        name: newName,
         slug: updatedSlug,
-        tax_id: existingCompany.tax_id
-          ? existingCompany.tax_id
-          : body.tax_id !== undefined
-            ? body.tax_id.trim() || null
-            : undefined,
+        tax_id: finalTaxId,
         logo_url:
           body.logo_url !== undefined ? body.logo_url || null : undefined,
         phone: body.phone !== undefined ? body.phone.trim() || null : undefined,
@@ -83,8 +150,10 @@ export async function PATCH(
     return NextResponse.json({ company: updatedCompany, success: true });
   } catch (err) {
     console.error("Error al actualizar la empresa:", err);
+    const message =
+      err instanceof Error ? err.message : "Error desconocido al actualizar";
     return NextResponse.json(
-      { error: "Error interno del servidor al actualizar la empresa" },
+      { error: `Error al actualizar la empresa: ${message}` },
       { status: 500 },
     );
   }

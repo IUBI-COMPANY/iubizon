@@ -2,6 +2,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
@@ -10,6 +13,7 @@ import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { FieldError } from "@/components/ui/FieldError";
 import { Label } from "@/components/ui/Label";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { getCategoryIcon } from "@/lib/utils/categoryIcons";
@@ -39,6 +43,48 @@ import {
 import { detectForbiddenContactInfo } from "@/lib/utils/contactDetector";
 import { syncProductMedia } from "@/lib/services/mediaUpload";
 import type { Category } from "@/types";
+
+const productFormSchema = z.object({
+  title: z
+    .string()
+    .min(3, "El título del producto debe tener al menos 3 caracteres.")
+    .max(100, "El título no puede exceder los 100 caracteres."),
+  price: z
+    .string()
+    .min(1, "Ingresa un precio válido.")
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+      message: "El precio debe ser un número mayor a S/ 0.00.",
+    }),
+  category_id: z.string().min(1, "Selecciona una categoría."),
+  condition: z.string().min(1, "Selecciona el estado de tu producto."),
+  brand: z.string().optional(),
+  stock: z
+    .string()
+    .min(1, "Ingresa una cantidad de stock válida.")
+    .refine((val) => !isNaN(parseInt(val, 10)) && parseInt(val, 10) >= 1, {
+      message: "El stock debe ser al menos 1 unidad.",
+    }),
+  description: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || !val.trim()) return true;
+        const check = detectForbiddenContactInfo(val);
+        return !check.hasViolation;
+      },
+      {
+        message:
+          "No se permite incluir números de teléfono, correos ni datos de contacto en la descripción.",
+      },
+    ),
+  hasWarranty: z.boolean(),
+  warrantyOption: z.string(),
+  customWarranty: z.string().optional(),
+  warrantyConditions: z.string().optional(),
+});
+
+type ProductFormValues = z.infer<typeof productFormSchema>;
 
 const conditionOptions: Record<
   string,
@@ -102,33 +148,46 @@ function PublishProductForm() {
   };
 
   const [wizardStep, setWizardStep] = useState<1 | 2>(1);
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [condition, setCondition] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [brand, setBrand] = useState("");
-  const [stock, setStock] = useState("1");
-  const [hasWarranty, setHasWarranty] = useState(false);
-  const [warrantyOption, setWarrantyOption] = useState("6_months");
-  const [customWarranty, setCustomWarranty] = useState("");
-  const [warrantyConditions, setWarrantyConditions] = useState("");
   const [images, setImages] = useState<UploadedImage[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productFormSchema) as any,
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+      condition: "",
+      category_id: "",
+      brand: "",
+      stock: "1",
+      hasWarranty: false,
+      warrantyOption: "6_months",
+      customWarranty: "",
+      warrantyConditions: "",
+    },
+  });
+
+  const formData = watch();
+
   const getWarrantyText = () =>
     getFormattedWarrantyText(
-      hasWarranty,
-      warrantyOption,
-      customWarranty,
+      formData.hasWarranty ?? false,
+      formData.warrantyOption ?? "6_months",
+      formData.customWarranty ?? "",
       "product",
     );
 
@@ -142,41 +201,13 @@ function PublishProductForm() {
     loadCategories();
   }, []);
 
-  const validate = (): boolean => {
-    const errors: Record<string, string> = {};
-    if (!title.trim()) errors.title = "Agrega un título para tu producto";
-    if (!price || parseFloat(price) <= 0)
-      errors.price = "Ingresa un precio válido";
-    if (!categoryId) errors.category_id = "Selecciona una categoría";
-    if (!condition) errors.condition = "Selecciona el estado de tu producto";
-    if (!stock || parseInt(stock) < 1)
-      errors.stock = "Ingresa una cantidad de stock válida (mínimo 1)";
-    if (images.length === 0)
-      errors.images = "Sube al menos una imagen del producto";
-
-    if (description.trim()) {
-      const contactCheck = detectForbiddenContactInfo(description);
-      if (contactCheck.hasViolation) {
-        const reason =
-          contactCheck.reason || "Información de contacto no permitida";
-        errors.description = reason;
-        toast.error(reason, "Datos de contacto detectados");
-      }
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) {
-      toast.error(
-        "Por favor completa todos los campos obligatorios.",
-        "Datos incompletos",
-      );
+  const onSubmit = async (values: ProductFormValues): Promise<void> => {
+    if (images.length === 0) {
+      setImageError("Sube al menos una imagen del producto.");
+      toast.error("Sube al menos una imagen del producto.", "Fotos requeridas");
       return;
     }
+    setImageError(null);
 
     if (!user) {
       router.push("/auth/login?redirect=/products/new");
@@ -187,17 +218,17 @@ function PublishProductForm() {
     setError(null);
 
     try {
-      const parsedStock = parseInt(stock) || 1;
+      const parsedStock = parseInt(values.stock, 10) || 1;
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || null,
-          price: parseFloat(price),
-          condition,
-          category_id: categoryId,
-          brand: brand.trim() || null,
+          title: values.title.trim(),
+          description: values.description ? values.description.trim() : null,
+          price: parseFloat(values.price),
+          condition: values.condition,
+          category_id: values.category_id,
+          brand: values.brand ? values.brand.trim() : null,
           availability_type: parsedStock > 1 ? "available" : "unique",
           stock: parsedStock,
           location: activeCompany?.location || "Lima, Perú",
@@ -206,8 +237,8 @@ function PublishProductForm() {
           company_id: activeCompany?.id || null,
           warranty: getWarrantyText(),
           warranty_conditions:
-            hasWarranty && warrantyConditions.trim()
-              ? warrantyConditions.trim()
+            values.hasWarranty && values.warrantyConditions?.trim()
+              ? values.warrantyConditions.trim()
               : null,
         }),
       });
@@ -215,37 +246,41 @@ function PublishProductForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        const errorMsg = result.error || "Error al crear el producto";
+        const errorMsg = result.error || "Error al crear el producto.";
         setError(errorMsg);
         toast.error(errorMsg, "Error al guardar");
-        setLoading(false);
         return;
       }
 
-      await syncProductMedia({
-        productId: result.product.id,
-        images,
-        videoFile,
-        videoPreview,
-      });
+      const productId = result.product?.id;
 
-      toast.success("Producto publicado exitosamente.", "¡Guardado!");
-
-      if (from === "dashboard") {
-        router.push("/user/dashboard/products");
-      } else {
-        router.push(`/products/${result.product.id}`);
+      if (productId) {
+        toast.info("Subiendo imágenes y recursos...");
+        await syncProductMedia({ productId, images, videoFile });
       }
-    } catch {
-      const connErr = "Error de conexión. Intenta de nuevo.";
-      setError(connErr);
-      toast.error(connErr, "Error de red");
+
+      toast.success(
+        "¡Tu producto ya está disponible en iubizon!",
+        "Producto Publicado",
+      );
+
+      if (activeCompany?.id) {
+        router.push(`/user/dashboard/products?company_id=${activeCompany.id}`);
+      } else {
+        router.push("/user/dashboard/products");
+      }
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Error al crear el producto.";
+      setError(errorMsg);
+      toast.error(errorMsg, "Error inesperado");
+    } finally {
       setLoading(false);
     }
   };
 
   const hasNoCompanies = !isLoadingCompanies && companies.length === 0;
-  const currentStep = hasNoCompanies && wizardStep === 1 ? 1 : 2;
+  const currentStep = hasNoCompanies ? wizardStep : 2;
 
   if (isLoadingCompanies) {
     return (
@@ -284,7 +319,7 @@ function PublishProductForm() {
                       : "bg-emerald-500 text-white"
                   }`}
                 >
-                  {currentStep === 1 ? "1" : "✓"}
+                  {currentStep === 1 ? "1" : "OK"}
                 </div>
                 <span
                   className={`text-xs font-bold ${
@@ -351,19 +386,32 @@ function PublishProductForm() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form
+                onSubmit={handleSubmit(onSubmit as any)}
+                className="space-y-5"
+              >
                 {/* Componente Unificado MediaUploader (Fotos + Video) */}
-                <MediaUploader
-                  mode="both"
-                  maxImages={10}
-                  images={images}
-                  onImagesChange={setImages}
-                  videoPreview={videoPreview}
-                  onVideoChange={(file, prev) => {
-                    setVideoFile(file);
-                    setVideoPreview(prev);
-                  }}
-                />
+                <div>
+                  <MediaUploader
+                    mode="both"
+                    maxImages={10}
+                    images={images}
+                    onImagesChange={(imgs) => {
+                      setImages(imgs);
+                      if (imgs.length > 0) setImageError(null);
+                    }}
+                    videoPreview={videoPreview}
+                    onVideoChange={(file, prev) => {
+                      setVideoFile(file);
+                      setVideoPreview(prev);
+                    }}
+                  />
+                  {imageError && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {imageError}
+                    </p>
+                  )}
+                </div>
 
                 {/* Title */}
                 <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
@@ -373,17 +421,13 @@ function PublishProductForm() {
                     </Label>
                     <Input
                       placeholder="Ej: iPhone 14 Pro Max 256GB"
-                      value={title}
-                      onChange={(e) => {
-                        setTitle(e.target.value);
-                        setFieldErrors((prev) => ({ ...prev, title: "" }));
-                      }}
-                      error={fieldErrors.title}
+                      {...register("title")}
+                      error={errors.title?.message}
                       maxLength={100}
                     />
                     <div className="flex justify-end">
                       <span className="text-[10px] text-[#94a3b8]">
-                        {title.length}/100
+                        {(formData.title || "").length}/100
                       </span>
                     </div>
                   </div>
@@ -397,16 +441,15 @@ function PublishProductForm() {
                     </Label>
                     <CurrencyInput
                       currency="PEN"
-                      value={price}
+                      value={formData.price}
                       onChange={(val) => {
-                        setPrice(val);
-                        setFieldErrors((prev) => ({ ...prev, price: "" }));
+                        setValue("price", val, { shouldValidate: true });
                       }}
-                      error={fieldErrors.price}
+                      error={errors.price?.message}
                     />
-                    {price && parseFloat(price) > 0 && (
+                    {formData.price && parseFloat(formData.price) > 0 && (
                       <p className="text-sm font-medium text-[#10b981]">
-                        {formatPrice(parseFloat(price))}
+                        {formatPrice(parseFloat(formData.price))}
                       </p>
                     )}
                   </div>
@@ -415,15 +458,23 @@ function PublishProductForm() {
                 {/* Garantía del Proveedor */}
                 <WarrantyField
                   itemType="product"
-                  hasWarranty={hasWarranty}
-                  onHasWarrantyChange={(checked) => setHasWarranty(checked)}
-                  warrantyOption={warrantyOption}
-                  onWarrantyOptionChange={(opt) => setWarrantyOption(opt)}
-                  customWarranty={customWarranty}
-                  onCustomWarrantyChange={(val) => setCustomWarranty(val)}
-                  warrantyConditions={warrantyConditions}
+                  hasWarranty={formData.hasWarranty}
+                  onHasWarrantyChange={(checked) =>
+                    setValue("hasWarranty", checked, { shouldValidate: true })
+                  }
+                  warrantyOption={formData.warrantyOption}
+                  onWarrantyOptionChange={(opt) =>
+                    setValue("warrantyOption", opt, { shouldValidate: true })
+                  }
+                  customWarranty={formData.customWarranty || ""}
+                  onCustomWarrantyChange={(val) =>
+                    setValue("customWarranty", val, { shouldValidate: true })
+                  }
+                  warrantyConditions={formData.warrantyConditions || ""}
                   onWarrantyConditionsChange={(val) =>
-                    setWarrantyConditions(val)
+                    setValue("warrantyConditions", val, {
+                      shouldValidate: true,
+                    })
                   }
                 />
 
@@ -444,17 +495,15 @@ function PublishProductForm() {
                           )
                           .map((cat) => {
                             const Icon = getCategoryIcon(cat.slug);
-                            const isSelected = categoryId === cat.id;
+                            const isSelected = formData.category_id === cat.id;
                             return (
                               <button
                                 key={cat.id}
                                 type="button"
                                 onClick={() => {
-                                  setCategoryId(cat.id);
-                                  setFieldErrors((prev) => ({
-                                    ...prev,
-                                    category_id: "",
-                                  }));
+                                  setValue("category_id", cat.id, {
+                                    shouldValidate: true,
+                                  });
                                 }}
                                 className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
                                   isSelected
@@ -475,11 +524,7 @@ function PublishProductForm() {
                         <Loader2 className="w-5 h-5 animate-spin text-[#f25c05]" />
                       </div>
                     )}
-                    {fieldErrors.category_id && (
-                      <p className="text-xs text-[#ef4444]">
-                        {fieldErrors.category_id}
-                      </p>
-                    )}
+                    <FieldError message={errors.category_id?.message} />
                   </div>
                 </div>
 
@@ -493,17 +538,15 @@ function PublishProductForm() {
                     <div className="grid grid-cols-2 gap-2.5">
                       {Object.entries(conditionOptions).map(([key, opt]) => {
                         const Icon = opt.icon;
-                        const isSelected = condition === key;
+                        const isSelected = formData.condition === key;
                         return (
                           <button
                             key={key}
                             type="button"
                             onClick={() => {
-                              setCondition(key);
-                              setFieldErrors((prev) => ({
-                                ...prev,
-                                condition: "",
-                              }));
+                              setValue("condition", key, {
+                                shouldValidate: true,
+                              });
                             }}
                             className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${
                               isSelected
@@ -532,11 +575,7 @@ function PublishProductForm() {
                         );
                       })}
                     </div>
-                    {fieldErrors.condition && (
-                      <p className="text-xs text-[#ef4444]">
-                        {fieldErrors.condition}
-                      </p>
-                    )}
+                    <FieldError message={errors.condition?.message} />
                   </div>
                 </div>
 
@@ -550,16 +589,15 @@ function PublishProductForm() {
                       type="number"
                       min="1"
                       placeholder="1"
-                      value={stock}
-                      onChange={(e) => {
-                        setStock(e.target.value);
-                        setFieldErrors((prev) => ({ ...prev, stock: "" }));
-                      }}
-                      error={fieldErrors.stock}
+                      {...register("stock")}
+                      error={errors.stock?.message}
                     />
-                    <p className="text-[11px] text-[#64748b]">
-                      Indica la cantidad de unidades disponibles para la venta.
-                    </p>
+                    {!errors.stock && (
+                      <p className="text-[11px] text-[#64748b]">
+                        Indica la cantidad de unidades disponibles para la
+                        venta.
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -573,11 +611,14 @@ function PublishProductForm() {
                       </span>
                     </Label>
                     <RichTextEditor
-                      content={description}
-                      onChange={setDescription}
+                      content={formData.description || ""}
+                      onChange={(val) => {
+                        setValue("description", val, { shouldValidate: true });
+                      }}
                       placeholder="Describe tu producto: estado, accesorios incluidos, razón de venta..."
                       maxLength={2000}
                     />
+                    <FieldError message={errors.description?.message} />
                   </div>
                 </div>
 

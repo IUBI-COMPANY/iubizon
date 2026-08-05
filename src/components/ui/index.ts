@@ -1,6 +1,7 @@
 export { Button, buttonVariants } from "./Button";
 export { Input } from "./Input";
 export { Label } from "./Label";
+export { FieldError } from "./FieldError";
 export {
   Card,
   CardHeader,
