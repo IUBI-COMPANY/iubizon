@@ -594,7 +594,7 @@ export default function CartCheckoutPage() {
 
                   <div>
                     <label className="block text-xs font-bold text-[#112237] mb-1.5">
-                      Ciudad / Distrito *
+                      Provincia / Distrito *
                     </label>
                     <Input
                       value={shippingForm.city}

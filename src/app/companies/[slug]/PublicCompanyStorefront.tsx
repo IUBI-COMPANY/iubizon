@@ -41,7 +41,7 @@ export const PublicCompanyStorefront = ({
   products,
 }: PublicCompanyStorefrontProps) => {
   const router = useRouter();
-  const { companies, refreshCompanies } = useCompany();
+  const { companies, refreshCompanies, activeCompany } = useCompany();
   const [companyData, setCompanyData] = useState(initialCompany);
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
@@ -49,7 +49,10 @@ export const PublicCompanyStorefront = ({
 
   // Comprobar si el usuario logueado es owner o admin de esta empresa
   const membership = companies.find((c) => c.id === companyData.id);
-  const canEdit = membership?.role === "owner" || membership?.role === "admin";
+  const canEdit = !membership?.role
+    ? false
+    : ["owner", "admin"].includes(membership.role) &&
+      companyData?.id === activeCompany?.id;
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
