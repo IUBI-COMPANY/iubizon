@@ -2,10 +2,41 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { Building2, Loader2, Sparkles, Upload } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Building2,
+  CheckCircle2,
+  Loader2,
+  Search,
+  Sparkles,
+  Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
+
+const createCompanyStepSchema = z.object({
+  name: z
+    .string()
+    .min(
+      2,
+      "El nombre comercial o de la marca debe tener al menos 2 caracteres.",
+    ),
+  tax_id: z
+    .string()
+    .min(1, "El número de RUC es obligatorio.")
+    .refine((val) => val.replace(/\D/g, "").length === 11, {
+      message: "El RUC debe tener exactamente 11 dígitos numéricos.",
+    }),
+  logo_url: z.string().optional(),
+  location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
+  phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
+  description: z.string().optional(),
+});
+
+type CreateCompanyStepValues = z.infer<typeof createCompanyStepSchema>;
 
 interface CreateCompanyStepProps {
   onCompanyCreated: (newCompany: {
@@ -20,33 +51,93 @@ export const CreateCompanyStep = ({
 }: CreateCompanyStepProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    tax_id: "",
-    logo_url: "",
-    location: "",
-    phone: "",
-    description: "",
-  });
-
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [sunatLoading, setSunatLoading] = useState(false);
+  const [sunatInfo, setSunatInfo] = useState<{
+    verified: boolean;
+    name?: string;
+    message?: string;
+  } | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<CreateCompanyStepValues>({
+    resolver: zodResolver(createCompanyStepSchema),
+    defaultValues: {
+      name: "",
+      tax_id: "",
+      logo_url: "",
+      location: "",
+      phone: "",
+      description: "",
+    },
+  });
+
+  const formData = watch();
+
+  const handleSunatLookup = async (docNum?: string) => {
+    const doc = (docNum || formData.tax_id).replace(/\D/g, "");
+    if (!doc || doc.length !== 11) {
+      setServerError(
+        "Por favor ingresa un número de RUC válido de 11 dígitos (RUC 10 o RUC 20).",
+      );
+      return;
+    }
+
+    setSunatLoading(true);
+    setServerError(null);
+
+    try {
+      const res = await fetch(`/api/sunat/lookup?docNumber=${doc}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setServerError(data.error || "No se encontró el RUC en SUNAT.");
+        setSunatInfo(null);
+        return;
+      }
+
+      setSunatInfo({
+        verified: data.isVerified ?? true,
+        name: data.name,
+        message: `SUNAT: ${data.status || "ACTIVO"} - ${data.condition || "HABIDO"}`,
+      });
+
+      setValue("tax_id", doc, { shouldValidate: true });
+      if (data.name) {
+        setValue("name", data.name, { shouldValidate: true });
+      }
+      if (data.address) {
+        setValue("location", data.address, { shouldValidate: true });
+      }
+    } catch {
+      setServerError("Error al conectar con el servicio de SUNAT.");
+    } finally {
+      setSunatLoading(false);
+    }
+  };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Por favor selecciona una imagen válida (PNG, JPG, WEBP).");
+      setServerError(
+        "Por favor selecciona una imagen válida (PNG, JPG, WEBP).",
+      );
       return;
     }
 
     setIsUploadingLogo(true);
-    setError(null);
+    setServerError(null);
 
     try {
-      // 1. Convertir inmediatamente a Data URL para guardado garantizado
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -54,13 +145,12 @@ export const CreateCompanyStep = ({
         reader.readAsDataURL(file);
       });
 
-      setFormData((prev) => ({ ...prev, logo_url: dataUrl }));
+      setValue("logo_url", dataUrl, { shouldValidate: true });
 
       if (e.target) {
         e.target.value = "";
       }
 
-      // 2. Intentar subir al Storage publico
       const supabase = createClient();
       const fileName = `company-logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
@@ -73,10 +163,9 @@ export const CreateCompanyStep = ({
           .from("products")
           .getPublicUrl(fileName);
         if (publicUrlData?.publicUrl) {
-          setFormData((prev) => ({
-            ...prev,
-            logo_url: publicUrlData.publicUrl,
-          }));
+          setValue("logo_url", publicUrlData.publicUrl, {
+            shouldValidate: true,
+          });
         }
       }
     } catch (err: unknown) {
@@ -86,21 +175,27 @@ export const CreateCompanyStep = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      setError("El nombre de la empresa o marca es obligatorio.");
-      return;
-    }
-
+  const onSubmit = async (values: CreateCompanyStepValues) => {
     try {
       setIsLoading(true);
-      setError(null);
+      setServerError(null);
+
+      const cleanTaxId = values.tax_id.replace(/\D/g, "");
+      const formattedTaxId = cleanTaxId.startsWith("20")
+        ? `RUC20: ${cleanTaxId}`
+        : `RUC10: ${cleanTaxId}`;
 
       const res = await fetch("/api/companies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: values.name.trim(),
+          tax_id: formattedTaxId,
+          logo_url: values.logo_url,
+          location: values.location.trim(),
+          phone: values.phone.trim(),
+          description: values.description?.trim() || null,
+        }),
       });
 
       const data = await res.json();
@@ -110,7 +205,7 @@ export const CreateCompanyStep = ({
 
       onCompanyCreated(data.company);
     } catch (err: unknown) {
-      setError(
+      setServerError(
         err instanceof Error ? err.message : "Error al crear la empresa.",
       );
     } finally {
@@ -141,13 +236,13 @@ export const CreateCompanyStep = ({
         </div>
       </div>
 
-      {error && (
+      {serverError && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-2xl">
-          {error}
+          {serverError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Logotipo de la Marca */}
         <div className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-[#cbd5e1] hover:border-[#f25c05] rounded-3xl bg-[#f8fafc] transition-all">
           <div
@@ -190,7 +285,9 @@ export const CreateCompanyStep = ({
             disabled={isUploadingLogo}
           >
             <Upload className="w-3.5 h-3.5 text-[#f25c05]" />
-            {formData.logo_url ? "Cambiar Logotipo" : "Subir Logotipo de Marca"}
+            {formData.logo_url
+              ? "Cambiar Logotipo"
+              : "Subir Logotipo de Marca (Opcional)"}
           </Button>
 
           {formData.logo_url ? (
@@ -202,6 +299,12 @@ export const CreateCompanyStep = ({
               Opcional: PNG, JPG o WEBP cuadradas (500x500px)
             </p>
           )}
+
+          {errors.logo_url && (
+            <p className="text-xs text-red-500 font-semibold mt-1.5">
+              {errors.logo_url.message}
+            </p>
+          )}
         </div>
 
         <div>
@@ -209,76 +312,117 @@ export const CreateCompanyStep = ({
             Nombre Comercial o de la Marca *
           </label>
           <Input
-            value={formData.name}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, name: e.target.value }))
-            }
+            {...register("name")}
             placeholder="Ej: ElleonStore, Mi Tienda Tech"
-            required
             className="text-xs"
           />
+          {errors.name && (
+            <p className="text-xs text-red-500 font-medium mt-1">
+              {errors.name.message}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-[#112237] mb-1.5">
-              RUC / DNI / Tax ID (Opcional)
+              Número de RUC (SUNAT) *
             </label>
-            <Input
-              value={formData.tax_id}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, tax_id: e.target.value }))
-              }
-              placeholder="10750748827"
-              className="text-xs"
-            />
+            <div className="flex gap-2">
+              <Input
+                {...register("tax_id", {
+                  onChange: (e) => {
+                    if (sunatInfo) setSunatInfo(null);
+                    const clean = e.target.value.replace(/\D/g, "");
+                    if (clean.length === 11) {
+                      handleSunatLookup(clean);
+                    }
+                  },
+                })}
+                placeholder="ej: 20123456789 o 10123456789"
+                className="text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleSunatLookup()}
+                disabled={sunatLoading || !formData.tax_id.trim()}
+                className="shrink-0 border-[#f25c05] text-[#f25c05] hover:bg-[#f25c05]/10 text-xs font-bold"
+              >
+                {sunatLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                ) : (
+                  <Search className="w-3.5 h-3.5 mr-1" />
+                )}
+                SUNAT
+              </Button>
+            </div>
+            {errors.tax_id && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.tax_id.message}
+              </p>
+            )}
+            {sunatInfo && sunatInfo.verified && (
+              <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                <span>
+                  Verificado: <strong>{sunatInfo.name}</strong> (
+                  {sunatInfo.message})
+                </span>
+              </div>
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-bold text-[#112237] mb-1.5">
-              Ubicación / Ciudad
+              Ubicación / Ciudad *
             </label>
             <Input
-              value={formData.location}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, location: e.target.value }))
-              }
+              {...register("location")}
               placeholder="Lima, Chorrillos"
               className="text-xs"
             />
+            {errors.location && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.location.message}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-[#112237] mb-1.5">
-              Teléfono de Contacto
+              Teléfono de Contacto *
             </label>
             <Input
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, phone: e.target.value }))
-              }
+              {...register("phone")}
               placeholder="972332824"
               className="text-xs"
             />
+            {errors.phone && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.phone.message}
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-bold text-[#112237] mb-1.5">
-              Descripción Corta de tu Negocio
+              Descripción Corta de tu Negocio{" "}
+              <span className="text-[#94a3b8] font-normal">(Opcional)</span>
             </label>
             <Input
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
+              {...register("description")}
               placeholder="Ej: Tienda especializada en tecnología y accesorios"
               className="text-xs"
             />
+            {errors.description && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.description.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -286,7 +430,7 @@ export const CreateCompanyStep = ({
           <Button
             type="submit"
             disabled={isLoading}
-            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-6 py-3 rounded-xl shadow-md transition-all"
+            className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-6 py-3 rounded-xl shadow-md transition-all flex items-center justify-center"
           >
             {isLoading ? (
               <>
@@ -294,7 +438,7 @@ export const CreateCompanyStep = ({
                 Registrando marca...
               </>
             ) : (
-              "Continuar a Publicar Producto ➔"
+              "Guardar y Continuar"
             )}
           </Button>
         </div>

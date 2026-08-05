@@ -1,11 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Building2, Camera, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+
+const editCompanySchema = z.object({
+  name: z
+    .string()
+    .min(2, "El nombre de la empresa debe tener al menos 2 caracteres."),
+  tax_id: z
+    .string()
+    .min(1, "El número de RUC es obligatorio.")
+    .refine((val) => val.replace(/\D/g, "").length === 11, {
+      message: "El RUC debe tener exactamente 11 dígitos numéricos.",
+    }),
+  logo_url: z.string().optional(),
+  phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
+  email: z.string().email("Ingresa un correo electrónico corporativo válido."),
+  location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
+  description: z.string().optional(),
+});
+
+type EditCompanyValues = z.infer<typeof editCompanySchema>;
 
 interface EditCompanyModalProps {
   company: {
@@ -40,40 +62,63 @@ export const EditCompanyModal = ({
   onClose,
   onSuccess,
 }: EditCompanyModalProps) => {
-  const [formData, setFormData] = useState({
-    name: company.name || "",
-    tax_id: company.tax_id || "",
-    logo_url: company.logo_url || "",
-    phone: company.phone || "",
-    email: company.email || "",
-    location: company.location || "",
-    description: company.description || "",
-  });
-
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const cleanTaxId = company.tax_id ? company.tax_id.replace(/\D/g, "") : "";
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<EditCompanyValues>({
+    resolver: zodResolver(editCompanySchema),
+    defaultValues: {
+      name: company.name || "",
+      tax_id: cleanTaxId || "",
+      logo_url: company.logo_url || "",
+      phone: company.phone || "",
+      email: company.email || "",
+      location: company.location || "",
+      description: company.description || "",
+    },
+  });
+
+  useEffect(() => {
+    if (company) {
+      reset({
+        name: company.name || "",
+        tax_id: company.tax_id ? company.tax_id.replace(/\D/g, "") : "",
+        logo_url: company.logo_url || "",
+        phone: company.phone || "",
+        email: company.email || "",
+        location: company.location || "",
+        description: company.description || "",
+      });
+    }
+  }, [company, reset]);
 
   if (!isOpen) return null;
 
-  const handleInputChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const formData = watch();
 
   const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("El logotipo no debe superar los 5 MB.");
+      setServerError("El logotipo no debe superar los 5 MB.");
       return;
     }
 
     try {
       setUploadingLogo(true);
-      setError(null);
+      setServerError(null);
 
-      // 1. Convertir inmediatamente a Data URL para guardado garantizado
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -81,9 +126,8 @@ export const EditCompanyModal = ({
         reader.readAsDataURL(file);
       });
 
-      setFormData((prev) => ({ ...prev, logo_url: dataUrl }));
+      setValue("logo_url", dataUrl, { shouldValidate: true });
 
-      // 2. Intentar subir al Storage publico
       const supabase = createClient();
       const fileExt = file.name.split(".").pop();
       const filePath = `company-logos/${company.id}-${Date.now()}.${fileExt}`;
@@ -98,31 +142,40 @@ export const EditCompanyModal = ({
           .getPublicUrl(filePath);
 
         if (urlData?.publicUrl) {
-          setFormData((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
+          setValue("logo_url", urlData.publicUrl, { shouldValidate: true });
         }
       }
     } catch {
-      setError("Error al procesar la imagen del logotipo.");
+      setServerError("Error al procesar la imagen del logotipo.");
     } finally {
       setUploadingLogo(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      setError("El nombre de la empresa es obligatorio.");
-      return;
-    }
-
+  const onSubmit = async (values: EditCompanyValues) => {
     try {
       setSaving(true);
-      setError(null);
+      setServerError(null);
+
+      const cleanDoc = values.tax_id.replace(/\D/g, "");
+      const formattedTaxId = cleanDoc.startsWith("20")
+        ? `RUC20: ${cleanDoc}`
+        : `RUC10: ${cleanDoc}`;
+
+      const payload = {
+        name: values.name.trim(),
+        tax_id: formattedTaxId,
+        logo_url: values.logo_url,
+        phone: values.phone.trim(),
+        email: values.email.trim(),
+        location: values.location.trim(),
+        description: values.description?.trim() || null,
+      };
 
       const res = await fetch(`/api/companies/${company.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -136,7 +189,7 @@ export const EditCompanyModal = ({
       });
       onClose();
     } catch (err: unknown) {
-      setError(
+      setServerError(
         err instanceof Error ? err.message : "Error al guardar los cambios.",
       );
     } finally {
@@ -168,128 +221,148 @@ export const EditCompanyModal = ({
           </div>
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl">
-            {error}
+        {serverError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+            {serverError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Carga de Logo */}
-          <div className="flex items-center gap-4 p-3 bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]">
-            <div className="relative w-16 h-16 rounded-2xl bg-[#f25c05] text-white flex items-center justify-center font-bold text-xl overflow-hidden shrink-0 shadow-sm border border-white">
-              {formData.logo_url ? (
-                <Image
-                  src={formData.logo_url}
-                  alt={formData.name}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span>
-                  {formData.name?.[0]?.toUpperCase() || (
-                    <Building2 className="w-8 h-8" />
-                  )}
-                </span>
-              )}
+          <div className="flex flex-col gap-2 p-3 bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]">
+            <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 rounded-2xl bg-[#f25c05] text-white flex items-center justify-center font-bold text-xl overflow-hidden shrink-0 shadow-sm border border-white">
+                {formData.logo_url ? (
+                  <Image
+                    src={formData.logo_url}
+                    alt={formData.name || "Empresa"}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span>
+                    {formData.name?.[0]?.toUpperCase() || (
+                      <Building2 className="w-8 h-8" />
+                    )}
+                  </span>
+                )}
 
-              {uploadingLogo && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                </div>
-              )}
+                {uploadingLogo && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-[#112237] mb-1">
+                  Logotipo Comercial{" "}
+                  <span className="text-[#94a3b8] font-normal">(Opcional)</span>
+                </p>
+                <label className="inline-flex items-center gap-1.5 bg-white border border-[#e2e8f0] text-xs font-semibold text-[#334155] px-3 py-1.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
+                  <Camera className="w-3.5 h-3.5 text-[#f25c05]" />
+                  <span>Subir logo</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleLogoSelect}
+                    className="hidden"
+                  />
+                </label>
+              </div>
             </div>
-
-            <div>
-              <p className="text-xs font-semibold text-[#112237] mb-1">
-                Logotipo Comercial
+            {errors.logo_url && (
+              <p className="text-xs text-red-500 font-medium">
+                {errors.logo_url.message}
               </p>
-              <label className="inline-flex items-center gap-1.5 bg-white border border-[#e2e8f0] text-xs font-semibold text-[#334155] px-3 py-1.5 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
-                <Camera className="w-3.5 h-3.5 text-[#f25c05]" />
-                <span>Subir logo</span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleLogoSelect}
-                  className="hidden"
-                />
-              </label>
-            </div>
+            )}
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-[#334155] mb-1">
               Nombre de la Empresa / Marca *
             </label>
-            <Input
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Ej: ElleonStore"
-              required
-            />
+            <Input {...register("name")} placeholder="Ej: ElleonStore" />
+            {errors.name && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.name.message}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-[#334155] mb-1">
-                RUC / DNI / Tax ID
+                Número de RUC (SUNAT) *
               </label>
-              <Input
-                value={formData.tax_id}
-                onChange={(e) => handleInputChange("tax_id", e.target.value)}
-                placeholder="10750748827"
-              />
+              <Input {...register("tax_id")} placeholder="20123456789" />
+              {errors.tax_id && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.tax_id.message}
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#334155] mb-1">
-                Ubicación / Ciudad
+                Ubicación / Ciudad *
               </label>
-              <Input
-                value={formData.location}
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                placeholder="Lima, Chorrillos"
-              />
+              <Input {...register("location")} placeholder="Lima, Chorrillos" />
+              {errors.location && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.location.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-[#334155] mb-1">
-                Teléfono de Contacto
+                Teléfono de Contacto *
               </label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="972332824"
-              />
+              <Input {...register("phone")} placeholder="972332824" />
+              {errors.phone && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#334155] mb-1">
-                Correo Electrónico Comercial
+                Correo Electrónico Comercial *
               </label>
               <Input
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                {...register("email")}
                 placeholder="contacto@miempresa.com"
               />
+              {errors.email && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-[#334155] mb-1">
-              Descripción Comercial
+              Descripción Comercial{" "}
+              <span className="text-[#94a3b8] font-normal">(Opcional)</span>
             </label>
             <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
+              {...register("description")}
               placeholder="Breve reseña sobre tus productos y experiencia..."
               rows={3}
               className="w-full bg-white border border-[#e2e8f0] rounded-xl p-3 text-xs text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]"
             />
+            {errors.description && (
+              <p className="text-xs text-red-500 font-medium mt-1">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#f1f5f9]">

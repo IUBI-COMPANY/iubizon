@@ -1,15 +1,20 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   ArrowLeft,
   Building2,
+  CheckCircle2,
   Loader2,
   Navigation,
   Save,
+  Search,
   Upload,
 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
@@ -21,42 +26,77 @@ import { Textarea } from "@/components/ui/TextArea";
 import { useCompany } from "@/context/CompanyContext";
 import { createClient } from "@/lib/supabase/client";
 
+const companyFormSchema = z.object({
+  name: z
+    .string()
+    .min(
+      2,
+      "El nombre de la empresa o marca comercial debe tener al menos 2 caracteres.",
+    ),
+  tax_type: z.enum(["ruc20", "ruc10"], {
+    message: "Selecciona un tipo de RUC válido.",
+  }),
+  tax_id: z
+    .string()
+    .min(1, "El número de RUC es obligatorio.")
+    .refine((val) => val.replace(/\D/g, "").length === 11, {
+      message:
+        "El RUC de la empresa debe tener exactamente 11 dígitos numéricos.",
+    }),
+  logo_url: z.string().optional(),
+  phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
+  email: z.string().email("Ingresa un correo electrónico corporativo válido."),
+  location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
+  description: z.string().optional(),
+});
+
+type CompanyFormValues = z.infer<typeof companyFormSchema>;
+
 export default function NewCompanyPage() {
   const router = useRouter();
   const { refreshCompanies, setActiveCompanyId } = useCompany();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [sunatLoading, setSunatLoading] = useState(false);
+  const [sunatInfo, setSunatInfo] = useState<{
+    verified: boolean;
+    name?: string;
+    message?: string;
+  } | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    tax_type: "ruc20", // ruc20 | ruc10 | dni
-    tax_id: "",
-    logo_url: "",
-    phone: "",
-    email: "",
-    location: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
-    description: "",
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    setError,
+    formState: { errors },
+  } = useForm<CompanyFormValues>({
+    resolver: zodResolver(companyFormSchema),
+    defaultValues: {
+      name: "",
+      tax_type: "ruc20",
+      tax_id: "",
+      logo_url: "",
+      phone: "",
+      email: "",
+      location: "",
+      description: "",
+    },
   });
 
-  const handleInputChange = useCallback(
-    (field: keyof typeof formData, value: any) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    },
-    [],
-  );
+  const formData = watch();
 
   const handleGeolocate = async () => {
     setGeoLoading(true);
-    setError(null);
+    setServerError(null);
 
     if (!navigator.geolocation) {
-      setError("Tu navegador no soporta geolocalización.");
+      setServerError("Tu navegador no soporta geolocalización.");
       setGeoLoading(false);
       return;
     }
@@ -64,7 +104,7 @@ export default function NewCompanyPage() {
     const getPosition = (): Promise<GeolocationPosition> => {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, // Forzar GPS de alta precisión
+          enableHighAccuracy: true,
           timeout: 15000,
           maximumAge: 0,
         });
@@ -98,20 +138,11 @@ export default function NewCompanyPage() {
             data.address?.city ||
             data.address?.town ||
             data.address?.village ||
-            data.address?.county ||
             "";
-          const state = data.address?.state || "";
-
-          const parts = [road, district, city || state].filter(Boolean);
-          if (parts.length > 0) {
-            locationName = parts.join(", ");
-          } else if (data.display_name) {
-            locationName = data.display_name
-              .split(",")
-              .slice(0, 3)
-              .join(",")
-              .trim();
-          }
+          locationName = [road, district, city]
+            .filter(Boolean)
+            .join(", ")
+            .trim();
         }
       } catch {
         // Fallback
@@ -121,18 +152,58 @@ export default function NewCompanyPage() {
         locationName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        location: locationName,
-        latitude,
-        longitude,
-      }));
+      setValue("location", locationName, { shouldValidate: true });
     } catch {
-      setError(
+      setServerError(
         "No se pudo obtener la ubicación automáticamente. Por favor escríbela manualmente.",
       );
     } finally {
       setGeoLoading(false);
+    }
+  };
+
+  const handleSunatLookup = async (docOverride?: string) => {
+    const doc = (docOverride || formData.tax_id).replace(/\D/g, "");
+    if (!doc || doc.length !== 11) {
+      setServerError(
+        "Por favor ingresa un número de RUC válido de 11 dígitos (RUC 10 o RUC 20) para la facturación.",
+      );
+      return;
+    }
+
+    setSunatLoading(true);
+    setServerError(null);
+
+    try {
+      const res = await fetch(`/api/sunat/lookup?docNumber=${doc}`);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setServerError(data.error || "No se encontró el RUC en SUNAT.");
+        setSunatInfo(null);
+        return;
+      }
+
+      setSunatInfo({
+        verified: data.isVerified ?? true,
+        name: data.name,
+        message: `SUNAT: ${data.status || "ACTIVO"} - ${data.condition || "HABIDO"}`,
+      });
+
+      const autoTaxType = doc.startsWith("20") ? "ruc20" : "ruc10";
+      setValue("tax_type", autoTaxType, { shouldValidate: true });
+      setValue("tax_id", doc, { shouldValidate: true });
+      if (data.name) {
+        setValue("name", data.name, { shouldValidate: true });
+      }
+      if (data.address) {
+        setValue("location", data.address, { shouldValidate: true });
+      }
+    } catch (err) {
+      console.error("Error consultando SUNAT:", err);
+      setServerError("Error al conectar con el servicio de SUNAT.");
+    } finally {
+      setSunatLoading(false);
     }
   };
 
@@ -141,15 +212,16 @@ export default function NewCompanyPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Por favor selecciona una imagen válida (PNG, JPG, WEBP).");
+      setServerError(
+        "Por favor selecciona una imagen válida (PNG, JPG, WEBP).",
+      );
       return;
     }
 
     setIsUploadingLogo(true);
-    setError(null);
+    setServerError(null);
 
     try {
-      // 1. Convertir inmediatamente a Data URL para guardado garantizado
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -157,14 +229,12 @@ export default function NewCompanyPage() {
         reader.readAsDataURL(file);
       });
 
-      setFormData((prev) => ({ ...prev, logo_url: dataUrl }));
+      setValue("logo_url", dataUrl, { shouldValidate: true });
 
-      // Resetear valor del input de archivo para poder volver a seleccionar
       if (e.target) {
         e.target.value = "";
       }
 
-      // 2. Intentar subir al Storage publico
       const supabase = createClient();
       const fileName = `company-logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
@@ -177,10 +247,9 @@ export default function NewCompanyPage() {
           .from("products")
           .getPublicUrl(fileName);
         if (publicUrlData?.publicUrl) {
-          setFormData((prev) => ({
-            ...prev,
-            logo_url: publicUrlData.publicUrl,
-          }));
+          setValue("logo_url", publicUrlData.publicUrl, {
+            shouldValidate: true,
+          });
         }
       }
     } catch (err: unknown) {
@@ -190,32 +259,25 @@ export default function NewCompanyPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) {
-      setError("El nombre de la empresa es obligatorio.");
-      return;
-    }
-
+  const onSubmit = async (values: CompanyFormValues) => {
     setIsSaving(true);
-    setError(null);
+    setServerError(null);
 
     try {
-      const formattedTaxId = formData.tax_id.trim()
-        ? `${formData.tax_type.toUpperCase()}: ${formData.tax_id.trim()}`
-        : null;
+      const cleanTaxId = values.tax_id.replace(/\D/g, "");
+      const formattedTaxId = `${values.tax_type.toUpperCase()}: ${cleanTaxId}`;
 
       const res = await fetch("/api/companies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name.trim(),
+          name: values.name.trim(),
           tax_id: formattedTaxId,
-          logo_url: formData.logo_url || null,
-          phone: formData.phone.trim() || null,
-          email: formData.email.trim() || null,
-          location: formData.location.trim() || null,
-          description: formData.description.trim() || null,
+          logo_url: values.logo_url,
+          phone: values.phone.trim(),
+          email: values.email.trim(),
+          location: values.location.trim(),
+          description: values.description?.trim() || null,
         }),
       });
 
@@ -230,7 +292,7 @@ export default function NewCompanyPage() {
       router.push("/user/profile");
       router.refresh();
     } catch (err: unknown) {
-      setError(
+      setServerError(
         err instanceof Error
           ? err.message
           : "Error inesperado al registrar la empresa.",
@@ -241,98 +303,113 @@ export default function NewCompanyPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-2xl">
-        <Link
-          href="/user/profile"
-          className="inline-flex items-center gap-2 text-sm text-[#64748b] hover:text-[#112237] mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a Mi Perfil
-        </Link>
-
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-[#112237] text-white rounded-xl shadow-sm">
-            <Building2 className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#112237]">
-              Registrar mi Empresa
-            </h1>
-            <p className="text-sm text-[#64748b]">
-              Crea tu perfil comercial para publicar productos y colaborar con
-              tu equipo.
-            </p>
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+        {/* Encabezado y Navegación */}
+        <div className="mb-6">
+          <Link
+            href="/user/profile"
+            className="inline-flex items-center text-sm font-semibold text-[#64748b] hover:text-[#f25c05] transition-colors mb-4 gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a Mi Perfil
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#f25c05]/10 text-[#f25c05] flex items-center justify-center font-bold">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#112237]">
+                Registrar Nueva Empresa o Marca
+              </h1>
+              <p className="text-sm text-[#64748b]">
+                Completa la información oficial para empezar a vender tus
+                productos en iubizon.
+              </p>
+            </div>
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg shadow-sm">
-            {error}
+        {/* Alerta de Error de Servidor */}
+        {serverError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 text-sm font-medium rounded-xl">
+            {serverError}
           </div>
         )}
 
-        <Card className="border border-[#e2e8f0] bg-white shadow-sm">
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Logotipo de la Empresa */}
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#cbd5e1] hover:border-[#f25c05] rounded-3xl bg-[#f8fafc] transition-all">
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white ring-4 ring-[#f25c05]/20 bg-white flex items-center justify-center shadow-md mb-3 cursor-pointer group hover:scale-105 transition-all"
-                  title="Haz clic para seleccionar o cambiar el logotipo"
-                >
+        <Card className="border-[#e2e8f0] shadow-sm rounded-3xl overflow-hidden bg-white">
+          <CardContent className="p-6 sm:p-8">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Cargar Logotipo */}
+              <div>
+                <p className="text-xs font-bold text-[#112237] mb-3 text-center">
+                  Logotipo de la Empresa{" "}
+                  <span className="text-[#94a3b8] font-normal">(Opcional)</span>
+                </p>
+                <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#cbd5e1] hover:border-[#f25c05] rounded-3xl bg-[#f8fafc] transition-all">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white ring-4 ring-[#f25c05]/20 bg-white flex items-center justify-center shadow-md mb-3 cursor-pointer group hover:scale-105 transition-all"
+                    title="Haz clic para seleccionar o cambiar el logotipo"
+                  >
+                    {formData.logo_url ? (
+                      <Image
+                        src={formData.logo_url}
+                        alt="Logo de la empresa"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <Building2 className="w-10 h-10 text-[#94a3b8] group-hover:text-[#f25c05] transition-colors" />
+                    )}
+                    {isUploadingLogo && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
+                        <Loader2 className="w-7 h-7 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoUpload}
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs font-bold border-[#e2e8f0] flex items-center gap-2 rounded-xl py-2 px-4 shadow-sm"
+                    disabled={isUploadingLogo}
+                  >
+                    <Upload className="w-4 h-4 text-[#f25c05]" />
+                    {formData.logo_url
+                      ? "Cambiar Logotipo de Empresa"
+                      : "Subir Logotipo de Empresa"}
+                  </Button>
+
                   {formData.logo_url ? (
-                    <Image
-                      src={formData.logo_url}
-                      alt="Logo de la empresa"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                    <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 mt-2">
+                      ✓ Logotipo listo para guardar
+                    </span>
                   ) : (
-                    <Building2 className="w-10 h-10 text-[#94a3b8] group-hover:text-[#f25c05] transition-colors" />
+                    <p className="text-[11px] text-[#94a3b8] mt-2">
+                      Formato recomendado: PNG, JPG o WEBP cuadradas (500x500px)
+                    </p>
                   )}
-                  {isUploadingLogo && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white">
-                      <Loader2 className="w-7 h-7 animate-spin" />
-                    </div>
+
+                  {errors.logo_url && (
+                    <p className="text-xs text-red-500 font-semibold mt-2">
+                      {errors.logo_url.message}
+                    </p>
                   )}
                 </div>
-
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleLogoUpload}
-                  accept="image/png, image/jpeg, image/webp"
-                  className="hidden"
-                />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-bold border-[#e2e8f0] flex items-center gap-2 rounded-xl py-2 px-4 shadow-sm"
-                  disabled={isUploadingLogo}
-                >
-                  <Upload className="w-4 h-4 text-[#f25c05]" />
-                  {formData.logo_url
-                    ? "Cambiar Logotipo de Empresa"
-                    : "Subir Logotipo de Empresa"}
-                </Button>
-
-                {formData.logo_url ? (
-                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 mt-2">
-                    ✓ Logotipo listo para guardar
-                  </span>
-                ) : (
-                  <p className="text-[11px] text-[#94a3b8] mt-2">
-                    Formato recomendado: PNG, JPG o WEBP cuadradas (500x500px)
-                  </p>
-                )}
               </div>
 
               {/* Nombre Comercial */}
@@ -345,11 +422,14 @@ export default function NewCompanyPage() {
                 </label>
                 <Input
                   id="company_name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  {...register("name")}
                   placeholder="ej: TecnoAulas SAC o Juan Pérez Equipos"
-                  required
                 />
+                {errors.name && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               {/* Tipo de Documento y Número */}
@@ -363,10 +443,7 @@ export default function NewCompanyPage() {
                   </label>
                   <select
                     id="tax_type"
-                    value={formData.tax_type}
-                    onChange={(e) =>
-                      handleInputChange("tax_type", e.target.value)
-                    }
+                    {...register("tax_type")}
                     className="w-full h-10 px-3 rounded-lg border border-[#e2e8f0] bg-white text-sm text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]"
                   >
                     <option value="ruc20">
@@ -375,30 +452,63 @@ export default function NewCompanyPage() {
                     <option value="ruc10">
                       RUC 10 (Persona Natural con Negocio)
                     </option>
-                    <option value="dni">
-                      DNI / CE (Persona Natural / Vendedor Ind.)
-                    </option>
                   </select>
+                  {errors.tax_type && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.tax_type.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label
                     htmlFor="tax_id"
                     className="block text-sm font-medium text-[#334155] mb-1"
                   >
-                    Número de RUC o DNI
+                    Número de RUC *
                   </label>
-                  <Input
-                    id="tax_id"
-                    value={formData.tax_id}
-                    onChange={(e) =>
-                      handleInputChange("tax_id", e.target.value)
-                    }
-                    placeholder={
-                      formData.tax_type === "dni"
-                        ? "ej: 72819201"
-                        : "ej: 20123456789"
-                    }
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="tax_id"
+                      {...register("tax_id", {
+                        onChange: (e) => {
+                          if (sunatInfo) setSunatInfo(null);
+                          const clean = e.target.value.replace(/\D/g, "");
+                          if (clean.length === 11) {
+                            handleSunatLookup(clean);
+                          }
+                        },
+                      })}
+                      placeholder="ej: 20123456789 o 10123456789"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleSunatLookup()}
+                      disabled={sunatLoading || !formData.tax_id.trim()}
+                      className="shrink-0 border-[#f25c05] text-[#f25c05] hover:bg-[#f25c05]/10 font-semibold"
+                    >
+                      {sunatLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                      ) : (
+                        <Search className="w-4 h-4 mr-1" />
+                      )}
+                      Validar SUNAT
+                    </Button>
+                  </div>
+                  {errors.tax_id && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.tax_id.message}
+                    </p>
+                  )}
+                  {sunatInfo && sunatInfo.verified && (
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                      <span>
+                        Verificado: <strong>{sunatInfo.name}</strong> (
+                        {sunatInfo.message})
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -409,29 +519,37 @@ export default function NewCompanyPage() {
                     htmlFor="phone"
                     className="block text-sm font-medium text-[#334155] mb-1"
                   >
-                    Teléfono de Contacto
+                    Teléfono de Contacto *
                   </label>
                   <Input
                     id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
+                    {...register("phone")}
                     placeholder="+51 999 999 999"
                   />
+                  {errors.phone && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.phone.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label
                     htmlFor="email"
                     className="block text-sm font-medium text-[#334155] mb-1"
                   >
-                    Correo Corporativo
+                    Correo Corporativo *
                   </label>
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    {...register("email")}
                     placeholder="contacto@empresa.com"
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -441,16 +559,13 @@ export default function NewCompanyPage() {
                   htmlFor="location"
                   className="block text-sm font-medium text-[#334155] mb-1"
                 >
-                  Ubicación / Ciudad
+                  Ubicación / Ciudad *
                 </label>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <Input
                       id="location"
-                      value={formData.location}
-                      onChange={(e) =>
-                        handleInputChange("location", e.target.value)
-                      }
+                      {...register("location")}
                       placeholder="Lima, Perú"
                     />
                   </div>
@@ -471,6 +586,11 @@ export default function NewCompanyPage() {
                     </span>
                   </button>
                 </div>
+                {errors.location && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.location.message}
+                  </p>
+                )}
               </div>
 
               {/* Descripción */}
@@ -479,34 +599,39 @@ export default function NewCompanyPage() {
                   htmlFor="description"
                   className="block text-sm font-medium text-[#334155] mb-1"
                 >
-                  Descripción de la Empresa
+                  Descripción de la Empresa{" "}
+                  <span className="text-[#94a3b8] text-xs font-normal">
+                    (Opcional)
+                  </span>
                 </label>
                 <Textarea
                   id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
+                  {...register("description")}
                   placeholder="Resumen de tus productos y servicios para colegios y empresas..."
                   rows={3}
                 />
+                {errors.description && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.description.message}
+                  </p>
+                )}
               </div>
 
               {/* Botón de Enviar */}
               <Button
                 type="submit"
-                className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold py-2.5 rounded-lg transition-all shadow-md"
-                disabled={isSaving || isUploadingLogo}
+                disabled={isSaving}
+                className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-base"
               >
                 {isSaving ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Guardando Empresa...
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Registrando empresa...
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Registrar Empresa
+                    <Save className="w-5 h-5" />
+                    Guardar y Crear Empresa
                   </>
                 )}
               </Button>
