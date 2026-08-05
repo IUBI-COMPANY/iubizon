@@ -163,7 +163,7 @@ export const EditCompanyModal = ({
     return () => {
       controller.abort();
     };
-  }, [company.id, isOpen, reset]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [company.id, isOpen, reset]);
 
   if (!isOpen) return null;
 
@@ -556,9 +556,7 @@ export const EditCompanyModal = ({
               <label className="block text-xs font-semibold text-[#334155] mb-1.5">
                 Para confirmar, escribe el nombre exacto de la empresa:
                 <br />
-                <span className="font-bold text-[#112237]">
-                  "{company.name}"
-                </span>
+                <span className="font-bold text-[#112237]">{company.name}</span>
               </label>
               <Input
                 value={deleteConfirmInput}
