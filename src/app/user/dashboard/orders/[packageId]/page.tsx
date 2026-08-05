@@ -16,6 +16,7 @@ import {
   Clock,
   ExternalLink,
   Loader2,
+  Mail,
   MapPin,
   Package,
   Phone,
@@ -45,7 +46,15 @@ interface SellerPackage {
   status: string;
   createdAt: string;
   buyerName: string;
+  buyerPhone: string | null;
+  buyerEmail: string | null;
+  buyerDocumentType: string | null;
+  buyerDocumentNumber: string | null;
   destinationAddress: string | null;
+  destinationDepartment: string | null;
+  destinationProvince: string | null;
+  destinationDistrict: string | null;
+  destinationReference: string | null;
   subtotal: number;
   platformCommission: number;
   netEarnings: number;
@@ -265,11 +274,44 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                 <p>
                   <strong>Destinatario:</strong> {pkg.buyerName}
                 </p>
+                {pkg.buyerPhone && (
+                  <p className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                    <strong>Teléfono:</strong> {pkg.buyerPhone}
+                  </p>
+                )}
+                {pkg.buyerEmail && (
+                  <p className="flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-blue-700" />
+                    <strong>Email:</strong> {pkg.buyerEmail}
+                  </p>
+                )}
+                {(pkg.buyerDocumentType || pkg.buyerDocumentNumber) && (
+                  <p>
+                    <strong>Documento:</strong>{" "}
+                    {`${(pkg.buyerDocumentType || "").toUpperCase()} ${pkg.buyerDocumentNumber || ""}`.trim()}
+                  </p>
+                )}
+                {(pkg.destinationDistrict ||
+                  pkg.destinationProvince ||
+                  pkg.destinationDepartment) && (
+                  <p>
+                    <strong>Ubigeo:</strong>{" "}
+                    {[pkg.destinationDistrict, pkg.destinationProvince, pkg.destinationDepartment]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                )}
 
                 <p className="leading-relaxed">
                   <strong>Dirección de Envío:</strong>{" "}
                   {pkg.destinationAddress || "Por coordinar con comprador"}
                 </p>
+                {pkg.destinationReference && (
+                  <p className="leading-relaxed">
+                    <strong>Referencia:</strong> {pkg.destinationReference}
+                  </p>
+                )}
               </div>
             </div>
 

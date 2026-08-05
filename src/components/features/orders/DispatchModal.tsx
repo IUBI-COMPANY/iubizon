@@ -233,7 +233,7 @@ export function DispatchModal({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-bold text-[#112237]">
-              Teléfono del Transportista (Opcional)
+              Teléfono del Transportista
             </Label>
             <div className="relative">
               <Input
@@ -248,7 +248,7 @@ export function DispatchModal({
 
           <div className="space-y-1.5">
             <Label className="text-xs font-bold text-[#112237]">
-              Link de Seguimiento de la Agencia (Opcional)
+              Link de Seguimiento de la Agencia
             </Label>
             <div className="relative">
               <Input

@@ -29,7 +29,13 @@ export interface SellerPackage {
   buyerName: string;
   buyerPhone: string | null;
   buyerEmail: string | null;
+  buyerDocumentType: string | null;
+  buyerDocumentNumber: string | null;
   destinationAddress: string | null;
+  destinationDepartment: string | null;
+  destinationProvince: string | null;
+  destinationDistrict: string | null;
+  destinationReference: string | null;
   courierInfo: string | null;
   paymentMethod: string;
   paymentInfo?: {
@@ -123,6 +129,8 @@ export async function GET(request: Request) {
           select: {
             id: true,
             name: true,
+            email: true,
+            phone: true,
           },
         },
         product: {
@@ -144,6 +152,7 @@ export async function GET(request: Request) {
             card_last4: true,
             authorization_code: true,
             status: true,
+            raw_response: true,
           },
         },
         invoiceDocument: {
@@ -168,7 +177,15 @@ export async function GET(request: Request) {
       createdAt: string;
       status: string;
       buyerName: string;
+      buyerPhone: string | null;
+      buyerEmail: string | null;
+      buyerDocumentType: string | null;
+      buyerDocumentNumber: string | null;
       destinationAddress: string | null;
+      destinationDepartment: string | null;
+      destinationProvince: string | null;
+      destinationDistrict: string | null;
+      destinationReference: string | null;
       courierInfo: string | null;
       paymentMethod: string;
       paymentInfo: {
@@ -196,6 +213,23 @@ export async function GET(request: Request) {
       const { carrierName, trackingUrl, carrierPhone } = parseDispatchMeta(
         order.shipping?.courier,
       );
+      const paymentRaw =
+        order.paymentTransaction?.raw_response &&
+        typeof order.paymentTransaction.raw_response === "object"
+          ? (order.paymentTransaction.raw_response as Record<string, any>)
+          : {};
+      const rawShipping =
+        paymentRaw.shipping && typeof paymentRaw.shipping === "object"
+          ? (paymentRaw.shipping as Record<string, any>)
+          : {};
+      const destinationDepartment = String(rawShipping.department || "").trim();
+      const destinationProvince = String(rawShipping.province || "").trim();
+      const destinationDistrict = String(rawShipping.district || "").trim();
+      const buyerDocumentType = String(rawShipping.documentType || "").trim();
+      const buyerDocumentNumber = String(rawShipping.documentNumber || "").trim();
+      const destinationReference = String(rawShipping.notes || "").trim();
+      const buyerPhone = String(rawShipping.phone || order.buyer?.phone || "").trim();
+      const buyerEmail = String(rawShipping.email || order.buyer?.email || "").trim();
 
       const payInfo = {
         provider: order.payment_method || "niubiz_card",
@@ -220,7 +254,15 @@ export async function GET(request: Request) {
             order.created_at?.toISOString() || new Date().toISOString(),
           status: order.status,
           buyerName: order.buyer?.name || "Comprador",
+          buyerPhone: buyerPhone || null,
+          buyerEmail: buyerEmail || null,
+          buyerDocumentType: buyerDocumentType || null,
+          buyerDocumentNumber: buyerDocumentNumber || null,
           destinationAddress: order.shipping?.destination_address || null,
+          destinationDepartment: destinationDepartment || null,
+          destinationProvince: destinationProvince || null,
+          destinationDistrict: destinationDistrict || null,
+          destinationReference: destinationReference || null,
           courierInfo: order.shipping?.courier || null,
           paymentMethod: order.payment_method || "niubiz_card",
           paymentInfo: payInfo,
@@ -237,6 +279,30 @@ export async function GET(request: Request) {
 
       if (!pkg.trackingNumber && order.shipping?.tracking_number) {
         pkg.trackingNumber = order.shipping.tracking_number;
+      }
+      if (!pkg.buyerPhone && buyerPhone) {
+        pkg.buyerPhone = buyerPhone;
+      }
+      if (!pkg.buyerEmail && buyerEmail) {
+        pkg.buyerEmail = buyerEmail;
+      }
+      if (!pkg.buyerDocumentType && buyerDocumentType) {
+        pkg.buyerDocumentType = buyerDocumentType;
+      }
+      if (!pkg.buyerDocumentNumber && buyerDocumentNumber) {
+        pkg.buyerDocumentNumber = buyerDocumentNumber;
+      }
+      if (!pkg.destinationDepartment && destinationDepartment) {
+        pkg.destinationDepartment = destinationDepartment;
+      }
+      if (!pkg.destinationProvince && destinationProvince) {
+        pkg.destinationProvince = destinationProvince;
+      }
+      if (!pkg.destinationDistrict && destinationDistrict) {
+        pkg.destinationDistrict = destinationDistrict;
+      }
+      if (!pkg.destinationReference && destinationReference) {
+        pkg.destinationReference = destinationReference;
       }
       if (!pkg.estimatedDelivery && order.shipping?.estimated_delivery) {
         pkg.estimatedDelivery = order.shipping.estimated_delivery.toISOString();
@@ -296,9 +362,15 @@ export async function GET(request: Request) {
         createdAt: tempPkg.createdAt,
         status: computedStatus,
         buyerName: tempPkg.buyerName,
-        buyerPhone: null,
-        buyerEmail: null,
+        buyerPhone: tempPkg.buyerPhone,
+        buyerEmail: tempPkg.buyerEmail,
+        buyerDocumentType: tempPkg.buyerDocumentType,
+        buyerDocumentNumber: tempPkg.buyerDocumentNumber,
         destinationAddress: tempPkg.destinationAddress,
+        destinationDepartment: tempPkg.destinationDepartment,
+        destinationProvince: tempPkg.destinationProvince,
+        destinationDistrict: tempPkg.destinationDistrict,
+        destinationReference: tempPkg.destinationReference,
         courierInfo: tempPkg.courierInfo,
         paymentMethod: tempPkg.paymentMethod,
         paymentInfo: tempPkg.paymentInfo,
