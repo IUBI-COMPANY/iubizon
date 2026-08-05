@@ -148,7 +148,9 @@ export async function POST(req: Request) {
 
     const effectiveEmail =
       shipping?.email?.trim() ||
-      (existingTx?.raw_response as Record<string, any>)?.shipping?.email?.trim() ||
+      (
+        existingTx?.raw_response as Record<string, any>
+      )?.shipping?.email?.trim() ||
       (existingTx?.raw_response as Record<string, any>)?.buyer_email?.trim() ||
       user?.email ||
       "cliente@iubizon.com";

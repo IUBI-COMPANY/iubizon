@@ -5,11 +5,7 @@ import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { calculateIubizonCommission } from "@/lib/utils/commission";
 import { getShippingConfig } from "@/lib/services/platformSettings";
-import type {
-  BuyerEmailData,
-  SellerEmailData,
-  EmailOrderItem,
-} from "./types";
+import type { BuyerEmailData, SellerEmailData, EmailOrderItem } from "./types";
 
 const isUuid = (str: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -126,7 +122,9 @@ export async function sendOrderConfirmationEmails(orderIdOrCode: string) {
 
     const deliveryType = rawShipping.deliveryType || "progressive";
     const invoiceType =
-      rawInvoice.doc_type || primaryOrder.invoiceDocument?.doc_type || undefined;
+      rawInvoice.doc_type ||
+      primaryOrder.invoiceDocument?.doc_type ||
+      undefined;
     const invoiceNumber =
       rawInvoice.identity_number ||
       primaryOrder.invoiceDocument?.identity_number ||
