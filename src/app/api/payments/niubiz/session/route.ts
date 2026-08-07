@@ -32,27 +32,17 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-
-    const shippingDepartment = String(shipping?.department || "").trim();
-    const isProvinceDelivery =
-      shippingDepartment.length > 0 &&
-      shippingDepartment.toLowerCase() !== "lima";
-    if (isProvinceDelivery) {
-      const shippingDocType = String(shipping?.documentType || "").trim();
-      const shippingDocNumber = String(shipping?.documentNumber || "").trim();
-      const isValidDni =
-        shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
-      const isValidRuc =
-        shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
-      if (!isValidDni && !isValidRuc) {
-        return NextResponse.json(
-          {
-            error:
-              "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
-          },
-          { status: 400 },
-        );
-      }
+    const shippingDocType = String(shipping?.documentType || "").trim();
+    const shippingDocNumber = String(shipping?.documentNumber || "").trim();
+    const isValidDni =
+      shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
+    const isValidRuc =
+      shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
+    if (!isValidDni && !isValidRuc) {
+      return NextResponse.json(
+        { error: "El DNI (8 dígitos) o RUC (11 dígitos) del destinatario es obligatorio." },
+        { status: 400 },
+      );
     }
 
     const customerEmail = guestEmail || user?.email || "cliente@iubizon.com";

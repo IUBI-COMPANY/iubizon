@@ -81,37 +81,20 @@ const shippingFormSchema = z
     department: z.string().min(1, "Selecciona un departamento."),
     province: z.string().min(1, "Selecciona una provincia."),
     district: z.string().min(1, "Selecciona un distrito."),
-    documentType: z.enum(["dni", "ruc"]).optional(),
-    documentNumber: z.string().trim().optional(),
+    documentType: z.enum(["dni", "ruc"], {
+      message: "Selecciona DNI o RUC del destinatario.",
+    }),
+    documentNumber: z
+      .string()
+      .trim()
+      .min(1, "El número de documento es obligatorio."),
     /** Derivado de departamento/provincia/distrito. Se mantiene por compatibilidad
      * con la construcción de destination_address y las plantillas de correo. */
     city: z.string(),
     notes: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    const isProvinceDelivery = data.department.trim().toLowerCase() !== "lima";
-    if (!isProvinceDelivery) return;
-
-    if (!data.documentType) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["documentType"],
-        message:
-          "Para envíos fuera de Lima, selecciona DNI o RUC del destinatario.",
-      });
-      return;
-    }
-
     const docNumber = (data.documentNumber || "").trim();
-    if (!docNumber) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["documentNumber"],
-        message: "Para envíos a provincia, el documento es obligatorio.",
-      });
-      return;
-    }
-
     const isDniValid = data.documentType === "dni" && /^\d{8}$/.test(docNumber);
     const isRucValid =
       data.documentType === "ruc" && /^\d{11}$/.test(docNumber);
@@ -404,17 +387,15 @@ export default function CartCheckoutPage() {
 
   // Validación de datos de factura/boleta antes de abrir la pasarela Niubiz
   const validateInvoiceDetails = (): boolean => {
-    if (isProvinceDelivery) {
-      const docTypeValue = shippingForm.documentType;
-      const docNumber = (shippingForm.documentNumber || "").trim();
+    const docTypeValue = shippingForm.documentType;
+    const docNumber = (shippingForm.documentNumber || "").trim();
 
-      if (!docTypeValue || !docNumber || !hasValidProvinceDocument) {
-        toast.error(
-          "Para envíos a provincia debes registrar un DNI (8) o RUC (11) válido.",
-          "Documento requerido",
-        );
-        return false;
-      }
+    if (!docTypeValue || !docNumber) {
+      toast.error(
+        "Debes registrar un DNI (8) o RUC (11) válido del destinatario.",
+        "Documento requerido",
+      );
+      return false;
     }
 
     if (invoiceType === "factura") {
@@ -476,7 +457,7 @@ export default function CartCheckoutPage() {
                 shippingForm.department &&
                 shippingForm.province &&
                 shippingForm.district &&
-                (!isProvinceDelivery || hasValidProvinceDocument),
+                hasValidProvinceDocument,
               )
             }
           />
@@ -889,10 +870,9 @@ export default function CartCheckoutPage() {
                   )}
                 </div>
 
-                {isProvinceDelivery && (
-                  <div className="space-y-4 rounded-2xl border border-[#f59e0b]/30 bg-amber-50/50 p-4">
+                <div className="space-y-4 rounded-2xl border border-[#f59e0b]/30 bg-amber-50/50 p-4">
                     <p className="text-xs text-[#92400e] leading-relaxed">
-                      Para envíos a provincia (fuera de Lima), necesitamos el{" "}
+                      Necesitamos el{" "}
                       <strong>DNI o RUC</strong> del destinatario para una
                       entrega segura.
                     </p>
@@ -956,7 +936,6 @@ export default function CartCheckoutPage() {
                       </div>
                     </div>
                   </div>
-                )}
 
                 <div>
                   <label className="block text-xs font-bold text-[#112237] mb-1.5">
@@ -1083,8 +1062,7 @@ export default function CartCheckoutPage() {
                     <strong className="text-[#112237]">Dirección:</strong>{" "}
                     {shippingForm.address}, {shippingForm.city}
                   </p>
-                  {isProvinceDelivery &&
-                    shippingForm.documentType &&
+                  {shippingForm.documentType &&
                     shippingForm.documentNumber && (
                       <p className="text-[#334155]">
                         <strong className="text-[#112237]">

@@ -281,10 +281,15 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                     <strong>Email:</strong> {pkg.buyerEmail}
                   </p>
                 )}
-                {(pkg.buyerDocumentType || pkg.buyerDocumentNumber) && (
+                {(pkg.buyerDocumentType || pkg.buyerDocumentNumber) ? (
                   <p>
                     <strong>Documento:</strong>{" "}
                     {`${(pkg.buyerDocumentType || "").toUpperCase()} ${pkg.buyerDocumentNumber || ""}`.trim()}
+                  </p>
+                ) : (
+                  <p>
+                    <strong>Documento:</strong>{" "}
+                    <span className="text-[#94a3b8] italic">No registrado</span>
                   </p>
                 )}
                 {(pkg.destinationDistrict ||
@@ -445,7 +450,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   Monto Neto a Recibir por iubizon:
                 </span>
                 <p className="text-[10px] text-[#64748b]">
-                  Depositado después de pasar los 7 días del comprador.
+                  Depositado después de pasar los 7 días de seguro del comprador.
                 </p>
               </div>
               <span className="text-2xl font-black text-emerald-600">

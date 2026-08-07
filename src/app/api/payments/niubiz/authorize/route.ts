@@ -149,24 +149,18 @@ export async function POST(req: Request) {
       );
     }
 
-    const shippingDepartment = String(shipping?.department || "").trim();
-    const isProvinceDelivery =
-      shippingDepartment.length > 0 &&
-      shippingDepartment.toLowerCase() !== "lima";
-    if (isProvinceDelivery) {
-      const shippingDocType = String(shipping?.documentType || "").trim();
-      const shippingDocNumber = String(shipping?.documentNumber || "").trim();
-      const isValidDni =
-        shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
-      const isValidRuc =
-        shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
-      if (!isValidDni && !isValidRuc) {
-        return respondWithError(
-          "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
-          isFormPost,
-          req.url,
-        );
-      }
+    const shippingDocType = String(shipping?.documentType || "").trim();
+    const shippingDocNumber = String(shipping?.documentNumber || "").trim();
+    const isValidDni =
+      shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
+    const isValidRuc =
+      shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
+    if (!isValidDni && !isValidRuc) {
+      return respondWithError(
+        "El DNI (8 dígitos) o RUC (11 dígitos) del destinatario es obligatorio.",
+        isFormPost,
+        req.url,
+      );
     }
 
     const requestedItems = cartItems
