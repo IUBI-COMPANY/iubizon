@@ -54,7 +54,7 @@ interface BuyerOrderSession {
   orderCode: string;
   createdAt: string;
   totalAmount: number;
-  overallStatus: string;
+  status: string;
   packagesCount: number;
   packages: TrackingPackage[];
 }
@@ -249,11 +249,11 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
               );
 
               const isDelivered =
-                session.overallStatus === "delivered" ||
-                session.overallStatus === "completed";
+                session.status === "delivered" ||
+                session.status === "completed";
               const isShipped =
-                session.overallStatus === "shipped" ||
-                session.overallStatus === "in_transit";
+                session.status === "shipped" ||
+                session.status === "in_transit";
 
               const badgeStyle = isDelivered
                 ? "bg-emerald-100 text-emerald-800"

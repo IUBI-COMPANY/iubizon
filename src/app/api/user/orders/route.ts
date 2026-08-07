@@ -49,9 +49,17 @@ export interface BuyerOrderSession {
   shippingDepartment: string | null;
   shippingProvince: string | null;
   shippingDistrict: string | null;
+  destinationAddress: string | null;
   invoiceType: string | null;
   invoiceNumber: string | null;
   totalItems: number;
+  paymentDetails: {
+    cardBrand: string | null;
+    cardLast4: string | null;
+    authorizationCode: string | null;
+    docType: string | null;
+    identityNumber: string | null;
+  } | null;
   packages: BuyerPackage[];
 }
 
@@ -81,7 +89,11 @@ export async function GET(req: Request) {
         shipping: true,
         invoice: true,
         paymentTransaction: {
-          select: { card_brand: true, card_last4: true },
+          select: {
+            card_brand: true,
+            card_last4: true,
+            authorization_code: true,
+          },
         },
         packages: {
           include: {
@@ -118,12 +130,30 @@ export async function GET(req: Request) {
       shippingDepartment: order.shipping?.department ?? null,
       shippingProvince: order.shipping?.province ?? null,
       shippingDistrict: order.shipping?.district ?? null,
+      destinationAddress: order.shipping?.address ?? null,
       invoiceType: order.invoice?.type ?? null,
       invoiceNumber: order.invoice?.number ?? null,
       totalItems: order.packages.reduce(
         (sum, pkg) => sum + pkg.items.reduce((s, i) => s + i.quantity, 0),
         0,
       ),
+      paymentDetails: order.paymentTransaction
+        ? {
+            cardBrand: order.paymentTransaction.card_brand || null,
+            cardLast4: order.paymentTransaction.card_last4 || null,
+            authorizationCode: order.paymentTransaction.authorization_code || order.order_code,
+            docType: order.invoice?.doc_type || null,
+            identityNumber: order.invoice?.number || null,
+          }
+        : order.payment_method === "niubiz_card"
+          ? {
+              cardBrand: "VISA",
+              cardLast4: null,
+              authorizationCode: order.order_code,
+              docType: order.invoice?.doc_type || null,
+              identityNumber: order.invoice?.number || null,
+            }
+          : null,
       packages: order.packages.map((pkg) => ({
         packageId: pkg.id,
         companyName: pkg.company?.name || "Vendedor",
