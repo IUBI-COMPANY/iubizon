@@ -17,12 +17,8 @@ export async function GET(req: Request) {
     const companyId = searchParams.get("company_id");
 
     if (companyId) {
-      // Verificar membresía de empresa
       const membership = await prisma.companyMember.findFirst({
-        where: {
-          company_id: companyId,
-          user_id: user.id,
-        },
+        where: { company_id: companyId, user_id: user.id },
         include: { company: true },
       });
 
@@ -33,47 +29,20 @@ export async function GET(req: Request) {
         );
       }
 
-      // Extraer datos bancarios almacenados en company.description o JSON
       let bankAccount = null;
-      if (membership.company.description) {
+      if (membership.company.bank_account) {
         try {
-          const parsed = JSON.parse(membership.company.description);
+          const parsed = JSON.parse(membership.company.bank_account);
           if (parsed && typeof parsed === "object" && parsed.bank_name) {
             bankAccount = parsed;
           }
-        } catch {
-          // Si description no era JSON, es solo un texto normal
-        }
+        } catch {}
       }
 
-      return NextResponse.json({
-        type: "company",
-        companyId,
-        bankAccount,
-      });
+      return NextResponse.json({ type: "company", companyId, bankAccount });
     }
 
-    // Datos bancarios personales en el perfil de usuario
-    const profile = await prisma.profile.findUnique({
-      where: { id: user.id },
-    });
-
-    let bankAccount = null;
-    if (profile?.bio) {
-      try {
-        const parsed = JSON.parse(profile.bio);
-        if (parsed && typeof parsed === "object" && parsed.bank_name) {
-          bankAccount = parsed;
-        }
-      } catch {
-        // Ignorar si bio es texto plano
-      }
-    }
-
-    return NextResponse.json({
-      type: "personal",
-      bankAccount,
-    });
+    return NextResponse.json({ type: "personal", bankAccount: null });
   } catch (err: unknown) {
     console.error("Error al obtener cuenta bancaria:", err);
     return NextResponse.json(
@@ -123,12 +92,8 @@ export async function POST(req: Request) {
     };
 
     if (company_id) {
-      // Verificar permiso
       const membership = await prisma.companyMember.findFirst({
-        where: {
-          company_id,
-          user_id: user.id,
-        },
+        where: { company_id, user_id: user.id },
       });
 
       if (!membership) {
@@ -140,9 +105,7 @@ export async function POST(req: Request) {
 
       await prisma.company.update({
         where: { id: company_id },
-        data: {
-          description: JSON.stringify(bankAccountPayload),
-        },
+        data: { bank_account: JSON.stringify(bankAccountPayload) },
       });
 
       return NextResponse.json({
@@ -152,19 +115,10 @@ export async function POST(req: Request) {
       });
     }
 
-    // Guardar para perfil personal
-    await prisma.profile.update({
-      where: { id: user.id },
-      data: {
-        bio: JSON.stringify(bankAccountPayload),
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Cuenta bancaria personal guardada con éxito.",
-      bankAccount: bankAccountPayload,
-    });
+    return NextResponse.json(
+      { error: "ID de empresa requerido" },
+      { status: 400 },
+    );
   } catch (err: unknown) {
     console.error("Error al guardar cuenta bancaria:", err);
     return NextResponse.json(

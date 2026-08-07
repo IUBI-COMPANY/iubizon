@@ -390,9 +390,10 @@ function PayoutsContent() {
                           </strong>
                           <span>- S/ {p.commission.toFixed(2)}</span>
                         </p>
-                        <p className="text-[11px] text-[#64748b] pt-0.5">
+                        <p className="text-[11px] text-red-500 pt-0.5">
                           iubizon transfiere directamente el saldo neto a tu
-                          cuenta tras la entrega al cliente.
+                          cuenta tras haber pasado los 7 días de posibles
+                          reembolsos del comprador.
                         </p>
                       </div>
 
