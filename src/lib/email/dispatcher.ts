@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getDefaultFromEmail, getResendClient } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
+import { formatDateTime } from "@/lib/utils";
 import type { BuyerEmailData, EmailOrderItem, SellerEmailData } from "./types";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
@@ -54,15 +55,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       return;
     }
 
-    const createdAtFormatted = order.created_at
-      ? new Date(order.created_at).toLocaleDateString("es-PE", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : new Date().toLocaleDateString("es-PE");
+    const createdAtFormatted = formatDateTime(order.created_at);
 
     const allEmailItems: EmailOrderItem[] = order.packages.flatMap((pkg) =>
       pkg.items.map((item) => ({

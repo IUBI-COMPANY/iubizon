@@ -1,43 +1,85 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { formatInTimeZone } from "date-fns-tz";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+
+// ═══════════════════════════════════════════════════════════════════════
+// ZONA HORARIA Y LOCALE — Configurable por variable de entorno
+// Para operar en otro país, cambiar NEXT_PUBLIC_TZ en .env
+// ═══════════════════════════════════════════════════════════════════════
+
+const APP_TZ = process.env.NEXT_PUBLIC_TZ || "America/Lima";
+const APP_LOCALE = process.env.NEXT_PUBLIC_LOCALE || "es-PE";
+
+const toDate = (value: string | Date | null | undefined): Date | null => {
+  if (!value) return null;
+  const d = typeof value === "string" ? new Date(value) : value;
+  return isNaN(d.getTime()) ? null : d;
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// UTILIDADES GENERALES
+// ═══════════════════════════════════════════════════════════════════════
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
 export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat("es-PE", {
+  return new Intl.NumberFormat(APP_LOCALE, {
     style: "currency",
     currency: "PEN",
   }).format(price);
 };
 
-export const formatDate = (date: string | null | undefined): string => {
-  if (!date) return "-";
-  const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) return "-";
-  return new Intl.DateTimeFormat("es-PE", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(parsedDate);
+/** Formatea fecha a texto legible: "6 de agosto de 2026" */
+export const formatDate = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "d 'de' MMMM 'de' yyyy", { locale: es });
 };
 
-export const formatRelativeTime = (date: string | null | undefined): string => {
-  if (!date) return "-";
-  const then = new Date(date);
-  if (isNaN(then.getTime())) return "-";
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+/** Formatea fecha corta: "06/08/2026" */
+export const formatShortDate = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "dd/MM/yyyy");
+};
 
-  if (diffInSeconds < 60) return "Hace un momento";
-  if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min`;
-  if (diffInSeconds < 86400)
-    return `Hace ${Math.floor(diffInSeconds / 3600)} h`;
-  if (diffInSeconds < 604800)
-    return `Hace ${Math.floor(diffInSeconds / 86400)} d`;
+/** Formatea fecha y hora completa: "6 de agosto de 2026, 14:30" */
+export const formatDateTime = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es });
+};
 
-  return formatDate(date);
+/** Formatea hora: "14:30" */
+export const formatTime = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "HH:mm");
+};
+
+/** Formatea fecha corta con mes abreviado: "06 ago 2026" */
+export const formatShortMonthDate = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "dd MMM yyyy", { locale: es });
+};
+
+/** Formatea fecha y hora con mes abreviado: "06 ago 2026, 2:30 PM" */
+export const formatShortMonthDateTime = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "dd MMM yyyy, h:mm a", { locale: es });
+};
+
+/** Tiempo relativo: "hace 5 minutos", "hace 2 horas", "hace 3 días" */
+export const formatRelativeTime = (date: string | Date | null | undefined): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatDistanceToNow(d, { addSuffix: true, locale: es });
 };
 
 export const truncateText = (text: string, maxLength: number): string => {

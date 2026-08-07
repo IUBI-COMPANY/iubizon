@@ -142,6 +142,19 @@ async function main() {
         "Configuración global del costo de envío y promociones de despacho",
       category: "shipping",
     },
+    {
+      key: "COUNTRY_CONFIG",
+      value: {
+        country: "PE",
+        name: "Perú",
+        tz: "America/Lima",
+        locale: "es-PE",
+        currency: "PEN",
+      },
+      description:
+        "Configuración de país: zona horaria, locale, moneda. Agregar un registro por país al expandir.",
+      category: "general",
+    },
   ];
 
   for (const set of defaultSettings) {
