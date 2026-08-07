@@ -141,7 +141,8 @@ export async function GET(req: Request) {
         ? {
             cardBrand: order.paymentTransaction.card_brand || null,
             cardLast4: order.paymentTransaction.card_last4 || null,
-            authorizationCode: order.paymentTransaction.authorization_code || order.order_code,
+            authorizationCode:
+              order.paymentTransaction.authorization_code || order.order_code,
             docType: order.invoice?.doc_type || null,
             identityNumber: order.invoice?.number || null,
           }

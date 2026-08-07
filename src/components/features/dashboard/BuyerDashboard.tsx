@@ -252,8 +252,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
                 session.status === "delivered" ||
                 session.status === "completed";
               const isShipped =
-                session.status === "shipped" ||
-                session.status === "in_transit";
+                session.status === "shipped" || session.status === "in_transit";
 
               const badgeStyle = isDelivered
                 ? "bg-emerald-100 text-emerald-800"
