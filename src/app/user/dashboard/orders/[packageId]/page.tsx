@@ -445,7 +445,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   Monto Neto a Recibir por iubizon:
                 </span>
                 <p className="text-[10px] text-[#64748b]">
-                  Depositado tras la entrega confirmada por el comprador.
+                  Depositado pasar los 7 días del comprador.
                 </p>
               </div>
               <span className="text-2xl font-black text-emerald-600">
