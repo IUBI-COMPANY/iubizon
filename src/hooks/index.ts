@@ -4,4 +4,4 @@ export { FavoritesProvider, useFavoritesContext } from "./useFavoritesContext";
 export { useCart, CartProvider } from "./useCart";
 export { useGeolocation } from "./useGeolocation";
 export { useFormUtils } from "./useFormUtils";
-export { useIntersectionObserver } from "./useIntersectionObserver";
+export { useFetch } from "./useFetch";

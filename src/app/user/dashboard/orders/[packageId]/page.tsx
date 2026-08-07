@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use, useCallback, useEffect, useState } from "react";
+import { Suspense, use, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -101,9 +101,11 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
   const [pkg, setPkg] = useState<SellerPackage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [commissionRate, setCommissionRate] = useState<number>(0);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -114,7 +116,11 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
   const fetchPackageDetail = useCallback(async () => {
     if (!user) return;
     try {
-      setLoading(true);
+      if (hasLoadedOnce.current) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       const res = await fetch("/api/seller/orders");
       const data = await res.json();
@@ -135,6 +141,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
         setError("No se encontró la venta o despacho especificado.");
       } else {
         setPkg(foundPkg);
+        hasLoadedOnce.current = true;
       }
     } catch (err) {
       setError(
@@ -142,6 +149,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
       );
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, [user, packageId]);
 
@@ -151,7 +159,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
     }
   }, [user, fetchPackageDetail]);
 
-  if (authLoading || loading) {
+  if (authLoading || (loading && !isRefreshing)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />

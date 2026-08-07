@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -40,12 +40,18 @@ export default function ProductsManagementPage() {
 
   const [products, setProducts] = useState<UserProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   const fetchProducts = useCallback(async () => {
     if (!user) return;
 
     try {
-      setLoading(true);
+      if (hasLoadedOnce.current) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       const url = activeCompany?.id
         ? `/api/user/products?company_id=${activeCompany.id}`
         : `/api/user/products`;
@@ -55,11 +61,13 @@ export default function ProductsManagementPage() {
 
       if (res.ok && Array.isArray(json.products)) {
         setProducts(json.products);
+        hasLoadedOnce.current = true;
       }
     } catch (err) {
       console.error("Error al cargar productos:", err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, [user, activeCompany?.id]);
 
@@ -175,7 +183,7 @@ export default function ProductsManagementPage() {
           </Link>
         </div>
 
-        {loading ? (
+        {loading && !isRefreshing ? (
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 space-y-4 shadow-sm">
             {[1, 2, 3, 4, 5].map((i) => (
               <div

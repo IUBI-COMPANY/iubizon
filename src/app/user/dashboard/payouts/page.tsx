@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -89,7 +89,9 @@ function PayoutsContent() {
     totalCount: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusTab, setStatusTab] = useState("all");
+  const hasLoadedOnce = useRef(false);
 
   // Estado de Cuenta Bancaria
   const [bankAccount, setBankAccount] = useState<any>(null);
@@ -119,7 +121,11 @@ function PayoutsContent() {
   const fetchPayouts = useCallback(async () => {
     if (!user) return;
     try {
-      setIsLoading(true);
+      if (hasLoadedOnce.current) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
       const url = activeCompany?.id
         ? `/api/seller/payouts?company_id=${activeCompany.id}`
         : `/api/seller/payouts?company_id=personal`;
@@ -128,11 +134,13 @@ function PayoutsContent() {
       if (res.ok) {
         setPayouts(data.payouts || []);
         if (data.kpis) setKpis(data.kpis);
+        hasLoadedOnce.current = true;
       }
     } catch (err) {
       console.error("Error al cargar retribuciones:", err);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [user, activeCompany?.id]);
 
@@ -151,7 +159,7 @@ function PayoutsContent() {
     return true;
   });
 
-  if (authLoading || isLoading) {
+  if (authLoading || (isLoading && !isRefreshing)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />

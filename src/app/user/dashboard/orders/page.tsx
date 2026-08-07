@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -96,9 +96,11 @@ function OrdersContent() {
 
   const [packages, setPackages] = useState<SellerPackage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusTab, setStatusTab] = useState("pending");
+  const hasLoadedOnce = useRef(false);
 
   // Estado del modal de despacho
   const [selectedPackageForDispatch, setSelectedPackageForDispatch] =
@@ -113,7 +115,11 @@ function OrdersContent() {
   const fetchOrders = useCallback(async () => {
     if (!user || isLoadingCompanies) return;
     try {
-      setLoading(true);
+      if (hasLoadedOnce.current) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       const url = activeCompany?.id
         ? `/api/seller/orders?company_id=${activeCompany.id}`
@@ -125,12 +131,14 @@ function OrdersContent() {
         throw new Error(data.error || "Error al cargar las ventas.");
       }
       setPackages(data.packages || []);
+      hasLoadedOnce.current = true;
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "Error al obtener las ventas.",
       );
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, [user, isLoadingCompanies, activeCompany?.id]);
 
@@ -162,7 +170,7 @@ function OrdersContent() {
     0,
   );
 
-  if (authLoading || isLoadingCompanies || loading) {
+  if (authLoading || isLoadingCompanies || (loading && !isRefreshing)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
