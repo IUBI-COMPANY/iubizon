@@ -13,7 +13,10 @@ import { BaseLayout } from "./BaseLayout";
 import type { BuyerEmailData } from "../types";
 
 export function BuyerOrderEmail(data: BuyerEmailData) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://iubizon.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "https://iubizon.com";
   const orderUrl = `${baseUrl}/user/orders/${data.orderCode}`;
 
   const formattedSubtotal = `S/ ${data.subtotal.toFixed(2)}`;

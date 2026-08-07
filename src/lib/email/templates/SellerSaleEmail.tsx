@@ -13,7 +13,10 @@ import { BaseLayout } from "./BaseLayout";
 import type { SellerEmailData } from "../types";
 
 export function SellerSaleEmail(data: SellerEmailData) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://iubizon.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+    "https://iubizon.com";
   const dispatchUrl = `${baseUrl}/user/dashboard/orders/${data.packageCode}`;
 
   const formattedSubtotal = `S/ ${data.packageSubtotal.toFixed(2)}`;
