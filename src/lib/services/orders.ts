@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { calculateIubizonCommission } from "@/lib/utils/commission";
+import {
+  getCommissionConfig,
+  computePackageFinancials,
+  computeItemFinancials,
+} from "@/lib/utils/commission";
 import type { Prisma } from "@prisma/client";
 
 export async function getUserOrdersAsBuyer(userId: string) {
@@ -80,6 +84,8 @@ export async function createFullOrder(params: {
   paymentMethod: string;
   paymentTransactionId?: string;
   initialStatus: string;
+  shippingCost?: number;
+  taxAmount?: number;
   shipping: {
     name: string;
     phone: string;
@@ -112,6 +118,7 @@ export async function createFullOrder(params: {
   txPrisma?: Prisma.TransactionClient;
 }) {
   const client = params.txPrisma || prisma;
+  const commissionConfig = await getCommissionConfig();
 
   const subtotal = params.packages.reduce(
     (sum, pkg) =>
@@ -128,9 +135,9 @@ export async function createFullOrder(params: {
       payment_method: params.paymentMethod,
       status: params.initialStatus,
       subtotal,
-      shipping_cost: 0,
-      tax_amount: 0,
-      total_amount: subtotal,
+      shipping_cost: params.shippingCost ?? 0,
+      tax_amount: params.taxAmount ?? 0,
+      total_amount: subtotal + (params.shippingCost ?? 0) + (params.taxAmount ?? 0),
       shipping: {
         create: {
           name: params.shipping.name,
@@ -159,31 +166,30 @@ export async function createFullOrder(params: {
           : undefined,
       packages: {
         create: params.packages.map((pkg) => {
-          const packageSubtotal = pkg.items.reduce(
-            (s, item) => s + item.unitPrice * item.quantity,
-            0,
-          );
-          const packageCommission = calculateIubizonCommission(packageSubtotal);
+          const financials = computePackageFinancials(pkg.items, commissionConfig);
 
           return {
             company_id: pkg.companyId,
             status: params.initialStatus,
             delivery_type: pkg.deliveryType || null,
             destination_address: pkg.destinationAddress,
-            subtotal: packageSubtotal,
-            commission_total: packageCommission,
-            net_earnings: packageSubtotal - packageCommission,
+            subtotal: financials.subtotal,
+            commission_total: financials.commission,
+            net_earnings: financials.netEarnings,
             items: {
               create: pkg.items.map((item) => {
-                const itemSubtotal = item.unitPrice * item.quantity;
-                const itemCommission = calculateIubizonCommission(itemSubtotal);
-
+                const itemF = computeItemFinancials(
+                  item.unitPrice,
+                  item.quantity,
+                  financials.subtotal,
+                  financials.commission,
+                );
                 return {
                   product_id: item.productId,
                   quantity: item.quantity,
                   unit_price: item.unitPrice,
-                  subtotal: itemSubtotal,
-                  commission: itemCommission,
+                  subtotal: itemF.subtotal,
+                  commission: itemF.commission,
                   status: params.initialStatus,
                 };
               }),

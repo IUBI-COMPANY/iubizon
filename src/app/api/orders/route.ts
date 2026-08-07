@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import {
-  createFullOrder,
   getOrCreateBuyerProfile,
+  createFullOrder,
 } from "@/lib/services/orders";
 import { getShippingConfig } from "@/lib/services/platformSettings";
 import { generateOrderCode } from "@/lib/utils/orderCode";
 import { sendOrderConfirmationEmails } from "@/lib/email";
+import { aggregateOrderFinancials } from "@/lib/utils/commission";
 
 export async function POST(req: Request) {
   try {
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
         items as Array<{ price: number; quantity?: number }>
       ).reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
       if (
-        orderSubtotal + 50 > 700 &&
+        orderSubtotal > 700 &&
         (!invoice_dni || !String(invoice_dni).trim())
       ) {
         return NextResponse.json(
@@ -239,6 +240,7 @@ export async function POST(req: Request) {
         buyerId,
         paymentMethod: payment_method || "cash_on_delivery",
         initialStatus: "pending",
+        shippingCost: 0, // se lee de shippingConfig más abajo para la respuesta
         shipping: {
           name: shipping.name,
           phone: shipping.phone,
@@ -269,7 +271,10 @@ export async function POST(req: Request) {
 
     const shippingCfg = await getShippingConfig();
     const shippingCost = shippingCfg.is_free ? 0.0 : shippingCfg.default_cost;
-    const subtotal = Number(createdOrder.subtotal);
+    const financials = aggregateOrderFinancials(
+      createdOrder.packages,
+      shippingCost,
+    );
 
     return NextResponse.json({
       success: true,
@@ -284,14 +289,7 @@ export async function POST(req: Request) {
           (i) => (i.product as { title: string }).title,
         ),
       })),
-      financials: {
-        subtotal,
-        shippingCost,
-        taxAmount: 0,
-        platformCommission: subtotal * 0.09,
-        sellerEarnings: subtotal - subtotal * 0.09,
-        totalAmount: subtotal + shippingCost,
-      },
+      financials,
     });
   } catch (err: unknown) {
     console.error("Error al registrar pedido:", err);

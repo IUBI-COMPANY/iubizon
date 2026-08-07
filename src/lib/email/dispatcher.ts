@@ -199,7 +199,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
         }));
 
         const commissionAmount = Number(pkg.commission_total);
-        const netPayoutEstimate = Number(pkg.subtotal) - commissionAmount;
+        const netPayoutEstimate = Number(pkg.net_earnings);
         const recipientEmail =
           pkg.company?.email || "iubizon.company@gmail.com";
         const companyName = pkg.company?.name || "Vendedor iubizon";

@@ -8,6 +8,7 @@ import {
 } from "@/lib/services/orders";
 import { sendOrderConfirmationEmails } from "@/lib/email";
 import { normalizeOrderCode, generateOrderCode } from "@/lib/utils/orderCode";
+import { aggregateOrderFinancials } from "@/lib/utils/commission";
 
 function respondWithError(
   message: string,
@@ -415,6 +416,7 @@ export async function POST(req: Request) {
         0,
       ),
       authorizationCode: authResult.authorizationCode,
+      financials: aggregateOrderFinancials(createdOrder.packages),
     });
   } catch (err: unknown) {
     const msg =
