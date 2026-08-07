@@ -51,6 +51,7 @@ export interface BuyerOrderSession {
   shippingDistrict: string | null;
   invoiceType: string | null;
   invoiceNumber: string | null;
+  totalItems: number;
   packages: BuyerPackage[];
 }
 
@@ -119,6 +120,10 @@ export async function GET(req: Request) {
       shippingDistrict: order.shipping?.district ?? null,
       invoiceType: order.invoice?.type ?? null,
       invoiceNumber: order.invoice?.number ?? null,
+      totalItems: order.packages.reduce(
+        (sum, pkg) => sum + pkg.items.reduce((s, i) => s + i.quantity, 0),
+        0,
+      ),
       packages: order.packages.map((pkg) => ({
         packageId: pkg.id,
         companyName: pkg.company?.name || "Vendedor",
