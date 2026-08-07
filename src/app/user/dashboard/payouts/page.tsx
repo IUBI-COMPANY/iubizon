@@ -386,7 +386,7 @@ function PayoutsContent() {
                         </p>
                         <p className="flex justify-between border-b border-slate-200/60 pb-1.5 text-[#64748b]">
                           <strong className="text-[#112237]">
-                            Comisión iubizon (10%):
+                            Comisión iubizon:
                           </strong>
                           <span>- S/ {p.commission.toFixed(2)}</span>
                         </p>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { getCommissionConfig } from "@/lib/utils/commission";
 
 export interface DashboardOrderItem {
   id: string;
@@ -190,7 +191,17 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ packages: result, totalCount: result.length });
+    const commissionConfig = await getCommissionConfig();
+
+    return NextResponse.json({
+      packages: result,
+      totalCount: result.length,
+      commission: {
+        baseRate: commissionConfig.base_rate,
+        fixedFee: commissionConfig.fixed_fee,
+        threshold: commissionConfig.threshold_amount,
+      },
+    });
   } catch (err: unknown) {
     console.error("Error al obtener ventas del vendedor:", err);
     return NextResponse.json(

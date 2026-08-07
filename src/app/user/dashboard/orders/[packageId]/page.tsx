@@ -102,6 +102,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
   const [pkg, setPkg] = useState<SellerPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commissionRate, setCommissionRate] = useState<number>(0);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
 
   useEffect(() => {
@@ -119,6 +120,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Error al cargar la venta");
+      }
+
+      if (data.commission?.baseRate) {
+        setCommissionRate(data.commission.baseRate);
       }
 
       const decodedId = decodeURIComponent(packageId);
@@ -438,7 +443,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             </div>
 
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
-              <span className="font-medium">Comisión iubizon (10%):</span>
+              <span className="font-medium">
+                Comisión iubizon ({commissionRate > 0 ? `${commissionRate * 100}%` : "9%"}):
+              </span>
               <span className="font-semibold text-red-600">
                 - S/ {formatMoney(pkg.platformCommission)}
               </span>
