@@ -62,7 +62,10 @@ export async function POST(req: Request) {
       shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
     if (!isValidDni && !isValidRuc) {
       return NextResponse.json(
-        { error: "El DNI (8 dígitos) o RUC (11 dígitos) del destinatario es obligatorio." },
+        {
+          error:
+            "El DNI (8 dígitos) o RUC (11 dígitos) del destinatario es obligatorio.",
+        },
         { status: 400 },
       );
     }

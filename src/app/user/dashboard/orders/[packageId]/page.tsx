@@ -286,7 +286,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                     <strong>Email:</strong> {pkg.buyerEmail}
                   </p>
                 )}
-                {(pkg.buyerDocumentType || pkg.buyerDocumentNumber) ? (
+                {pkg.buyerDocumentType || pkg.buyerDocumentNumber ? (
                   <p>
                     <strong>Documento:</strong>{" "}
                     {`${(pkg.buyerDocumentType || "").toUpperCase()} ${pkg.buyerDocumentNumber || ""}`.trim()}
@@ -444,7 +444,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
               <span className="font-medium">
-                Comisión iubizon ({commissionRate > 0 ? `${commissionRate * 100}%` : "9%"}):
+                Comisión iubizon (
+                {commissionRate > 0 ? `${commissionRate * 100}%` : "9%"}):
               </span>
               <span className="font-semibold text-red-600">
                 - S/ {formatMoney(pkg.platformCommission)}
@@ -457,7 +458,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   Monto Neto a Recibir por iubizon:
                 </span>
                 <p className="text-[10px] text-[#64748b]">
-                  Depositado después de pasar los 7 días de seguro del comprador.
+                  Depositado después de pasar los 7 días de seguro del
+                  comprador.
                 </p>
               </div>
               <span className="text-2xl font-black text-emerald-600">

@@ -137,7 +137,8 @@ export async function createFullOrder(params: {
       subtotal,
       shipping_cost: params.shippingCost ?? 0,
       tax_amount: params.taxAmount ?? 0,
-      total_amount: subtotal + (params.shippingCost ?? 0) + (params.taxAmount ?? 0),
+      total_amount:
+        subtotal + (params.shippingCost ?? 0) + (params.taxAmount ?? 0),
       shipping: {
         create: {
           name: params.shipping.name,
@@ -166,7 +167,10 @@ export async function createFullOrder(params: {
           : undefined,
       packages: {
         create: params.packages.map((pkg) => {
-          const financials = computePackageFinancials(pkg.items, commissionConfig);
+          const financials = computePackageFinancials(
+            pkg.items,
+            commissionConfig,
+          );
 
           return {
             company_id: pkg.companyId,

@@ -168,9 +168,7 @@ export function aggregateOrderFinancials(
       return sum + Number(pkg.subtotal);
     }
     return (
-      sum +
-      Number(pkg.commission_total || 0) +
-      Number(pkg.net_earnings || 0)
+      sum + Number(pkg.commission_total || 0) + Number(pkg.net_earnings || 0)
     );
   }, 0);
   const platformCommission = packages.reduce(

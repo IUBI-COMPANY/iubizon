@@ -871,71 +871,65 @@ export default function CartCheckoutPage() {
                 </div>
 
                 <div className="space-y-4 rounded-2xl border border-[#f59e0b]/30 bg-amber-50/50 p-4">
-                    <p className="text-xs text-[#92400e] leading-relaxed">
-                      Necesitamos el{" "}
-                      <strong>DNI o RUC</strong> del destinatario para una
-                      entrega segura.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#112237] mb-1.5">
-                          Tipo de Documento *
-                        </label>
-                        <Select
-                          value={shippingForm.documentType || undefined}
-                          onValueChange={(value) =>
-                            setValue("documentType", value as "dni" | "ruc", {
-                              shouldValidate: true,
-                            })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="dni">DNI</SelectItem>
-                            <SelectItem value="ruc">RUC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.documentType && (
-                          <p className="text-xs text-red-500 font-medium mt-1">
-                            {errors.documentType.message}
-                          </p>
-                        )}
-                      </div>
+                  <p className="text-xs text-[#92400e] leading-relaxed">
+                    Necesitamos el <strong>DNI o RUC</strong> del destinatario
+                    para una entrega segura.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                        Tipo de Documento *
+                      </label>
+                      <Select
+                        value={shippingForm.documentType || undefined}
+                        onValueChange={(value) =>
+                          setValue("documentType", value as "dni" | "ruc", {
+                            shouldValidate: true,
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dni">DNI</SelectItem>
+                          <SelectItem value="ruc">RUC</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.documentType && (
+                        <p className="text-xs text-red-500 font-medium mt-1">
+                          {errors.documentType.message}
+                        </p>
+                      )}
+                    </div>
 
-                      <div>
-                        <label className="block text-xs font-bold text-[#112237] mb-1.5">
-                          Número de Documento *
-                        </label>
-                        <Input
-                          placeholder={
-                            shippingForm.documentType === "ruc"
-                              ? "Ej: 20601234567"
-                              : "Ej: 45678901"
-                          }
-                          maxLength={
-                            shippingForm.documentType === "ruc" ? 11 : 8
-                          }
-                          {...register("documentNumber")}
-                          onChange={(e) => {
-                            const digitsOnly = e.target.value.replace(
-                              /\D/g,
-                              "",
-                            );
-                            setValue("documentNumber", digitsOnly, {
-                              shouldValidate: true,
-                            });
-                          }}
-                        />
-                        {errors.documentNumber && (
-                          <p className="text-xs text-red-500 font-medium mt-1">
-                            {errors.documentNumber.message}
-                          </p>
-                        )}
-                      </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#112237] mb-1.5">
+                        Número de Documento *
+                      </label>
+                      <Input
+                        placeholder={
+                          shippingForm.documentType === "ruc"
+                            ? "Ej: 20601234567"
+                            : "Ej: 45678901"
+                        }
+                        maxLength={shippingForm.documentType === "ruc" ? 11 : 8}
+                        {...register("documentNumber")}
+                        onChange={(e) => {
+                          const digitsOnly = e.target.value.replace(/\D/g, "");
+                          setValue("documentNumber", digitsOnly, {
+                            shouldValidate: true,
+                          });
+                        }}
+                      />
+                      {errors.documentNumber && (
+                        <p className="text-xs text-red-500 font-medium mt-1">
+                          {errors.documentNumber.message}
+                        </p>
+                      )}
                     </div>
                   </div>
+                </div>
 
                 <div>
                   <label className="block text-xs font-bold text-[#112237] mb-1.5">
@@ -1062,16 +1056,15 @@ export default function CartCheckoutPage() {
                     <strong className="text-[#112237]">Dirección:</strong>{" "}
                     {shippingForm.address}, {shippingForm.city}
                   </p>
-                  {shippingForm.documentType &&
-                    shippingForm.documentNumber && (
-                      <p className="text-[#334155]">
-                        <strong className="text-[#112237]">
-                          Documento de entrega:
-                        </strong>{" "}
-                        {shippingForm.documentType.toUpperCase()}:{" "}
-                        {shippingForm.documentNumber}
-                      </p>
-                    )}
+                  {shippingForm.documentType && shippingForm.documentNumber && (
+                    <p className="text-[#334155]">
+                      <strong className="text-[#112237]">
+                        Documento de entrega:
+                      </strong>{" "}
+                      {shippingForm.documentType.toUpperCase()}:{" "}
+                      {shippingForm.documentNumber}
+                    </p>
+                  )}
                   <p className="text-[#334155]">
                     <strong className="text-[#112237]">Comprobante:</strong>{" "}
                     <InvoiceSummaryText
