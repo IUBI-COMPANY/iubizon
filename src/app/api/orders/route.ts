@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { calculateIubizonCommission } from "@/lib/utils/commission";
-import { getOrCreateBuyerProfile } from "@/lib/services/orders";
+import {
+  createFullOrder,
+  getOrCreateBuyerProfile,
+} from "@/lib/services/orders";
 import { getShippingConfig } from "@/lib/services/platformSettings";
+import { generateOrderCode } from "@/lib/utils/orderCode";
 import { sendOrderConfirmationEmails } from "@/lib/email";
 
 export async function POST(req: Request) {
@@ -33,8 +36,6 @@ export async function POST(req: Request) {
       phone: shipping?.phone,
     });
 
-    // ── Validaciones de entrada ──────────────────────────────────────────────
-
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "El carrito está vacío" },
@@ -63,7 +64,6 @@ export async function POST(req: Request) {
         shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
       const isValidRuc =
         shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
-
       if (!isValidDni && !isValidRuc) {
         return NextResponse.json(
           {
@@ -96,13 +96,14 @@ export async function POST(req: Request) {
       }
     }
 
-    // Validación SUNAT: Boleta > S/700 requiere número de documento
     if (invoice_type === "boleta" || !invoice_type) {
       const orderSubtotal = (
         items as Array<{ price: number; quantity?: number }>
       ).reduce((sum, i) => sum + Number(i.price) * Number(i.quantity || 1), 0);
-      const orderTotal = orderSubtotal + 50;
-      if (orderTotal > 700 && (!invoice_dni || !String(invoice_dni).trim())) {
+      if (
+        orderSubtotal + 50 > 700 &&
+        (!invoice_dni || !String(invoice_dni).trim())
+      ) {
         return NextResponse.json(
           {
             error:
@@ -113,63 +114,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // ── Preparación de datos ─────────────────────────────────────────────────
-
-    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
-    const isCompleteDelivery = delivery_type === "complete";
-    const destinationUbigeo = [
-      String(shipping.district || "").trim(),
-      String(shipping.province || "").trim(),
-      String(shipping.department || "").trim(),
-    ]
-      .filter(Boolean)
-      .join(", ");
-    const supplierDestination = isCompleteDelivery
-      ? IUBIZON_WAREHOUSE
-      : `${shipping.address}, ${destinationUbigeo || shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
-
-    const invoiceDetails =
-      invoice_type === "factura"
-        ? `Factura RUC: ${invoice_ruc} (${invoice_company_name})`
-        : invoice_dni
-          ? `Boleta de Venta — ${String(invoice_doc_type || "dni").toUpperCase()}: ${invoice_dni}`
-          : "Boleta de Venta";
-
-    // Código de sesión de compra: 6 dígitos, verificado como único en BD
-    const generateSessionCode = async (): Promise<string> => {
-      const code = String(Math.floor(100000 + Math.random() * 900000));
-      const exists = await prisma.order.findFirst({
-        where: { payment_id: code },
-      });
-      return exists ? generateSessionCode() : code;
-    };
-    const sessionCode = await generateSessionCode();
-
-    // Garantizar perfil del comprador (usuario o invitado)
-    await prisma.profile.upsert({
-      where: { id: buyerId },
-      update: {
-        email: user?.email || shipping.email || "",
-        name: shipping.name || user?.user_metadata?.name || null,
-        phone: shipping.phone || null,
-      },
-      create: {
-        id: buyerId,
-        email: user?.email || shipping.email || "",
-        name: shipping.name || user?.user_metadata?.name || null,
-        phone: shipping.phone || null,
-      },
-    });
-
-    // ── Fase 1: Prefetch de productos para poder agrupar antes de la tx ───────
-
     type ItemInput = {
       product_id?: string;
       id?: string;
       quantity?: number;
-      company_id?: string;
       price?: number;
     };
+
     const enrichedItems = await Promise.all(
       (items as ItemInput[]).map(async (item) => {
         const productId = item.product_id || item.id;
@@ -180,7 +131,6 @@ export async function POST(req: Request) {
           select: {
             id: true,
             title: true,
-            seller_id: true,
             company_id: true,
             price: true,
             stock: true,
@@ -197,8 +147,7 @@ export async function POST(req: Request) {
       product: {
         id: string;
         title: string;
-        seller_id: string;
-        company_id: string | null;
+        company_id: string;
         price: unknown;
         stock: number | null;
         status: string;
@@ -212,28 +161,41 @@ export async function POST(req: Request) {
       );
     }
 
-    // ── Fase 2: Agrupar por seller_id ────────────────────────────────────────
-    // La clave de agrupación es siempre el seller_id del producto.
-    // Cada proveedor (independientemente de si opera bajo empresa o no)
-    // recibe un tracking code propio para despachar sus productos.
+    // Agrupar por company_id (cada empresa = un paquete)
+    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
+    const isCompleteDelivery = delivery_type === "complete";
+    const destinationUbigeo = [
+      String(shipping.district || "").trim(),
+      String(shipping.province || "").trim(),
+      String(shipping.department || "").trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const supplierDestination = isCompleteDelivery
+      ? IUBIZON_WAREHOUSE
+      : `${shipping.address}, ${destinationUbigeo || shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
 
     const groupMap = new Map<string, typeof validItems>();
     for (const entry of validItems) {
-      const key = entry.product.seller_id;
+      const key = entry.product.company_id;
       if (!groupMap.has(key)) groupMap.set(key, []);
       groupMap.get(key)!.push(entry);
     }
 
-    const groups = Array.from(groupMap.entries()); // [sellerId, items[]]
+    // Generar order_code único
+    let orderCode = generateOrderCode();
+    while (
+      await prisma.order.findUnique({
+        where: { order_code: orderCode },
+        select: { id: true },
+      })
+    ) {
+      orderCode = generateOrderCode();
+    }
 
-    // ── Fase 3: Transacción atómica ─────────────────────────────────────────
-
-    const createdOrders = await prisma.$transaction(async (tx) => {
-      const allOrders = [];
-
-      for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
-        const [, groupItems] = groups[groupIndex];
-
+    const createdOrder = await prisma.$transaction(async (tx) => {
+      // Validar stock y descontar
+      for (const [companyId, groupItems] of groupMap) {
         for (const { item, product } of groupItems) {
           const itemQuantity = Number(item.quantity) || 1;
           const currentStock = product.stock ?? 1;
@@ -244,7 +206,6 @@ export async function POST(req: Request) {
             );
           }
 
-          // Descuento atómico de stock (evita race conditions)
           const updated = await tx.product.updateMany({
             where: { id: product.id, stock: { gte: itemQuantity } },
             data: { stock: { decrement: itemQuantity } },
@@ -256,133 +217,89 @@ export async function POST(req: Request) {
             );
           }
 
-          // Marcar como vendido si llega a 0
-          const afterUpdate = await tx.product.findUnique({
+          const after = await tx.product.findUnique({
             where: { id: product.id },
             select: { stock: true },
           });
-          if ((afterUpdate?.stock ?? 0) <= 0) {
+          if ((after?.stock ?? 0) <= 0) {
             await tx.product.update({
               where: { id: product.id },
               data: { status: "sold" },
             });
           }
-
-          // Garantizar perfil del vendedor
-          await tx.profile.upsert({
-            where: { id: product.seller_id },
-            update: {},
-            create: {
-              id: product.seller_id,
-              email: `seller_${product.seller_id.slice(0, 8)}@iubizon.com`,
-              name: "Vendedor iubizon",
-            },
-          });
-
-          // Verificar company_id válida
-          let validCompanyId: string | null = null;
-          const targetCompanyId =
-            product.company_id || (item as { company_id?: string }).company_id;
-          if (targetCompanyId) {
-            const companyExists = await tx.company.findUnique({
-              where: { id: targetCompanyId },
-              select: { id: true },
-            });
-            if (companyExists) validCompanyId = companyExists.id;
-          }
-
-          const unitPrice = Number(product.price);
-          const itemSubtotal = unitPrice * itemQuantity;
-
-          const order = await tx.order.create({
-            data: {
-              product_id: product.id,
-              buyer_id: buyerId,
-              seller_id: product.seller_id,
-              company_id: validCompanyId,
-              quantity: itemQuantity,
-              unit_price: unitPrice,
-              amount: itemSubtotal,
-              commission: calculateIubizonCommission(itemSubtotal),
-              status: "pending",
-              payment_method: payment_method || "cash_on_delivery",
-              payment_id: sessionCode,
-              shipping: {
-                create: {
-                  origin_address: "Almacén / Proveedor",
-                  destination_address: supplierDestination,
-                  courier: null,
-                  tracking_number: null,
-                  status: "pending",
-                },
-              },
-            },
-            include: {
-              shipping: true,
-              product: { select: { title: true } },
-            },
-          });
-
-          allOrders.push(order);
         }
       }
 
-      return allOrders;
+      const packages = Array.from(groupMap.entries()).map(
+        ([companyId, groupItems]) => ({
+          companyId,
+          deliveryType: delivery_type || "progressive",
+          destinationAddress: supplierDestination,
+          items: groupItems.map(({ item, product }) => ({
+            productId: product.id,
+            quantity: Number(item.quantity) || 1,
+            unitPrice: Number(product.price),
+          })),
+        }),
+      );
+
+      return createFullOrder({
+        orderCode,
+        buyerId,
+        paymentMethod: payment_method || "cash_on_delivery",
+        initialStatus: "pending",
+        shipping: {
+          name: shipping.name,
+          phone: shipping.phone,
+          email: shipping.email,
+          address: shipping.address,
+          department: shipping.department,
+          province: shipping.province,
+          district: shipping.district,
+          reference: shipping.notes,
+          documentType: shipping.documentType,
+          documentNumber: shipping.documentNumber,
+        },
+        invoice: {
+          type: invoice_type,
+          docType: invoice_doc_type,
+          number: invoice_dni || invoice_ruc,
+          legalName: invoice_company_name,
+          taxAddress: shipping.address,
+        },
+        packages,
+        txPrisma: tx,
+      });
     });
 
-    if (createdOrders.length === 0) {
-      return NextResponse.json(
-        { error: "No se pudieron procesar los productos del carrito" },
-        { status: 400 },
-      );
-    }
-
-    // Despacho de correos en segundo plano (no bloqueante)
-    if (createdOrders[0]?.id) {
-      sendOrderConfirmationEmails(createdOrders[0].id).catch((err) =>
-        console.error(
-          `[API Orders Email Error] Error enviando emails para orden ${createdOrders[0].id}:`,
-          err,
-        ),
-      );
-    }
-
-    // ── Respuesta ──────────────────────────────────────────────────────────
-
-    // Calcular totales globales
-    const subtotal = (items as ItemInput[]).reduce(
-      (sum, i) => sum + Number(i.price) * Number(i.quantity || 1),
-      0,
+    sendOrderConfirmationEmails(createdOrder.id).catch((err) =>
+      console.error(`[API Orders Email Error] ${createdOrder.id}:`, err),
     );
+
     const shippingCfg = await getShippingConfig();
     const shippingCost = shippingCfg.is_free ? 0.0 : shippingCfg.default_cost;
-    const totalTax = 0;
-    const totalAmount = subtotal + shippingCost;
-    const totalCommission = subtotal * 0.1;
-
-    // Construir resumen de grupos de tracking para mostrar en la UI
-    const trackingGroups = groups.map(([sellerId, groupItems], index) => ({
-      sellerId,
-      trackingCode: `${sessionCode}-${String(index + 1).padStart(3, "0")}`,
-      productCount: groupItems.reduce(
-        (s, e) => s + (Number(e.item.quantity) || 1),
-        0,
-      ),
-      productTitles: groupItems.map((e) => e.product.title),
-    }));
+    const subtotal = Number(createdOrder.subtotal);
 
     return NextResponse.json({
       success: true,
-      orderCode: sessionCode,
-      orderCount: createdOrders.length,
-      trackingGroups,
+      orderCode: createdOrder.order_code,
+      orderId: createdOrder.id,
+      packageCount: createdOrder.packages.length,
+      packages: createdOrder.packages.map((pkg) => ({
+        packageId: pkg.id,
+        companyId: pkg.company_id,
+        itemCount: pkg.items.length,
+        productTitles: pkg.items.map(
+          (i) => (i.product as { title: string }).title,
+        ),
+      })),
       financials: {
         subtotal,
         shippingCost,
-        taxAmount: totalTax,
-        platformCommission: totalCommission,
-        sellerEarnings: subtotal - totalCommission,
-        totalAmount,
+        taxAmount: 0,
+        platformCommission: subtotal * 0.09,
+        sellerEarnings: subtotal - subtotal * 0.09,
+        totalAmount: subtotal + shippingCost,
       },
     });
   } catch (err: unknown) {

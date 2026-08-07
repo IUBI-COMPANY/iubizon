@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { parseDispatchMeta } from "@/lib/shippingHelper";
-import { ensureSellerPayoutForOrders } from "@/lib/payoutService";
-import { getShippingConfig } from "@/lib/services/platformSettings";
-import { getOrderSessionCode, normalizeOrderCode } from "@/lib/utils/orderCode";
+import { ensureSellerPayoutForPackages } from "@/lib/payoutService";
 
-export interface PackageItem {
+export interface BuyerOrderItem {
   id: string;
   productId: string;
   title: string;
   price: number;
   quantity: number;
+  subtotal: number;
   image: string | null;
   company: {
     id: string;
@@ -21,53 +19,45 @@ export interface PackageItem {
   } | null;
 }
 
-export interface PaymentDetails {
-  provider: string;
-  cardBrand: string | null;
-  cardLast4: string | null;
-  authorizationCode: string | null;
-  docType: string | null;
-  identityNumber: string | null;
-  legalName: string | null;
-}
-
-export interface TrackingPackage {
+export interface BuyerPackage {
+  packageId: string;
+  companyName: string | null;
   trackingNumber: string | null;
-  carrierName: string | null;
+  courier: string | null;
   trackingUrl: string | null;
   estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
-  paymentDetails: PaymentDetails | null;
+  cardBrand: string | null;
+  cardLast4: string | null;
   subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
-  destinationAddress: string | null;
-  courierInfo: string | null;
-  sellerName: string | null;
-  orderIds: string[];
-  items: PackageItem[];
+  netEarnings: number;
+  items: BuyerOrderItem[];
 }
 
-export interface PurchaseOrderSession {
+export interface BuyerOrderSession {
+  orderId: string;
   orderCode: string;
   createdAt: string;
+  status: string;
   subtotal: number;
-  taxAmount: number;
   shippingCost: number;
+  taxAmount: number;
   totalAmount: number;
-  totalItems: number;
-  destinationAddress: string | null;
-  paymentDetails: PaymentDetails | null;
-  packages: TrackingPackage[];
+  shippingName: string | null;
+  shippingAddress: string | null;
+  shippingDepartment: string | null;
+  shippingProvince: string | null;
+  shippingDistrict: string | null;
+  invoiceType: string | null;
+  invoiceNumber: string | null;
+  packages: BuyerPackage[];
 }
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const orderCodeParam = searchParams.get("code");
-    const normalizedOrderCodeParam = normalizeOrderCode(orderCodeParam);
 
     const supabase = await createServerClient();
     const {
@@ -78,287 +68,94 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const where: any = { buyer_id: user.id };
+    if (orderCodeParam) {
+      where.order_code = orderCodeParam;
+    }
+
     const orders = await prisma.order.findMany({
-      where: { buyer_id: user.id },
+      where,
       orderBy: { created_at: "desc" },
       include: {
-        product: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            images: {
-              orderBy: { position: "asc" },
-              take: 1,
-            },
-          },
-        },
-        company: {
-          select: {
-            id: true,
-            name: true,
-            logo_url: true,
-            slug: true,
-          },
-        },
-        seller: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         shipping: true,
+        invoice: true,
         paymentTransaction: {
-          select: {
-            provider: true,
-            card_brand: true,
-            card_last4: true,
-            authorization_code: true,
-            status: true,
-          },
+          select: { card_brand: true, card_last4: true },
         },
-        invoiceDocument: {
-          select: {
-            doc_type: true,
-            identity_type: true,
-            identity_number: true,
-            legal_name: true,
+        packages: {
+          include: {
+            company: {
+              select: { id: true, name: true, logo_url: true, slug: true },
+            },
+            items: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
+                },
+              },
+            },
           },
         },
       },
     });
 
-    // ── Lógica de Auto-Completado por Fecha Estimada (+24 Horas) ─────────────
-    const now = new Date();
-    const ordersToAutoComplete: string[] = [];
-
-    for (const order of orders) {
-      if (
-        order.shipping &&
-        order.shipping.status === "shipped" &&
-        order.shipping.estimated_delivery
-      ) {
-        const expiryTime = new Date(
-          order.shipping.estimated_delivery.getTime() + 24 * 60 * 60 * 1000,
-        );
-        if (now > expiryTime) {
-          ordersToAutoComplete.push(order.id);
-          order.status = "delivered";
-          if (order.shipping) order.shipping.status = "delivered";
-        }
-      }
-    }
-
-    if (ordersToAutoComplete.length > 0) {
-      await prisma.order.updateMany({
-        where: { id: { in: ordersToAutoComplete } },
-        data: { status: "delivered", updated_at: now },
-      });
-      await prisma.shipping.updateMany({
-        where: { order_id: { in: ordersToAutoComplete } },
-        data: { status: "delivered", updated_at: now },
-      });
-    }
-
-    // ── Agrupación en Sesiones y Paquetes por Vendedor ─────────────────────
-
-    type TempPackage = {
-      packageKey: string;
-      trackingNumber: string | null;
-      carrierName: string | null;
-      trackingUrl: string | null;
-      estimatedDelivery: string | null;
-      status: string;
-      paymentMethod: string;
-      paymentDetails: PaymentDetails | null;
-      sellerName: string | null;
-      subtotal: number;
-      destinationAddress: string | null;
-      courierInfo: string | null;
-      orderIds: string[];
-      items: PackageItem[];
-    };
-
-    type TempSession = {
-      orderCode: string;
-      createdAt: string;
-      packageMap: Map<string, TempPackage>;
-    };
-
-    const sessionMap = new Map<string, TempSession>();
-
-    for (const order of orders) {
-      const mainOrderCode = getOrderSessionCode({
-        id: order.id,
-        paymentId: order.payment_id,
-        createdAt: order.created_at,
-      });
-      const pkgKey = `${mainOrderCode}_${order.seller_id}`;
-
-      const { carrierName, trackingUrl } = parseDispatchMeta(
-        order.shipping?.courier,
-      );
-
-      const payDetails: PaymentDetails | null = order.paymentTransaction
-        ? {
-            provider: order.payment_method || "niubiz_card",
-            cardBrand: order.paymentTransaction.card_brand || "VISA",
-            cardLast4: order.paymentTransaction.card_last4 || null,
-            authorizationCode:
-              order.paymentTransaction.authorization_code || mainOrderCode,
-            docType: order.invoiceDocument?.doc_type || null,
-            identityNumber: order.invoiceDocument?.identity_number || null,
-            legalName: order.invoiceDocument?.legal_name || null,
-          }
-        : {
-            provider: order.payment_method || "niubiz_card",
-            cardBrand: "VISA",
-            cardLast4: null,
-            authorizationCode: mainOrderCode,
-            docType: order.invoiceDocument?.doc_type || null,
-            identityNumber: order.invoiceDocument?.identity_number || null,
-            legalName: order.invoiceDocument?.legal_name || null,
-          };
-
-      if (!sessionMap.has(mainOrderCode)) {
-        sessionMap.set(mainOrderCode, {
-          orderCode: mainOrderCode,
-          createdAt:
-            order.created_at?.toISOString() || new Date().toISOString(),
-          packageMap: new Map<string, TempPackage>(),
-        });
-      }
-
-      const session = sessionMap.get(mainOrderCode)!;
-
-      if (!session.packageMap.has(pkgKey)) {
-        const sellerName =
-          order.company?.name || order.seller?.name || "Vendedor iubizon";
-
-        session.packageMap.set(pkgKey, {
-          packageKey: pkgKey,
-          trackingNumber: order.shipping?.tracking_number || null,
-          carrierName,
-          trackingUrl,
-          estimatedDelivery: order.shipping?.estimated_delivery
-            ? order.shipping.estimated_delivery.toISOString()
-            : null,
-          status: order.status,
-          paymentMethod: order.payment_method || "niubiz_card",
-          paymentDetails: payDetails,
-          sellerName,
-          subtotal: 0,
-          destinationAddress: order.shipping?.destination_address || null,
-          courierInfo: order.shipping?.courier || null,
-          orderIds: [],
-          items: [],
-        });
-      }
-
-      const pkg = session.packageMap.get(pkgKey)!;
-      const itemPrice = Number(order.amount);
-      pkg.subtotal += itemPrice;
-      pkg.orderIds.push(order.id);
-
-      if (order.product) {
-        pkg.items.push({
-          id: order.id,
-          productId: order.product.id,
-          title: order.product.title,
-          price: itemPrice,
-          quantity: order.quantity,
-          image: order.product.images?.[0]?.url || null,
-          company: order.company
+    const sessions: BuyerOrderSession[] = orders.map((order) => ({
+      orderId: order.id,
+      orderCode: order.order_code,
+      createdAt: order.created_at?.toISOString() || new Date().toISOString(),
+      status: order.status,
+      subtotal: Number(order.subtotal),
+      shippingCost: Number(order.shipping_cost),
+      taxAmount: Number(order.tax_amount),
+      totalAmount: Number(order.total_amount),
+      shippingName: order.shipping?.name ?? null,
+      shippingAddress: order.shipping?.address ?? null,
+      shippingDepartment: order.shipping?.department ?? null,
+      shippingProvince: order.shipping?.province ?? null,
+      shippingDistrict: order.shipping?.district ?? null,
+      invoiceType: order.invoice?.type ?? null,
+      invoiceNumber: order.invoice?.number ?? null,
+      packages: order.packages.map((pkg) => ({
+        packageId: pkg.id,
+        companyName: pkg.company?.name || "Vendedor",
+        trackingNumber: pkg.tracking_number,
+        courier: pkg.courier,
+        trackingUrl: pkg.tracking_url,
+        estimatedDelivery: pkg.estimated_delivery?.toISOString() || null,
+        status: pkg.status,
+        paymentMethod: order.payment_method || "cash_on_delivery",
+        cardBrand: order.paymentTransaction?.card_brand || null,
+        cardLast4: order.paymentTransaction?.card_last4 || null,
+        subtotal: Number(pkg.subtotal),
+        netEarnings: Number(pkg.net_earnings),
+        items: pkg.items.map((item) => ({
+          id: item.id,
+          productId: item.product_id,
+          title: item.product.title,
+          price: Number(item.unit_price),
+          quantity: item.quantity,
+          subtotal: Number(item.subtotal),
+          image: item.product.images[0]?.url || null,
+          company: pkg.company
             ? {
-                id: order.company.id,
-                name: order.company.name,
-                logoUrl: order.company.logo_url,
-                slug: order.company.slug,
+                id: pkg.company.id,
+                name: pkg.company.name,
+                logoUrl: pkg.company.logo_url,
+                slug: pkg.company.slug,
               }
             : null,
-        });
-      }
-    }
-
-    const purchaseSessions: PurchaseOrderSession[] = [];
-
-    const shippingCfg = await getShippingConfig();
-
-    for (const session of Array.from(sessionMap.values())) {
-      const packagesList: TrackingPackage[] = [];
-      let sessionSubtotal = 0;
-      let sessionItemsCount = 0;
-      let mainDestination: string | null = null;
-      let mainPayDetails: PaymentDetails | null = null;
-
-      for (const tempPkg of Array.from(session.packageMap.values())) {
-        const taxAmount = 0;
-        const shippingCost = shippingCfg.is_free
-          ? 0.0
-          : shippingCfg.default_cost;
-        const totalAmount = tempPkg.subtotal + shippingCost;
-
-        sessionSubtotal += tempPkg.subtotal;
-        sessionItemsCount += tempPkg.items.reduce(
-          (sum, item) => sum + item.quantity,
-          0,
-        );
-        if (!mainDestination && tempPkg.destinationAddress) {
-          mainDestination = tempPkg.destinationAddress;
-        }
-        if (!mainPayDetails && tempPkg.paymentDetails) {
-          mainPayDetails = tempPkg.paymentDetails;
-        }
-
-        packagesList.push({
-          trackingNumber: tempPkg.trackingNumber,
-          carrierName: tempPkg.carrierName,
-          trackingUrl: tempPkg.trackingUrl,
-          estimatedDelivery: tempPkg.estimatedDelivery,
-          status: tempPkg.status,
-          paymentMethod: tempPkg.paymentMethod,
-          paymentDetails: tempPkg.paymentDetails,
-          subtotal: tempPkg.subtotal,
-          taxAmount,
-          shippingCost,
-          totalAmount,
-          destinationAddress: tempPkg.destinationAddress,
-          courierInfo: tempPkg.courierInfo,
-          sellerName: tempPkg.sellerName,
-          orderIds: tempPkg.orderIds,
-          items: tempPkg.items,
-        });
-      }
-
-      const sessionTax = 0;
-      const sessionShipping = shippingCfg.is_free
-        ? 0.0
-        : shippingCfg.default_cost;
-      const sessionTotal = sessionSubtotal + sessionShipping;
-
-      purchaseSessions.push({
-        orderCode: session.orderCode,
-        createdAt: session.createdAt,
-        subtotal: sessionSubtotal,
-        taxAmount: sessionTax,
-        shippingCost: sessionShipping,
-        totalAmount: sessionTotal,
-        totalItems: sessionItemsCount,
-        destinationAddress: mainDestination,
-        paymentDetails: mainPayDetails,
-        packages: packagesList,
-      });
-    }
-
-    const filteredSessions = normalizedOrderCodeParam
-      ? purchaseSessions.filter((s) => s.orderCode === normalizedOrderCodeParam)
-      : purchaseSessions;
+        })),
+      })),
+    }));
 
     return NextResponse.json({
-      sessions: filteredSessions,
-      session: filteredSessions[0] || null,
-      packages: filteredSessions.flatMap((s) => s.packages),
-      totalPurchases: purchaseSessions.length,
+      sessions,
+      session: sessions[0] || null,
+      totalPurchases: sessions.length,
     });
   } catch (err: unknown) {
     console.error("Error al obtener compras del usuario:", err);
@@ -380,37 +177,57 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const { orderIds } = await req.json();
+    const { packageIds } = await req.json();
 
-    if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
+    if (!packageIds || !Array.isArray(packageIds) || packageIds.length === 0) {
       return NextResponse.json(
-        { error: "Faltan los IDs de las órdenes" },
+        { error: "Faltan los IDs de los paquetes" },
         { status: 400 },
       );
     }
 
-    await prisma.order.updateMany({
+    await prisma.orderPackage.updateMany({
       where: {
-        id: { in: orderIds },
-        buyer_id: user.id,
+        id: { in: packageIds },
+        order: { buyer_id: user.id },
       },
-      data: {
-        status: "delivered",
-        updated_at: new Date(),
-      },
+      data: { status: "delivered", updated_at: new Date() },
     });
 
-    await prisma.shipping.updateMany({
+    await prisma.orderItem.updateMany({
       where: {
-        order_id: { in: orderIds },
+        package_id: { in: packageIds },
       },
-      data: {
-        status: "delivered",
-        updated_at: new Date(),
-      },
+      data: { status: "delivered", updated_at: new Date() },
     });
 
-    await ensureSellerPayoutForOrders(orderIds);
+    // Si todos los paquetes de la orden están entregados, marcar la orden como completada
+    const firstPackage = await prisma.orderPackage.findFirst({
+      where: { id: packageIds[0] },
+      select: { order_id: true },
+    });
+
+    if (firstPackage) {
+      const orderId = firstPackage.order_id;
+      const totalPackages = await prisma.orderPackage.count({
+        where: { order_id: orderId },
+      });
+      const deliveredPackages = await prisma.orderPackage.count({
+        where: {
+          order_id: orderId,
+          status: { in: ["delivered", "completed"] },
+        },
+      });
+
+      if (deliveredPackages >= totalPackages) {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: { status: "delivered", updated_at: new Date() },
+        });
+      }
+    }
+
+    await ensureSellerPayoutForPackages(packageIds);
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

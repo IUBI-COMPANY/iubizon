@@ -8,7 +8,6 @@ export async function generateUniqueCompanySlug(
   const baseSlug = slugify(name);
   if (!baseSlug) return `empresa-${Date.now().toString().slice(-4)}`;
 
-  // 1. Verificar si el slug base está libre (ej: "iubizon")
   const existingBase = await prisma.company.findFirst({
     where: {
       slug: baseSlug,
@@ -18,10 +17,9 @@ export async function generateUniqueCompanySlug(
   });
 
   if (!existingBase) {
-    return baseSlug; // Se usa directamente el nombre sin sufijos si no colisiona
+    return baseSlug;
   }
 
-  // 2. Si ya existe, generar el siguiente sufijo numérico libre (ej: "iubizon-1", "iubizon-2")
   let suffix = 1;
   while (true) {
     const candidate = `${baseSlug}-${suffix}`;
@@ -40,34 +38,25 @@ export async function generateUniqueCompanySlug(
   }
 }
 
-export async function createCompany(
-  data: {
-    name: string;
-    tax_id?: string;
-    description?: string;
-    phone?: string;
-    email?: string;
-    location?: string;
-    latitude?: number | null;
-    longitude?: number | null;
-  },
-  userId: string,
-) {
-  // Generar un slug único limpio (solo añade número si ya existe otra empresa con el mismo slug)
-  const slug = await generateUniqueCompanySlug(data.name);
+export async function createPersonalCompany(userId: string) {
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true },
+  });
 
-  return prisma.$transaction(async (tx) => {
-    const company = await tx.company.create({
+  const companyName =
+    profile?.name || profile?.email?.split("@")[0] || "Usuario";
+  const slug = await generateUniqueCompanySlug(companyName);
+
+  const company = await prisma.$transaction(async (tx) => {
+    const c = await tx.company.create({
       data: {
-        name: data.name,
+        name: companyName,
         slug,
-        tax_id: data.tax_id,
-        description: data.description,
-        phone: data.phone,
-        email: data.email,
-        location: data.location,
-        latitude: data.latitude,
-        longitude: data.longitude,
+        email: profile?.email || `usuario_${userId.slice(0, 8)}@iubizon.com`,
+        legal_name: companyName,
+        is_personal: true,
+        location: null,
         companyMembers: {
           create: {
             user_id: userId,
@@ -82,7 +71,98 @@ export async function createCompany(
       },
     });
 
-    // Establecer como empresa activa por defecto en el perfil dentro de la misma transacción
+    await tx.profile.update({
+      where: { id: userId },
+      data: { last_active_company_id: c.id },
+    });
+
+    return c;
+  });
+
+  return company;
+}
+
+export async function ensurePersonalCompany(userId: string) {
+  const profile = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { last_active_company_id: true },
+  });
+
+  if (profile?.last_active_company_id) {
+    const company = await prisma.company.findUnique({
+      where: { id: profile.last_active_company_id },
+      select: { id: true },
+    });
+    if (company) return company;
+  }
+
+  const existingPersonal = await prisma.company.findFirst({
+    where: {
+      is_personal: true,
+      companyMembers: { some: { user_id: userId } },
+    },
+    select: { id: true },
+  });
+
+  if (existingPersonal) {
+    await prisma.profile.update({
+      where: { id: userId },
+      data: { last_active_company_id: existingPersonal.id },
+    });
+    return existingPersonal;
+  }
+
+  return createPersonalCompany(userId);
+}
+
+export async function createCompany(
+  data: {
+    name: string;
+    email: string;
+    legal_name: string;
+    logo_url?: string;
+    tax_id?: string;
+    description?: string;
+    bank_account?: string;
+    phone?: string;
+    location?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  },
+  userId: string,
+) {
+  const slug = await generateUniqueCompanySlug(data.name);
+
+  return prisma.$transaction(async (tx) => {
+    const company = await tx.company.create({
+      data: {
+        name: data.name,
+        slug,
+        email: data.email || "",
+        legal_name: data.legal_name || "",
+        logo_url: data.logo_url || null,
+        tax_id: data.tax_id || null,
+        description: data.description || null,
+        bank_account: data.bank_account || null,
+        phone: data.phone || null,
+        location: data.location || null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        is_personal: false,
+        companyMembers: {
+          create: {
+            user_id: userId,
+            role: "owner",
+          },
+        },
+      },
+      include: {
+        companyMembers: {
+          include: { user: true },
+        },
+      },
+    });
+
     await tx.profile.update({
       where: { id: userId },
       data: { last_active_company_id: company.id },
@@ -112,33 +192,6 @@ export async function getUserCompanies(userId: string) {
       select: { last_active_company_id: true },
     }),
   ]);
-
-  // Limpiar y normalizar slugs de empresas existentes si el slug base "iubizon" está libre
-  for (const m of memberships) {
-    const base = slugify(m.company.name);
-    if (
-      base &&
-      m.company.slug &&
-      m.company.slug !== base &&
-      /-[0-9]+$/.test(m.company.slug)
-    ) {
-      const isTaken = await prisma.company.findFirst({
-        where: { slug: base, id: { not: m.company.id } },
-        select: { id: true },
-      });
-      if (!isTaken) {
-        try {
-          await prisma.company.update({
-            where: { id: m.company.id },
-            data: { slug: base },
-          });
-          m.company.slug = base;
-        } catch (e) {
-          console.error("Error al sanear slug de empresa:", e);
-        }
-      }
-    }
-  }
 
   const companies = memberships.map((m) => ({
     ...m.company,
@@ -177,7 +230,6 @@ export async function getCompanyById(companyId: string) {
 }
 
 export async function getPublicCompanyBySlugOrId(identifier: string) {
-  // Intentar buscar por slug primero, luego por id
   const isUuid =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       identifier,

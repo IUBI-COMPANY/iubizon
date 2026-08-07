@@ -1,59 +1,63 @@
-import fs from "fs";
-import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import dotenv from "dotenv";
 
-const envLocalPath = path.resolve(process.cwd(), ".env.local");
-let dbUrl = "";
-if (fs.existsSync(envLocalPath)) {
-  const content = fs.readFileSync(envLocalPath, "utf-8");
-  for (const line of content.split("\n")) {
-    if (line.startsWith("DATABASE_URL=") || line.startsWith("DIRECT_URL=")) {
-      dbUrl = line.split("=").slice(1).join("=").replace(/['"]/g, "").trim();
-      if (dbUrl) break;
-    }
-  }
-}
+dotenv.config({ path: ".env.local" });
+dotenv.config();
 
-const pool = new Pool({ connectionString: dbUrl });
+const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
+const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-async function testQuery(companyId: string | null) {
-  let whereClause: any;
-
-  if (companyId) {
-    whereClause = {
-      OR: [{ company_id: companyId }, { product: { company_id: companyId } }],
-    };
-  } else {
-    whereClause = {
-      company_id: null,
-    };
+async function main() {
+  const userId = process.argv[2];
+  if (!userId) {
+    console.error("❌ Debes pasar un user_id como argumento.");
+    process.exit(1);
   }
 
-  const orders = await prisma.order.findMany({
-    where: whereClause,
-    select: {
-      id: true,
-      company_id: true,
-      product: { select: { title: true, company_id: true } },
+  const memberships = await prisma.companyMember.findMany({
+    where: { user_id: userId },
+    select: { company_id: true },
+  });
+  const companyIds = memberships.map((m) => m.company_id);
+
+  if (companyIds.length === 0) {
+    console.log(
+      "No tienes empresas. Verifica que exista una empresa personal.",
+    );
+    process.exit(0);
+  }
+
+  const packages = await prisma.orderPackage.findMany({
+    where: { company_id: { in: companyIds } },
+    include: {
+      company: { select: { name: true } },
+      order: { select: { order_code: true } },
+      items: {
+        include: {
+          product: { select: { title: true } },
+        },
+      },
     },
   });
 
-  console.log(
-    `RESULTADO PARA company_id = ${companyId}:`,
-    orders.length,
-    "órdenes",
-  );
+  console.log(`Empresas del usuario:`, companyIds);
+  console.log(`Paquetes encontrados:`, packages.length);
+  for (const pkg of packages) {
+    console.log(
+      `  - Paquete ${pkg.id} | Orden ${pkg.order.order_code} | Empresa: ${pkg.company?.name} | Items: ${pkg.items.length}`,
+    );
+  }
 }
 
-async function main() {
-  console.log("--- PROBANDO CONSULTA DE ORDENES ---");
-  await testQuery("24ed6264-c72f-4321-ac69-50014257f6d8"); // SellBox
-  await testQuery("4b7e1a24-c5ea-4716-9ec1-76209a044029"); // TEST COMPANY S.A.C.
-  await testQuery("18e01fc4-d6da-4c93-adc6-a2d79d63c4a5"); // iubizon
-}
-
-main().finally(() => pool.end());
+main()
+  .catch((e) => {
+    console.error("Error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

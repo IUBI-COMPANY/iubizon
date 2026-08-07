@@ -15,8 +15,7 @@ interface ProductActionsBlockProps {
   productId: string;
   productTitle: string;
   productPrice: number;
-  sellerId: string;
-  companyId?: string | null;
+  companyId: string;
   images?: any[];
   initialStock: number;
   initialStatus: string;
@@ -26,7 +25,6 @@ export function ProductActionsBlock({
   productId,
   productTitle,
   productPrice,
-  sellerId,
   companyId,
   images,
   initialStock,
@@ -34,92 +32,69 @@ export function ProductActionsBlock({
 }: ProductActionsBlockProps) {
   const { user } = useAuth();
   const { activeCompany } = useCompany();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
-  // Hook de tiempo real con Supabase Postgres Changes
-  const { stock, status, isOutOfStock } = useRealtimeStock(
+  const { stock, status } = useRealtimeStock(
     productId,
     initialStock,
     initialStatus,
   );
 
-  const [quantity, setQuantity] = useState<number>(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const mainImageUrl =
-    typeof images?.[0] === "string" ? images[0] : images?.[0]?.url;
-
-  // Detección estricta de propiedad
   const isOwner = Boolean(
-    user?.id &&
-    (user.id === sellerId || (companyId && activeCompany?.id === companyId)),
+    user?.id && companyId && activeCompany?.id === companyId,
   );
 
-  if (isOwner) {
-    return (
-      <div className="space-y-3 pt-2">
-        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-3.5 text-xs font-medium flex items-center gap-2">
-          <Info className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>
-            Esta es tu propia publicación. Puedes gestionarla o editarla desde
-            tu panel.
-          </span>
-        </div>
-        <Link href="/user/dashboard/products" className="block w-full">
-          <Button className="w-full bg-[#112237] hover:bg-[#1a3454] text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs">
-            <Edit className="w-4 h-4 text-[#f25c05]" />
-            <span>Gestionar / Editar mi Producto</span>
-          </Button>
-        </Link>
-      </div>
-    );
-  }
+  const canEdit = true;
 
   return (
-    <div className="space-y-4 pt-2">
-      {/* Selector de Cantidad reutilizable con validación de stock */}
-      {!isOutOfStock && (
-        <div className="space-y-1.5 bg-[#f8fafc] border border-[#e2e8f0] p-3.5 rounded-2xl">
-          <label className="text-xs font-bold text-[#112237] block">
-            Cantidad a comprar
-          </label>
+    <div className="space-y-3">
+      {isOwner ? (
+        <Link href={`/products/edit/${productId}`} className="block w-full">
+          <Button
+            variant="outline"
+            className="w-full font-semibold py-3 rounded-xl border-[#f25c05] text-[#f25c05] hover:bg-[#f25c05]/10 transition-colors"
+            size="lg"
+          >
+            <Edit className="w-5 h-5 mr-2" />
+            Editar mi publicación
+          </Button>
+        </Link>
+      ) : (
+        <>
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
-            max={stock}
-            disabled={isOutOfStock}
-            size="md"
-            align="left"
+            min={1}
+            max={stock ?? 10}
           />
-        </div>
+
+          <AddToCartButton
+            productId={productId}
+            productTitle={productTitle}
+            productPrice={productPrice}
+            companyId={companyId}
+            images={images}
+            stock={stock}
+            status={status}
+            quantity={quantity}
+            onAdded={() => setIsModalOpen(true)}
+          />
+
+          <AddToCartModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            addedProduct={{
+              id: productId,
+              title: productTitle,
+              price: productPrice,
+              imageUrl: images?.[0]?.url,
+              companyId: companyId,
+              quantity,
+            }}
+          />
+        </>
       )}
-
-      {/* Botón de Agregar al Carrito */}
-      <AddToCartButton
-        productId={productId}
-        productTitle={productTitle}
-        productPrice={productPrice}
-        sellerId={sellerId}
-        images={images}
-        stock={stock}
-        status={status}
-        quantity={quantity}
-        onAdded={() => setIsModalOpen(true)}
-      />
-
-      {/* Popup / Modal de Confirmación y Paquete de Aula u Oficina */}
-      <AddToCartModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        addedProduct={{
-          id: productId,
-          title: productTitle,
-          price: productPrice,
-          imageUrl: mainImageUrl,
-          sellerId,
-          stock,
-          quantity,
-        }}
-      />
     </div>
   );
 }

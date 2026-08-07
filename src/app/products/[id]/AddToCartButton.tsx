@@ -10,7 +10,7 @@ interface AddToCartButtonProps {
   productId: string;
   productTitle: string;
   productPrice: number;
-  sellerId: string;
+  companyId: string;
   images?: any[];
   stock?: number;
   status?: string;
@@ -22,7 +22,7 @@ export function AddToCartButton({
   productId,
   productTitle,
   productPrice,
-  sellerId,
+  companyId,
   images,
   stock,
   status,
@@ -41,7 +41,7 @@ export function AddToCartButton({
         id: productId,
         title: productTitle,
         price: productPrice,
-        seller_id: sellerId,
+        company_id: companyId,
         images,
         stock,
       },

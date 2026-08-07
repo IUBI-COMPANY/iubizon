@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const supabase = await createServerClient();
@@ -30,40 +31,26 @@ export async function POST(request: Request) {
     );
   }
 
-  // Verify ownership or company membership
-  const { data: product, error: productError } = await supabase
-    .from("products")
-    .select("seller_id, company_id")
-    .eq("id", productId)
-    .single();
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { company_id: true },
+  });
 
-  if (productError || !product) {
+  if (!product) {
     return NextResponse.json(
       { error: "Producto no encontrado" },
       { status: 404 },
     );
   }
 
-  let isAuthorized = product.seller_id === user.id;
+  const isMember = await prisma.companyMember.findFirst({
+    where: { company_id: product.company_id, user_id: user.id },
+  });
 
-  if (!isAuthorized && product.company_id) {
-    const { data: memberData } = await supabase
-      .from("company_members")
-      .select("id")
-      .eq("company_id", product.company_id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (memberData) {
-      isAuthorized = true;
-    }
-  }
-
-  if (!isAuthorized) {
+  if (!isMember) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  // Validate file type
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   if (!allowedTypes.includes(file.type)) {
     return NextResponse.json(
@@ -72,7 +59,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Validate file size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
     return NextResponse.json(
       { error: "Archivo demasiado grande (max 10MB)" },
@@ -80,11 +66,9 @@ export async function POST(request: Request) {
     );
   }
 
-  // Generate unique filename
   const ext = file.name.split(".").pop();
   const fileName = `${productId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`;
 
-  // Upload to Supabase Storage
   const arrayBuffer = await file.arrayBuffer();
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from("product-images")
@@ -101,35 +85,21 @@ export async function POST(request: Request) {
     );
   }
 
-  // Get current image count for position
-  const { count } = await supabase
-    .from("product_images")
-    .select("*", { count: "exact", head: true })
-    .eq("product_id", productId);
+  const imageCount = await prisma.productImage.count({
+    where: { product_id: productId },
+  });
 
-  // Get public URL
   const {
     data: { publicUrl },
   } = supabase.storage.from("product-images").getPublicUrl(fileName);
 
-  // Save to database with correct position
-  const { data: imageData, error: dbError } = await supabase
-    .from("product_images")
-    .insert({
+  const imageData = await prisma.productImage.create({
+    data: {
       product_id: productId,
       url: publicUrl,
-      position: count || 0,
-    })
-    .select()
-    .single();
-
-  if (dbError) {
-    console.error("DB error:", dbError);
-    return NextResponse.json(
-      { error: "Error al guardar imagen" },
-      { status: 500 },
-    );
-  }
+      position: imageCount,
+    },
+  });
 
   return NextResponse.json({ image: imageData, url: publicUrl, success: true });
 }
@@ -155,58 +125,33 @@ export async function DELETE(request: Request) {
     );
   }
 
-  // Get image info and verify ownership or company membership
-  const { data: image, error: imageError } = await supabase
-    .from("product_images")
-    .select("*, product:products(seller_id, company_id)")
-    .eq("id", imageId)
-    .single();
+  const image = await prisma.productImage.findUnique({
+    where: { id: imageId },
+    include: {
+      product: { select: { company_id: true } },
+    },
+  });
 
-  if (imageError || !image || !image.product) {
+  if (!image || !image.product) {
     return NextResponse.json(
       { error: "Imagen no encontrada" },
       { status: 404 },
     );
   }
 
-  let isAuthorized = image.product.seller_id === user.id;
+  const isMember = await prisma.companyMember.findFirst({
+    where: { company_id: image.product.company_id, user_id: user.id },
+  });
 
-  if (!isAuthorized && image.product.company_id) {
-    const { data: memberData } = await supabase
-      .from("company_members")
-      .select("id")
-      .eq("company_id", image.product.company_id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (memberData) {
-      isAuthorized = true;
-    }
-  }
-
-  if (!isAuthorized) {
+  if (!isMember) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  // Extract filename from URL
   const urlParts = image.url.split("/product-images/");
   const fileName = urlParts[1];
-
-  // Delete from storage
   await supabase.storage.from("product-images").remove([fileName]);
 
-  // Delete from database
-  const { error: deleteError } = await supabase
-    .from("product_images")
-    .delete()
-    .eq("id", imageId);
-
-  if (deleteError) {
-    return NextResponse.json(
-      { error: "Error al eliminar imagen" },
-      { status: 500 },
-    );
-  }
+  await prisma.productImage.delete({ where: { id: imageId } });
 
   return NextResponse.json({ success: true });
 }

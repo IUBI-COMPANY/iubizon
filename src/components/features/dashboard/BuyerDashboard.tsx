@@ -50,7 +50,7 @@ interface TrackingPackage {
   items: PackageItem[];
 }
 
-interface PurchaseOrderSession {
+interface BuyerOrderSession {
   orderCode: string;
   createdAt: string;
   totalAmount: number;
@@ -81,9 +81,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
   const { companies } = useCompany();
   const hasNoCompanies = companies.length === 0;
 
-  const [recentSessions, setRecentSessions] = useState<PurchaseOrderSession[]>(
-    [],
-  );
+  const [recentSessions, setRecentSessions] = useState<BuyerOrderSession[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {

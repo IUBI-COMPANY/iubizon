@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { createNiubizSession } from "@/lib/services/niubiz";
+import { generateOrderCode } from "@/lib/utils/orderCode";
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +20,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Para compras como invitado sin estar autenticado
     const guestEmail = shipping?.email?.trim();
     const guestName = shipping?.name?.trim();
 
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Por favor completa tu Nombre y Correo electrónico de contacto para proceder con tu compra como invitado.",
+            "Por favor completa tu Nombre y Correo electrónico para proceder con tu compra como invitado.",
         },
         { status: 400 },
       );
@@ -44,7 +44,6 @@ export async function POST(req: Request) {
         shippingDocType === "dni" && /^\d{8}$/.test(shippingDocNumber);
       const isValidRuc =
         shippingDocType === "ruc" && /^\d{11}$/.test(shippingDocNumber);
-
       if (!isValidDni && !isValidRuc) {
         return NextResponse.json(
           {
@@ -59,58 +58,45 @@ export async function POST(req: Request) {
     const customerEmail = guestEmail || user?.email || "cliente@iubizon.com";
     const numericAmount = Number(amount);
 
-    // Validar prevención de auto-compra para usuarios logueados
     if (user && Array.isArray(cartItems) && cartItems.length > 0) {
       const productIds = cartItems
         .map((i: { id?: string; product_id?: string }) => i.product_id || i.id)
         .filter((id): id is string => Boolean(id));
 
-      const selfOwnedProduct = await prisma.product.findFirst({
-        where: {
-          id: { in: productIds },
-          OR: [
-            { seller_id: user.id },
-            {
-              company: {
-                companyMembers: {
-                  some: { user_id: user.id },
-                },
-              },
-            },
-          ],
-        },
-        select: { title: true },
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, company_id: true, title: true },
       });
 
-      if (selfOwnedProduct) {
-        return NextResponse.json(
-          {
-            error: `No está permitido comprar tus propias publicaciones ("${selfOwnedProduct.title}").`,
-          },
-          { status: 400 },
-        );
+      for (const product of products) {
+        const isMember = await prisma.companyMember.findFirst({
+          where: { company_id: product.company_id, user_id: user.id },
+        });
+        if (isMember) {
+          return NextResponse.json(
+            {
+              error: `No está permitido comprar tus propias publicaciones ("${product.title}").`,
+            },
+            { status: 400 },
+          );
+        }
       }
     }
 
-    // Generar código de orden numérico único de 6 dígitos (Ej: 918025)
-    let purchaseNumber = String(Math.floor(100000 + Math.random() * 900000));
-    let existingTx = await prisma.paymentTransaction.findUnique({
-      where: { purchase_number: purchaseNumber },
-    });
-    while (existingTx) {
-      purchaseNumber = String(Math.floor(100000 + Math.random() * 900000));
-      existingTx = await prisma.paymentTransaction.findUnique({
+    let purchaseNumber = generateOrderCode();
+    while (
+      await prisma.paymentTransaction.findUnique({
         where: { purchase_number: purchaseNumber },
-      });
+      })
+    ) {
+      purchaseNumber = generateOrderCode();
     }
 
-    // Obtener IP del cliente para CyberSource Fraud Prevention
     const clientIp =
       req.headers.get("x-forwarded-for")?.split(",")[0] ||
       req.headers.get("x-real-ip") ||
       "127.0.0.1";
 
-    // 1. Obtener clave de sesión desde la API de Niubiz
     const { sessionKey, merchantId, environment } = await createNiubizSession({
       amount: numericAmount,
       purchaseNumber,
@@ -118,7 +104,6 @@ export async function POST(req: Request) {
       customerIp: clientIp,
     });
 
-    // 2. Registrar el intento de pago previo en PaymentTransaction junto con la data del carrito
     await prisma.paymentTransaction.create({
       data: {
         provider: "niubiz",

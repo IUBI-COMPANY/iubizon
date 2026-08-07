@@ -14,8 +14,7 @@ export interface OrderBump {
   id: string;
   title: string;
   price: number;
-  seller_id: string;
-  company_id?: string | null;
+  company_id: string;
   image_url?: string | null;
   stock?: number | null;
 }

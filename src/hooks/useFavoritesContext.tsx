@@ -7,7 +7,6 @@ import {
   createContext,
   useContext,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "./useAuth";
 
 interface FavoritesContextType {
@@ -34,13 +33,15 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("favorites")
-        .select("product_id")
-        .eq("user_id", user.id);
-
-      setFavoriteIds(new Set(data?.map((f) => f.product_id) ?? []));
+      try {
+        const res = await fetch("/api/user/favorites");
+        if (res.ok) {
+          const data = await res.json();
+          setFavoriteIds(new Set(data.productIds ?? []));
+        }
+      } catch {
+        // fallback silencioso
+      }
       setIsLoading(false);
     };
 
@@ -55,7 +56,6 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       }
 
       const isFavorited = favoriteIds.has(productId);
-      const supabase = createClient();
 
       setFavoriteIds((prev) => {
         const next = new Set(prev);
@@ -68,21 +68,14 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       });
 
       try {
-        if (isFavorited) {
-          const { error } = await supabase
-            .from("favorites")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("product_id", productId);
+        const res = await fetch("/api/user/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId }),
+        });
 
-          if (error) throw error;
-        } else {
-          const { error } = await supabase
-            .from("favorites")
-            .insert({ user_id: user.id, product_id: productId });
+        if (!res.ok) throw new Error("Error al actualizar favorito");
 
-          if (error) throw error;
-        }
         return !isFavorited;
       } catch {
         setFavoriteIds((prev) => {

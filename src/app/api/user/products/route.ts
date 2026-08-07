@@ -23,7 +23,6 @@ export async function GET(req: Request) {
         where: { id: user.id },
         select: { last_active_company_id: true },
       });
-
       if (profile?.last_active_company_id) {
         companyId = profile.last_active_company_id;
       } else {
@@ -31,33 +30,34 @@ export async function GET(req: Request) {
           where: { user_id: user.id },
           select: { company_id: true },
         });
-        if (firstMember) {
-          companyId = firstMember.company_id;
-        }
+        if (firstMember) companyId = firstMember.company_id;
       }
     }
 
     let isCompanyMode = false;
     let targetCompany = null;
+    let where: any = {};
 
     if (companyId) {
       const membership = await prisma.companyMember.findFirst({
-        where: {
-          company_id: companyId,
-          user_id: user.id,
-        },
+        where: { company_id: companyId, user_id: user.id },
         include: { company: true },
       });
-
       if (membership) {
         isCompanyMode = true;
         targetCompany = membership.company;
+        where = { company_id: companyId };
       }
     }
 
-    const where = isCompanyMode
-      ? { company_id: companyId! }
-      : { seller_id: user.id, company_id: null };
+    if (!isCompanyMode) {
+      const memberships = await prisma.companyMember.findMany({
+        where: { user_id: user.id },
+        select: { company_id: true },
+      });
+      const companyIds = memberships.map((m) => m.company_id);
+      where = { created_by: user.id };
+    }
 
     const products = await prisma.product.findMany({
       where,
@@ -70,25 +70,13 @@ export async function GET(req: Request) {
         stock: true,
         views: true,
         created_at: true,
-        category: {
-          select: {
-            name: true,
-          },
-        },
+        category: { select: { name: true } },
         images: {
           orderBy: { position: "asc" },
           take: 1,
-          select: {
-            id: true,
-            url: true,
-            position: true,
-          },
+          select: { id: true, url: true, position: true },
         },
-        _count: {
-          select: {
-            images: true,
-          },
-        },
+        _count: { select: { images: true } },
       },
       orderBy: { updated_at: "desc" },
     });

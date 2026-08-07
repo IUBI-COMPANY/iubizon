@@ -1,16 +1,25 @@
-export type EmailEventType =
-  | "BUYER_ORDER_CONFIRMATION"
-  | "SELLER_SALE_NOTIFICATION"
-  | "ORDER_DISPATCHED_NOTIFICATION";
-
 export interface EmailOrderItem {
   id: string;
   title: string;
   price: number;
   quantity: number;
-  imageUrl?: string | null;
-  sellerName?: string;
-  companyName?: string | null;
+  imageUrl: string | null;
+  sellerName: string;
+  companyName: string | null;
+}
+
+export interface BuyerShippingForm {
+  name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  documentType?: string;
+  documentNumber?: string;
+  notes?: string;
 }
 
 export interface BuyerEmailData {
@@ -22,21 +31,9 @@ export interface BuyerEmailData {
   subtotal: number;
   shippingCost: number;
   total: number;
-  shippingForm: {
-    name: string;
-    phone: string;
-    email: string;
-    address: string;
-    city: string;
-    department?: string;
-    province?: string;
-    district?: string;
-    documentType?: string;
-    documentNumber?: string;
-    notes?: string;
-  };
-  deliveryType: "progressive" | "complete" | string;
-  invoiceType?: "boleta" | "factura" | string;
+  shippingForm: BuyerShippingForm;
+  deliveryType?: string;
+  invoiceType?: string;
   invoiceNumber?: string;
 }
 
@@ -45,7 +42,7 @@ export interface SellerEmailData {
   orderCode: string;
   sellerName: string;
   sellerEmail: string;
-  companyName?: string | null;
+  companyName: string | null;
   recipientName: string;
   recipientEmail: string;
   isCompanyRecipient: boolean;
@@ -54,17 +51,5 @@ export interface SellerEmailData {
   packageSubtotal: number;
   commissionAmount: number;
   netPayoutEstimate: number;
-  buyerInfo: {
-    name: string;
-    phone: string;
-    email: string;
-    address: string;
-    city: string;
-    department?: string;
-    province?: string;
-    district?: string;
-    documentType?: string;
-    documentNumber?: string;
-    notes?: string;
-  };
+  buyerInfo: BuyerShippingForm;
 }

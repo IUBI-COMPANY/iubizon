@@ -14,23 +14,15 @@ export async function GET(req: Request) {
     const limit = Number(searchParams.get("limit") || "6");
     const skip = (page - 1) * limit;
 
-    // 1. Obtener las categorías de los productos que ya están en el carrito
     const cartProducts = await prisma.product.findMany({
       where: { id: { in: excludeIds } },
-      select: {
-        category: {
-          select: {
-            slug: true,
-          },
-        },
-      },
+      select: { category: { select: { slug: true } } },
     });
 
     const cartCategorySlugs = cartProducts
       .map((p) => p.category?.slug)
       .filter((slug): slug is string => typeof slug === "string");
 
-    // 2. Definir mapa de afinidad para recomendar categorías complementarias
     const affinityMap: Record<string, string[]> = {
       proyectores: ["laptops", "tv-audio", "electronica", "muebles"],
       laptops: ["proyectores", "moviles", "electronica", "tv-audio"],
@@ -46,14 +38,10 @@ export async function GET(req: Request) {
 
     let targetSlugs: string[] = [];
     for (const slug of cartCategorySlugs) {
-      if (affinityMap[slug]) {
-        targetSlugs.push(...affinityMap[slug]);
-      }
+      if (affinityMap[slug]) targetSlugs.push(...affinityMap[slug]);
     }
-    // Eliminar duplicados
     targetSlugs = Array.from(new Set(targetSlugs));
 
-    // 3. Obtener listas de IDs ordenadas por afinidad (excluyendo estrictamente los productos en carrito)
     const affinityProducts = await prisma.product.findMany({
       where: {
         status: "active",
@@ -67,7 +55,6 @@ export async function GET(req: Request) {
     });
     const affinityIds = affinityProducts.map((p) => p.id);
 
-    // Obtener los demás productos activos para fallback
     const fallbackProducts = await prisma.product.findMany({
       where: {
         status: "active",
@@ -79,15 +66,12 @@ export async function GET(req: Request) {
     });
     const fallbackIds = fallbackProducts.map((p) => p.id);
 
-    // Combinar listas manteniendo la prioridad de afinidad
     const allOrderedIds = [...affinityIds, ...fallbackIds];
     const totalCount = allOrderedIds.length;
 
-    // Obtener los IDs correspondientes a la página actual
     const paginatedIds = allOrderedIds.slice(skip, skip + limit);
     const hasMore = skip + limit < totalCount;
 
-    // 4. Consultar detalles de los productos paginados
     const products = await prisma.product.findMany({
       where: {
         id: {
@@ -100,17 +84,12 @@ export async function GET(req: Request) {
         id: true,
         title: true,
         price: true,
-        seller_id: true,
         company_id: true,
         stock: true,
-        images: {
-          orderBy: { position: "asc" },
-          take: 1,
-        },
+        images: { orderBy: { position: "asc" }, take: 1 },
       },
     });
 
-    // Mantener el orden de prioridad de los IDs paginados
     const productsMap = new Map(products.map((p) => [p.id, p]));
     const orderedProducts = paginatedIds
       .map((id) => productsMap.get(id))
@@ -120,7 +99,6 @@ export async function GET(req: Request) {
       id: p.id,
       title: p.title,
       price: Number(p.price),
-      seller_id: p.seller_id,
       company_id: p.company_id,
       stock: p.stock,
       image_url: p.images[0]?.url || null,
@@ -128,12 +106,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       recommendations: formatted,
-      pagination: {
-        page,
-        limit,
-        total: totalCount,
-        hasMore,
-      },
+      pagination: { page, limit, total: totalCount, hasMore },
     });
   } catch (err) {
     console.error("Error al obtener recomendaciones paginadas:", err);

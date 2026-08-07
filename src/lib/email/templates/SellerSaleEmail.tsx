@@ -22,7 +22,7 @@ export function SellerSaleEmail(data: SellerEmailData) {
 
   return (
     <BaseLayout
-      previewText={`¡Nueva venta por despachar! Paquete ${data.packageCode}`}
+      previewText={`¡Nueva venta por despachar! Pedido ${data.orderCode}`}
     >
       {/* Banner de Nueva Venta */}
       <Section style={saleBannerStyle}>
@@ -38,17 +38,16 @@ export function SellerSaleEmail(data: SellerEmailData) {
         </Text>
       </Section>
 
-      {/* Tarjeta de Código de Paquete */}
+      {/* Tarjeta de Código de Pedido */}
       <Section style={packageCardStyle}>
         <Row>
           <Column style={{ padding: "8px 12px" }}>
-            <Text style={metaLabelStyle}>CÓDIGO DE PAQUETE VENDEDOR</Text>
-            <Text style={packageCodeValueStyle}>{data.packageCode}</Text>
+            <Text style={metaLabelStyle}>N° DE PEDIDO</Text>
+            <Text style={packageCodeValueStyle}>{data.orderCode}</Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
-            <Text style={metaLabelStyle}>PEDIDO ASOCIADO</Text>
-            <Text style={metaValueStyle}>{data.orderCode}</Text>
-            <Text style={metaDateStyle}>{data.createdAt}</Text>
+            <Text style={metaLabelStyle}>FECHA DE VENTA</Text>
+            <Text style={metaValueStyle}>{data.createdAt}</Text>
           </Column>
         </Row>
       </Section>

@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { authorizeNiubizTransaction } from "@/lib/services/niubiz";
-import { calculateIubizonCommission } from "@/lib/utils/commission";
-import { getOrCreateBuyerProfile } from "@/lib/services/orders";
+import {
+  createFullOrder,
+  getOrCreateBuyerProfile,
+} from "@/lib/services/orders";
 import { sendOrderConfirmationEmails } from "@/lib/email";
-import { normalizeOrderCode } from "@/lib/utils/orderCode";
+import { normalizeOrderCode, generateOrderCode } from "@/lib/utils/orderCode";
 
 function respondWithError(
   message: string,
@@ -27,21 +29,15 @@ function extractProductUuid(item: any): string | null {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
   const directId = item.product_id || item.productId || item.product?.id;
-  if (typeof directId === "string" && isUuid(directId)) {
-    return directId;
-  }
+  if (typeof directId === "string" && isUuid(directId)) return directId;
 
   const itemId = String(item.id || "");
-  if (isUuid(itemId)) {
-    return itemId;
-  }
+  if (isUuid(itemId)) return itemId;
 
   const match = itemId.match(
     /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
   );
-  if (match) {
-    return match[0];
-  }
+  if (match) return match[0];
 
   return null;
 }
@@ -91,19 +87,13 @@ export async function POST(req: Request) {
       amount = Number(formData.get("amount")) || 0;
     }
 
-    if (!purchaseNumber && searchPurchaseNumber) {
+    if (!purchaseNumber && searchPurchaseNumber)
       purchaseNumber = searchPurchaseNumber;
-    }
-    const normalizedPurchaseNumber = normalizeOrderCode(purchaseNumber);
-    if (normalizedPurchaseNumber) {
-      purchaseNumber = normalizedPurchaseNumber;
-    }
+    const normalized = normalizeOrderCode(purchaseNumber);
+    if (normalized) purchaseNumber = normalized;
     purchaseNumberForError = purchaseNumber;
-    if (!amount && searchAmount) {
-      amount = Number(searchAmount);
-    }
+    if (!amount && searchAmount) amount = Number(searchAmount);
 
-    // Buscar la transacción previa en BD para recuperar metadatos (cartItems, shipping, buyer_id)
     const existingTx = purchaseNumber
       ? await prisma.paymentTransaction.findUnique({
           where: { purchase_number: purchaseNumber },
@@ -128,35 +118,22 @@ export async function POST(req: Request) {
         if (
           (!cartItems || cartItems.length === 0) &&
           Array.isArray(meta.cartItems)
-        ) {
+        )
           cartItems = meta.cartItems;
-        }
-        if ((!shipping || !shipping.address) && meta.shipping) {
+        if ((!shipping || !shipping.address) && meta.shipping)
           shipping = meta.shipping;
-        }
         if (
           (!invoiceDetails || !invoiceDetails.doc_type) &&
           meta.invoiceDetails
-        ) {
+        )
           invoiceDetails = meta.invoiceDetails;
-        }
-        if (!storedBuyerId && meta.buyer_id) {
-          storedBuyerId = meta.buyer_id;
-        }
+        if (!storedBuyerId && meta.buyer_id) storedBuyerId = meta.buyer_id;
       }
     }
 
     if (!transactionToken || !purchaseNumber) {
       return respondWithError(
         "Datos de transacción incompletos",
-        isFormPost,
-        req.url,
-        400,
-      );
-    }
-    if (!/^\d{6}$/.test(purchaseNumber)) {
-      return respondWithError(
-        "El código de orden debe tener 6 dígitos numéricos.",
         isFormPost,
         req.url,
         400,
@@ -188,7 +165,6 @@ export async function POST(req: Request) {
           "Para envíos a provincia es obligatorio registrar un DNI (8 dígitos) o RUC (11 dígitos) válido.",
           isFormPost,
           req.url,
-          400,
         );
       }
     }
@@ -204,26 +180,31 @@ export async function POST(req: Request) {
 
     if (requestedItems.length === 0) {
       return respondWithError(
-        "Los productos del carrito no son válidos o ya no están disponibles.",
+        "Los productos del carrito no son válidos.",
         isFormPost,
         req.url,
         400,
       );
     }
 
-    const productsBeforeAuth = await prisma.product.findMany({
-      where: { id: { in: requestedItems.map((item) => item.productId) } },
-      select: { id: true, title: true, status: true, stock: true },
+    const productsData = await prisma.product.findMany({
+      where: { id: { in: requestedItems.map((r) => r.productId) } },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        stock: true,
+        company_id: true,
+        price: true,
+      },
     });
-    const productsBeforeAuthMap = new Map(
-      productsBeforeAuth.map((product) => [product.id, product]),
-    );
+    const productMap = new Map(productsData.map((p) => [p.id, p]));
 
     for (const item of requestedItems) {
-      const product = productsBeforeAuthMap.get(item.productId);
+      const product = productMap.get(item.productId);
       if (!product || product.status !== "active") {
         return respondWithError(
-          "Uno o más productos de tu carrito ya no están disponibles.",
+          "Uno o más productos ya no están disponibles.",
           isFormPost,
           req.url,
           400,
@@ -231,10 +212,9 @@ export async function POST(req: Request) {
       }
       if (product.stock !== null && product.stock < item.quantity) {
         return respondWithError(
-          `Stock insuficiente para "${product.title}". Quedan ${Math.max(product.stock, 0)} unidades disponibles.`,
+          `Stock insuficiente para "${product.title}". Quedan ${Math.max(product.stock, 0)} unidades.`,
           isFormPost,
           req.url,
-          400,
         );
       }
     }
@@ -248,7 +228,6 @@ export async function POST(req: Request) {
       user?.email ||
       "cliente@iubizon.com";
 
-    // 1. Autorización financiera Server-to-Server en Niubiz
     const authResult = await authorizeNiubizTransaction({
       transactionToken,
       purchaseNumber,
@@ -256,7 +235,6 @@ export async function POST(req: Request) {
       customerEmail: effectiveEmail,
     });
 
-    // 2. Si la tarjeta fue rechazada o denegada
     if (!authResult.success) {
       await prisma.paymentTransaction.updateMany({
         where: { purchase_number: purchaseNumber },
@@ -269,7 +247,6 @@ export async function POST(req: Request) {
             : undefined,
         },
       });
-
       return respondWithError(
         authResult.errorMessage || "Pago rechazado por el banco emisor",
         isFormPost,
@@ -279,8 +256,6 @@ export async function POST(req: Request) {
     }
     paymentAuthorized = true;
 
-    // 3. Pago APROBADO: Transacción atómica en PostgreSQL
-    const sessionCode = purchaseNumber;
     const destinationUbigeo = [
       String(shipping?.district || "").trim(),
       String(shipping?.province || "").trim(),
@@ -288,14 +263,14 @@ export async function POST(req: Request) {
     ]
       .filter(Boolean)
       .join(", ");
+    const destinationAddress = `${shipping.address || ""}, ${destinationUbigeo || shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`;
 
-    const createdOrders = await prisma.$transaction(async (tx) => {
+    const createdOrder = await prisma.$transaction(async (tx) => {
       const previousRaw =
         typeof existingTx?.raw_response === "object" && existingTx?.raw_response
           ? (existingTx.raw_response as Record<string, any>)
           : {};
 
-      // a) Actualizar el registro del pago a 'authorized' manteniendo los datos de envío y facturación
       const paymentRecord = await tx.paymentTransaction.update({
         where: { purchase_number: purchaseNumber },
         data: {
@@ -318,7 +293,6 @@ export async function POST(req: Request) {
         },
       });
 
-      const ordersList = [];
       const effectiveBuyerId = await getOrCreateBuyerProfile({
         userId: storedBuyerId || user?.id,
         email: effectiveEmail,
@@ -327,132 +301,108 @@ export async function POST(req: Request) {
         txPrisma: tx,
       });
 
-      // b) Generar órdenes por cada ítem/paquete del carrito
-      for (const item of cartItems) {
-        const itemQuantity = Number(item.quantity) || 1;
-        const productId = extractProductUuid(item);
-        if (!productId) continue;
-
-        const product = await tx.product.findUnique({
-          where: { id: productId },
-          select: {
-            id: true,
-            title: true,
-            seller_id: true,
-            company_id: true,
-            status: true,
-            stock: true,
-            price: true,
-          },
-        });
-
+      // Validar y descontar stock
+      for (const item of requestedItems) {
+        const product = productMap.get(item.productId);
         if (!product || product.status !== "active") {
           throw new Error(
             "Uno o más productos de tu carrito ya no están disponibles.",
           );
         }
 
-        let validCompanyId: string | null = null;
-        const targetCompanyId = product.company_id || item.company_id;
-        if (targetCompanyId) {
-          const companyExists = await tx.company.findUnique({
-            where: { id: targetCompanyId },
-            select: { id: true },
-          });
-          if (companyExists) validCompanyId = companyExists.id;
+        const currentStock = product.stock ?? 1;
+        if (currentStock < item.quantity) {
+          throw new Error(
+            `El producto "${product.title}" se agotó mientras procesabas tu pedido.`,
+          );
         }
+      }
 
-        const itemSubtotal = Number(product.price) * itemQuantity;
-        const commissionAmount = calculateIubizonCommission(itemSubtotal);
+      // Agrupar por company_id
+      const groupMap = new Map<string, typeof requestedItems>();
+      for (const item of requestedItems) {
+        const product = productMap.get(item.productId)!;
+        const key = product.company_id;
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key)!.push(item);
+      }
 
-        if (product.stock !== null) {
+      // Descontar stock atómicamente
+      for (const [companyId, items] of groupMap) {
+        for (const item of items) {
           const stockUpdated = await tx.product.updateMany({
             where: {
-              id: product.id,
+              id: item.productId,
               status: "active",
-              stock: { gte: itemQuantity },
+              stock: { gte: item.quantity },
             },
-            data: { stock: { decrement: itemQuantity } },
+            data: { stock: { decrement: item.quantity } },
           });
 
           if (stockUpdated.count === 0) {
             throw new Error(
-              `El producto "${product.title}" se agotó mientras procesabas tu pedido.`,
+              `El producto "${productsData.find((p) => p.id === item.productId)?.title}" se agotó.`,
             );
           }
 
-          const afterStockUpdate = await tx.product.findUnique({
-            where: { id: product.id },
+          const afterStock = await tx.product.findUnique({
+            where: { id: item.productId },
             select: { stock: true },
           });
-          if ((afterStockUpdate?.stock ?? 0) <= 0) {
+          if ((afterStock?.stock ?? 0) <= 0) {
             await tx.product.update({
-              where: { id: product.id },
+              where: { id: item.productId },
               data: { status: "sold" },
             });
           }
         }
-
-        const order = await tx.order.create({
-          data: {
-            product_id: product.id,
-            buyer_id: effectiveBuyerId,
-            seller_id: product.seller_id,
-            company_id: validCompanyId,
-            payment_transaction_id: paymentRecord.id,
-            quantity: itemQuantity,
-            unit_price: Number(product.price),
-            amount: itemSubtotal,
-            commission: commissionAmount,
-            status: "paid",
-            payment_method: "niubiz_card",
-            payment_id: sessionCode,
-            shipping: {
-              create: {
-                origin_address: "Almacén / Proveedor",
-                destination_address: `${shipping.address || ""}, ${destinationUbigeo || shipping.city || "Lima"} (Tel: ${shipping.phone || ""})`,
-                courier: null,
-                tracking_number: null,
-                status: "pending",
-              },
-            },
-          },
-        });
-
-        // c) Generar comprobante fiscal SUNAT (InvoiceDocument)
-        if (invoiceDetails && invoiceDetails.doc_type) {
-          await tx.invoiceDocument.create({
-            data: {
-              order_id: order.id,
-              doc_type: invoiceDetails.doc_type || "boleta",
-              identity_type: invoiceDetails.identity_type || "dni",
-              identity_number: invoiceDetails.identity_number || "00000000",
-              legal_name:
-                invoiceDetails.legal_name || shipping.name || "Cliente Final",
-              tax_address:
-                invoiceDetails.tax_address || shipping.address || null,
-              sunat_status: "pending",
-            },
-          });
-        }
-        ordersList.push(order);
       }
 
-      if (ordersList.length === 0) {
-        throw new Error(
-          "No se pudo registrar ninguna orden para los productos pagados.",
-        );
-      }
+      const packages = Array.from(groupMap.entries()).map(
+        ([companyId, items]) => ({
+          companyId,
+          deliveryType: shipping?.deliveryType || "progressive",
+          destinationAddress,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: Number(productMap.get(item.productId)!.price),
+          })),
+        }),
+      );
 
-      return ordersList;
+      return createFullOrder({
+        orderCode: purchaseNumber,
+        buyerId: effectiveBuyerId,
+        paymentMethod: "niubiz_card",
+        paymentTransactionId: paymentRecord.id,
+        initialStatus: "pending",
+        shipping: {
+          name: shipping?.name || "Cliente",
+          phone: shipping?.phone || "",
+          email: shipping?.email,
+          address: shipping?.address || "",
+          department: shipping?.department,
+          province: shipping?.province,
+          district: shipping?.district,
+          reference: shipping?.notes,
+          documentType: shipping?.documentType,
+          documentNumber: shipping?.documentNumber,
+        },
+        invoice: {
+          type: invoiceDetails?.doc_type,
+          docType: invoiceDetails?.identity_type,
+          number: invoiceDetails?.identity_number,
+          legalName: invoiceDetails?.legal_name,
+          taxAddress: invoiceDetails?.tax_address || shipping?.address,
+        },
+        packages,
+        txPrisma: tx,
+      });
     });
 
-    // Despacho de correos en segundo plano (no bloqueante)
-    sendOrderConfirmationEmails(purchaseNumber).catch((err) =>
-      console.error(
-        `[Niubiz Authorize Email Error] Error enviando emails para ${purchaseNumber}:`,
-        err,
-      ),
+    sendOrderConfirmationEmails(createdOrder.id).catch((err) =>
+      console.error(`[Niubiz Authorize Email Error] ${createdOrder.id}:`, err),
     );
 
     if (isFormPost) {
@@ -464,9 +414,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      orderCode: purchaseNumber,
-      sessionCode,
-      ordersCount: createdOrders.length,
+      orderCode: createdOrder.order_code,
+      orderId: createdOrder.id,
+      ordersCount: createdOrder.packages.reduce(
+        (s, p) => s + p.items.length,
+        0,
+      ),
       authorizationCode: authResult.authorizationCode,
     });
   } catch (err: unknown) {
@@ -478,17 +431,9 @@ export async function POST(req: Request) {
       try {
         await prisma.paymentTransaction.updateMany({
           where: { purchase_number: purchaseNumberForError },
-          data: {
-            status: "failed",
-            response_message: msg,
-          },
+          data: { status: "failed", response_message: msg },
         });
-      } catch (paymentUpdateError) {
-        console.error(
-          "Error actualizando paymentTransaction tras fallo post-autorización:",
-          paymentUpdateError,
-        );
-      }
+      } catch {}
     }
     console.error("Error en API /api/payments/niubiz/authorize:", err);
     return respondWithError(msg, isFormPost, req.url, 500);

@@ -19,7 +19,6 @@ export async function GET(
 
     const { id: companyId } = await params;
 
-    // Verificar membresía
     const membership = await prisma.companyMember.findFirst({
       where: { company_id: companyId, user_id: user.id },
     });
@@ -37,12 +36,14 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        legal_name: true,
         tax_id: true,
         logo_url: true,
         description: true,
         phone: true,
         email: true,
         location: true,
+        bank_account: true,
       },
     });
 
@@ -80,7 +81,6 @@ export async function PATCH(
     const { id: companyId } = await params;
     const body = await request.json();
 
-    // Verificar si el usuario es owner o admin de esta empresa
     const membership = await prisma.companyMember.findFirst({
       where: {
         company_id: companyId,
@@ -107,23 +107,16 @@ export async function PATCH(
       );
     }
 
-    // Determinar el slug correcto:
-    // - Si el nombre cambió → generar slug nuevo
-    // - Si el slug actual es null → generar uno nuevo basado en el nombre actual
-    // - Si el nombre no cambió y slug existe → mantenerlo tal cual
     let updatedSlug = existingCompany.slug;
     const newName =
       body.name !== undefined ? body.name.trim() : existingCompany.name;
 
     if (!updatedSlug) {
-      // La empresa no tiene slug — generarlo ahora
       updatedSlug = await generateUniqueCompanySlug(newName, companyId);
     } else if (body.name !== undefined && newName !== existingCompany.name) {
-      // El nombre cambió → regenerar slug
       updatedSlug = await generateUniqueCompanySlug(newName, companyId);
     }
 
-    // tax_id: nunca modificar si ya existe en la BD
     const finalTaxId = existingCompany.tax_id ?? (body.tax_id?.trim() || null);
 
     const updatedCompany = await prisma.company.update({
@@ -136,9 +129,17 @@ export async function PATCH(
           body.logo_url !== undefined ? body.logo_url || null : undefined,
         phone: body.phone !== undefined ? body.phone.trim() || null : undefined,
         email: body.email !== undefined ? body.email.trim() || null : undefined,
+        legal_name:
+          body.legal_name !== undefined
+            ? body.legal_name.trim() || null
+            : undefined,
         location:
           body.location !== undefined
             ? body.location.trim() || null
+            : undefined,
+        bank_account:
+          body.bank_account !== undefined
+            ? body.bank_account.trim() || null
             : undefined,
         description:
           body.description !== undefined
@@ -175,13 +176,8 @@ export async function DELETE(
 
     const { id: companyId } = await params;
 
-    // Verificar si el usuario es el PROPIETARIO (owner) de esta empresa
     const membership = await prisma.companyMember.findFirst({
-      where: {
-        company_id: companyId,
-        user_id: user.id,
-        role: "owner",
-      },
+      where: { company_id: companyId, user_id: user.id, role: "owner" },
     });
 
     if (!membership) {
@@ -191,78 +187,71 @@ export async function DELETE(
       );
     }
 
-    // 1. Obtener todos los productos asociados a la empresa
     const companyProducts = await prisma.product.findMany({
       where: { company_id: companyId },
       select: { id: true },
     });
-
     const productIds = companyProducts.map((p) => p.id);
 
-    // 2. Obtener todas las órdenes asociadas a la empresa o a sus productos
-    const companyOrders = await prisma.order.findMany({
-      where: {
-        OR: [{ company_id: companyId }, { product_id: { in: productIds } }],
-      },
+    const companyPackages = await prisma.orderPackage.findMany({
+      where: { company_id: companyId },
       select: { id: true },
     });
+    const packageIds = companyPackages.map((p) => p.id);
 
-    const orderIds = companyOrders.map((o) => o.id);
-
-    // 3. Eliminar envíos (Shippings) de las órdenes de la empresa
-    if (orderIds.length > 0) {
-      await prisma.shipping.deleteMany({
-        where: { order_id: { in: orderIds } },
+    // 1. Eliminar SellerPayouts asociados a los paquetes
+    if (packageIds.length > 0) {
+      await prisma.sellerPayout.deleteMany({
+        where: { package_id: { in: packageIds } },
       });
 
-      // 4. Eliminar comprobantes de facturación (InvoiceDocuments)
-      await prisma.invoiceDocument.deleteMany({
-        where: { order_id: { in: orderIds } },
+      // 2. Eliminar OrderItems de los paquetes
+      await prisma.orderItem.deleteMany({
+        where: { package_id: { in: packageIds } },
       });
 
-      // 5. Eliminar reseñas asociadas a las órdenes
-      await prisma.review.deleteMany({
-        where: { order_id: { in: orderIds } },
-      });
-
-      // 6. Eliminar las órdenes de compra relacionadas
-      await prisma.order.deleteMany({
-        where: { id: { in: orderIds } },
+      // 3. Eliminar OrderPackages
+      await prisma.orderPackage.deleteMany({
+        where: { id: { in: packageIds } },
       });
     }
 
-    // 7. Eliminar favoritos, reseñas e imágenes de los productos de la empresa
+    // 4. Eliminar Review asociadas a los productos de la empresa
+    if (productIds.length > 0) {
+      await prisma.review.deleteMany({
+        where: { product_id: { in: productIds } },
+      });
+    }
+
+    // 5. Eliminar Favorites de los productos
     if (productIds.length > 0) {
       await prisma.favorite.deleteMany({
         where: { product_id: { in: productIds } },
       });
 
-      await prisma.review.deleteMany({
-        where: { product_id: { in: productIds } },
-      });
-
+      // 6. Eliminar ProductImages
       await prisma.productImage.deleteMany({
         where: { product_id: { in: productIds } },
       });
 
-      // 8. Eliminar las publicaciones / productos
+      // 7. Eliminar Products
       await prisma.product.deleteMany({
         where: { id: { in: productIds } },
       });
     }
 
-    // 9. Eliminar miembros vinculados a la empresa
+    // 8. Eliminar CompanyMembers
     await prisma.companyMember.deleteMany({
       where: { company_id: companyId },
     });
 
-    // 10. Desmarcar la empresa activa en perfiles de usuarios que la tuvieran activa
+    // 9. Desmarcar empresa activa en perfiles
     await prisma.profile.updateMany({
       where: { last_active_company_id: companyId },
       data: { last_active_company_id: null },
     });
 
-    // 11. Eliminar la empresa definitivamente
+    // 10. Eliminar la empresa
     await prisma.company.delete({
       where: { id: companyId },
     });

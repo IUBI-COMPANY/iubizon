@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
 import { useCompany } from "@/context/CompanyContext";
-import { createClient } from "@/lib/supabase/client";
 
 const companyFormSchema = z.object({
   name: z
@@ -33,6 +32,7 @@ const companyFormSchema = z.object({
       2,
       "El nombre de la empresa o marca comercial debe tener al menos 2 caracteres.",
     ),
+  legal_name: z.string().min(2, "La razón social es obligatoria."),
   tax_type: z.enum(["ruc20", "ruc10"], {
     message: "Selecciona un tipo de RUC válido.",
   }),
@@ -47,6 +47,7 @@ const companyFormSchema = z.object({
   phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
   email: z.string().email("Ingresa un correo electrónico corporativo válido."),
   location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
+  bank_account: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -79,12 +80,14 @@ export default function NewCompanyPage() {
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
       name: "",
+      legal_name: "",
       tax_type: "ruc20",
       tax_id: "",
       logo_url: "",
       phone: "",
       email: "",
       location: "",
+      bank_account: "",
       description: "",
     },
   });
@@ -235,22 +238,17 @@ export default function NewCompanyPage() {
         e.target.value = "";
       }
 
-      const supabase = createClient();
-      const fileName = `company-logos/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const { error: uploadErr } = await supabase.storage
-        .from("products")
-        .upload(fileName, file, { upsert: true });
+      const res = await fetch("/api/companies/logo", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (!uploadErr) {
-        const { data: publicUrlData } = supabase.storage
-          .from("products")
-          .getPublicUrl(fileName);
-        if (publicUrlData?.publicUrl) {
-          setValue("logo_url", publicUrlData.publicUrl, {
-            shouldValidate: true,
-          });
-        }
+      const result = await res.json();
+      if (res.ok && result.url) {
+        setValue("logo_url", result.url, { shouldValidate: true });
       }
     } catch (err: unknown) {
       console.error("Error al procesar logo:", err);
@@ -272,11 +270,13 @@ export default function NewCompanyPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: values.name.trim(),
+          legal_name: values.legal_name?.trim() || null,
           tax_id: formattedTaxId,
           logo_url: values.logo_url,
           phone: values.phone.trim(),
           email: values.email.trim(),
           location: values.location.trim(),
+          bank_account: values.bank_account?.trim() || null,
           description: values.description?.trim() || null,
         }),
       });
@@ -412,27 +412,7 @@ export default function NewCompanyPage() {
                 </div>
               </div>
 
-              {/* Nombre Comercial */}
-              <div>
-                <label
-                  htmlFor="company_name"
-                  className="block text-sm font-medium text-[#334155] mb-1"
-                >
-                  Nombre de la Empresa o Marca Comercial *
-                </label>
-                <Input
-                  id="company_name"
-                  {...register("name")}
-                  placeholder="ej: TecnoAulas SAC o Juan Pérez Equipos"
-                />
-                {errors.name && (
-                  <p className="text-xs text-red-500 font-medium mt-1">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Tipo de Documento y Número */}
+              {/* Tipo de Documento y Número — PRIMERO */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
@@ -510,6 +490,44 @@ export default function NewCompanyPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Nombre Comercial */}
+              <div>
+                <label
+                  htmlFor="company_name"
+                  className="block text-sm font-medium text-[#334155] mb-1"
+                >
+                  Nombre de la Empresa o Marca Comercial *
+                </label>
+                <Input
+                  id="company_name"
+                  {...register("name")}
+                  placeholder="ej: TecnoAulas SAC o Juan Pérez Equipos"
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="legal_name"
+                  className="block text-sm font-medium text-[#334155] mb-1"
+                >
+                  Razón Social *
+                </label>
+                <Input
+                  id="legal_name"
+                  {...register("legal_name")}
+                  placeholder="ej: TecnoAulas S.A.C."
+                />
+                <p className="text-xs text-[#94a3b8] mt-1">
+                  Nombre legal registrado en SUNAT. Distinto al nombre
+                  comercial.
+                </p>
               </div>
 
               {/* Teléfono y Correo */}
@@ -615,6 +633,23 @@ export default function NewCompanyPage() {
                     {errors.description.message}
                   </p>
                 )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="bank_account"
+                  className="block text-sm font-medium text-[#334155] mb-1"
+                >
+                  Cuenta Bancaria{" "}
+                  <span className="text-[#94a3b8] text-xs font-normal">
+                    (Opcional)
+                  </span>
+                </label>
+                <Input
+                  id="bank_account"
+                  {...register("bank_account")}
+                  placeholder="ej: BCP - CCI: 002-1234567890"
+                />
               </div>
 
               {/* Botón de Enviar */}

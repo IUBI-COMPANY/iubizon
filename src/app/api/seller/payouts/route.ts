@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { ensureSellerPayoutForOrders } from "@/lib/payoutService";
+import { ensureSellerPayoutForPackages } from "@/lib/payoutService";
 
 export interface SellerPayoutItem {
   id: string;
-  trackingNumber: string | null;
-  orderCode: string | null;
+  packageId: string;
   subtotal: number;
   commission: number;
   netAmount: number;
-  status: string; // "pending", "processing", "paid", "cancelled"
+  status: string;
   paidAt: string | null;
   paymentMethod: string | null;
   referenceCode: string | null;
@@ -29,42 +28,39 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // 1. Sincronizar automáticamente cualquier orden entregada del vendedor que no tenga payout aún
-    const deliveredOrders = await prisma.order.findMany({
+    const memberships = await prisma.companyMember.findMany({
+      where: { user_id: user.id },
+      select: { company_id: true },
+    });
+    const companyIds = memberships.map((m) => m.company_id);
+
+    if (companyIds.length === 0) {
+      return NextResponse.json({
+        payouts: [],
+        kpis: {
+          pendingTotal: 0,
+          paidTotal: 0,
+          accumulatedTotal: 0,
+          totalCount: 0,
+        },
+      });
+    }
+
+    // Sincronizar paquetes entregados sin payout
+    const deliveredPackages = await prisma.orderPackage.findMany({
       where: {
-        OR: [
-          { seller_id: user.id },
-          { company: { companyMembers: { some: { user_id: user.id } } } },
-        ],
+        company_id: { in: companyIds },
         status: { in: ["delivered", "completed"] },
       },
       select: { id: true },
     });
 
-    if (deliveredOrders.length > 0) {
-      await ensureSellerPayoutForOrders(deliveredOrders.map((o) => o.id));
+    if (deliveredPackages.length > 0) {
+      await ensureSellerPayoutForPackages(deliveredPackages.map((p) => p.id));
     }
 
-    // 2. Obtener miembros de las compañías a las que pertenece el usuario
-    const userCompanyMemberships = await prisma.companyMember.findMany({
-      where: { user_id: user.id },
-      select: { company_id: true },
-    });
-    const companyIds = userCompanyMemberships.map((m) => m.company_id);
-
-    const coMembers = await prisma.companyMember.findMany({
-      where: { company_id: { in: companyIds } },
-      select: { user_id: true },
-    });
-    const relatedSellerIds = Array.from(
-      new Set([user.id, ...coMembers.map((m) => m.user_id)]),
-    );
-
-    // 3. Obtener todos los registros de pago del vendedor o su empresa
     const rawPayouts = await prisma.sellerPayout.findMany({
-      where: {
-        seller_id: { in: relatedSellerIds },
-      },
+      where: { company_id: { in: companyIds } },
       orderBy: { created_at: "desc" },
     });
 
@@ -77,17 +73,14 @@ export async function GET() {
       const sub = Number(p.subtotal || 0);
       const comm = Number(p.commission || 0);
 
-      if (p.status === "pending" || p.status === "processing") {
+      if (p.status === "pending" || p.status === "processing")
         pendingTotal += net;
-      } else if (p.status === "paid") {
-        paidTotal += net;
-      }
+      else if (p.status === "paid") paidTotal += net;
       accumulatedTotal += net;
 
       return {
         id: p.id,
-        trackingNumber: p.tracking_number,
-        orderCode: p.order_code,
+        packageId: p.package_id,
         subtotal: sub,
         commission: comm,
         netAmount: net,

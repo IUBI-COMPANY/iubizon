@@ -23,6 +23,7 @@ export async function GET(
         images: { orderBy: { position: "asc" } },
         category: true,
         company: true,
+        creator: { select: { id: true, name: true, email: true } },
       },
     });
 
@@ -68,10 +69,9 @@ export async function PUT(
       );
     }
 
-    // 1. Buscar el producto existente
     const existingProduct = await prisma.product.findUnique({
       where: { id: targetId },
-      select: { id: true, seller_id: true, company_id: true },
+      select: { id: true, company_id: true },
     });
 
     if (!existingProduct) {
@@ -81,22 +81,14 @@ export async function PUT(
       );
     }
 
-    // 2. Verificar permisos del usuario (vendedor directo o miembro de la empresa)
-    let isAuthorized = existingProduct.seller_id === user.id;
+    const isMember = await prisma.companyMember.findFirst({
+      where: {
+        company_id: existingProduct.company_id,
+        user_id: user.id,
+      },
+    });
 
-    if (!isAuthorized && existingProduct.company_id) {
-      const isCompanyMember = await prisma.companyMember.findFirst({
-        where: {
-          company_id: existingProduct.company_id,
-          user_id: user.id,
-        },
-      });
-      if (isCompanyMember) {
-        isAuthorized = true;
-      }
-    }
-
-    if (!isAuthorized) {
+    if (!isMember) {
       return NextResponse.json(
         { error: "No tienes permisos para editar esta publicación" },
         { status: 403 },
@@ -137,7 +129,6 @@ export async function PUT(
           : "unique"
         : undefined;
 
-    // Actualizar campos en la base de datos
     const updatedProduct = await prisma.product.update({
       where: { id: targetId },
       data: {
@@ -199,7 +190,7 @@ export async function DELETE(
 
     const existingProduct = await prisma.product.findUnique({
       where: { id },
-      select: { seller_id: true, company_id: true },
+      select: { company_id: true },
     });
 
     if (!existingProduct) {
@@ -209,18 +200,11 @@ export async function DELETE(
       );
     }
 
-    let isAuthorized = existingProduct.seller_id === user.id;
-    if (!isAuthorized && existingProduct.company_id) {
-      const isCompanyMember = await prisma.companyMember.findFirst({
-        where: {
-          company_id: existingProduct.company_id,
-          user_id: user.id,
-        },
-      });
-      if (isCompanyMember) isAuthorized = true;
-    }
+    const isMember = await prisma.companyMember.findFirst({
+      where: { company_id: existingProduct.company_id, user_id: user.id },
+    });
 
-    if (!isAuthorized) {
+    if (!isMember) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 

@@ -25,7 +25,6 @@ interface DispatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   packageId: string;
-  orderIds?: string[];
   currentCarrierName?: string | null;
   currentTrackingNumber?: string | null;
   currentEstimatedDelivery?: string | null;
@@ -78,7 +77,6 @@ export function DispatchModal({
   isOpen,
   onClose,
   packageId,
-  orderIds,
   currentCarrierName,
   currentTrackingNumber,
   currentEstimatedDelivery,
@@ -135,9 +133,7 @@ export function DispatchModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           packageId,
-          orderIds: orderIds && orderIds.length > 0 ? orderIds : undefined,
-          action: "dispatch",
-          carrierName: values.carrierName.trim(),
+          action: "mark_shipped",
           courier: values.carrierName.trim(),
           trackingNumber: values.trackingNumber.trim(),
           estimatedDelivery: values.estimatedDelivery,

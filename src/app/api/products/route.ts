@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const supabase = await createServerClient();
@@ -93,50 +94,47 @@ export async function POST(request: Request) {
     }
   }
 
-  // Validar membresía de empresa o autodetectar la empresa activa del usuario
   if (company_id) {
-    const { data: memberData } = await supabase
-      .from("company_members")
-      .select("id")
-      .eq("company_id", company_id)
-      .eq("user_id", user.id)
-      .single();
+    const membership = await prisma.companyMember.findFirst({
+      where: { company_id, user_id: user.id },
+    });
+    if (!membership) company_id = null;
+  }
 
-    if (!memberData) {
-      company_id = null; // Si no es miembro, no vincula a la empresa por seguridad
+  if (!company_id) {
+    const profile = await prisma.profile.findUnique({
+      where: { id: user.id },
+      select: { last_active_company_id: true },
+    });
+
+    if (profile?.last_active_company_id) {
+      const membership = await prisma.companyMember.findFirst({
+        where: { company_id: profile.last_active_company_id, user_id: user.id },
+      });
+      if (membership) company_id = profile.last_active_company_id;
+    }
+
+    if (!company_id) {
+      const firstMember = await prisma.companyMember.findFirst({
+        where: { user_id: user.id },
+        select: { company_id: true },
+      });
+      if (firstMember) company_id = firstMember.company_id;
     }
   }
 
   if (!company_id) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("last_active_company_id")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.last_active_company_id) {
-      company_id = profile.last_active_company_id;
-    } else {
-      const { data: firstMember } = await supabase
-        .from("company_members")
-        .select("company_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (firstMember?.company_id) {
-        company_id = firstMember.company_id;
-      }
-    }
+    return NextResponse.json(
+      { error: "No tienes una empresa activa para publicar." },
+      { status: 400 },
+    );
   }
 
   if (category_id === "other") {
-    const { data: otrosCat } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", "otros")
-      .single();
-
+    const otrosCat = await prisma.category.findUnique({
+      where: { slug: "otros" },
+      select: { id: true },
+    });
     if (otrosCat) {
       category_id = otrosCat.id;
     } else {
@@ -148,60 +146,47 @@ export async function POST(request: Request) {
   }
 
   if (!location) {
-    if (company_id) {
-      const { data: comp } = await supabase
-        .from("companies")
-        .select("location")
-        .eq("id", company_id)
-        .maybeSingle();
-      location = comp?.location || "Lima, Perú";
-    } else {
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("location")
-        .eq("id", user.id)
-        .maybeSingle();
-      location = prof?.location || "Lima, Perú";
-    }
+    const company = await prisma.company.findUnique({
+      where: { id: company_id },
+      select: { location: true },
+    });
+    location = company?.location || "Lima, Perú";
   }
 
   const defaultWarranty = warranty || "Sin garantía del vendedor";
 
-  const insertData: Record<string, unknown> = {
-    title,
-    description,
-    price,
-    condition,
-    category_id,
-    seller_id: user.id,
-    company_id: company_id || null,
-    status: "active",
-    stock,
-    location: location || null,
-    latitude: latitude,
-    longitude: longitude,
-    brand: brand,
-    availability_type: availability_type || "unique",
-    delivery_preference: delivery_preference || null,
-    video_url: video_url || null,
-    specifications: {
-      warranty: defaultWarranty,
-      warranty_coverage:
-        "Fallas de fabricación y componentes defectuosos de origen",
-      warranty_conditions: warranty_conditions || null,
-    },
-  };
+  try {
+    const product = await prisma.product.create({
+      data: {
+        title,
+        description,
+        price,
+        condition,
+        category_id,
+        company_id,
+        created_by: user.id,
+        status: "active",
+        stock,
+        location: location || null,
+        latitude,
+        longitude,
+        brand,
+        availability_type: availability_type || "unique",
+        delivery_preference: delivery_preference || null,
+        video_url: video_url || null,
+        specifications: {
+          warranty: defaultWarranty,
+          warranty_coverage:
+            "Fallas de fabricación y componentes defectuosos de origen",
+          warranty_conditions: warranty_conditions || null,
+        },
+      },
+    });
 
-  const { data, error } = await supabase
-    .from("products")
-    .insert(insertData)
-    .select()
-    .single();
-
-  if (error) {
+    return NextResponse.json({ product, success: true });
+  } catch (error: unknown) {
     console.error("Error creating product:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Error interno";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ product: data, success: true });
 }

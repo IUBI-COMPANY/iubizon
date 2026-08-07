@@ -12,10 +12,19 @@ const productInclude = {
   category: {
     select: { id: true, name: true, slug: true, icon: true, sort_order: true },
   },
-  seller: {
+  company: {
     select: {
       id: true,
-      email: true,
+      name: true,
+      slug: true,
+      logo_url: true,
+      location: true,
+      is_verified: true,
+    },
+  },
+  creator: {
+    select: {
+      id: true,
       name: true,
       avatar_url: true,
       location: true,
@@ -24,9 +33,6 @@ const productInclude = {
       total_sales: true,
       positive_reviews: true,
     },
-  },
-  company: {
-    select: { id: true, name: true, slug: true, logo_url: true },
   },
   images: { orderBy: { position: "asc" as const } },
 };
@@ -45,7 +51,6 @@ function getSearchVariants(rawQuery: string): string[] {
   for (const word of words) {
     variants.add(word);
 
-    // Variantes plurales / singulares comunes en español (proyectores/proyector, celulares/celular, etc.)
     if (word.length > 4 && word.endsWith("es")) {
       variants.add(word.slice(0, -2));
     } else if (word.length > 3 && word.endsWith("s")) {
@@ -73,7 +78,6 @@ export async function getProducts(options: GetProductsOptions = {}) {
     const rawQuery = filters.query.trim();
     const variants = getSearchVariants(rawQuery);
 
-    // Buscar también categorías que coincidan con la búsqueda (ej: "proyectores", "celulares", "laptops", "accesorios")
     const matchingCategories = await prisma.category.findMany({
       where: {
         OR: variants.flatMap((v) => [
@@ -143,16 +147,15 @@ export async function getProducts(options: GetProductsOptions = {}) {
     price: Number(p.price),
     is_bundle: false,
     favorites: p.favorites_count ?? 0,
-    location: p.seller?.location ?? null,
     created_at: p.created_at?.toISOString() || new Date().toISOString(),
     updated_at: p.updated_at?.toISOString() || new Date().toISOString(),
-    seller: p.seller
+    creator: p.creator
       ? {
-          ...p.seller,
-          rating: Number(p.seller.rating || 0),
-          is_pro: p.seller.is_pro ?? false,
-          total_sales: p.seller.total_sales ?? 0,
-          positive_reviews: p.seller.positive_reviews ?? 0,
+          ...p.creator,
+          rating: Number(p.creator.rating || 0),
+          is_pro: p.creator.is_pro ?? false,
+          total_sales: p.creator.total_sales ?? 0,
+          positive_reviews: p.creator.positive_reviews ?? 0,
         }
       : undefined,
   }));
@@ -171,7 +174,6 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
     price: Number(p.price),
     is_bundle: false,
     favorites: p.favorites_count ?? 0,
-    location: p.seller?.location ?? null,
     latitude: null,
     longitude: null,
     created_at:
@@ -189,13 +191,13 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
           sort_order: p.category.sort_order ?? 0,
         }
       : undefined,
-    seller: p.seller
+    creator: p.creator
       ? {
-          ...p.seller,
-          rating: Number(p.seller.rating || 0),
-          is_pro: p.seller.is_pro ?? false,
-          total_sales: p.seller.total_sales ?? 0,
-          positive_reviews: p.seller.positive_reviews ?? 0,
+          ...p.creator,
+          rating: Number(p.creator.rating || 0),
+          is_pro: p.creator.is_pro ?? false,
+          total_sales: p.creator.total_sales ?? 0,
+          positive_reviews: p.creator.positive_reviews ?? 0,
         }
       : undefined,
   })) as unknown as Product[];
@@ -252,8 +254,16 @@ export async function getRelatedProducts(
 }
 
 export async function getUserProducts(userId: string) {
+  const memberships = await prisma.companyMember.findMany({
+    where: { user_id: userId },
+    select: { company_id: true },
+  });
+  const companyIds = memberships.map((m) => m.company_id);
+
+  if (companyIds.length === 0) return [];
+
   return prisma.product.findMany({
-    where: { seller_id: userId },
+    where: { company_id: { in: companyIds } },
     include: {
       category: true,
       images: { orderBy: { position: "asc" } },

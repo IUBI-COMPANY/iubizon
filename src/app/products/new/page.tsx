@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
@@ -193,9 +192,13 @@ function PublishProductForm() {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const sb = createClient();
-      const { data } = await sb.from("categories").select("*").order("name");
-      if (data) setCategories(data as Category[]);
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        if (data.categories) setCategories(data.categories as Category[]);
+      } catch {
+        // fallback silencioso
+      }
       setCategoriesLoaded(true);
     };
     loadCategories();

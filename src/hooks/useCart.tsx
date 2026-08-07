@@ -16,7 +16,7 @@ interface CartItem {
   price: number;
   image_url?: string;
   quantity: number;
-  seller_id: string;
+  company_id: string;
   stock?: number | null;
 }
 
@@ -29,7 +29,7 @@ interface CartContextType {
           id: string;
           title: string;
           price: number;
-          seller_id: string;
+          company_id: string;
           images?: any[];
           stock?: number | null;
         },
@@ -162,7 +162,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             id: string;
             title: string;
             price: number;
-            seller_id: string;
+            company_id: string;
             images?: any[];
             stock?: number | null;
           },
@@ -209,7 +209,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               ? product.images[0]
               : product.images?.[0]?.url,
           quantity: Math.min(quantityToAdd, availableStock),
-          seller_id: product.seller_id,
+          company_id: product.company_id,
           stock: availableStock,
         };
 

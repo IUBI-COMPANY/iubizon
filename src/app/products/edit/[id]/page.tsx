@@ -143,11 +143,10 @@ export default function EditProductPage({ params }: Props) {
           return;
         }
 
-        const { data: catsData } = await supabase
-          .from("categories")
-          .select("id, name")
-          .order("name");
-        if (mounted && catsData) setCategories(catsData);
+        const catsRes = await fetch("/api/categories");
+        const catsResult = await catsRes.json();
+        if (mounted && catsResult.categories)
+          setCategories(catsResult.categories);
 
         const prodRes = await fetch(`/api/products/${id}`);
         const prodResult = await prodRes.json();

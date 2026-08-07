@@ -33,24 +33,22 @@ interface PackageItem {
 }
 
 interface TrackingPackage {
+  packageId: string;
+  companyName: string | null;
   trackingNumber: string | null;
-  carrierName: string | null;
+  courier: string | null;
   trackingUrl: string | null;
   estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
   subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
-  destinationAddress: string | null;
-  courierInfo: string | null;
-  sellerName: string | null;
-  orderIds: string[];
+  netEarnings: number;
   items: PackageItem[];
 }
 
-interface PurchaseOrderSession {
+interface BuyerOrderSession {
   orderCode: string;
   createdAt: string;
   subtotal: number;
@@ -77,7 +75,7 @@ function formatFullDate(isoString: string) {
 
 export default function UserOrdersPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const [sessions, setSessions] = useState<PurchaseOrderSession[]>([]);
+  const [sessions, setSessions] = useState<BuyerOrderSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusTab, setStatusTab] = useState("pending");

@@ -6,33 +6,88 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Profile {
-  id               String    @id @db.Uuid
-  email            String
-  name             String?
-  avatar_url       String?
-  phone            String?
-  bio              String?
-  location         String?
-  is_pro           Boolean?  @default(false)
-  rating           Decimal?  @default(0) @db.Decimal(3, 2)
-  total_sales      Int?      @default(0)
-  positive_reviews Int?      @default(0)
-  response_time    String?
-  last_active_company_id String? @db.Uuid
-  created_at       DateTime? @default(now()) @db.Timestamptz
-  updated_at       DateTime? @default(now()) @updatedAt @db.Timestamptz
+// ═══════════════════════════════════════════════════════════════════════
+// PROFILE — Usuario (comprador u operador de empresa)
+// ═══════════════════════════════════════════════════════════════════════
 
-  products       Product[]
-  ordersAsBuyer  Order[]         @relation("BuyerOrders")
-  ordersAsSeller Order[]         @relation("SellerOrders")
-  reviews        Review[]
-  favorites      Favorite[]
-  companyMembers CompanyMember[]
-  sellerPayouts  SellerPayout[]
+model Profile {
+  id                     String    @id @db.Uuid
+  email                  String
+  name                   String?
+  avatar_url             String?
+  phone                  String?
+  bio                    String?
+  location               String?
+  is_pro                 Boolean?  @default(false)
+  rating                 Decimal?  @default(0) @db.Decimal(3, 2)
+  total_sales            Int?      @default(0)
+  positive_reviews       Int?      @default(0)
+  response_time          String?
+  last_active_company_id String?   @db.Uuid
+  created_at             DateTime? @default(now()) @db.Timestamptz
+  updated_at             DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  orders          Order[]         @relation("BuyerOrders")
+  createdProducts Product[]       @relation("ProductCreator")
+  reviews         Review[]
+  favorites       Favorite[]
+  companyMembers  CompanyMember[]
 
   @@map("profiles")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// COMPANY — Entidad vendedora (empresa negocio o personal automática)
+// ═══════════════════════════════════════════════════════════════════════
+
+model Company {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  slug         String    @unique
+  legal_name   String
+  tax_id       String?
+  logo_url     String?
+  description  String?
+  bank_account String?
+  phone        String?
+  email        String
+  location     String?
+  latitude     Float?
+  longitude    Float?
+  is_verified  Boolean?  @default(false)
+  is_personal  Boolean?  @default(false)
+  created_at   DateTime? @default(now()) @db.Timestamptz
+  updated_at   DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  companyMembers CompanyMember[]
+  products       Product[]
+  orderPackages  OrderPackage[]
+  payouts        SellerPayout[]
+
+  @@map("companies")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// COMPANY MEMBER — Operador que administra/publica/despacha
+// ═══════════════════════════════════════════════════════════════════════
+
+model CompanyMember {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id String    @db.Uuid
+  user_id    String    @db.Uuid
+  role       String    @default("owner")
+  created_at DateTime? @default(now()) @db.Timestamptz
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user    Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, user_id])
+  @@map("company_members")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CATEGORY — Jerárquica con ícono y orden
+// ═══════════════════════════════════════════════════════════════════════
 
 model Category {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -50,11 +105,15 @@ model Category {
   @@map("categories")
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// PRODUCT — Publicación de marketplace
+// ═══════════════════════════════════════════════════════════════════════
+
 model Product {
   id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  seller_id           String    @db.Uuid
+  company_id          String    @db.Uuid
+  created_by          String?   @db.Uuid
   category_id         String    @db.Uuid
-  company_id          String?   @db.Uuid
   title               String
   description         String?
   price               Decimal   @db.Decimal(10, 2)
@@ -63,7 +122,6 @@ model Product {
   stock               Int?      @default(1)
   views               Int?      @default(0)
   favorites_count     Int?      @default(0) @map("favorites")
-  is_bundle           Boolean?  @default(false)
   location            String?
   latitude            Float?
   longitude           Float?
@@ -75,16 +133,23 @@ model Product {
   created_at          DateTime? @default(now()) @db.Timestamptz
   updated_at          DateTime? @default(now()) @updatedAt @db.Timestamptz
 
-  seller    Profile        @relation(fields: [seller_id], references: [id], onDelete: Cascade)
-  category  Category       @relation(fields: [category_id], references: [id])
-  company   Company?       @relation(fields: [company_id], references: [id])
-  images    ProductImage[]
-  orders    Order[]
-  reviews   Review[]
-  favorites Favorite[]
+  company    Company        @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  creator    Profile?       @relation("ProductCreator", fields: [created_by], references: [id])
+  category   Category       @relation(fields: [category_id], references: [id], onDelete: Restrict)
+  images     ProductImage[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  favorites  Favorite[]
 
+  @@index([company_id])
+  @@index([category_id])
+  @@index([status])
   @@map("products")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// PRODUCT IMAGE
+// ═══════════════════════════════════════════════════════════════════════
 
 model ProductImage {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -95,45 +160,13 @@ model ProductImage {
 
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
+  @@index([product_id])
   @@map("product_images")
 }
 
-model Company {
-  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
-  slug           String          @unique
-  tax_id         String?
-  logo_url       String?
-  description    String?
-  bank_account   String?
-  phone          String?
-  email          String?
-  location       String?
-  latitude       Float?
-  longitude      Float?
-  is_verified    Boolean?        @default(false)
-  created_at     DateTime?       @default(now()) @db.Timestamptz
-  updated_at     DateTime?       @default(now()) @updatedAt @db.Timestamptz
-  companyMembers CompanyMember[]
-  products       Product[]
-  orders         Order[]
-
-  @@map("companies")
-}
-
-model CompanyMember {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  company_id String    @db.Uuid
-  user_id    String    @db.Uuid
-  role       String    @default("owner")
-  created_at DateTime? @default(now()) @db.Timestamptz
-
-  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
-  user    Profile @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@unique([company_id, user_id])
-  @@map("company_members")
-}
+// ═══════════════════════════════════════════════════════════════════════
+// FAVORITE
+// ═══════════════════════════════════════════════════════════════════════
 
 model Favorite {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -148,51 +181,140 @@ model Favorite {
   @@map("favorites")
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// ORDER — Cabecera de compra
+// ═══════════════════════════════════════════════════════════════════════
+
 model Order {
-  id                     String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  product_id             String              @db.Uuid
-  buyer_id               String              @db.Uuid
-  seller_id              String              @db.Uuid
-  company_id             String?             @db.Uuid
-  payment_transaction_id String?             @db.Uuid
-  quantity               Int                 @default(1)
-  unit_price             Decimal             @default(0) @db.Decimal(10, 2)
-  amount                 Decimal             @db.Decimal(10, 2) // unit_price * quantity
-  commission             Decimal?            @default(0) @db.Decimal(10, 2)
-  status                 String              @default("pending")
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_code             String    @unique
+  buyer_id               String    @db.Uuid
+  payment_transaction_id String?   @db.Uuid
+  status                 String    @default("pending")
   payment_method         String?
-  payment_id             String?
-  created_at             DateTime?           @default(now()) @db.Timestamptz
-  updated_at             DateTime?           @default(now()) @updatedAt @db.Timestamptz
+  subtotal               Decimal   @default(0) @db.Decimal(10, 2)
+  shipping_cost          Decimal   @default(0) @db.Decimal(10, 2)
+  tax_amount             Decimal   @default(0) @db.Decimal(10, 2)
+  total_amount           Decimal   @default(0) @db.Decimal(10, 2)
+  created_at             DateTime? @default(now()) @db.Timestamptz
+  updated_at             DateTime? @default(now()) @updatedAt @db.Timestamptz
 
-  product            Product             @relation(fields: [product_id], references: [id])
   buyer              Profile             @relation("BuyerOrders", fields: [buyer_id], references: [id])
-  seller             Profile             @relation("SellerOrders", fields: [seller_id], references: [id])
-  company            Company?            @relation(fields: [company_id], references: [id])
   paymentTransaction PaymentTransaction? @relation(fields: [payment_transaction_id], references: [id])
-  invoiceDocument    InvoiceDocument?
+  shipping           OrderShipping?
+  invoice            OrderInvoice?
+  packages           OrderPackage[]
   reviews            Review[]
-  shipping           Shipping?
 
+  @@index([buyer_id])
+  @@index([status])
+  @@index([payment_transaction_id])
   @@map("orders")
 }
 
-model Shipping {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  order_id            String    @unique @db.Uuid
-  courier             String?
-  tracking_number     String?
-  status              String?   @default("pending")
-  origin_address      String?
-  destination_address String?
-  estimated_delivery  DateTime? @db.Timestamptz
-  created_at          DateTime? @default(now()) @db.Timestamptz
-  updated_at          DateTime? @default(now()) @updatedAt @db.Timestamptz
+// ═══════════════════════════════════════════════════════════════════════
+// ORDER SHIPPING — Snapshot de envío (inmutable, 1:1 con Order)
+// ═══════════════════════════════════════════════════════════════════════
+
+model OrderShipping {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id        String  @unique @db.Uuid
+  name            String
+  phone           String
+  email           String?
+  address         String
+  department      String?
+  province        String?
+  district        String?
+  reference       String?
+  document_type   String?
+  document_number String?
 
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
 
-  @@map("shippings")
+  @@map("order_shippings")
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// ORDER INVOICE — Comprobante fiscal SUNAT (inmutable, 1:1 con Order)
+// ═══════════════════════════════════════════════════════════════════════
+
+model OrderInvoice {
+  id            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id      String  @unique @db.Uuid
+  type          String?
+  doc_type      String?
+  number        String?
+  legal_name    String?
+  tax_address   String?
+  sunat_status  String? @default("pending")
+  sunat_pdf_url String?
+
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@map("order_invoices")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ORDER PACKAGE — Paquete logístico (1 por empresa vendedora)
+// ═══════════════════════════════════════════════════════════════════════
+
+model OrderPackage {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id            String    @db.Uuid
+  company_id          String    @db.Uuid
+  status              String    @default("pending")
+  delivery_type       String?
+  courier             String?
+  tracking_number     String?
+  tracking_url        String?
+  carrier_phone       String?
+  estimated_delivery  DateTime? @db.Timestamptz
+  destination_address String?
+  subtotal            Decimal   @default(0) @db.Decimal(10, 2)
+  commission_total    Decimal   @default(0) @db.Decimal(10, 2)
+  net_earnings        Decimal   @default(0) @db.Decimal(10, 2)
+  created_at          DateTime? @default(now()) @db.Timestamptz
+  updated_at          DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  order   Order          @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  company Company        @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  items   OrderItem[]
+  payouts SellerPayout[]
+
+  @@index([order_id])
+  @@index([company_id])
+  @@map("order_packages")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ORDER ITEM — Ítem atómico dentro del paquete
+// ═══════════════════════════════════════════════════════════════════════
+
+model OrderItem {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  package_id      String    @db.Uuid
+  product_id      String    @db.Uuid
+  quantity        Int       @default(1)
+  unit_price      Decimal   @default(0) @db.Decimal(10, 2)
+  subtotal        Decimal   @default(0) @db.Decimal(10, 2)
+  commission      Decimal   @default(0) @db.Decimal(10, 2)
+  status          String    @default("pending")
+  tracking_number String?
+  created_at      DateTime? @default(now()) @db.Timestamptz
+  updated_at      DateTime? @default(now()) @updatedAt @db.Timestamptz
+
+  package OrderPackage @relation(fields: [package_id], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [product_id], references: [id], onDelete: Restrict)
+
+  @@index([package_id])
+  @@index([product_id])
+  @@map("order_items")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// REVIEW — Reseña de producto post-compra
+// ═══════════════════════════════════════════════════════════════════════
 
 model Review {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -207,47 +329,60 @@ model Review {
   buyer   Profile @relation(fields: [buyer_id], references: [id])
   order   Order?  @relation(fields: [order_id], references: [id])
 
+  @@index([product_id])
+  @@index([buyer_id])
+  @@index([order_id])
   @@map("reviews")
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// SELLER PAYOUT — Liquidación a empresa vendedora
+// ═══════════════════════════════════════════════════════════════════════
+
 model SellerPayout {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  seller_id       String    @db.Uuid
-  tracking_number String?
-  order_code      String?
-  subtotal        Decimal   @db.Decimal(10, 2)
-  commission      Decimal   @db.Decimal(10, 2)
-  net_amount      Decimal   @db.Decimal(10, 2)
-  status          String    @default("pending")
-  paid_at         DateTime? @db.Timestamptz
-  payment_method  String?
-  reference_code  String?
-  notes           String?
-  created_at      DateTime? @default(now()) @db.Timestamptz
-  updated_at      DateTime? @default(now()) @updatedAt @db.Timestamptz
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id     String    @db.Uuid
+  package_id     String    @db.Uuid
+  subtotal       Decimal   @db.Decimal(10, 2)
+  commission     Decimal   @db.Decimal(10, 2)
+  net_amount     Decimal   @db.Decimal(10, 2)
+  status         String    @default("pending")
+  paid_at        DateTime? @db.Timestamptz
+  payment_method String?
+  reference_code String?
+  notes          String?
+  created_at     DateTime? @default(now()) @db.Timestamptz
+  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamptz
 
-  seller Profile @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  company Company      @relation(fields: [company_id], references: [id], onDelete: Restrict)
+  package OrderPackage @relation(fields: [package_id], references: [id], onDelete: Restrict)
 
+  @@index([company_id])
+  @@index([package_id])
   @@map("seller_payouts")
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// PAYMENT TRANSACTION — Registro de pago Niubiz
+// ═══════════════════════════════════════════════════════════════════════
+
 model PaymentTransaction {
   id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  provider           String    @default("niubiz") // 'niubiz', 'mercadopago', 'paypal'
-  transaction_type   String    @default("authorization") // 'authorization', 'refund', 'void'
-  status             String    @default("pending") // 'pending', 'authorized', 'denied', 'failed', 'refunded'
+  provider           String    @default("niubiz")
+  transaction_type   String    @default("authorization")
+  status             String    @default("pending")
   purchase_number    String    @unique
   amount             Decimal   @db.Decimal(10, 2)
-  currency           String    @default("PEN") // 'PEN' (604) o 'USD' (840)
+  currency           String    @default("PEN")
   transaction_id     String?
   authorization_code String?
-  card_brand         String? // 'VISA', 'MASTERCARD', 'AMEX'
-  card_bin           String? // Primeros 6 dígitos
-  card_last4         String? // Últimos 4 dígitos
+  card_brand         String?
+  card_bin           String?
+  card_last4         String?
   response_code      String?
   response_message   String?
   customer_ip        String?
-  raw_response       Json? // Payload completo devuelto por Niubiz para auditoría
+  raw_response       Json?
   created_at         DateTime? @default(now()) @db.Timestamptz
   updated_at         DateTime? @default(now()) @updatedAt @db.Timestamptz
 
@@ -256,29 +391,16 @@ model PaymentTransaction {
   @@map("payment_transactions")
 }
 
-model InvoiceDocument {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  order_id        String    @unique @db.Uuid
-  doc_type        String // 'boleta' | 'factura'
-  identity_type   String // 'dni' | 'ruc' | 'ce'
-  identity_number String
-  legal_name      String? // Nombre o Razón Social
-  tax_address     String? // Dirección fiscal para Factura
-  sunat_status    String    @default("pending") // 'pending', 'emitted', 'rejected'
-  pdf_url         String?
-  created_at      DateTime? @default(now()) @db.Timestamptz
-
-  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
-
-  @@map("invoice_documents")
-}
+// ═══════════════════════════════════════════════════════════════════════
+// PLATFORM SETTING — Configuración dinámica
+// ═══════════════════════════════════════════════════════════════════════
 
 model PlatformSetting {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  key         String    @unique // 'COMMISSION_CONFIG', 'NIUBIZ_CONFIG', 'BUYER_PROTECTION_DAYS'
-  value       Json // Payload JSON flexible para configuraciones dinámicas
+  key         String    @unique
+  value       Json
   description String?
-  category    String    @default("commission") // 'commission', 'payment_gateway', 'features'
+  category    String    @default("commission")
   updated_by  String?   @db.Uuid
   created_at  DateTime? @default(now()) @db.Timestamptz
   updated_at  DateTime? @default(now()) @updatedAt @db.Timestamptz

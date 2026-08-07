@@ -16,70 +16,59 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const companyIdParam = searchParams.get("company_id");
 
-    let isCompanyMode = false;
-    let targetCompany = null;
     let companyId: string | null = null;
+    let targetCompany = null;
+
+    const memberships = await prisma.companyMember.findMany({
+      where: { user_id: user.id },
+      include: { company: true },
+    });
 
     if (companyIdParam) {
-      const membership = await prisma.companyMember.findFirst({
-        where: {
-          company_id: companyIdParam,
-          user_id: user.id,
-        },
-        include: { company: true },
-      });
-
+      const membership = memberships.find(
+        (m) => m.company_id === companyIdParam,
+      );
       if (membership) {
-        isCompanyMode = true;
         companyId = companyIdParam;
         targetCompany = membership.company;
       }
+    } else if (memberships.length > 0) {
+      const profile = await prisma.profile.findUnique({
+        where: { id: user.id },
+        select: { last_active_company_id: true },
+      });
+      const activeMembership = profile?.last_active_company_id
+        ? memberships.find(
+            (m) => m.company_id === profile.last_active_company_id,
+          )
+        : memberships[0];
+      if (activeMembership) {
+        companyId = activeMembership.company_id;
+        targetCompany = activeMembership.company;
+      }
     }
 
-    // Filtros de búsqueda para productos y pedidos
-    const productWhere = isCompanyMode
-      ? { company_id: companyId! }
-      : { seller_id: user.id, company_id: null };
+    const productWhere = companyId
+      ? { company_id: companyId }
+      : {
+          company_id: {
+            notIn: memberships.map((m) => m.company_id).filter(Boolean),
+          },
+        };
 
-    const orderWhere = isCompanyMode
-      ? { company_id: companyId! }
-      : { buyer_id: user.id };
-    const pendingOrderWhere = {
-      ...orderWhere,
-      status: { in: ["pending", "paid"] },
-      shipping: {
-        is: {
-          tracking_number: null,
-        },
-      },
-    };
-
-    // Consultas ultrarrápidas y optimizadas en paralelo directo desde PostgreSQL
     const [
       totalProducts,
       activeProducts,
       productSums,
       recentProductsRaw,
-      totalOrders,
-      pendingOrdersCount,
-      personalOrderPackages,
       totalFavorites,
     ] = await Promise.all([
-      // 1. Conteo total de productos
       prisma.product.count({ where: productWhere }),
-      // 2. Conteo de productos activos
-      prisma.product.count({
-        where: { ...productWhere, status: "active" },
-      }),
-      // 3. Suma en SQL de vistas y favoritos
+      prisma.product.count({ where: { ...productWhere, status: "active" } }),
       prisma.product.aggregate({
         where: productWhere,
-        _sum: {
-          views: true,
-          favorites_count: true,
-        },
+        _sum: { views: true, favorites_count: true },
       }),
-      // 4. Solo los 5 productos más recientes para la vista previa
       prisma.product.findMany({
         where: productWhere,
         select: {
@@ -98,40 +87,23 @@ export async function GET(req: Request) {
         orderBy: { created_at: "desc" },
         take: 3,
       }),
-      // 5. Conteo total de pedidos
-      prisma.order.count({
-        where: orderWhere,
-      }),
-      // 6. Conteo de pedidos pendientes de tracking
-      prisma.order.count({
-        where: pendingOrderWhere,
-      }),
-      // 7. Solo para modo personal: paquetes únicos (por tracking o por order id)
-      isCompanyMode
-        ? Promise.resolve([])
-        : prisma.order.findMany({
-            where: orderWhere,
-            select: {
-              id: true,
-              shipping: {
-                select: { tracking_number: true },
-              },
-            },
-          }),
-      // 8. Conteo de favoritos en modo personal
-      isCompanyMode
-        ? 0
-        : prisma.favorite.count({
-            where: { user_id: user.id },
-          }),
+      prisma.favorite.count({ where: { user_id: user.id } }),
     ]);
 
     const totalViews = productSums._sum.views || 0;
     const companyFavorites = productSums._sum.favorites_count || 0;
 
-    const uniquePackages = new Set(
-      personalOrderPackages.map((o) => o.shipping?.tracking_number || o.id),
-    );
+    // Conteo de paquetes pendientes
+    let pendingOrders = 0;
+    let totalPackages = 0;
+    if (companyId) {
+      [pendingOrders, totalPackages] = await Promise.all([
+        prisma.orderPackage.count({
+          where: { company_id: companyId, status: { in: ["pending", "paid"] } },
+        }),
+        prisma.orderPackage.count({ where: { company_id: companyId } }),
+      ]);
+    }
 
     const recentProducts = recentProductsRaw.map((p) => ({
       id: p.id,
@@ -144,16 +116,16 @@ export async function GET(req: Request) {
     }));
 
     return NextResponse.json({
-      isCompanyMode,
+      isCompanyMode: !!companyId,
       company: targetCompany,
       stats: {
         totalProducts,
         activeProducts,
-        totalOrders,
-        totalPurchases: isCompanyMode ? 0 : uniquePackages.size,
-        pendingDeliveries: pendingOrdersCount,
-        pendingOrders: isCompanyMode ? pendingOrdersCount : 0,
-        favoritesCount: isCompanyMode ? companyFavorites : totalFavorites,
+        totalOrders: totalPackages,
+        totalPurchases: 0,
+        pendingDeliveries: pendingOrders,
+        pendingOrders,
+        favoritesCount: companyId ? companyFavorites : totalFavorites,
         totalViews,
       },
       recentProducts,

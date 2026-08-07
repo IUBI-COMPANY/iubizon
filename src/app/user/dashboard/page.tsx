@@ -95,14 +95,15 @@ function DashboardContent() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const isSuccess = searchParams.get("success") === "true";
-      const sessionCode = searchParams.get("sessionCode");
+      const orderCode =
+        searchParams.get("sessionCode") || searchParams.get("order_code");
 
-      if (isSuccess && sessionCode) {
+      if (isSuccess && orderCode) {
         clearCart();
         localStorage.removeItem("iubizon_checkout_step");
         localStorage.removeItem("iubizon_checkout_form");
         toast.success(
-          `¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`,
+          `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
           "Pago Confirmado",
         );
       }

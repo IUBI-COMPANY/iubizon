@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use, Suspense } from "react";
+import { Suspense, use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,8 +12,6 @@ import { DispatchModal } from "@/components/features/orders/DispatchModal";
 import {
   ArrowLeft,
   Calendar,
-  CheckCircle,
-  Clock,
   ExternalLink,
   Loader2,
   Mail,
@@ -22,7 +20,6 @@ import {
   Phone,
   Receipt,
   Truck,
-  User as UserIcon,
   Wallet,
 } from "lucide-react";
 
@@ -37,9 +34,10 @@ interface SellerPackageItem {
 
 interface SellerPackage {
   packageId: string;
-  sessionCode: string;
+  companyId: string;
+  companyName: string;
   trackingNumber: string | null;
-  carrierName: string | null;
+  courier: string | null;
   trackingUrl: string | null;
   carrierPhone: string | null;
   estimatedDelivery: string | null;
@@ -125,10 +123,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
       const decodedId = decodeURIComponent(packageId);
       const foundPkg = (data.packages as SellerPackage[]).find(
-        (p) =>
-          p.packageId === decodedId ||
-          p.trackingNumber === decodedId ||
-          p.sessionCode === decodedId,
+        (p) => p.packageId === decodedId || p.trackingNumber === decodedId,
       );
 
       if (!foundPkg) {
@@ -225,7 +220,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-black text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl">
-                  ORDEN #{pkg.sessionCode}
+                  Paquete {pkg.companyName || `#${pkg.packageId.slice(0, 8)}`}
                 </span>
                 {pkg.trackingNumber && (
                   <span className="text-xs font-black text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl flex items-center gap-1">
@@ -338,7 +333,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               <div className="space-y-1 text-[#334155]">
                 <p>
                   <strong>Agencia de Transporte:</strong>{" "}
-                  {pkg.carrierName || "Pendiente de despacho"}
+                  {pkg.courier || "Pendiente de despacho"}
                 </p>
                 <p>
                   <strong>Llegada Estimada:</strong>{" "}
@@ -467,8 +462,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
           isOpen={isDispatchModalOpen}
           onClose={() => setIsDispatchModalOpen(false)}
           packageId={pkg.packageId}
-          orderIds={pkg.orderIds}
-          currentCarrierName={pkg.carrierName}
+          currentCarrierName={pkg.courier}
           currentTrackingNumber={pkg.trackingNumber}
           currentEstimatedDelivery={pkg.estimatedDelivery}
           currentCarrierPhone={pkg.carrierPhone}

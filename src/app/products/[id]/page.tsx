@@ -35,8 +35,20 @@ async function getProduct(id: string) {
     const raw = await prisma.product.findUnique({
       where: { id },
       include: {
-        seller: true,
-        company: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo_url: true,
+            location: true,
+            is_verified: true,
+            is_personal: true,
+          },
+        },
+        creator: {
+          select: { id: true, name: true, email: true, avatar_url: true },
+        },
         category: true,
         images: { orderBy: { position: "asc" } },
       },
@@ -47,7 +59,7 @@ async function getProduct(id: string) {
     return {
       ...raw,
       price: Number(raw.price),
-      location: raw.seller?.location ?? null,
+      location: raw.company?.location ?? null,
       delivery_preference: ["pickup", "delivery"],
       availability_type: (raw.stock ?? 1) > 0 ? "available" : "on_order",
     } as any;
@@ -288,20 +300,20 @@ export default async function ProductDetailPage({ params }: Props) {
                       </p>
                     </div>
                   </Link>
-                ) : product.seller ? (
+                ) : product.creator ? (
                   <Link
-                    href={`/user/profile/${product.seller.id}`}
+                    href={`/user/profile/${product.creator.id}`}
                     className="flex items-center gap-3 p-2.5 rounded-xl bg-[#f8fafc] hover:bg-[#f1f5f9] border border-[#e2e8f0] transition-all group"
                   >
                     <div className="w-9 h-9 rounded-full bg-[#f25c05]/10 flex items-center justify-center text-xs font-bold text-[#f25c05] shrink-0">
-                      {product.seller.name?.charAt(0).toUpperCase() || "U"}
+                      {product.creator.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
-                        Vendedor
+                        Publicado por
                       </p>
                       <p className="font-bold text-xs text-[#112237] group-hover:text-[#f25c05] truncate transition-colors">
-                        {product.seller.name || "Usuario"}
+                        {product.creator.name || "Usuario"}
                       </p>
                     </div>
                   </Link>
@@ -356,12 +368,11 @@ export default async function ProductDetailPage({ params }: Props) {
                 )}
 
                 {/* Selector de Cantidad y Botón de Agregar al Carrito (Tiempo Real) */}
-                {product.seller && (
+                {product.creator && (
                   <ProductActionsBlock
                     productId={product.id}
                     productTitle={product.title}
                     productPrice={Number(product.price)}
-                    sellerId={product.seller.id}
                     companyId={product.company_id}
                     images={product.images}
                     initialStock={product.stock ?? 1}

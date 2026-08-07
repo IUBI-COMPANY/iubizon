@@ -12,7 +12,28 @@ async function getProducts(limit = 20) {
         where: { status: "active", stock: { gt: 0 } },
         include: {
           category: true,
-          seller: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo_url: true,
+              location: true,
+              is_verified: true,
+            },
+          },
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              avatar_url: true,
+              location: true,
+              rating: true,
+              is_pro: true,
+              total_sales: true,
+              positive_reviews: true,
+            },
+          },
           images: { orderBy: { position: "asc" } },
         },
         orderBy: { created_at: "desc" },

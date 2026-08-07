@@ -15,7 +15,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +24,7 @@ const editCompanySchema = z.object({
   name: z
     .string()
     .min(2, "El nombre de la empresa debe tener al menos 2 caracteres."),
+  legal_name: z.string().min(2, "La razón social es obligatoria."),
   tax_id: z.string().optional(),
   logo_url: z.string().optional(),
   phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
@@ -40,6 +40,7 @@ interface EditCompanyModalProps {
     id: string;
     name: string;
     slug?: string | null;
+    legal_name?: string | null;
     tax_id: string | null;
     logo_url: string | null;
     description: string | null;
@@ -53,6 +54,7 @@ interface EditCompanyModalProps {
     id: string;
     name: string;
     slug?: string | null;
+    legal_name?: string | null;
     tax_id: string | null;
     logo_url: string | null;
     description: string | null;
@@ -99,6 +101,7 @@ export const EditCompanyModal = ({
     defaultValues: {
       name: company.name || "",
       tax_id: cleanTaxId || "",
+      legal_name: company.legal_name || "",
       logo_url: company.logo_url || "",
       phone: company.phone || "",
       email: company.email || "",
@@ -127,6 +130,7 @@ export const EditCompanyModal = ({
     reset({
       name: company.name || "",
       tax_id: rawTaxIdImmediate,
+      legal_name: company.legal_name || "",
       logo_url: company.logo_url || "",
       phone: company.phone || "",
       email: company.email || "",
@@ -149,6 +153,7 @@ export const EditCompanyModal = ({
         reset({
           name: c.name || "",
           tax_id: rawTaxId,
+          legal_name: c.legal_name || "",
           logo_url: c.logo_url || "",
           phone: c.phone || "",
           email: c.email || "",
@@ -177,21 +182,19 @@ export const EditCompanyModal = ({
       setUploadingLogo(true);
       setServerError(null);
 
-      const supabase = createClient();
-      const fileExt = file.name.split(".").pop();
-      const fileName = `company_logos/${company.id}_${Date.now()}.${fileExt}`;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("company_id", company.id);
 
-      const { error: uploadError } = await supabase.storage
-        .from("product-media")
-        .upload(fileName, file, { upsert: true });
+      const res = await fetch("/api/companies/logo", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (uploadError) throw uploadError;
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Error al subir");
 
-      const { data } = supabase.storage
-        .from("product-media")
-        .getPublicUrl(fileName);
-
-      setValue("logo_url", data.publicUrl, { shouldValidate: true });
+      setValue("logo_url", result.url, { shouldValidate: true });
     } catch (err: unknown) {
       console.error("Error subiendo logo:", err);
       setServerError("Error al subir la imagen. Intenta de nuevo.");
@@ -223,6 +226,7 @@ export const EditCompanyModal = ({
 
       const payload = {
         name: values.name.trim(),
+        legal_name: values.legal_name?.trim() || null,
         tax_id: finalTaxId,
         logo_url: values.logo_url || null,
         phone: values.phone.trim(),
@@ -380,18 +384,6 @@ export const EditCompanyModal = ({
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#334155] mb-1">
-                Nombre de la Empresa / Marca *
-              </label>
-              <Input {...register("name")} placeholder="Ej: ElleonStore" />
-              {errors.name && (
-                <p className="text-xs text-red-500 font-medium mt-1">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-[#334155] mb-1 flex items-center justify-between">
@@ -422,6 +414,36 @@ export const EditCompanyModal = ({
                   </p>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#334155] mb-1">
+                Nombre de la Empresa / Marca *
+              </label>
+              <Input {...register("name")} placeholder="Ej: ElleonStore" />
+              {errors.name && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#334155] mb-1">
+                Razón Social *
+              </label>
+              <Input
+                {...register("legal_name")}
+                placeholder="Ej: ElleonStore S.A.C."
+              />
+              <p className="text-xs text-[#94a3b8] mt-1">
+                Nombre legal registrado en SUNAT. Distinto al nombre comercial.
+              </p>
+              {errors.legal_name && (
+                <p className="text-xs text-red-500 font-medium mt-1">
+                  {errors.legal_name.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -27,29 +27,44 @@ import {
 
 interface SellerPackageItem {
   id: string;
+  productId: string;
   title: string;
   price: number;
   quantity: number;
   subtotal: number;
   image: string | null;
+  status: string;
 }
 
 interface SellerPackage {
   packageId: string;
-  sessionCode: string;
+  companyId: string;
+  companyName: string;
   trackingNumber: string | null;
-  carrierName: string | null;
+  courier: string | null;
   trackingUrl: string | null;
   carrierPhone: string | null;
   estimatedDelivery: string | null;
   status: string;
   createdAt: string;
   buyerName: string;
+  buyerPhone: string | null;
+  buyerEmail: string | null;
+  buyerDocumentType: string | null;
+  buyerDocumentNumber: string | null;
   destinationAddress: string | null;
+  destinationDepartment: string | null;
+  destinationProvince: string | null;
+  destinationDistrict: string | null;
+  destinationReference: string | null;
+  paymentMethod: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
+  docType: string | null;
+  identityNumber: string | null;
   subtotal: number;
   platformCommission: number;
   netEarnings: number;
-  orderIds: string[];
   items: SellerPackageItem[];
 }
 
@@ -331,7 +346,8 @@ function OrdersContent() {
                             <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5" />
                               <span>
-                                Orden #{pkg.sessionCode} (Despacho Pendiente)
+                                Paquete {pkg.companyName} #
+                                {pkg.packageId.slice(0, 8)} (Despacho Pendiente)
                               </span>
                             </span>
                           )}
@@ -469,8 +485,7 @@ function OrdersContent() {
           isOpen={!!selectedPackageForDispatch}
           onClose={() => setSelectedPackageForDispatch(null)}
           packageId={selectedPackageForDispatch.packageId}
-          orderIds={selectedPackageForDispatch.orderIds}
-          currentCarrierName={selectedPackageForDispatch.carrierName}
+          currentCarrierName={selectedPackageForDispatch.courier}
           currentTrackingNumber={selectedPackageForDispatch.trackingNumber}
           currentEstimatedDelivery={
             selectedPackageForDispatch.estimatedDelivery

@@ -10,7 +10,7 @@ interface NiubizPayModalProps {
   shippingForm: any;
   invoiceDetails: any;
   onValidate?: () => boolean;
-  onSuccess: (sessionCode: string) => void;
+  onSuccess: (orderCode: string) => void;
   onError: (errorMessage: string) => void;
 }
 
@@ -173,7 +173,7 @@ export function NiubizPayModal({
       setLoadingMsg(
         "¡Pago Aprobado! Redireccionando al comprobante de tu compra...",
       );
-      onSuccess(data.sessionCode);
+      onSuccess(data.orderCode || data.sessionCode);
     } catch (err: unknown) {
       setLoadingSession(false);
       const msg =

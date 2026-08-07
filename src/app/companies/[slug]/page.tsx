@@ -70,7 +70,6 @@ export default async function PublicCompanyPage({ params }: Props) {
   // Transformar datos de Prisma a formato compatible con ProductCard
   const formattedProducts = company.products.map((p) => ({
     id: p.id,
-    seller_id: company.id,
     category_id: p.category_id,
     company_id: company.id,
     company: {
@@ -87,7 +86,7 @@ export default async function PublicCompanyPage({ params }: Props) {
     stock: p.stock ?? 1,
     views: p.views ?? 0,
     favorites_count: p.favorites_count ?? 0,
-    is_bundle: p.is_bundle ?? false,
+    is_bundle: (p as any).is_bundle ?? false,
     location: p.location,
     availability_type: p.availability_type,
     delivery_preference: p.delivery_preference,

@@ -51,6 +51,7 @@ import { peruUbigeo } from "@/data-list/ubigeos";
 
 const STEP_STORAGE_KEY = "iubizon_checkout_step";
 const FORM_STORAGE_KEY = "iubizon_checkout_form";
+const INVOICE_STORAGE_KEY = "iubizon_checkout_invoice";
 
 /** Compone el texto de ubicación mostrado al vendedor a partir del ubigeo elegido. */
 const buildCityLabel = (
@@ -200,21 +201,36 @@ export default function CartCheckoutPage() {
         }
       }
 
+      const savedInvoice = localStorage.getItem(INVOICE_STORAGE_KEY);
+      if (savedInvoice) {
+        try {
+          const parsed = JSON.parse(savedInvoice);
+          if (parsed.invoiceType) setInvoiceType(parsed.invoiceType);
+          if (parsed.docType) setDocType(parsed.docType);
+          if (parsed.invoiceDni) setInvoiceDni(parsed.invoiceDni);
+          if (parsed.invoiceRuc) setInvoiceRuc(parsed.invoiceRuc);
+          if (parsed.invoiceCompanyName)
+            setInvoiceCompanyName(parsed.invoiceCompanyName);
+        } catch {}
+      }
+
       // Procesar retorno de Niubiz si vino por redirección en URL (success / error)
       const urlParams = new URLSearchParams(window.location.search);
       const isSuccess = urlParams.get("success") === "true";
-      const sessionCode = urlParams.get("sessionCode");
+      const orderCode =
+        urlParams.get("sessionCode") || urlParams.get("order_code");
       const errorMsg = urlParams.get("error");
 
-      if (isSuccess && sessionCode) {
+      if (isSuccess && orderCode) {
         clearCart();
         localStorage.removeItem(STEP_STORAGE_KEY);
         localStorage.removeItem(FORM_STORAGE_KEY);
+        localStorage.removeItem(INVOICE_STORAGE_KEY);
         toast.success(
-          `¡Pago exitoso con tarjeta Niubiz! Orden #${sessionCode}`,
+          `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
           "Pago Confirmado",
         );
-        router.push(`/cart/success?order_code=${sessionCode}`);
+        router.push(`/cart/success?order_code=${orderCode}`);
       } else if (errorMsg && errorMsg !== "Accept") {
         toast.error(
           `No se pudo completar el pago: ${errorMsg}`,
@@ -233,6 +249,22 @@ export default function CartCheckoutPage() {
     });
     return () => subscription.unsubscribe();
   }, [watch]);
+
+  // Persistir campos de comprobante de pago en LocalStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        INVOICE_STORAGE_KEY,
+        JSON.stringify({
+          invoiceType,
+          docType,
+          invoiceDni,
+          invoiceRuc,
+          invoiceCompanyName,
+        }),
+      );
+    }
+  }, [invoiceType, docType, invoiceDni, invoiceRuc, invoiceCompanyName]);
 
   // Sincronizar email/nombre cuando el usuario inicie sesión
   useEffect(() => {
@@ -349,7 +381,7 @@ export default function CartCheckoutPage() {
       id: bump.id,
       title: bump.title,
       price: bump.price,
-      seller_id: bump.seller_id,
+      company_id: bump.company_id,
       images: bump.image_url ? [{ url: bump.image_url }] : [],
       stock: typeof bump.stock === "number" ? bump.stock : 10,
     });
@@ -1100,7 +1132,7 @@ export default function CartCheckoutPage() {
                       shipping_document_type: shippingForm.documentType,
                       shipping_document_number: shippingForm.documentNumber,
                     }}
-                    onSuccess={(sessionCode) => {
+                    onSuccess={(orderCode) => {
                       toast.success(
                         "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
                         "¡Gracias por tu compra!",
@@ -1109,8 +1141,38 @@ export default function CartCheckoutPage() {
                       if (typeof window !== "undefined") {
                         localStorage.removeItem(STEP_STORAGE_KEY);
                         localStorage.removeItem(FORM_STORAGE_KEY);
+                        localStorage.removeItem(INVOICE_STORAGE_KEY);
+                        const packageMap = new Map<
+                          string,
+                          { productTitles: string[]; itemCount: number }
+                        >();
+                        for (const item of items) {
+                          const key = item.company_id;
+                          if (!packageMap.has(key)) {
+                            packageMap.set(key, {
+                              productTitles: [],
+                              itemCount: 0,
+                            });
+                          }
+                          const entry = packageMap.get(key)!;
+                          entry.productTitles.push(item.title);
+                          entry.itemCount += item.quantity;
+                        }
+                        sessionStorage.setItem(
+                          "iubizon_order_packages",
+                          JSON.stringify(
+                            Array.from(packageMap.entries()).map(
+                              ([companyId, data]) => ({
+                                packageId: companyId,
+                                companyId,
+                                itemCount: data.itemCount,
+                                productTitles: data.productTitles,
+                              }),
+                            ),
+                          ),
+                        );
                       }
-                      router.push(`/cart/success?order_code=${sessionCode}`);
+                      router.push(`/cart/success?order_code=${orderCode}`);
                     }}
                     onError={(errorMessage) => {
                       toast.error(errorMessage, "Error al procesar el pago");

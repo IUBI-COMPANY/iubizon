@@ -31,6 +31,8 @@ interface PackageItem {
   productId: string;
   title: string;
   price: number;
+  quantity: number;
+  subtotal: number;
   image: string | null;
   company: {
     id: string;
@@ -41,20 +43,18 @@ interface PackageItem {
 }
 
 interface TrackingPackage {
+  packageId: string;
+  companyName: string | null;
   trackingNumber: string | null;
-  carrierName: string | null;
+  courier: string | null;
   trackingUrl: string | null;
   estimatedDelivery: string | null;
   status: string;
   paymentMethod: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
   subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  totalAmount: number;
-  destinationAddress: string | null;
-  courierInfo: string | null;
-  sellerName: string | null;
-  orderIds: string[];
+  netEarnings: number;
   items: PackageItem[];
 }
 
@@ -68,7 +68,7 @@ interface PaymentDetails {
   legalName: string | null;
 }
 
-interface PurchaseOrderSession {
+interface BuyerOrderSession {
   orderCode: string;
   createdAt: string;
   subtotal: number;
@@ -122,7 +122,7 @@ export default function OrderDetailPage({
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  const [session, setSession] = useState<PurchaseOrderSession | null>(null);
+  const [session, setSession] = useState<BuyerOrderSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmingPackageKey, setConfirmingPackageKey] = useState<
@@ -131,6 +131,7 @@ export default function OrderDetailPage({
   const [warrantyModalData, setWarrantyModalData] = useState<{
     isOpen: boolean;
     sellerName?: string | null;
+    companyName?: string | null;
     productTitle?: string;
   }>({
     isOpen: false,
@@ -183,14 +184,14 @@ export default function OrderDetailPage({
     if (!confirm("¿Confirmas que has recibido este paquete a satisfacción?"))
       return;
 
-    const pkgKey = pkg.trackingNumber || pkg.orderIds[0];
+    const pkgKey = pkg.trackingNumber || pkg.packageId;
     setConfirmingPackageKey(pkgKey);
 
     try {
       const res = await fetch("/api/user/orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderIds: pkg.orderIds }),
+        body: JSON.stringify({ packageIds: [pkg.packageId] }),
       });
 
       if (!res.ok) {
@@ -204,6 +205,8 @@ export default function OrderDetailPage({
       setConfirmingPackageKey(null);
     }
   };
+
+  console.log({ session });
 
   if (authLoading || (loading && !error)) {
     return (
@@ -341,7 +344,7 @@ export default function OrderDetailPage({
 
           {session.packages.map((pkg, idx) => {
             const isConfirming =
-              confirmingPackageKey === (pkg.trackingNumber || pkg.orderIds[0]);
+              confirmingPackageKey === (pkg.trackingNumber || pkg.packageId);
 
             return (
               <div
@@ -363,10 +366,10 @@ export default function OrderDetailPage({
                       </span>
                     )}
 
-                    {pkg.sellerName && (
+                    {pkg.companyName && (
                       <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
                         <Building2 className="w-3.5 h-3.5 text-[#f25c05]" />
-                        <span>Empresa: {pkg.sellerName}</span>
+                        <span>Empresa: {pkg.companyName}</span>
                       </span>
                     )}
                   </div>
@@ -396,7 +399,7 @@ export default function OrderDetailPage({
                         <strong className="text-[#112237]">
                           Agencia de Transporte:
                         </strong>{" "}
-                        {pkg.carrierName || "Agencia de Envío"}
+                        {pkg.courier || "Agencia de Envío"}
                       </p>
                       {pkg.estimatedDelivery && (
                         <p className="text-[#334155]">
@@ -484,7 +487,7 @@ export default function OrderDetailPage({
                       onClick={() =>
                         setWarrantyModalData({
                           isOpen: true,
-                          sellerName: pkg.sellerName,
+                          sellerName: pkg.companyName,
                           productTitle: pkg.items[0]?.title,
                         })
                       }

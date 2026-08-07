@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function PUT(request: Request) {
   const supabase = await createServerClient();
@@ -23,26 +24,26 @@ export async function PUT(request: Request) {
     for (const image of images) {
       if (!image.id) continue;
 
-      const { data: existingImage, error: fetchError } = await supabase
-        .from("product_images")
-        .select("product_id")
-        .eq("id", image.id)
-        .single();
+      const existingImage = await prisma.productImage.findUnique({
+        where: { id: image.id },
+        select: { product: { select: { company_id: true } } },
+      });
 
-      if (fetchError || !existingImage) continue;
+      if (!existingImage) continue;
 
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .select("seller_id")
-        .eq("id", existingImage.product_id)
-        .single();
+      const isMember = await prisma.companyMember.findFirst({
+        where: {
+          company_id: existingImage.product.company_id,
+          user_id: user.id,
+        },
+      });
 
-      if (productError || product.seller_id !== user.id) continue;
+      if (!isMember) continue;
 
-      await supabase
-        .from("product_images")
-        .update({ position: image.position })
-        .eq("id", image.id);
+      await prisma.productImage.update({
+        where: { id: image.id },
+        data: { position: image.position },
+      });
     }
 
     return NextResponse.json({ success: true });

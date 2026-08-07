@@ -45,10 +45,7 @@ export const ProductCard = ({
   const favorited = isFavorite(product.id);
 
   const isOwner = Boolean(
-    user?.id &&
-    (user.id === product.seller_id ||
-      (product.company_id && activeCompany?.id === product.company_id) ||
-      (product.company?.id && activeCompany?.id === product.company.id)),
+    user?.id && product.company_id && activeCompany?.id === product.company_id,
   );
 
   const sortedImages = [...(product.images || [])].sort(
@@ -81,7 +78,7 @@ export const ProductCard = ({
       id: product.id,
       title: product.title,
       price: product.price,
-      seller_id: product.seller_id,
+      company_id: product.company_id,
       images: product.images || [],
       stock: product.stock,
     });
@@ -93,8 +90,6 @@ export const ProductCard = ({
     e.stopPropagation();
     if (product.company) {
       router.push(`/companies/${product.company.slug || product.company.id}`);
-    } else if (product.seller_id) {
-      router.push(`/user/profile/${product.seller_id}`);
     }
   };
 
@@ -164,7 +159,7 @@ export const ProductCard = ({
                   className="hover:text-[#f25c05] hover:underline cursor-pointer font-medium transition-colors"
                 >
                   {product.company?.name ||
-                    product.seller?.name ||
+                    product.creator?.name ||
                     "Vendedor iubizon"}
                 </span>
               </p>
@@ -180,15 +175,15 @@ export const ProductCard = ({
                 </span>
               </div>
 
-              {showSeller && product.seller && (
+              {showSeller && product.creator && (
                 <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[#e2e8f0]">
                   <Avatar
-                    src={product.seller.avatar_url}
-                    alt={product.seller.name || "Vendedor"}
+                    src={product.creator.avatar_url}
+                    alt={product.creator.name || "Publicado por"}
                     size="sm"
                   />
                   <span className="text-xs text-[#64748b] truncate">
-                    {product.seller.name}
+                    {product.creator.name}
                   </span>
                 </div>
               )}
@@ -230,7 +225,7 @@ export const ProductCard = ({
           title: product.title,
           price: product.price,
           imageUrl: mainImage,
-          sellerId: product.seller_id,
+          companyId: product.company_id,
           quantity: 1,
         }}
       />

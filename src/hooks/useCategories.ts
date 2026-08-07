@@ -1,28 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/types";
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
   const fetchCategories = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("categories")
-        .select("*")
-        .order("sort_order", { ascending: true });
+      const res = await fetch("/api/categories");
+      const data = await res.json();
 
-      if (fetchError) throw fetchError;
+      if (!res.ok) throw new Error(data.error || "Error al cargar categorías");
 
-      const categoriesWithChildren = buildCategoryTree(data as Category[]);
+      const categoriesWithChildren = buildCategoryTree(
+        (data.categories || data) as Category[],
+      );
       setCategories(categoriesWithChildren);
     } catch (err) {
       setError(
@@ -31,7 +29,7 @@ export const useCategories = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -44,7 +42,6 @@ export const useCategory = (slug: string) => {
   const [category, setCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -52,15 +49,15 @@ export const useCategory = (slug: string) => {
       setError(null);
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from("categories")
-          .select("*")
-          .eq("slug", slug)
-          .single();
+        const res = await fetch("/api/categories");
+        const data = await res.json();
 
-        if (fetchError) throw fetchError;
+        if (!res.ok) throw new Error(data.error || "Error al cargar categoría");
 
-        setCategory(data as Category);
+        const found = (data.categories || data).find(
+          (c: Category) => c.slug === slug,
+        );
+        setCategory(found || null);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Error al cargar categoría",
@@ -73,7 +70,7 @@ export const useCategory = (slug: string) => {
     if (slug) {
       fetchCategory();
     }
-  }, [slug, supabase]);
+  }, [slug]);
 
   return { category, isLoading, error };
 };

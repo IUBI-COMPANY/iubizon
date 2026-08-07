@@ -39,7 +39,7 @@ interface AddedProductInfo {
   title: string;
   price: number;
   imageUrl?: string;
-  sellerId: string;
+  companyId: string;
   stock?: number;
   quantity: number;
 }

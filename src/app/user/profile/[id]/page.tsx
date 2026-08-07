@@ -16,7 +16,7 @@ async function getProfileData(profileId: string) {
     const [profile, products] = await Promise.all([
       prisma.profile.findUnique({ where: { id: profileId } }),
       prisma.product.findMany({
-        where: { seller_id: profileId, status: "active", stock: { gt: 0 } },
+        where: { created_by: profileId, status: "active", stock: { gt: 0 } },
         include: { images: { orderBy: { position: "asc" } } },
         orderBy: { created_at: "desc" },
         take: 20,

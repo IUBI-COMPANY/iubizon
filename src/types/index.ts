@@ -4,16 +4,16 @@ import type {
   Product as PrismaProduct,
   ProductImage as PrismaProductImage,
   Order as PrismaOrder,
-  Shipping as PrismaShipping,
+  OrderShipping as PrismaOrderShipping,
+  OrderInvoice as PrismaOrderInvoice,
+  OrderPackage as PrismaOrderPackage,
+  OrderItem as PrismaOrderItem,
   Review as PrismaReview,
   Favorite as PrismaFavorite,
   Company as PrismaCompany,
   CompanyMember as PrismaCompanyMember,
 } from "@prisma/client";
 
-// ==========================================
-// 1. DTOs de Enums y Filtros
-// ==========================================
 export type ProductCondition = "new" | "like_new" | "good" | "fair" | string;
 export type ProductStatus = "active" | "pending" | "sold" | "reported" | string;
 export type OrderStatus =
@@ -24,12 +24,7 @@ export type OrderStatus =
   | "completed"
   | "cancelled"
   | string;
-export type ShippingStatus =
-  "pending" | "picked_up" | "in_transit" | "delivered" | string;
 
-// ==========================================
-// 2. Helper de Serialización JSON para Frontend
-// ==========================================
 type JsonEntity<T, Overrides = object> = Omit<
   T,
   "created_at" | "updated_at" | keyof Overrides
@@ -39,9 +34,6 @@ type JsonEntity<T, Overrides = object> = Omit<
     updated_at?: string | null;
   };
 
-// ==========================================
-// 3. DTOs de Filtros
-// ==========================================
 export interface SearchFilters {
   query?: string;
   categoryId?: string;
@@ -71,55 +63,69 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-// ==========================================
-// 4. Entidades de Dominio (100% Herencia de Prisma ORM)
-// ==========================================
-
 export type ProductImage = PrismaProductImage;
-export type Shipping = PrismaShipping;
 
-/** Perfil de Usuario / Empresa */
+export type OrderShipping = PrismaOrderShipping;
+export type OrderInvoice = PrismaOrderInvoice;
+
 export type User = JsonEntity<PrismaProfile, { rating?: number }>;
 export type UserProfile = User;
 
-/** Categoría jerárquica */
 export type Category = PrismaCategory & {
   children?: Category[];
 };
 
-/** Producto (Hereda 100% de Prisma) */
 export type Product = JsonEntity<
   PrismaProduct,
   {
     price: number;
-    seller?: User;
-    company?: PrismaCompany | null;
+    creator?: User | null;
+    company?: Company | null;
     category?: Category;
     images?: ProductImage[];
     favorites?: number | null;
   }
 >;
 
-/** Reseñas */
 export type Review = JsonEntity<PrismaReview, { buyer?: User }>;
 
-/** Orden de compra */
-export type Order = JsonEntity<
-  PrismaOrder,
+export type OrderItem = JsonEntity<
+  PrismaOrderItem,
   {
-    amount: number;
-    commission?: number;
+    unit_price: number;
+    subtotal: number;
+    commission: number;
     product?: Product;
-    buyer?: User;
-    seller?: User;
-    shipping?: Shipping;
   }
 >;
 
-/** Favoritos */
+export type OrderPackage = JsonEntity<
+  PrismaOrderPackage,
+  {
+    subtotal: number;
+    commission_total: number;
+    net_earnings: number;
+    company?: Company | null;
+    items?: OrderItem[];
+  }
+>;
+
+export type Order = JsonEntity<
+  PrismaOrder,
+  {
+    subtotal: number;
+    shipping_cost: number;
+    tax_amount: number;
+    total_amount: number;
+    buyer?: User;
+    shipping?: OrderShipping | null;
+    invoice?: OrderInvoice | null;
+    packages?: OrderPackage[];
+  }
+>;
+
 export type Favorite = JsonEntity<PrismaFavorite, { product?: Product }>;
 
-/** Empresa / Proveedor B2B */
 export type Company = JsonEntity<
   PrismaCompany,
   {
@@ -127,10 +133,10 @@ export type Company = JsonEntity<
     members?: CompanyMember[];
     companyMembers?: CompanyMember[];
     products?: Product[];
+    orderPackages?: OrderPackage[];
   }
 >;
 
-/** Miembro de Equipo de Empresa */
 export type CompanyMember = JsonEntity<
   PrismaCompanyMember,
   { company?: Company; user?: User }

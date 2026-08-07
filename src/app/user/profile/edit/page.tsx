@@ -6,26 +6,16 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  User,
-  Phone,
-  MapPin,
-  Camera,
-  Save,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { User, Phone, Camera, Save, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/lib/supabase/client";
 
 const profileFormSchema = z.object({
   name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres."),
   phone: z.string().optional(),
-  location: z.string().optional(),
   bio: z
     .string()
     .max(500, "La descripción no puede superar los 500 caracteres.")
@@ -37,7 +27,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export default function ProfileEditPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const supabase = createClient();
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [message, setMessage] = useState<{
@@ -53,7 +42,7 @@ export default function ProfileEditPage() {
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: { name: "", phone: "", bio: "", location: "" },
+    defaultValues: { name: "", phone: "", bio: "" },
   });
 
   const nameValue = watch("name");
@@ -75,20 +64,17 @@ export default function ProfileEditPage() {
 
   const loadProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("name, phone, bio, avatar_url, location")
-        .eq("id", user?.id)
-        .single();
-
-      if (data) {
-        reset({
-          name: data.name || "",
-          phone: data.phone || "",
-          bio: data.bio || "",
-          location: data.location || "",
-        });
-        setAvatarPreview(data.avatar_url || null);
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile) {
+          reset({
+            name: data.profile.name || "",
+            phone: data.profile.phone || "",
+            bio: data.profile.bio || "",
+          });
+          setAvatarPreview(data.profile.avatar_url || null);
+        }
       }
     } catch (err) {
       console.error("Error loading profile:", err);
@@ -116,37 +102,32 @@ export default function ProfileEditPage() {
       let avatarUrl = avatarPreview;
 
       if (avatarFile) {
-        const fileExt = avatarFile.name.split(".").pop();
-        const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+        const formData = new FormData();
+        formData.append("file", avatarFile);
 
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, avatarFile);
+        const uploadRes = await fetch("/api/user/profile/avatar", {
+          method: "POST",
+          body: formData,
+        });
 
-        if (uploadError) {
-          throw uploadError;
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          avatarUrl = uploadData.url;
         }
-
-        const { data: urlData } = supabase.storage
-          .from("avatars")
-          .getPublicUrl(fileName);
-
-        avatarUrl = urlData.publicUrl;
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           name: values.name,
           phone: values.phone || null,
           bio: values.bio || null,
-          location: values.location || null,
           avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user?.id);
+        }),
+      });
 
-      if (error) throw error;
+      if (!res.ok) throw new Error("Error al guardar");
 
       setMessage({ type: "success", text: "Perfil actualizado correctamente" });
 
@@ -269,23 +250,6 @@ export default function ProfileEditPage() {
               {errors.phone && (
                 <p className="text-xs text-red-500 font-medium mt-1">
                   {errors.phone.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#334155] mb-2">
-                <MapPin className="w-4 h-4 inline mr-2" />
-                Ubicación
-              </label>
-              <Input
-                placeholder="Lima, Perú"
-                className="w-full"
-                {...register("location")}
-              />
-              {errors.location && (
-                <p className="text-xs text-red-500 font-medium mt-1">
-                  {errors.location.message}
                 </p>
               )}
             </div>

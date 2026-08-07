@@ -68,9 +68,25 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
+    console.log(
+      "[POST /api/companies] Body:",
+      JSON.stringify({ ...body, logo_url: body.logo_url ? "[present]" : null }),
+    );
     if (!body.name?.trim()) {
       return NextResponse.json(
         { error: "El nombre de la empresa es obligatorio" },
+        { status: 400 },
+      );
+    }
+    if (!body.email?.trim()) {
+      return NextResponse.json(
+        { error: "El email de la empresa es obligatorio" },
+        { status: 400 },
+      );
+    }
+    if (!body.legal_name?.trim()) {
+      return NextResponse.json(
+        { error: "La razón social de la empresa es obligatoria" },
         { status: 400 },
       );
     }
@@ -78,10 +94,13 @@ export async function POST(req: Request) {
     const company = await createCompany(body, user.id);
     return NextResponse.json({ company });
   } catch (err) {
-    console.error("Error al crear empresa:", err);
-    return NextResponse.json(
-      { error: "Error al crear la empresa" },
-      { status: 500 },
+    console.error(
+      "[POST /api/companies] Error:",
+      err instanceof Error ? err.message : err,
+      err instanceof Error ? err.stack : "",
     );
+    const message =
+      err instanceof Error ? err.message : "Error al crear la empresa";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
