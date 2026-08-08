@@ -55,7 +55,7 @@ export default async function PublicCompanyPage({ params }: Props) {
               dirección.
             </p>
             <Link
-              href="/apps/web/public"
+              href="/"
               className="inline-block bg-[#f25c05] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#d94d04] transition-all shadow-md w-full text-center"
             >
               Volver al inicio

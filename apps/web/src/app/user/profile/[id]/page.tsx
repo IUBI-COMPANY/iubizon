@@ -42,7 +42,7 @@ export default async function UserProfilePage({ params }: Props) {
             <h2 className="text-2xl font-bold text-[#112237] mb-2">
               Usuario no encontrado
             </h2>
-            <Link href="/apps/web/public" className="text-[#f25c05] hover:underline">
+            <Link href="/" className="text-[#f25c05] hover:underline">
               Volver al inicio
             </Link>
           </div>

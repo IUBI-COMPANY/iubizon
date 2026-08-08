@@ -1,30 +1,29 @@
 import fs from "fs";
 import path from "path";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 
+// Cargar .env.local antes de importar @iubizon/db
 const envLocalPath = path.resolve(process.cwd(), ".env.local");
-let dbUrl = "";
 if (fs.existsSync(envLocalPath)) {
   const content = fs.readFileSync(envLocalPath, "utf-8");
   for (const line of content.split("\n")) {
-    if (line.startsWith("DATABASE_URL=") || line.startsWith("DIRECT_URL=")) {
-      dbUrl = line.split("=").slice(1).join("=").replace(/['"]/g, "").trim();
-      if (dbUrl) break;
-    }
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const value = trimmed.slice(eqIdx + 1).replace(/['"]/g, "").trim();
+    if (!process.env[key]) process.env[key] = value;
   }
 }
 
-const pool = new Pool({ connectionString: dbUrl });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+// Ahora importamos — el singleton Proxy leerá process.env al inicializarse
+const { db } = await import("@iubizon/db");
 
 async function main() {
-  const companies = await prisma.company.findMany({
+  const companies = await db.company.findMany({
     select: { id: true, name: true },
   });
   console.log("TODAS LAS EMPRESAS:\n", JSON.stringify(companies, null, 2));
 }
 
-main().finally(() => pool.end());
+main().finally(() => db.$disconnect());

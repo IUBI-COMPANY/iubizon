@@ -238,7 +238,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] p-4">
       <div className="w-full max-w-md mb-4 flex items-center justify-between">
         <Link
-          href="/apps/web/public"
+          href="/"
           className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] hover:text-[#f25c05] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm transition-all hover:shadow-md"
         >
           <ArrowLeft className="w-4 h-4 text-[#f25c05]" />

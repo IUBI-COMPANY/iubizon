@@ -18,7 +18,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       <ol className="flex items-center gap-2 text-sm text-gray-600 flex-wrap">
         <li>
           <Link
-            href="/apps/web/public"
+            href="/"
             className="hover:text-primary transition-colors flex items-center gap-1"
             aria-label="Inicio"
           >

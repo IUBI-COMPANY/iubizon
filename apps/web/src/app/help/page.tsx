@@ -52,7 +52,7 @@ function HelpContent() {
           <HelpCircle className="w-80 h-80 text-white" />
         </div>
         <div className="container mx-auto max-w-5xl relative z-10">
-          <Link href="/apps/web/public">
+          <Link href="/">
             <Button
               variant="ghost"
               size="sm"

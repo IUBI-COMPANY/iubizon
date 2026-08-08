@@ -9,7 +9,7 @@
     }
   ],
   "compilerOptions": {
-    "baseUrl": "../../../../../web-panel",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

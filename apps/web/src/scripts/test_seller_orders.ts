@@ -1,15 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-import dotenv from "dotenv";
-
-dotenv.config({ path: ".env.local" });
-dotenv.config();
-
-const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+import { db } from "@iubizon/db";
 
 async function main() {
   const userId = process.argv[2];
@@ -18,20 +7,18 @@ async function main() {
     process.exit(1);
   }
 
-  const memberships = await prisma.companyMember.findMany({
+  const memberships = await db.companyMember.findMany({
     where: { user_id: userId },
     select: { company_id: true },
   });
   const companyIds = memberships.map((m) => m.company_id);
 
   if (companyIds.length === 0) {
-    console.log(
-      "No tienes empresas. Verifica que exista una empresa personal.",
-    );
+    console.log("No tienes empresas. Verifica que exista una empresa personal.");
     process.exit(0);
   }
 
-  const packages = await prisma.orderPackage.findMany({
+  const packages = await db.orderPackage.findMany({
     where: { company_id: { in: companyIds } },
     include: {
       company: { select: { name: true } },
@@ -59,5 +46,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await db.$disconnect();
   });

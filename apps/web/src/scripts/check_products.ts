@@ -1,29 +1,25 @@
 import fs from "fs";
 import path from "path";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 
+// Cargar .env.local antes de importar @iubizon/db
 const envLocalPath = path.resolve(process.cwd(), ".env.local");
-let dbUrl = "";
 if (fs.existsSync(envLocalPath)) {
   const content = fs.readFileSync(envLocalPath, "utf-8");
   for (const line of content.split("\n")) {
-    if (line.startsWith("DATABASE_URL=") || line.startsWith("DIRECT_URL=")) {
-      dbUrl = line.split("=").slice(1).join("=").replace(/['"]/g, "").trim();
-      if (dbUrl) break;
-    }
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const value = trimmed.slice(eqIdx + 1).replace(/['"]/g, "").trim();
+    if (!process.env[key]) process.env[key] = value;
   }
 }
 
-console.log("DB URL Found:", dbUrl ? "SI" : "NO");
-
-const pool = new Pool({ connectionString: dbUrl });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const { db } = await import("@iubizon/db");
 
 async function main() {
-  const products = await prisma.product.findMany({
+  const products = await db.product.findMany({
     select: {
       id: true,
       title: true,
@@ -38,13 +34,12 @@ async function main() {
     JSON.stringify(products, null, 2),
   );
 
-  // Actualizar stock de 'Proyector epson powerlite 97H' a 10
   const epson = products.find((p) =>
     p.title.toLowerCase().includes("proyector epson"),
   );
   if (epson) {
     console.log("\nPRODUCTO EPSON ENCONTRADO:", epson);
-    const updated = await prisma.product.update({
+    const updated = await db.product.update({
       where: { id: epson.id },
       data: { stock: 10, availability_type: "available", status: "active" },
     });
@@ -57,4 +52,4 @@ async function main() {
 
 main()
   .catch(console.error)
-  .finally(() => pool.end());
+  .finally(() => db.$disconnect());

@@ -36,7 +36,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
       <div className="container py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <Link href="/apps/web/public" className="inline-flex flex-col items-start mb-4">
+            <Link href="/" className="inline-flex flex-col items-start mb-4">
               <Image
                 src="/images/logo.png"
                 alt="iubizon"
