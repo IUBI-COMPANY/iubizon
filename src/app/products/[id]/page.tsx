@@ -23,6 +23,7 @@ import { ProductImageGallery } from "@/components/features/products/ProductImage
 import { ProductActionsBlock } from "./ProductActionsBlock";
 import { FavoriteButton } from "./FavoriteButton";
 import { getCategoryIcon } from "@/lib/utils/categoryIcons";
+import { stockLabel } from "@/lib/utils/stockLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -215,18 +216,31 @@ export default async function ProductDetailPage({ params }: Props) {
                   )}
 
                   {/* Stock */}
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#f8fafc]">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#f25c05]/10">
-                      <PackageCheck className="w-4.5 h-4.5 text-[#f25c05]" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-[#64748b]">Stock disponible</p>
-                      <p className="text-sm font-bold text-[#112237]">
-                        {product.stock || 1}{" "}
-                        {product.stock === 1 ? "unidad" : "unidades"}
-                      </p>
-                    </div>
-                  </div>
+                  {(() => {
+                    const s = stockLabel(product.stock);
+                    return (
+                      <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#f8fafc]">
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: `${s.color}15` }}
+                        >
+                          <PackageCheck
+                            className="w-4.5 h-4.5"
+                            style={{ color: s.color }}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#64748b]">Disponibilidad</p>
+                          <p
+                            className="text-sm font-bold"
+                            style={{ color: s.color }}
+                          >
+                            {s.label}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Location */}
                   {product.location && (

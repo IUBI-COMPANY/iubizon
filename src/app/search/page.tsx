@@ -79,6 +79,64 @@ interface Category {
   slug: string;
 }
 
+const PriceFilterInputs = ({
+  minPriceInput,
+  maxPriceInput,
+  urlMinPrice,
+  urlMaxPrice,
+  onChangeMin,
+  onChangeMax,
+  onApply,
+  onClear,
+}: {
+  minPriceInput: string;
+  maxPriceInput: string;
+  urlMinPrice: string;
+  urlMaxPrice: string;
+  onChangeMin: (v: string) => void;
+  onChangeMax: (v: string) => void;
+  onApply: () => void;
+  onClear: () => void;
+}) => (
+  <div className="pt-4 border-t border-[#f1f5f9]">
+    <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
+      <span>Rango de Precio</span>
+      {(urlMinPrice || urlMaxPrice) && (
+        <button
+          onClick={onClear}
+          className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize"
+        >
+          Limpiar
+        </button>
+      )}
+    </h4>
+    <div className="space-y-2.5">
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
+          <input type="text" inputMode="numeric" placeholder="Mínimo" value={minPriceInput}
+            onChange={(e) => onChangeMin(e.target.value.replace(/\D/g, ""))}
+            onKeyDown={(e) => e.key === "Enter" && onApply()}
+            className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+          />
+        </div>
+        <span className="text-[#94a3b8] text-xs font-bold">-</span>
+        <div className="relative flex-1">
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
+          <input type="text" inputMode="numeric" placeholder="Máximo" value={maxPriceInput}
+            onChange={(e) => onChangeMax(e.target.value.replace(/\D/g, ""))}
+            onKeyDown={(e) => e.key === "Enter" && onApply()}
+            className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+          />
+        </div>
+      </div>
+      <Button onClick={onApply} size="sm" className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all">
+        Aplicar Precio
+      </Button>
+    </div>
+  </div>
+);
+
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -111,28 +169,9 @@ function SearchContent() {
     [searchParams],
   );
 
-  // Local state for Price Inputs (Prevents lag/reload while typing)
+  // Local state for Price Inputs — solo se aplica al presionar Enter o "Aplicar Precio"
   const [minPriceInput, setMinPriceInput] = useState(urlMinPrice);
   const [maxPriceInput, setMaxPriceInput] = useState(urlMaxPrice);
-
-  useEffect(() => {
-    setMinPriceInput(urlMinPrice);
-  }, [urlMinPrice]);
-
-  useEffect(() => {
-    setMaxPriceInput(urlMaxPrice);
-  }, [urlMaxPrice]);
-
-  // Debounce automático de 500ms para aplicar filtro de precio al pausar la escritura
-  useEffect(() => {
-    if (minPriceInput === urlMinPrice && maxPriceInput === urlMaxPrice) return;
-
-    const timer = setTimeout(() => {
-      handleApplyPriceFilter();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [minPriceInput, maxPriceInput, urlMinPrice, urlMaxPrice]);
 
   // UI state
   const [products, setProducts] = useState<any[]>([]);
@@ -384,58 +423,16 @@ function SearchContent() {
         </div>
       </div>
 
-      {/* 2. Rango de Precio (con inputs locales sin lag) */}
-      <div className="pt-4 border-t border-[#f1f5f9]">
-        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
-          <span>Rango de Precio</span>
-          {(urlMinPrice || urlMaxPrice) && (
-            <button
-              onClick={handleClearPriceFilter}
-              className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize"
-            >
-              Limpiar
-            </button>
-          )}
-        </h4>
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
-                S/
-              </span>
-              <input
-                type="number"
-                placeholder="Mínimo"
-                value={minPriceInput}
-                onChange={(e) => setMinPriceInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyPriceFilter()}
-                className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
-              />
-            </div>
-            <span className="text-[#94a3b8] text-xs font-bold">-</span>
-            <div className="relative flex-1">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
-                S/
-              </span>
-              <input
-                type="number"
-                placeholder="Máximo"
-                value={maxPriceInput}
-                onChange={(e) => setMaxPriceInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyPriceFilter()}
-                className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
-              />
-            </div>
-          </div>
-          <Button
-            onClick={handleApplyPriceFilter}
-            size="sm"
-            className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all"
-          >
-            Aplicar Precio
-          </Button>
-        </div>
-      </div>
+      <PriceFilterInputs
+        minPriceInput={minPriceInput}
+        maxPriceInput={maxPriceInput}
+        urlMinPrice={urlMinPrice}
+        urlMaxPrice={urlMaxPrice}
+        onChangeMin={setMinPriceInput}
+        onChangeMax={setMaxPriceInput}
+        onApply={handleApplyPriceFilter}
+        onClear={handleClearPriceFilter}
+      />
 
       {/* 3. Condición del Producto */}
       <div className="pt-4 border-t border-[#f1f5f9]">

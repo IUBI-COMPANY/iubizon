@@ -40,6 +40,7 @@ import {
   type DocType,
 } from "@/components/features/cart/InvoiceSelector";
 import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
+import { stockLabel } from "@/lib/utils/stockLabel";
 import {
   Select,
   SelectContent,
@@ -530,11 +531,20 @@ export default function CartCheckoutPage() {
                               <p className="text-xs font-bold text-[#f25c05]">
                                 S/ {item.price.toFixed(2)}
                               </p>
-                              {item.stock !== undefined && (
-                                <span className="text-[10px] text-[#64748b] bg-[#f1f5f9] px-1.5 py-0.5 rounded font-medium">
-                                  Stock: {item.stock} un.
-                                </span>
-                              )}
+                              {(() => {
+                                const s = stockLabel(item.stock);
+                                return (
+                                  <span
+                                    className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                                    style={{
+                                      backgroundColor: `${s.color}15`,
+                                      color: s.color,
+                                    }}
+                                  >
+                                    {s.label}
+                                  </span>
+                                );
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -615,13 +625,13 @@ export default function CartCheckoutPage() {
                   >
                     <div>
                       <p className="text-sm font-bold text-[#112237]">
-                        Entrega Progresiva
+                        Envío Directo del Proveedor
                       </p>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5">
                         Más rápido
                       </p>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5">
-                        Conforme esté listo
+                        Cada proveedor te envía directo a tu domicilio
                       </p>
                     </div>
                     <div
@@ -660,13 +670,13 @@ export default function CartCheckoutPage() {
                   >
                     <div>
                       <p className="text-sm font-bold text-[#112237]">
-                        Entrega Completa
+                        Envío Consolidado por iubizon
                       </p>
                       <p className="text-[11px] text-[#94a3b8] font-medium mt-0.5">
-                        Una sola entrega
+                        Todo en una sola entrega
                       </p>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5">
-                        Puede demorar más días
+                        Los proveedores envían a iubizon, nosotros te entregamos todo junto
                       </p>
                     </div>
                     <div

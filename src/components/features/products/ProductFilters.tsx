@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -41,14 +41,38 @@ export const ProductFilters = ({
   categories = [],
 }: ProductFiltersProps) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [minInput, setMinInput] = useState(filters.minPrice?.toString() || "");
+  const [maxInput, setMaxInput] = useState(filters.maxPrice?.toString() || "");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const updateFilter = (key: keyof SearchFilters, value: unknown) => {
     onChange({ ...filters, [key]: value });
   };
 
   const clearFilters = () => {
+    setMinInput("");
+    setMaxInput("");
     onChange({});
   };
+
+  // Debounced price filter: 500ms después de que el usuario deja de escribir
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const min = minInput ? Number(minInput) : undefined;
+      const max = maxInput ? Number(maxInput) : undefined;
+      if (min !== filters.minPrice || max !== filters.maxPrice) {
+        onChange({
+          ...filters,
+          minPrice: min && !isNaN(min) ? min : undefined,
+          maxPrice: max && !isNaN(max) ? max : undefined,
+        });
+      }
+    }, 500);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [minInput, maxInput]);
 
   const hasActiveFilters = Object.values(filters).some(
     (v) =>
@@ -107,24 +131,14 @@ export const ProductFilters = ({
           <Input
             type="number"
             placeholder="Min"
-            value={filters.minPrice || ""}
-            onChange={(e) =>
-              updateFilter(
-                "minPrice",
-                e.target.value ? Number(e.target.value) : undefined,
-              )
-            }
+            value={minInput}
+            onChange={(e) => setMinInput(e.target.value)}
           />
           <Input
             type="number"
             placeholder="Max"
-            value={filters.maxPrice || ""}
-            onChange={(e) =>
-              updateFilter(
-                "maxPrice",
-                e.target.value ? Number(e.target.value) : undefined,
-              )
-            }
+            value={maxInput}
+            onChange={(e) => setMaxInput(e.target.value)}
           />
         </div>
       </div>

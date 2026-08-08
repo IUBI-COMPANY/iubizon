@@ -179,8 +179,8 @@ export function BuyerOrderEmail(data: BuyerEmailData) {
           <Text style={shippingTextStyle}>
             <strong>Modalidad:</strong>{" "}
             {data.deliveryType === "progressive"
-              ? "Entrega Progresiva (recibe cada producto conforme esté listo)"
-              : "Entrega Completa (recibe todo en un solo envío)"}
+              ? "Envío Directo: cada proveedor te envía directamente a tu domicilio"
+              : "Envío Consolidado: iubizon recibe todos los productos y te los entrega en un solo envío"}
           </Text>
         )}
         {data.invoiceType && (
