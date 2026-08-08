@@ -108,28 +108,51 @@ const PriceFilterInputs = ({
       <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
         <span>Rango de Precio</span>
         {(urlMinPrice || urlMaxPrice) && (
-          <button onClick={onClear} className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize">Limpiar</button>
+          <button
+            onClick={onClear}
+            className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize"
+          >
+            Limpiar
+          </button>
         )}
       </h4>
       <div className="space-y-2.5">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
-            <input ref={minRef} type="text" inputMode="numeric" defaultValue={initialMin} placeholder="Mínimo"
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
+              S/
+            </span>
+            <input
+              ref={minRef}
+              type="text"
+              inputMode="numeric"
+              defaultValue={initialMin}
+              placeholder="Mínimo"
               onKeyDown={(e) => e.key === "Enter" && handleApply()}
               className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
             />
           </div>
           <span className="text-[#94a3b8] text-xs font-bold">-</span>
           <div className="relative flex-1">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
-            <input ref={maxRef} type="text" inputMode="numeric" defaultValue={initialMax} placeholder="Máximo"
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">
+              S/
+            </span>
+            <input
+              ref={maxRef}
+              type="text"
+              inputMode="numeric"
+              defaultValue={initialMax}
+              placeholder="Máximo"
               onKeyDown={(e) => e.key === "Enter" && handleApply()}
               className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
             />
           </div>
         </div>
-        <Button onClick={handleApply} size="sm" className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all">
+        <Button
+          onClick={handleApply}
+          size="sm"
+          className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all"
+        >
           Aplicar Precio
         </Button>
       </div>

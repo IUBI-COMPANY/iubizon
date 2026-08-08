@@ -127,7 +127,9 @@ export function NiubizPayModal({
               data.purchaseNumber,
             );
           } else {
-            onError("El formulario de pago fue cerrado sin completar la transacción.");
+            onError(
+              "El formulario de pago fue cerrado sin completar la transacción.",
+            );
           }
         },
       });

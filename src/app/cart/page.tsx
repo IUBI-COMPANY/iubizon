@@ -688,7 +688,8 @@ export default function CartCheckoutPage() {
                         Todo en una sola entrega
                       </p>
                       <p className="text-[11px] text-[#94a3b8] mt-0.5">
-                        Los proveedores envían a iubizon, nosotros te entregamos todo junto
+                        Los proveedores envían a iubizon, nosotros te entregamos
+                        todo junto
                       </p>
                     </div>
                     <div

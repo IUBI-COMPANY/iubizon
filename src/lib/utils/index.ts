@@ -41,17 +41,23 @@ export const formatDate = (date: string | Date | null | undefined): string => {
 };
 
 /** Formatea fecha corta: "06/08/2026" */
-export const formatShortDate = (date: string | Date | null | undefined): string => {
+export const formatShortDate = (
+  date: string | Date | null | undefined,
+): string => {
   const d = toDate(date);
   if (!d) return "-";
   return formatInTimeZone(d, APP_TZ, "dd/MM/yyyy");
 };
 
 /** Formatea fecha y hora completa: "6 de agosto de 2026, 14:30" */
-export const formatDateTime = (date: string | Date | null | undefined): string => {
+export const formatDateTime = (
+  date: string | Date | null | undefined,
+): string => {
   const d = toDate(date);
   if (!d) return "-";
-  return formatInTimeZone(d, APP_TZ, "d 'de' MMMM 'de' yyyy, HH:mm", { locale: es });
+  return formatInTimeZone(d, APP_TZ, "d 'de' MMMM 'de' yyyy, HH:mm", {
+    locale: es,
+  });
 };
 
 /** Formatea hora: "14:30" */
@@ -62,21 +68,27 @@ export const formatTime = (date: string | Date | null | undefined): string => {
 };
 
 /** Formatea fecha corta con mes abreviado: "06 ago 2026" */
-export const formatShortMonthDate = (date: string | Date | null | undefined): string => {
+export const formatShortMonthDate = (
+  date: string | Date | null | undefined,
+): string => {
   const d = toDate(date);
   if (!d) return "-";
   return formatInTimeZone(d, APP_TZ, "dd MMM yyyy", { locale: es });
 };
 
 /** Formatea fecha y hora con mes abreviado: "06 ago 2026, 2:30 PM" */
-export const formatShortMonthDateTime = (date: string | Date | null | undefined): string => {
+export const formatShortMonthDateTime = (
+  date: string | Date | null | undefined,
+): string => {
   const d = toDate(date);
   if (!d) return "-";
   return formatInTimeZone(d, APP_TZ, "dd MMM yyyy, h:mm a", { locale: es });
 };
 
 /** Tiempo relativo: "hace 5 minutos", "hace 2 horas", "hace 3 días" */
-export const formatRelativeTime = (date: string | Date | null | undefined): string => {
+export const formatRelativeTime = (
+  date: string | Date | null | undefined,
+): string => {
   const d = toDate(date);
   if (!d) return "-";
   return formatDistanceToNow(d, { addSuffix: true, locale: es });

@@ -230,7 +230,9 @@ export default async function ProductDetailPage({ params }: Props) {
                           />
                         </div>
                         <div>
-                          <p className="text-xs text-[#64748b]">Disponibilidad</p>
+                          <p className="text-xs text-[#64748b]">
+                            Disponibilidad
+                          </p>
                           <p
                             className="text-sm font-bold"
                             style={{ color: s.color }}

@@ -43,7 +43,9 @@ export const ProductFilters = ({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [minInput, setMinInput] = useState(filters.minPrice?.toString() || "");
   const [maxInput, setMaxInput] = useState(filters.maxPrice?.toString() || "");
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const updateFilter = (key: keyof SearchFilters, value: unknown) => {
     onChange({ ...filters, [key]: value });
