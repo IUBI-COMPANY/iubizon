@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/TextArea";
 import { useToast } from "@/context/ToastContext";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
 import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { CartStepIndicator } from "@/components/features/cart/CartStepIndicator";
 import {
@@ -116,6 +117,7 @@ export type ShippingFormState = z.infer<typeof shippingFormSchema>;
 export default function CartCheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { companies } = useCompany();
   const { items, addItem, removeItem, updateQuantity, clearCart, total } =
     useCart();
   const toast = useToast();
@@ -324,8 +326,18 @@ export default function CartCheckoutPage() {
           .map((i) => i.product_id)
           .filter(Boolean)
           .join(",");
+        const ownCompanyIds = companies
+          .map((c) => c.id)
+          .filter(Boolean)
+          .join(",");
+        const params = new URLSearchParams({
+          exclude: excludeIds,
+          page: String(pageToFetch),
+          limit: "6",
+        });
+        if (ownCompanyIds) params.set("excludeCompanies", ownCompanyIds);
         const res = await fetch(
-          `/api/products/recommendations?exclude=${excludeIds}&page=${pageToFetch}&limit=6`,
+          `/api/products/recommendations?${params.toString()}`,
         );
         const data = await res.json();
         if (Array.isArray(data.recommendations)) {
@@ -339,7 +351,7 @@ export default function CartCheckoutPage() {
         setLoadingRecs(false);
       }
     },
-    [items],
+    [items, companies],
   );
 
   const filteredRecommendations = useMemo(() => {

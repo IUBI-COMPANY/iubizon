@@ -82,7 +82,6 @@ export function NiubizPayModal({
       setLoadingMsg("Conectando con la pasarela de pagos segura Niubiz...");
       setLoadingSession(true);
 
-      // a) Solicitud al backend para obtener sessionKey y merchantId
       const res = await fetch("/api/payments/niubiz/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,7 +98,6 @@ export function NiubizPayModal({
         throw new Error(data.error || "No se pudo iniciar el proceso de pago.");
       }
 
-      // b) Cargar script de Niubiz dinámicamente según el ambiente (sandbox/production)
       await loadNiubizScript(data.environment);
 
       if (!window.VisanetCheckout) {
@@ -108,7 +106,9 @@ export function NiubizPayModal({
         );
       }
 
-      // c) Configurar e invocar el formulario seguro de Niubiz
+      // Ocultar loading antes de mostrar el formulario de Niubiz
+      setLoadingSession(false);
+
       window.VisanetCheckout.configure({
         sessiontoken: data.sessionKey,
         channel: "web",
@@ -127,8 +127,7 @@ export function NiubizPayModal({
               data.purchaseNumber,
             );
           } else {
-            setLoadingSession(false);
-            onError("No se obtuvo respuesta de autorización de la tarjeta.");
+            onError("El formulario de pago fue cerrado sin completar la transacción.");
           }
         },
       });

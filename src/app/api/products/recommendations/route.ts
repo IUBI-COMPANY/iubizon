@@ -10,9 +10,24 @@ export async function GET(req: Request) {
         ?.split(",")
         .map((s) => s.trim())
         .filter(Boolean) || [];
+    const excludeCompanyIds =
+      searchParams
+        .get("excludeCompanies")
+        ?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) || [];
     const page = Number(searchParams.get("page") || "1");
     const limit = Number(searchParams.get("limit") || "6");
     const skip = (page - 1) * limit;
+
+    const baseWhere = {
+      status: "active" as const,
+      stock: { gt: 0 },
+      ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+      ...(excludeCompanyIds.length > 0
+        ? { company_id: { notIn: excludeCompanyIds } }
+        : {}),
+    };
 
     const cartProducts = await prisma.product.findMany({
       where: { id: { in: excludeIds } },
@@ -44,9 +59,7 @@ export async function GET(req: Request) {
 
     const affinityProducts = await prisma.product.findMany({
       where: {
-        status: "active",
-        stock: { gt: 0 },
-        id: excludeIds.length > 0 ? { notIn: excludeIds } : undefined,
+        ...baseWhere,
         category:
           targetSlugs.length > 0 ? { slug: { in: targetSlugs } } : undefined,
       },
@@ -57,8 +70,7 @@ export async function GET(req: Request) {
 
     const fallbackProducts = await prisma.product.findMany({
       where: {
-        status: "active",
-        stock: { gt: 0 },
+        ...baseWhere,
         id: { notIn: Array.from(new Set([...excludeIds, ...affinityIds])) },
       },
       select: { id: true },
@@ -74,11 +86,8 @@ export async function GET(req: Request) {
 
     const products = await prisma.product.findMany({
       where: {
-        id: {
-          in: paginatedIds,
-          ...(excludeIds.length > 0 ? { notIn: excludeIds } : {}),
-        },
-        stock: { gt: 0 },
+        ...baseWhere,
+        id: { in: paginatedIds },
       },
       select: {
         id: true,
