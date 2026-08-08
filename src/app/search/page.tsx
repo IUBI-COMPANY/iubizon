@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUpDown,
@@ -80,62 +80,62 @@ interface Category {
 }
 
 const PriceFilterInputs = ({
-  minPriceInput,
-  maxPriceInput,
+  initialMin,
+  initialMax,
   urlMinPrice,
   urlMaxPrice,
-  onChangeMin,
-  onChangeMax,
   onApply,
   onClear,
 }: {
-  minPriceInput: string;
-  maxPriceInput: string;
+  initialMin: string;
+  initialMax: string;
   urlMinPrice: string;
   urlMaxPrice: string;
-  onChangeMin: (v: string) => void;
-  onChangeMax: (v: string) => void;
-  onApply: () => void;
+  onApply: (min: string, max: string) => void;
   onClear: () => void;
-}) => (
-  <div className="pt-4 border-t border-[#f1f5f9]">
-    <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
-      <span>Rango de Precio</span>
-      {(urlMinPrice || urlMaxPrice) && (
-        <button
-          onClick={onClear}
-          className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize"
-        >
-          Limpiar
-        </button>
-      )}
-    </h4>
-    <div className="space-y-2.5">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
-          <input type="text" inputMode="numeric" placeholder="Mínimo" value={minPriceInput}
-            onChange={(e) => onChangeMin(e.target.value.replace(/\D/g, ""))}
-            onKeyDown={(e) => e.key === "Enter" && onApply()}
-            className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
-          />
+}) => {
+  const minRef = useRef<HTMLInputElement>(null);
+  const maxRef = useRef<HTMLInputElement>(null);
+
+  const handleApply = () => {
+    const min = minRef.current?.value.replace(/\D/g, "") || "";
+    const max = maxRef.current?.value.replace(/\D/g, "") || "";
+    onApply(min, max);
+  };
+
+  return (
+    <div className="pt-4 border-t border-[#f1f5f9]">
+      <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3 flex items-center justify-between">
+        <span>Rango de Precio</span>
+        {(urlMinPrice || urlMaxPrice) && (
+          <button onClick={onClear} className="text-[11px] text-[#f25c05] font-bold hover:underline capitalize">Limpiar</button>
+        )}
+      </h4>
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
+            <input ref={minRef} type="text" inputMode="numeric" defaultValue={initialMin} placeholder="Mínimo"
+              onKeyDown={(e) => e.key === "Enter" && handleApply()}
+              className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+            />
+          </div>
+          <span className="text-[#94a3b8] text-xs font-bold">-</span>
+          <div className="relative flex-1">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
+            <input ref={maxRef} type="text" inputMode="numeric" defaultValue={initialMax} placeholder="Máximo"
+              onKeyDown={(e) => e.key === "Enter" && handleApply()}
+              className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
+            />
+          </div>
         </div>
-        <span className="text-[#94a3b8] text-xs font-bold">-</span>
-        <div className="relative flex-1">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] text-xs font-bold">S/</span>
-          <input type="text" inputMode="numeric" placeholder="Máximo" value={maxPriceInput}
-            onChange={(e) => onChangeMax(e.target.value.replace(/\D/g, ""))}
-            onKeyDown={(e) => e.key === "Enter" && onApply()}
-            className="w-full pl-7 pr-2 py-2 text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05] transition-all font-semibold"
-          />
-        </div>
+        <Button onClick={handleApply} size="sm" className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all">
+          Aplicar Precio
+        </Button>
       </div>
-      <Button onClick={onApply} size="sm" className="w-full bg-[#112237] hover:bg-[#1e3a5f] text-white text-xs font-bold py-1.5 rounded-xl shadow-sm transition-all">
-        Aplicar Precio
-      </Button>
     </div>
-  </div>
-);
+  );
+};
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -169,9 +169,8 @@ function SearchContent() {
     [searchParams],
   );
 
-  // Local state for Price Inputs — solo se aplica al presionar Enter o "Aplicar Precio"
-  const [minPriceInput, setMinPriceInput] = useState(urlMinPrice);
-  const [maxPriceInput, setMaxPriceInput] = useState(urlMaxPrice);
+  // Key para forzar remount de inputs uncontrolled al limpiar filtros
+  const [priceFilterKey, setPriceFilterKey] = useState(0);
 
   // UI state
   const [products, setProducts] = useState<any[]>([]);
@@ -312,19 +311,17 @@ function SearchContent() {
     });
   };
 
-  const handleApplyPriceFilter = () => {
+  const handleApplyPriceFilter = (min: string, max: string) => {
     updateUrlParams((params) => {
-      if (minPriceInput.trim()) params.set("min_price", minPriceInput.trim());
+      if (min) params.set("min_price", min);
       else params.delete("min_price");
-
-      if (maxPriceInput.trim()) params.set("max_price", maxPriceInput.trim());
+      if (max) params.set("max_price", max);
       else params.delete("max_price");
     });
   };
 
   const handleClearPriceFilter = () => {
-    setMinPriceInput("");
-    setMaxPriceInput("");
+    setPriceFilterKey((k) => k + 1);
     updateUrlParams((params) => {
       params.delete("min_price");
       params.delete("max_price");
@@ -359,8 +356,7 @@ function SearchContent() {
   };
 
   const clearAllFilters = () => {
-    setMinPriceInput("");
-    setMaxPriceInput("");
+    setPriceFilterKey((k) => k + 1);
     setPage(1);
     router.push("/search", { scroll: false });
   };
@@ -424,12 +420,11 @@ function SearchContent() {
       </div>
 
       <PriceFilterInputs
-        minPriceInput={minPriceInput}
-        maxPriceInput={maxPriceInput}
+        key={priceFilterKey}
+        initialMin={urlMinPrice}
+        initialMax={urlMaxPrice}
         urlMinPrice={urlMinPrice}
         urlMaxPrice={urlMaxPrice}
-        onChangeMin={setMinPriceInput}
-        onChangeMax={setMaxPriceInput}
         onApply={handleApplyPriceFilter}
         onClear={handleClearPriceFilter}
       />
