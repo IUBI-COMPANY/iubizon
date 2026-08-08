@@ -1,15 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { db } from "../index";
 import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
-
-const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const appEnv = process.env.NEXT_PUBLIC_APP_ENV || process.env.NODE_ENV;
@@ -88,7 +81,7 @@ async function main() {
 
   // 1. Eliminar categorías antiguas obsoletas no oficiales
   const validSlugs = defaultCategories.map((c) => c.slug);
-  await prisma.category.deleteMany({
+  await db.category.deleteMany({
     where: {
       slug: {
         notIn: validSlugs,
@@ -98,7 +91,7 @@ async function main() {
 
   // 2. Insertar/Actualizar únicamente las 11 categorías oficiales
   for (const cat of defaultCategories) {
-    await prisma.category.upsert({
+    await db.category.upsert({
       where: { slug: cat.slug },
       update: { name: cat.name, icon: cat.icon, sort_order: cat.sort_order },
       create: cat,
@@ -158,7 +151,7 @@ async function main() {
   ];
 
   for (const set of defaultSettings) {
-    await prisma.platformSetting.upsert({
+    await db.platformSetting.upsert({
       where: { key: set.key },
       update: {
         value: set.value,
@@ -180,5 +173,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await db.$disconnect();
   });
