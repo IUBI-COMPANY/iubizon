@@ -1,0 +1,1460 @@
+[
+  {
+    "name": "Afghanistan",
+    "phonePrefix": "+93",
+    "alpha2": "AF",
+    "regex": "^\\d{9}$"
+  },
+  {
+    "name": "Aland Islands",
+    "phonePrefix": "+358",
+    "alpha2": "AX",
+    "regex": "^\\d{6,12}$"
+  },
+  {
+    "name": "Albania",
+    "phonePrefix": "+355",
+    "alpha2": "AL",
+    "regex": "^6\\d{8}$"
+  },
+  {
+    "name": "Algeria",
+    "phonePrefix": "+213",
+    "alpha2": "DZ",
+    "regex": "^[567]\\d{8}$"
+  },
+  {
+    "name": "AmericanSamoa",
+    "phonePrefix": "+1684",
+    "alpha2": "AS",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Andorra",
+    "phonePrefix": "+376",
+    "alpha2": "AD",
+    "regex": "^[36]\\d{5}$"
+  },
+  {
+    "name": "Angola",
+    "phonePrefix": "+244",
+    "alpha2": "AO",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Anguilla",
+    "phonePrefix": "+1264",
+    "alpha2": "AI",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Antarctica",
+    "phonePrefix": "+672",
+    "alpha2": "AQ",
+    "regex": "^\\d{6}$"
+  },
+  {
+    "name": "Antigua and Barbuda",
+    "phonePrefix": "+1268",
+    "alpha2": "AG",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Argentina",
+    "phonePrefix": "+54",
+    "alpha2": "AR",
+    "regex": "^9\\d{9}$"
+  },
+  {
+    "name": "Armenia",
+    "phonePrefix": "+374",
+    "alpha2": "AM",
+    "regex": "^\\d{8}$"
+  },
+  {
+    "name": "Aruba",
+    "phonePrefix": "+297",
+    "alpha2": "AW",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Australia",
+    "phonePrefix": "+61",
+    "alpha2": "AU",
+    "regex": "^4\\d{8}$"
+  },
+  {
+    "name": "Austria",
+    "phonePrefix": "+43",
+    "alpha2": "AT",
+    "regex": "^6\\d{8,12}$"
+  },
+  {
+    "name": "Azerbaijan",
+    "phonePrefix": "+994",
+    "alpha2": "AZ",
+    "regex": "^[45]\\d{8}$"
+  },
+  {
+    "name": "Bahamas",
+    "phonePrefix": "+1242",
+    "alpha2": "BS",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Bahrain",
+    "phonePrefix": "+973",
+    "alpha2": "BH",
+    "regex": "^[36]\\d{7}$"
+  },
+  {
+    "name": "Bangladesh",
+    "phonePrefix": "+880",
+    "alpha2": "BD",
+    "regex": "^1[3-9]\\d{8}$"
+  },
+  {
+    "name": "Barbados",
+    "phonePrefix": "+1246",
+    "alpha2": "BB",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Belarus",
+    "phonePrefix": "+375",
+    "alpha2": "BY",
+    "regex": "^[2-4]\\d{8}$"
+  },
+  {
+    "name": "Belgium",
+    "phonePrefix": "+32",
+    "alpha2": "BE",
+    "regex": "^4\\d{8}$"
+  },
+  {
+    "name": "Belize",
+    "phonePrefix": "+501",
+    "alpha2": "BZ",
+    "regex": "^6\\d{6}$"
+  },
+  {
+    "name": "Benin",
+    "phonePrefix": "+229",
+    "alpha2": "BJ",
+    "regex": "^\\d{8}$"
+  },
+  {
+    "name": "Bermuda",
+    "phonePrefix": "+1441",
+    "alpha2": "BM",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Bhutan",
+    "phonePrefix": "+975",
+    "alpha2": "BT",
+    "regex": "^[17]\\d{7}$"
+  },
+  {
+    "name": "Bolivia, Plurinational State of",
+    "phonePrefix": "+591",
+    "alpha2": "BO",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Bosnia and Herzegovina",
+    "phonePrefix": "+387",
+    "alpha2": "BA",
+    "regex": "^6\\d{7,8}$"
+  },
+  {
+    "name": "Botswana",
+    "phonePrefix": "+267",
+    "alpha2": "BW",
+    "regex": "^7\\d{7}$"
+  },
+  {
+    "name": "Brazil",
+    "phonePrefix": "+55",
+    "alpha2": "BR",
+    "regex": "^[1-9][1-9]9\\d{8}$"
+  },
+  {
+    "name": "British Indian Ocean Territory",
+    "phonePrefix": "+246",
+    "alpha2": "IO",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Brunei Darussalam",
+    "phonePrefix": "+673",
+    "alpha2": "BN",
+    "regex": "^[78]\\d{6}$"
+  },
+  {
+    "name": "Bulgaria",
+    "phonePrefix": "+359",
+    "alpha2": "BG",
+    "regex": "^[89]\\d{8}$"
+  },
+  {
+    "name": "Burkina Faso",
+    "phonePrefix": "+226",
+    "alpha2": "BF",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Burundi",
+    "phonePrefix": "+257",
+    "alpha2": "BI",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Cambodia",
+    "phonePrefix": "+855",
+    "alpha2": "KH",
+    "regex": "^[1-9]\\d{7,8}$"
+  },
+  {
+    "name": "Cameroon",
+    "phonePrefix": "+237",
+    "alpha2": "CM",
+    "regex": "^6\\d{8}$"
+  },
+  {
+    "name": "Canada",
+    "phonePrefix": "+1",
+    "alpha2": "CA",
+    "regex": "^\\d{10}$"
+  },
+  {
+    "name": "Cape Verde",
+    "phonePrefix": "+238",
+    "alpha2": "CV",
+    "regex": "^[59]\\d{6}$"
+  },
+  {
+    "name": "Cayman Islands",
+    "phonePrefix": "+ 345",
+    "alpha2": "KY",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Central African Republic",
+    "phonePrefix": "+236",
+    "alpha2": "CF",
+    "regex": "^7\\d{7}$"
+  },
+  {
+    "name": "Chad",
+    "phonePrefix": "+235",
+    "alpha2": "TD",
+    "regex": "^[679]\\d{7}$"
+  },
+  {
+    "name": "Chile",
+    "phonePrefix": "+56",
+    "alpha2": "CL",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "China",
+    "phonePrefix": "+86",
+    "alpha2": "CN",
+    "regex": "^1[3-9]\\d{9}$"
+  },
+  {
+    "name": "Christmas Island",
+    "phonePrefix": "+61",
+    "alpha2": "CX",
+    "regex": "^4\\d{8}$"
+  },
+  {
+    "name": "Cocos (Keeling) Islands",
+    "phonePrefix": "+61",
+    "alpha2": "CC",
+    "regex": "^4\\d{8}$"
+  },
+  {
+    "name": "Colombia",
+    "phonePrefix": "+57",
+    "alpha2": "CO",
+    "regex": "^3\\d{9}$"
+  },
+  {
+    "name": "Comoros",
+    "phonePrefix": "+269",
+    "alpha2": "KM",
+    "regex": "^[34]\\d{6}$"
+  },
+  {
+    "name": "Congo",
+    "phonePrefix": "+242",
+    "alpha2": "CG",
+    "regex": "^0?[1-9]\\d{8}$"
+  },
+  {
+    "name": "Congo, The Democratic Republic of the Congo",
+    "phonePrefix": "+243",
+    "alpha2": "CD",
+    "regex": "^[89]\\d{8}$"
+  },
+  {
+    "name": "Cook Islands",
+    "phonePrefix": "+682",
+    "alpha2": "CK",
+    "regex": "^\\d{5}$"
+  },
+  {
+    "name": "Costa Rica",
+    "phonePrefix": "+506",
+    "alpha2": "CR",
+    "regex": "^[5-8]\\d{7}$"
+  },
+  {
+    "name": "Cote d'Ivoire",
+    "phonePrefix": "+225",
+    "alpha2": "CI",
+    "regex": "^[0257]\\d{9}$"
+  },
+  {
+    "name": "Croatia",
+    "phonePrefix": "+385",
+    "alpha2": "HR",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Cuba",
+    "phonePrefix": "+53",
+    "alpha2": "CU",
+    "regex": "^5\\d{7}$"
+  },
+  {
+    "name": "Cyprus",
+    "phonePrefix": "+357",
+    "alpha2": "CY",
+    "regex": "^9\\d{7}$"
+  },
+  {
+    "name": "Czech Republic",
+    "phonePrefix": "+420",
+    "alpha2": "CZ",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "Denmark",
+    "phonePrefix": "+45",
+    "alpha2": "DK",
+    "regex": "^[2-9]\\d{7}$"
+  },
+  {
+    "name": "Djibouti",
+    "phonePrefix": "+253",
+    "alpha2": "DJ",
+    "regex": "^77\\d{6}$"
+  },
+  {
+    "name": "Dominica",
+    "phonePrefix": "+1767",
+    "alpha2": "DM",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Dominican Republic",
+    "phonePrefix": "+1849",
+    "alpha2": "DO",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Ecuador",
+    "phonePrefix": "+593",
+    "alpha2": "EC",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Egypt",
+    "phonePrefix": "+20",
+    "alpha2": "EG",
+    "regex": "^1[0-2]\\d{8}$"
+  },
+  {
+    "name": "El Salvador",
+    "phonePrefix": "+503",
+    "alpha2": "SV",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Equatorial Guinea",
+    "phonePrefix": "+240",
+    "alpha2": "GQ",
+    "regex": "^[235]\\d{8}$"
+  },
+  {
+    "name": "Eritrea",
+    "phonePrefix": "+291",
+    "alpha2": "ER",
+    "regex": "^[78]\\d{6}$"
+  },
+  {
+    "name": "Estonia",
+    "phonePrefix": "+372",
+    "alpha2": "EE",
+    "regex": "^[3-8]\\d{6,7}$"
+  },
+  {
+    "name": "Ethiopia",
+    "phonePrefix": "+251",
+    "alpha2": "ET",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Falkland Islands (Malvinas)",
+    "phonePrefix": "+500",
+    "alpha2": "FK",
+    "regex": "^\\d{5}$"
+  },
+  {
+    "name": "Faroe Islands",
+    "phonePrefix": "+298",
+    "alpha2": "FO",
+    "regex": "^\\d{6}$"
+  },
+  {
+    "name": "Fiji",
+    "phonePrefix": "+679",
+    "alpha2": "FJ",
+    "regex": "^[79]\\d{6}$"
+  },
+  {
+    "name": "Finland",
+    "phonePrefix": "+358",
+    "alpha2": "FI",
+    "regex": "^4\\d{8,10}$"
+  },
+  {
+    "name": "France",
+    "phonePrefix": "+33",
+    "alpha2": "FR",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "French Guiana",
+    "phonePrefix": "+594",
+    "alpha2": "GF",
+    "regex": "^694\\d{6}$"
+  },
+  {
+    "name": "French Polynesia",
+    "phonePrefix": "+689",
+    "alpha2": "PF",
+    "regex": "^8[79]\\d{6}$"
+  },
+  {
+    "name": "Gabon",
+    "phonePrefix": "+241",
+    "alpha2": "GA",
+    "regex": "^0?[1-7]\\d{7}$"
+  },
+  {
+    "name": "Gambia",
+    "phonePrefix": "+220",
+    "alpha2": "GM",
+    "regex": "^[2-9]\\d{6}$"
+  },
+  {
+    "name": "Georgia",
+    "phonePrefix": "+995",
+    "alpha2": "GE",
+    "regex": "^[57]\\d{8}$"
+  },
+  {
+    "name": "Germany",
+    "phonePrefix": "+49",
+    "alpha2": "DE",
+    "regex": "^1[5-7]\\d{8,9}$"
+  },
+  {
+    "name": "Ghana",
+    "phonePrefix": "+233",
+    "alpha2": "GH",
+    "regex": "^[235]\\d{8}$"
+  },
+  {
+    "name": "Gibraltar",
+    "phonePrefix": "+350",
+    "alpha2": "GI",
+    "regex": "^[56]\\d{7}$"
+  },
+  {
+    "name": "Greece",
+    "phonePrefix": "+30",
+    "alpha2": "GR",
+    "regex": "^69\\d{8}$"
+  },
+  {
+    "name": "Greenland",
+    "phonePrefix": "+299",
+    "alpha2": "GL",
+    "regex": "^\\d{6}$"
+  },
+  {
+    "name": "Grenada",
+    "phonePrefix": "+1473",
+    "alpha2": "GD",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Guadeloupe",
+    "phonePrefix": "+590",
+    "alpha2": "GP",
+    "regex": "^690\\d{6}$"
+  },
+  {
+    "name": "Guam",
+    "phonePrefix": "+1671",
+    "alpha2": "GU",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Guatemala",
+    "phonePrefix": "+502",
+    "alpha2": "GT",
+    "regex": "^[345]\\d{7}$"
+  },
+  {
+    "name": "Guernsey",
+    "phonePrefix": "+44",
+    "alpha2": "GG",
+    "regex": "^7\\d{9}$"
+  },
+  {
+    "name": "Guinea",
+    "phonePrefix": "+224",
+    "alpha2": "GN",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "Guinea-Bissau",
+    "phonePrefix": "+245",
+    "alpha2": "GW",
+    "regex": "^[56]\\d{8}$"
+  },
+  {
+    "name": "Guyana",
+    "phonePrefix": "+595",
+    "alpha2": "GY",
+    "regex": "^6\\d{6}$"
+  },
+  {
+    "name": "Haiti",
+    "phonePrefix": "+509",
+    "alpha2": "HT",
+    "regex": "^[34]\\d{7}$"
+  },
+  {
+    "name": "Holy See (Vatican City State)",
+    "phonePrefix": "+379",
+    "alpha2": "VA",
+    "regex": "^3\\d{9,10}$"
+  },
+  {
+    "name": "Honduras",
+    "phonePrefix": "+504",
+    "alpha2": "HN",
+    "regex": "^[389]\\d{7}$"
+  },
+  {
+    "name": "Hong Kong",
+    "phonePrefix": "+852",
+    "alpha2": "HK",
+    "regex": "^[456789]\\d{7}$"
+  },
+  {
+    "name": "Hungary",
+    "phonePrefix": "+36",
+    "alpha2": "HU",
+    "regex": "^[237]0\\d{7}$"
+  },
+  {
+    "name": "Iceland",
+    "phonePrefix": "+354",
+    "alpha2": "IS",
+    "regex": "^[6-8]\\d{6}$"
+  },
+  {
+    "name": "India",
+    "phonePrefix": "+91",
+    "alpha2": "IN",
+    "regex": "^[6-9]\\d{9}$"
+  },
+  {
+    "name": "Indonesia",
+    "phonePrefix": "+62",
+    "alpha2": "ID",
+    "regex": "^8\\d{8,11}$"
+  },
+  {
+    "name": "Iran, Islamic Republic of Persian Gulf",
+    "phonePrefix": "+98",
+    "alpha2": "IR",
+    "regex": "^9\\d{9}$"
+  },
+  {
+    "name": "Iraq",
+    "phonePrefix": "+964",
+    "alpha2": "IQ",
+    "regex": "^7[3-9]\\d{8}$"
+  },
+  {
+    "name": "Ireland",
+    "phonePrefix": "+353",
+    "alpha2": "IE",
+    "regex": "^8[356]\\d{7}$"
+  },
+  {
+    "name": "Isle of Man",
+    "phonePrefix": "+44",
+    "alpha2": "IM",
+    "regex": "^7\\d{9}$"
+  },
+  {
+    "name": "Israel",
+    "phonePrefix": "+972",
+    "alpha2": "IL",
+    "regex": "^5[0-9]\\d{7}$"
+  },
+  {
+    "name": "Italy",
+    "phonePrefix": "+39",
+    "alpha2": "IT",
+    "regex": "^3\\d{8,9}$"
+  },
+  {
+    "name": "Jamaica",
+    "phonePrefix": "+1876",
+    "alpha2": "JM",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Japan",
+    "phonePrefix": "+81",
+    "alpha2": "JP",
+    "regex": "^[7-9]0\\d{8}$"
+  },
+  {
+    "name": "Jersey",
+    "phonePrefix": "+44",
+    "alpha2": "JE",
+    "regex": "^7\\d{9}$"
+  },
+  {
+    "name": "Jordan",
+    "phonePrefix": "+962",
+    "alpha2": "JO",
+    "regex": "^7[789]\\d{7}$"
+  },
+  {
+    "name": "Kazakhstan",
+    "phonePrefix": "+77",
+    "alpha2": "KZ",
+    "regex": "^7\\d{9}$"
+  },
+  {
+    "name": "Kenya",
+    "phonePrefix": "+254",
+    "alpha2": "KE",
+    "regex": "^[17]\\d{8}$"
+  },
+  {
+    "name": "Kiribati",
+    "phonePrefix": "+686",
+    "alpha2": "KI",
+    "regex": "^[79]\\d{7}$"
+  },
+  {
+    "name": "Korea, Democratic People's Republic of Korea",
+    "phonePrefix": "+850",
+    "alpha2": "KP",
+    "regex": "^19[123]\\d{7}$"
+  },
+  {
+    "name": "Korea, Republic of South Korea",
+    "phonePrefix": "+82",
+    "alpha2": "KR",
+    "regex": "^1[016-9]\\d{7,8}$"
+  },
+  {
+    "name": "Kuwait",
+    "phonePrefix": "+965",
+    "alpha2": "KW",
+    "regex": "^[569]\\d{7}$"
+  },
+  {
+    "name": "Kyrgyzstan",
+    "phonePrefix": "+996",
+    "alpha2": "KG",
+    "regex": "^[57]\\d{8}$"
+  },
+  {
+    "name": "Laos",
+    "phonePrefix": "+856",
+    "alpha2": "LA",
+    "regex": "^20[2-9]\\d{7}$"
+  },
+  {
+    "name": "Latvia",
+    "phonePrefix": "+371",
+    "alpha2": "LV",
+    "regex": "^2\\d{7}$"
+  },
+  {
+    "name": "Lebanon",
+    "phonePrefix": "+961",
+    "alpha2": "LB",
+    "regex": "^[3-9]\\d{7}$"
+  },
+  {
+    "name": "Lesotho",
+    "phonePrefix": "+266",
+    "alpha2": "LS",
+    "regex": "^[56]\\d{7}$"
+  },
+  {
+    "name": "Liberia",
+    "phonePrefix": "+231",
+    "alpha2": "LR",
+    "regex": "^[4-9]\\d{7,8}$"
+  },
+  {
+    "name": "Libyan Arab Jamahiriya",
+    "phonePrefix": "+218",
+    "alpha2": "LY",
+    "regex": "^9[1-6]\\d{7}$"
+  },
+  {
+    "name": "Liechtenstein",
+    "phonePrefix": "+423",
+    "alpha2": "LI",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Lithuania",
+    "phonePrefix": "+370",
+    "alpha2": "LT",
+    "regex": "^6\\d{7}$"
+  },
+  {
+    "name": "Luxembourg",
+    "phonePrefix": "+352",
+    "alpha2": "LU",
+    "regex": "^6\\d{8}$"
+  },
+  {
+    "name": "Macao",
+    "phonePrefix": "+853",
+    "alpha2": "MO",
+    "regex": "^6\\d{7}$"
+  },
+  {
+    "name": "Macedonia",
+    "phonePrefix": "+389",
+    "alpha2": "MK",
+    "regex": "^7[2-5]\\d{6}$"
+  },
+  {
+    "name": "Madagascar",
+    "phonePrefix": "+261",
+    "alpha2": "MG",
+    "regex": "^3[2-9]\\d{7}$"
+  },
+  {
+    "name": "Malawi",
+    "phonePrefix": "+265",
+    "alpha2": "MW",
+    "regex": "^[89]\\d{8}$"
+  },
+  {
+    "name": "Malaysia",
+    "phonePrefix": "+60",
+    "alpha2": "MY",
+    "regex": "^1[0-9]\\d{7,8}$"
+  },
+  {
+    "name": "Maldives",
+    "phonePrefix": "+960",
+    "alpha2": "MV",
+    "regex": "^[79]\\d{6}$"
+  },
+  {
+    "name": "Mali",
+    "phonePrefix": "+223",
+    "alpha2": "ML",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Malta",
+    "phonePrefix": "+356",
+    "alpha2": "MT",
+    "regex": "^[79]\\d{7}$"
+  },
+  {
+    "name": "Marshall Islands",
+    "phonePrefix": "+692",
+    "alpha2": "MH",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Martinique",
+    "phonePrefix": "+596",
+    "alpha2": "MQ",
+    "regex": "^696\\d{6}$"
+  },
+  {
+    "name": "Mauritania",
+    "phonePrefix": "+222",
+    "alpha2": "MR",
+    "regex": "^[2-4]\\d{7}$"
+  },
+  {
+    "name": "Mauritius",
+    "phonePrefix": "+230",
+    "alpha2": "MU",
+    "regex": "^5\\d{7}$"
+  },
+  {
+    "name": "Mayotte",
+    "phonePrefix": "+262",
+    "alpha2": "YT",
+    "regex": "^639\\d{6}$"
+  },
+  {
+    "name": "Mexico",
+    "phonePrefix": "+52",
+    "alpha2": "MX",
+    "regex": "^\\d{10}$"
+  },
+  {
+    "name": "Micronesia, Federated States of Micronesia",
+    "phonePrefix": "+691",
+    "alpha2": "FM",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Moldova",
+    "phonePrefix": "+373",
+    "alpha2": "MD",
+    "regex": "^[67]\\d{7}$"
+  },
+  {
+    "name": "Monaco",
+    "phonePrefix": "+377",
+    "alpha2": "MC",
+    "regex": "^[46]\\d{8}$"
+  },
+  {
+    "name": "Mongolia",
+    "phonePrefix": "+976",
+    "alpha2": "MN",
+    "regex": "^[89]\\d{7}$"
+  },
+  {
+    "name": "Montenegro",
+    "phonePrefix": "+382",
+    "alpha2": "ME",
+    "regex": "^6\\d{7,8}$"
+  },
+  {
+    "name": "Montserrat",
+    "phonePrefix": "+1664",
+    "alpha2": "MS",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Morocco",
+    "phonePrefix": "+212",
+    "alpha2": "MA",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "Mozambique",
+    "phonePrefix": "+258",
+    "alpha2": "MZ",
+    "regex": "^8[2-7]\\d{7}$"
+  },
+  {
+    "name": "Myanmar",
+    "phonePrefix": "+95",
+    "alpha2": "MM",
+    "regex": "^9\\d{8,9}$"
+  },
+  {
+    "name": "Namibia",
+    "phonePrefix": "+264",
+    "alpha2": "NA",
+    "regex": "^8[15]\\d{7}$"
+  },
+  {
+    "name": "Nauru",
+    "phonePrefix": "+674",
+    "alpha2": "NR",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Nepal",
+    "phonePrefix": "+977",
+    "alpha2": "NP",
+    "regex": "^9[78]\\d{8}$"
+  },
+  {
+    "name": "Netherlands",
+    "phonePrefix": "+31",
+    "alpha2": "NL",
+    "regex": "^6\\d{8}$"
+  },
+  {
+    "name": "Netherlands Antilles",
+    "phonePrefix": "+599",
+    "alpha2": "AN",
+    "regex": "^[39]\\d{6}$"
+  },
+  {
+    "name": "New Caledonia",
+    "phonePrefix": "+687",
+    "alpha2": "NC",
+    "regex": "^[7-9]\\d{5}$"
+  },
+  {
+    "name": "New Zealand",
+    "phonePrefix": "+64",
+    "alpha2": "NZ",
+    "regex": "^2\\d{7,9}$"
+  },
+  {
+    "name": "Nicaragua",
+    "phonePrefix": "+505",
+    "alpha2": "NI",
+    "regex": "^[58]\\d{7}$"
+  },
+  {
+    "name": "Niger",
+    "phonePrefix": "+227",
+    "alpha2": "NE",
+    "regex": "^[89]\\d{7}$"
+  },
+  {
+    "name": "Nigeria",
+    "phonePrefix": "+234",
+    "alpha2": "NG",
+    "regex": "^[789]\\d{9}$"
+  },
+  {
+    "name": "Niue",
+    "phonePrefix": "+683",
+    "alpha2": "NU",
+    "regex": "^\\d{4}$"
+  },
+  {
+    "name": "Norfolk Island",
+    "phonePrefix": "+672",
+    "alpha2": "NF",
+    "regex": "^[35]\\d{5}$"
+  },
+  {
+    "name": "Northern Mariana Islands",
+    "phonePrefix": "+1670",
+    "alpha2": "MP",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Norway",
+    "phonePrefix": "+47",
+    "alpha2": "NO",
+    "regex": "^[49]\\d{7}$"
+  },
+  {
+    "name": "Oman",
+    "phonePrefix": "+968",
+    "alpha2": "OM",
+    "regex": "^[79]\\d{7}$"
+  },
+  {
+    "name": "Pakistan",
+    "phonePrefix": "+92",
+    "alpha2": "PK",
+    "regex": "^3\\d{9}$"
+  },
+  {
+    "name": "Palau",
+    "phonePrefix": "+680",
+    "alpha2": "PW",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Palestinian Territory, Occupied",
+    "phonePrefix": "+970",
+    "alpha2": "PS",
+    "regex": "^5[69]\\d{7}$"
+  },
+  {
+    "name": "Panama",
+    "phonePrefix": "+507",
+    "alpha2": "PA",
+    "regex": "^[46]\\d{7}$"
+  },
+  {
+    "name": "Papua New Guinea",
+    "phonePrefix": "+675",
+    "alpha2": "PG",
+    "regex": "^[7-9]\\d{7}$"
+  },
+  {
+    "name": "Paraguay",
+    "phonePrefix": "+595",
+    "alpha2": "PY",
+    "regex": "^9[6-9]\\d{7}$"
+  },
+  {
+    "name": "Peru",
+    "phonePrefix": "+51",
+    "alpha2": "PE",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Philippines",
+    "phonePrefix": "+63",
+    "alpha2": "PH",
+    "regex": "^9\\d{9}$"
+  },
+  {
+    "name": "Pitcairn",
+    "phonePrefix": "+872",
+    "alpha2": "PN",
+    "regex": "^\\d{7,15}$"
+  },
+  {
+    "name": "Poland",
+    "phonePrefix": "+48",
+    "alpha2": "PL",
+    "regex": "^[4-8]\\d{8}$"
+  },
+  {
+    "name": "Portugal",
+    "phonePrefix": "+351",
+    "alpha2": "PT",
+    "regex": "^9[1236]\\d{7}$"
+  },
+  {
+    "name": "Puerto Rico",
+    "phonePrefix": "+1939",
+    "alpha2": "PR",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Qatar",
+    "phonePrefix": "+974",
+    "alpha2": "QA",
+    "regex": "^[3-7]\\d{7}$"
+  },
+  {
+    "name": "Romania",
+    "phonePrefix": "+40",
+    "alpha2": "RO",
+    "regex": "^7\\d{8}$"
+  },
+  {
+    "name": "Russia",
+    "phonePrefix": "+7",
+    "alpha2": "RU",
+    "regex": "^9\\d{9}$"
+  },
+  {
+    "name": "Rwanda",
+    "phonePrefix": "+250",
+    "alpha2": "RW",
+    "regex": "^7[238]\\d{7}$"
+  },
+  {
+    "name": "Reunion",
+    "phonePrefix": "+262",
+    "alpha2": "RE",
+    "regex": "^692\\d{6}$"
+  },
+  {
+    "name": "Saint Barthelemy",
+    "phonePrefix": "+590",
+    "alpha2": "BL",
+    "regex": "^690\\d{6}$"
+  },
+  {
+    "name": "Saint Helena, Ascension and Tristan Da Cunha",
+    "phonePrefix": "+290",
+    "alpha2": "SH",
+    "regex": "^[0-9]\\d{3,4}$"
+  },
+  {
+    "name": "Saint Kitts and Nevis",
+    "phonePrefix": "+1869",
+    "alpha2": "KN",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Saint Lucia",
+    "phonePrefix": "+1758",
+    "alpha2": "LC",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Saint Martin",
+    "phonePrefix": "+590",
+    "alpha2": "MF",
+    "regex": "^690\\d{6}$"
+  },
+  {
+    "name": "Saint Pierre and Miquelon",
+    "phonePrefix": "+508",
+    "alpha2": "PM",
+    "regex": "^\\d{6}$"
+  },
+  {
+    "name": "Saint Vincent and the Grenadines",
+    "phonePrefix": "+1784",
+    "alpha2": "VC",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Samoa",
+    "phonePrefix": "+685",
+    "alpha2": "WS",
+    "regex": "^[27]\\d{6}$"
+  },
+  {
+    "name": "San Marino",
+    "phonePrefix": "+378",
+    "alpha2": "SM",
+    "regex": "^[356]\\d{7,9}$"
+  },
+  {
+    "name": "Sao Tome and Principe",
+    "phonePrefix": "+239",
+    "alpha2": "ST",
+    "regex": "^9[89]\\d{5}$"
+  },
+  {
+    "name": "Saudi Arabia",
+    "phonePrefix": "+966",
+    "alpha2": "SA",
+    "regex": "^5\\d{8}$"
+  },
+  {
+    "name": "Senegal",
+    "phonePrefix": "+221",
+    "alpha2": "SN",
+    "regex": "^7[0678]\\d{7}$"
+  },
+  {
+    "name": "Serbia",
+    "phonePrefix": "+381",
+    "alpha2": "RS",
+    "regex": "^6[0-9]\\d{7,8}$"
+  },
+  {
+    "name": "Seychelles",
+    "phonePrefix": "+248",
+    "alpha2": "SC",
+    "regex": "^2[5-8]\\d{5}$"
+  },
+  {
+    "name": "Sierra Leone",
+    "phonePrefix": "+232",
+    "alpha2": "SL",
+    "regex": "^[23578]\\d{7}$"
+  },
+  {
+    "name": "Singapore",
+    "phonePrefix": "+65",
+    "alpha2": "SG",
+    "regex": "^[89]\\d{7}$"
+  },
+  {
+    "name": "Slovakia",
+    "phonePrefix": "+421",
+    "alpha2": "SK",
+    "regex": "^9[014]\\d{7}$"
+  },
+  {
+    "name": "Slovenia",
+    "phonePrefix": "+386",
+    "alpha2": "SI",
+    "regex": "^[3-7]\\d{7}$"
+  },
+  {
+    "name": "Solomon Islands",
+    "phonePrefix": "+677",
+    "alpha2": "SB",
+    "regex": "^[7-9]\\d{6}$"
+  },
+  {
+    "name": "Somalia",
+    "phonePrefix": "+252",
+    "alpha2": "SO",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "South Africa",
+    "phonePrefix": "+27",
+    "alpha2": "ZA",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "South Sudan",
+    "phonePrefix": "+211",
+    "alpha2": "SS",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "South Georgia and the South Sandwich Islands",
+    "phonePrefix": "+500",
+    "alpha2": "GS",
+    "regex": "^\\d{5}$"
+  },
+  {
+    "name": "Spain",
+    "phonePrefix": "+34",
+    "alpha2": "ES",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "Sri Lanka",
+    "phonePrefix": "+94",
+    "alpha2": "LK",
+    "regex": "^7[0-9]\\d{7}$"
+  },
+  {
+    "name": "Sudan",
+    "phonePrefix": "+249",
+    "alpha2": "SD",
+    "regex": "^9[0-9]\\d{7}$"
+  },
+  {
+    "name": "Suriname",
+    "phonePrefix": "+597",
+    "alpha2": "SR",
+    "regex": "^[6-8]\\d{6}$"
+  },
+  {
+    "name": "Svalbard and Jan Mayen",
+    "phonePrefix": "+47",
+    "alpha2": "SJ",
+    "regex": "^[49]\\d{7}$"
+  },
+  {
+    "name": "Swaziland",
+    "phonePrefix": "+268",
+    "alpha2": "SZ",
+    "regex": "^7[6-8]\\d{6}$"
+  },
+  {
+    "name": "Sweden",
+    "phonePrefix": "+46",
+    "alpha2": "SE",
+    "regex": "^7[0236]\\d{7}$"
+  },
+  {
+    "name": "Switzerland",
+    "phonePrefix": "+41",
+    "alpha2": "CH",
+    "regex": "^7[5-9]\\d{7}$"
+  },
+  {
+    "name": "Syrian Arab Republic",
+    "phonePrefix": "+963",
+    "alpha2": "SY",
+    "regex": "^9[3-69]\\d{7}$"
+  },
+  {
+    "name": "Taiwan",
+    "phonePrefix": "+886",
+    "alpha2": "TW",
+    "regex": "^9\\d{8}$"
+  },
+  {
+    "name": "Tajikistan",
+    "phonePrefix": "+992",
+    "alpha2": "TJ",
+    "regex": "^[59]\\d{8}$"
+  },
+  {
+    "name": "Tanzania, United Republic of Tanzania",
+    "phonePrefix": "+255",
+    "alpha2": "TZ",
+    "regex": "^[67]\\d{8}$"
+  },
+  {
+    "name": "Thailand",
+    "phonePrefix": "+66",
+    "alpha2": "TH",
+    "regex": "^[689]\\d{8}$"
+  },
+  {
+    "name": "Timor-Leste",
+    "phonePrefix": "+670",
+    "alpha2": "TL",
+    "regex": "^7[7-9]\\d{6}$"
+  },
+  {
+    "name": "Togo",
+    "phonePrefix": "+228",
+    "alpha2": "TG",
+    "regex": "^9[0-9]\\d{6}$"
+  },
+  {
+    "name": "Tokelau",
+    "phonePrefix": "+690",
+    "alpha2": "TK",
+    "regex": "^\\d{4}$"
+  },
+  {
+    "name": "Tonga",
+    "phonePrefix": "+676",
+    "alpha2": "TO",
+    "regex": "^[78]\\d{6}$"
+  },
+  {
+    "name": "Trinidad and Tobago",
+    "phonePrefix": "+1868",
+    "alpha2": "TT",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Tunisia",
+    "phonePrefix": "+216",
+    "alpha2": "TN",
+    "regex": "^[2-9]\\d{7}$"
+  },
+  {
+    "name": "Turkey",
+    "phonePrefix": "+90",
+    "alpha2": "TR",
+    "regex": "^5\\d{9}$"
+  },
+  {
+    "name": "Turkmenistan",
+    "phonePrefix": "+993",
+    "alpha2": "TM",
+    "regex": "^6\\d{7}$"
+  },
+  {
+    "name": "Turks and Caicos Islands",
+    "phonePrefix": "+1649",
+    "alpha2": "TC",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Tuvalu",
+    "phonePrefix": "+688",
+    "alpha2": "TV",
+    "regex": "^[29]\\d{5,6}$"
+  },
+  {
+    "name": "Uganda",
+    "phonePrefix": "+256",
+    "alpha2": "UG",
+    "regex": "^[37]\\d{8}$"
+  },
+  {
+    "name": "Ukraine",
+    "phonePrefix": "+380",
+    "alpha2": "UA",
+    "regex": "^[3-9]\\d{8}$"
+  },
+  {
+    "name": "United Arab Emirates",
+    "phonePrefix": "+971",
+    "alpha2": "AE",
+    "regex": "^5[024-6]\\d{7}$"
+  },
+  {
+    "name": "United Kingdom",
+    "phonePrefix": "+44",
+    "alpha2": "GB",
+    "regex": "^7\\d{9}$"
+  },
+  {
+    "name": "United States",
+    "phonePrefix": "+1",
+    "alpha2": "US",
+    "regex": "^\\d{10}$"
+  },
+  {
+    "name": "Uruguay",
+    "phonePrefix": "+598",
+    "alpha2": "UY",
+    "regex": "^9[1-9]\\d{6}$"
+  },
+  {
+    "name": "Uzbekistan",
+    "phonePrefix": "+998",
+    "alpha2": "UZ",
+    "regex": "^[679]\\d{8}$"
+  },
+  {
+    "name": "Vanuatu",
+    "phonePrefix": "+678",
+    "alpha2": "VU",
+    "regex": "^[57]\\d{6}$"
+  },
+  {
+    "name": "Venezuela, Bolivarian Republic of Venezuela",
+    "phonePrefix": "+58",
+    "alpha2": "VE",
+    "regex": "^4\\d{9}$"
+  },
+  {
+    "name": "Vietnam",
+    "phonePrefix": "+84",
+    "alpha2": "VN",
+    "regex": "^[3-9]\\d{8}$"
+  },
+  {
+    "name": "Virgin Islands, British",
+    "phonePrefix": "+1284",
+    "alpha2": "VG",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Virgin Islands, U.S.",
+    "phonePrefix": "+1340",
+    "alpha2": "VI",
+    "regex": "^\\d{7}$"
+  },
+  {
+    "name": "Wallis and Futuna",
+    "phonePrefix": "+681",
+    "alpha2": "WF",
+    "regex": "^\\d{6}$"
+  },
+  {
+    "name": "Yemen",
+    "phonePrefix": "+967",
+    "alpha2": "YE",
+    "regex": "^7[0137]\\d{7}$"
+  },
+  {
+    "name": "Zambia",
+    "phonePrefix": "+260",
+    "alpha2": "ZM",
+    "regex": "^9[567]\\d{7}$"
+  },
+  {
+    "name": "Zimbabwe",
+    "phonePrefix": "+263",
+    "alpha2": "ZW",
+    "regex": "^7[1-8]\\d{7}$"
+  },
+  {
+    "name": "Otro",
+    "phonePrefix": "-",
+    "alpha2": "OTR",
+    "regex": "^\\d{7,15}$"
+  }
+]
