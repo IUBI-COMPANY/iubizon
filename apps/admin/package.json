@@ -7,7 +7,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint",
+    "lint": "eslint src --ext .ts,.tsx",
     "eslint:check": "eslint src",
     "type:check": "tsc --noEmit",
     "prettier:check": "prettier --check .",
@@ -52,6 +52,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.5.2",
     "@types/react": "^19",
