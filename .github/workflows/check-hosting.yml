@@ -27,7 +27,7 @@ jobs:
         run: yarn workspace @iubizon/db generate
 
       - name: Check Prettier
-        run: yarn pret:check
+        run: yarn prettier:check
 
       - name: Check ESLint
         run: yarn lint
