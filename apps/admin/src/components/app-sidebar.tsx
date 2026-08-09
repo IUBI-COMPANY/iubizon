@@ -11,11 +11,11 @@ import { useTheme } from "@/components/theme-provider.tsx";
 const data = {
   navMain: [
     { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
-    { title: "Productos", url: "/dashboard/productos", icon: IconPackage },
-    { title: "Categorías", url: "/dashboard/categorias", icon: IconFolders },
     { title: "Órdenes", url: "/dashboard/ordenes", icon: IconShoppingCart },
     { title: "Pagos", url: "/dashboard/pagos", icon: IconWallet },
     { title: "Empresas", url: "/dashboard/empresas", icon: IconBuildingStore },
+    { title: "Productos", url: "/dashboard/productos", icon: IconPackage },
+    { title: "Categorías", url: "/dashboard/categorias", icon: IconFolders },
   ],
   navSecondary: [
     { title: "Configuración", url: "/dashboard/configuracion", icon: IconSettings },
