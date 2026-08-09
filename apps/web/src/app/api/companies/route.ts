@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { createCompany, getUserCompanies } from "@/lib/services/companies";
 
 export async function GET() {
@@ -89,6 +90,19 @@ export async function POST(req: Request) {
         { error: "La razón social de la empresa es obligatoria" },
         { status: 400 },
       );
+    }
+
+    // Verificar si el RUC ya está registrado
+    if (body.tax_id?.trim()) {
+      const existingRuc = await prisma.company.findFirst({
+        where: { tax_id: body.tax_id.trim() },
+      });
+      if (existingRuc) {
+        return NextResponse.json(
+          { error: `El RUC ${body.tax_id.trim()} ya está registrado en iubizon.` },
+          { status: 400 },
+        );
+      }
     }
 
     const company = await createCompany(body, user.id);

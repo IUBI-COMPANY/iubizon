@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,7 +12,6 @@ import {
   Building2,
   CheckCircle2,
   Loader2,
-  Navigation,
   Save,
   Search,
   Upload,
@@ -24,6 +23,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
 import { useCompany } from "@/context/CompanyContext";
+import { peruUbigeo } from "@/data-list/ubigeos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
 
 const companyFormSchema = z.object({
   name: z
@@ -46,8 +53,10 @@ const companyFormSchema = z.object({
   logo_url: z.string().optional(),
   phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
   email: z.string().email("Ingresa un correo electrónico corporativo válido."),
-  location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
-  bank_account: z.string().optional(),
+  department: z.string().min(1, "Selecciona un departamento."),
+  province: z.string().min(1, "Selecciona una provincia."),
+  district: z.string().min(1, "Selecciona un distrito."),
+  location: z.string().min(3, "La dirección es obligatoria."),
   description: z.string().optional(),
 });
 
@@ -58,7 +67,6 @@ export default function NewCompanyPage() {
   const { refreshCompanies, setActiveCompanyId } = useCompany();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [geoLoading, setGeoLoading] = useState(false);
   const [sunatLoading, setSunatLoading] = useState(false);
   const [sunatInfo, setSunatInfo] = useState<{
     verified: boolean;
@@ -86,83 +94,38 @@ export default function NewCompanyPage() {
       logo_url: "",
       phone: "",
       email: "",
+      department: "Lima",
+      province: "Lima",
+      district: "",
       location: "",
-      bank_account: "",
       description: "",
     },
   });
 
   const formData = watch();
 
-  const handleGeolocate = async () => {
-    setGeoLoading(true);
-    setServerError(null);
+  const provincesForDepartment = useMemo(
+    () => peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
+    [formData.department],
+  );
+  const districtsForProvince = useMemo(
+    () => provincesForDepartment.find((p) => p.name === formData.province)?.districts || [],
+    [provincesForDepartment, formData.province],
+  );
 
-    if (!navigator.geolocation) {
-      setServerError("Tu navegador no soporta geolocalización.");
-      setGeoLoading(false);
-      return;
-    }
+  const handleDepartmentChange = (department: string) => {
+    setValue("department", department, { shouldValidate: true });
+    setValue("province", "", { shouldValidate: true });
+    setValue("district", "", { shouldValidate: true });
+  };
 
-    const getPosition = (): Promise<GeolocationPosition> => {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0,
-        });
-      });
-    };
+  const handleProvinceChange = (province: string) => {
+    setValue("province", province, { shouldValidate: true });
+    setValue("district", "", { shouldValidate: true });
+  };
 
-    try {
-      const position = await getPosition();
-      const { latitude, longitude } = position.coords;
-
-      let locationName = "";
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=es&zoom=18`,
-          {
-            headers: {
-              "User-Agent": "IubizonMarketplace/1.0",
-            },
-            signal: AbortSignal.timeout(8000),
-          },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const road = data.address?.road || data.address?.pedestrian || "";
-          const district =
-            data.address?.suburb ||
-            data.address?.neighbourhood ||
-            data.address?.city_district ||
-            "";
-          const city =
-            data.address?.city ||
-            data.address?.town ||
-            data.address?.village ||
-            "";
-          locationName = [road, district, city]
-            .filter(Boolean)
-            .join(", ")
-            .trim();
-        }
-      } catch {
-        // Fallback
-      }
-
-      if (!locationName) {
-        locationName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-      }
-
-      setValue("location", locationName, { shouldValidate: true });
-    } catch {
-      setServerError(
-        "No se pudo obtener la ubicación automáticamente. Por favor escríbela manualmente.",
-      );
-    } finally {
-      setGeoLoading(false);
-    }
+  const handleDistrictChange = (district: string) => {
+    setValue("district", district, { shouldValidate: true });
   };
 
   const handleSunatLookup = async (docOverride?: string) => {
@@ -276,7 +239,6 @@ export default function NewCompanyPage() {
           phone: values.phone.trim(),
           email: values.email.trim(),
           location: values.location.trim(),
-          bank_account: values.bank_account?.trim() || null,
           description: values.description?.trim() || null,
         }),
       });
@@ -530,6 +492,62 @@ export default function NewCompanyPage() {
                 </p>
               </div>
 
+
+              {/* Departamento, Provincia, Distrito */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="department" className="block text-sm font-medium text-[#334155] mb-1">
+                    Departamento *
+                  </label>
+                  <Select value={formData.department || undefined} onValueChange={handleDepartmentChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                    <SelectContent>
+                      {peruUbigeo.map((dep) => (
+                        <SelectItem key={dep.name} value={dep.name}>{dep.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.department && <p className="text-xs text-red-500 font-medium mt-1">{errors.department.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="province" className="block text-sm font-medium text-[#334155] mb-1">
+                    Provincia *
+                  </label>
+                  <Select value={formData.province || undefined} onValueChange={handleProvinceChange} disabled={!formData.department}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                    <SelectContent>
+                      {provincesForDepartment.map((prov) => (
+                        <SelectItem key={prov.name} value={prov.name}>{prov.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.province && <p className="text-xs text-red-500 font-medium mt-1">{errors.province.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="district" className="block text-sm font-medium text-[#334155] mb-1">
+                    Distrito *
+                  </label>
+                  <Select value={formData.district || undefined} onValueChange={handleDistrictChange} disabled={!formData.province}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                    <SelectContent>
+                      {districtsForProvince.map((dist) => (
+                        <SelectItem key={dist.name} value={dist.name}>{dist.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.district && <p className="text-xs text-red-500 font-medium mt-1">{errors.district.message}</p>}
+                </div>
+              </div>
+
+              {/* Dirección */}
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-[#334155] mb-1">
+                  Dirección *
+                </label>
+                <Input id="location" {...register("location")} placeholder="Av. Principal 123" />
+                {errors.location && <p className="text-xs text-red-500 font-medium mt-1">{errors.location.message}</p>}
+              </div>
+
               {/* Teléfono y Correo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -563,52 +581,16 @@ export default function NewCompanyPage() {
                     {...register("email")}
                     placeholder="contacto@empresa.com"
                   />
+                  <p className="text-xs text-[#94a3b8] mt-1">
+                    Este correo se usará para notificarte de nuevas ventas y
+                    despachos.
+                  </p>
                   {errors.email && (
                     <p className="text-xs text-red-500 font-medium mt-1">
                       {errors.email.message}
                     </p>
                   )}
                 </div>
-              </div>
-
-              {/* Ubicación */}
-              <div>
-                <label
-                  htmlFor="location"
-                  className="block text-sm font-medium text-[#334155] mb-1"
-                >
-                  Ubicación / Ciudad *
-                </label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input
-                      id="location"
-                      {...register("location")}
-                      placeholder="Lima, Perú"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleGeolocate}
-                    disabled={geoLoading}
-                    className="h-10 px-3 rounded-xl border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] hover:border-[#f25c05]/40 transition-all flex items-center gap-1.5 text-xs font-semibold text-[#64748b] hover:text-[#f25c05] shrink-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
-                    title="Obtener ubicación actual por GPS"
-                  >
-                    {geoLoading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#f25c05]" />
-                    ) : (
-                      <Navigation className="w-3.5 h-3.5 text-[#f25c05]" />
-                    )}
-                    <span>
-                      {geoLoading ? "Localizando..." : "Mi ubicación"}
-                    </span>
-                  </button>
-                </div>
-                {errors.location && (
-                  <p className="text-xs text-red-500 font-medium mt-1">
-                    {errors.location.message}
-                  </p>
-                )}
               </div>
 
               {/* Descripción */}
@@ -633,23 +615,6 @@ export default function NewCompanyPage() {
                     {errors.description.message}
                   </p>
                 )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="bank_account"
-                  className="block text-sm font-medium text-[#334155] mb-1"
-                >
-                  Cuenta Bancaria{" "}
-                  <span className="text-[#94a3b8] text-xs font-normal">
-                    (Opcional)
-                  </span>
-                </label>
-                <Input
-                  id="bank_account"
-                  {...register("bank_account")}
-                  placeholder="ej: BCP - CCI: 002-1234567890"
-                />
               </div>
 
               {/* Botón de Enviar */}
