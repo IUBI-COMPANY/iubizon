@@ -53,3 +53,17 @@ export interface SellerEmailData {
   netPayoutEstimate: number;
   buyerInfo: BuyerShippingForm;
 }
+
+export interface DispatchEmailData {
+  orderCode: string;
+  buyerName: string;
+  buyerEmail: string;
+  courier: string;
+  trackingNumber: string;
+  trackingUrl?: string | null;
+  estimatedDelivery: string;
+  items: EmailOrderItem[];
+  shippingAddress: string;
+  shippingCity: string;
+  companyName: string;
+}

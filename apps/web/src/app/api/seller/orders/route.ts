@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { getCommissionConfig } from "@/lib/utils/commission";
+import { sendDispatchNotification } from "@/lib/email";
 
 export interface DashboardOrderItem {
   id: string;
@@ -309,6 +310,15 @@ export async function PATCH(req: Request) {
         where: { package_id: packageId },
         data: { status: "shipped", updated_at: new Date() },
       });
+
+      // Notificar al comprador que su pedido fue despachado
+      sendDispatchNotification(
+        packageId,
+        carrierName,
+        trackingNumber.trim(),
+        trackingUrl || null,
+        estDeliveryDate,
+      ).catch((err) => console.error("[Seller Orders] Error enviando notificación de despacho:", err));
 
       return NextResponse.json({ success: true });
     }

@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getDefaultFromEmail, getResendClient } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
+import { DispatchNotificationEmail } from "./templates/DispatchNotificationEmail";
 import { formatDateTime } from "@/lib/utils";
-import type { BuyerEmailData, EmailOrderItem, SellerEmailData } from "./types";
+import type { BuyerEmailData, DispatchEmailData, EmailOrderItem, SellerEmailData } from "./types";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
   try {
@@ -276,5 +277,88 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       `[Email Dispatcher] Error procesando correos para ${orderId}:`,
       globalError,
     );
+  }
+}
+
+export async function sendDispatchNotification(
+  packageId: string,
+  courier: string,
+  trackingNumber: string,
+  trackingUrl: string | null,
+  estimatedDelivery: Date,
+) {
+  try {
+    const resend = getResendClient();
+    const fromEmail = getDefaultFromEmail();
+
+    const pkg = await prisma.orderPackage.findUnique({
+      where: { id: packageId },
+      include: {
+        company: { select: { name: true } },
+        order: {
+          select: {
+            order_code: true,
+            buyer: { select: { name: true, email: true } },
+            shipping: { select: { address: true, department: true, province: true, district: true } },
+          },
+        },
+        items: {
+          include: {
+            product: { select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } } },
+          },
+        },
+      },
+    });
+
+    if (!pkg?.order?.buyer?.email) return;
+
+    const order = pkg.order;
+    const buyer = order.buyer;
+    const shipping = order.shipping;
+
+    const deliveryDateStr = estimatedDelivery.toLocaleDateString("es-PE", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+    });
+
+    const items = pkg.items.map((item) => ({
+      id: item.id,
+      title: item.product.title,
+      price: Number(item.unit_price),
+      quantity: item.quantity,
+      imageUrl: item.product.images[0]?.url || null,
+      sellerName: pkg.company?.name || "Vendedor iubizon",
+      companyName: pkg.company?.name || null,
+    }));
+
+    const data: DispatchEmailData = {
+      orderCode: order.order_code,
+      buyerName: buyer.name || "Cliente",
+      buyerEmail: buyer.email,
+      courier,
+      trackingNumber,
+      trackingUrl,
+      estimatedDelivery: deliveryDateStr,
+      items,
+      shippingAddress: shipping?.address || "",
+      shippingCity: [shipping?.district, shipping?.province, shipping?.department].filter(Boolean).join(", ") || "",
+      companyName: pkg.company?.name || "Vendedor",
+    };
+
+    if (resend) {
+      const { error } = await resend.emails.send({
+        from: fromEmail,
+        to: [data.buyerEmail],
+        subject: `¡Tu pedido #${data.orderCode} está en camino! - iubizon`,
+        react: React.createElement(DispatchNotificationEmail, data),
+      });
+
+      if (error) {
+        console.error(`[Dispatch Email] Error enviando a ${data.buyerEmail}:`, error);
+      } else {
+        console.log(`[Dispatch Email] Notificación de envío enviada a ${data.buyerEmail}`);
+      }
+    }
+  } catch (err) {
+    console.error("[Dispatch Email] Error:", err);
   }
 }
