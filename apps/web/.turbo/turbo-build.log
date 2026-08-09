@@ -1,7 +1,7 @@
 yarn run v1.22.22
 $ next build
 ▲ Next.js 16.3.0 (Turbopack)
-✓ Running next.config.ts took 44ms
+✓ Running next.config.ts took 15ms
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
 
@@ -10,9 +10,9 @@ $ next build
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 2.3s
+✓ Compiled successfully in 2.6s
   Running TypeScript ...
-  Finished TypeScript in 2.3s ...
+  Finished TypeScript in 2.1s ...
   Collecting page data using 7 workers ...
   Generating static pages using 7 workers (0/26) ...
   Generating static pages using 7 workers (6/26) 
@@ -55,7 +55,7 @@ Authentication failed against the database server, the provided database credent
   },
   clientVersion: '7.9.1'
 }
-✓ Generating static pages using 7 workers (26/26) in 302ms
+✓ Generating static pages using 7 workers (26/26) in 270ms
   Finalizing page optimization ...
 
 Route (app)
@@ -124,4 +124,4 @@ Route (app)
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-Done in 7.71s.
+Done in 7.72s.

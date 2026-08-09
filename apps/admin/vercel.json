@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd ../.. && yarn workspace @iubizon/db generate && cd apps/admin && next build",
+  "installCommand": "yarn install --frozen-lockfile",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}
