@@ -19,20 +19,28 @@ jobs:
           node-version: "22"
           cache: "yarn"
           cache-dependency-path: "yarn.lock"
+
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: yarn workspace @iubizon/db generate
+
       - name: Check Prettier
-        run: yarn prettier:check .
+        run: yarn pret:check
+
       - name: Check ESLint
-        run: yarn eslint:check
+        run: yarn lint
+
       - name: Check Types
         run: yarn type:check
+
       - name: Build
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
           DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
           NEXT_PUBLIC_SUPABASE_URL: "https://dummy.supabase.co"
           NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy"
+          NEXT_PUBLIC_TZ: "America/Lima"
+          NEXT_PUBLIC_LOCALE: "es-PE"
         run: yarn build
