@@ -37,13 +37,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (allow symlinks to root .env*)
+# env files
 .env
 .env.*
 !.env.example
-!.env
-!.env.local
-!.env.production
 
 # vercel
 .vercel
