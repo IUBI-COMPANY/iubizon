@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       avatar_url: googleAvatar,
       phone: null,
       bio: null,
+      role: "user",
       is_pro: false,
       rating: 0,
       total_sales: 0,

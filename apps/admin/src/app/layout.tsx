@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/hooks/useAuth";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -16,10 +17,12 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

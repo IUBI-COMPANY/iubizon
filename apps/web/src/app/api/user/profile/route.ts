@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { getRoleByEmail } from "@/lib/services/roles";
 
 export async function GET() {
   try {
@@ -84,6 +85,7 @@ export async function GET() {
             supabaseUser.email?.split("@")[0] ??
             "Usuario",
           avatar_url: googleAvatar,
+          role: getRoleByEmail(supabaseUser.email ?? ""),
         },
       });
     } else if (!profile.avatar_url && googleAvatar) {

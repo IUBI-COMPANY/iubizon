@@ -9,7 +9,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { useTheme } from "@/components/theme-provider.tsx";
 
 const data = {
-  user: { name: "Admin", email: "admin@iubizon.com", avatar: "/avatars/shadcn.jpg" },
   navMain: [
     { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
     { title: "Productos", url: "/dashboard/productos", icon: IconPackage },
@@ -55,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

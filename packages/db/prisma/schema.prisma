@@ -18,6 +18,7 @@ model Profile {
   phone                  String?
   bio                    String?
   location               String?
+  role                   String    @default("user")
   is_pro                 Boolean?  @default(false)
   rating                 Decimal?  @default(0) @db.Decimal(3, 2)
   total_sales            Int?      @default(0)
