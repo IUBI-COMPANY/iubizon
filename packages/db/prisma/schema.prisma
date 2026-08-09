@@ -12,7 +12,7 @@ generator client {
 
 model Profile {
   id                     String    @id @db.Uuid
-  email                  String
+  email                  String    @unique
   name                   String?
   avatar_url             String?
   phone                  String?
