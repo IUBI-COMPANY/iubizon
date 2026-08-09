@@ -8,8 +8,8 @@ export const createServerClient = async () => {
   const cookieStore = await cookies();
 
   return createServerClientSSR(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy.supabase.co",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy-key",
     {
       cookies: {
         getAll() {
