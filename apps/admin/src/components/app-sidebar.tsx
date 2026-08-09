@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { IconDashboard, IconPackage, IconFolders, IconShoppingCart, IconBuildingStore, IconSettings } from "@tabler/icons-react";
+import { IconDashboard, IconPackage, IconFolders, IconShoppingCart, IconBuildingStore, IconSettings, IconWallet } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
@@ -14,6 +14,7 @@ const data = {
     { title: "Productos", url: "/dashboard/productos", icon: IconPackage },
     { title: "Categorías", url: "/dashboard/categorias", icon: IconFolders },
     { title: "Órdenes", url: "/dashboard/ordenes", icon: IconShoppingCart },
+    { title: "Pagos", url: "/dashboard/pagos", icon: IconWallet },
     { title: "Empresas", url: "/dashboard/empresas", icon: IconBuildingStore },
   ],
   navSecondary: [

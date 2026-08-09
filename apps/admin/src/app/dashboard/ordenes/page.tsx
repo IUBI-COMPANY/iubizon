@@ -1,96 +1,221 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useEffect, useState, useCallback } from "react";
+import { IconSearch, IconRefresh, IconTruck, IconCheck, IconX, IconClock, IconPackage, IconChevronDown, IconChevronUp, IconUser, IconMapPin, IconReceipt } from "@tabler/icons-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pendiente", variant: "secondary" },
-  paid: { label: "Pagado", variant: "outline" },
-  shipped: { label: "Enviado", variant: "default" },
-  delivered: { label: "Entregado", variant: "default" },
-  completed: { label: "Completado", variant: "default" },
-  cancelled: { label: "Cancelado", variant: "destructive" },
+type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "completed" | "cancelled";
+
+const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: typeof IconClock }> = {
+  pending:   { label: "Pendiente", color: "bg-amber-100 text-amber-800 border-amber-200", icon: IconClock },
+  paid:      { label: "Pagado", color: "bg-blue-100 text-blue-800 border-blue-200", icon: IconCheck },
+  shipped:   { label: "Enviado", color: "bg-purple-100 text-purple-800 border-purple-200", icon: IconTruck },
+  delivered: { label: "Entregado", color: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: IconPackage },
+  completed: { label: "Completado", color: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: IconCheck },
+  cancelled: { label: "Cancelado", color: "bg-red-100 text-red-800 border-red-200", icon: IconX },
 };
+
+const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
+  pending: "shipped",
+  paid: "shipped",
+  shipped: "delivered",
+  delivered: "completed",
+};
+
+function formatMoney(v: unknown): string {
+  const n = Number(v);
+  return isNaN(n) ? "0.00" : n.toLocaleString("es-PE", { minimumFractionDigits: 2 });
+}
+
+function formatDate(iso: string | null) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  return d.toLocaleDateString("es-PE", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<OrderStatus | "">("");
+  const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<{ action: string; id: string; current: OrderStatus; next?: OrderStatus } | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (statusFilter) params.set("status", statusFilter);
+    if (search) params.set("search", search);
     const res = await fetch(`/api/orders?${params}`);
     const data = await res.json();
     setOrders(data.orders || []);
     setLoading(false);
-  };
+  }, [statusFilter, search]);
 
   useEffect(() => { fetchOrders(); }, [statusFilter]);
 
-  const changeStatus = async (id: string, status: string) => {
-    await fetch("/api/orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status }) });
+  const executeAction = async () => {
+    if (!confirm) return;
+    if (confirm.action === "cancel") {
+      await fetch("/api/orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: confirm.id, status: "cancelled" }) });
+    } else if (confirm.next) {
+      await fetch("/api/orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: confirm.id, status: confirm.next }) });
+    }
+    setConfirm(null);
     fetchOrders();
   };
 
+  const statusCounts = orders.reduce((acc: Record<string, number>, o) => {
+    acc[o.status] = (acc[o.status] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Órdenes</h1>
-        <p className="text-muted-foreground">Gestiona todas las órdenes de compra</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Órdenes</h1>
+          <p className="text-muted-foreground text-sm">{orders.length} órdenes encontradas</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={fetchOrders}>
+          <IconRefresh className="w-4 h-4 mr-1" />
+          Actualizar
+        </Button>
       </div>
-      <div className="flex gap-2">
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">Todas</SelectItem>
-            {Object.entries(statusConfig).map(([k, v]) => (
-              <SelectItem key={k} value={k}>{v.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+
+      <div className="flex gap-2 flex-wrap items-center">
+        <Input placeholder="Buscar por código o comprador..." value={search} onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && fetchOrders()} className="max-w-xs" />
+        <Button variant="outline" size="sm" onClick={fetchOrders}>
+          <IconSearch className="w-4 h-4" />
+        </Button>
       </div>
-      <div className="space-y-4">
-        {loading ? <p className="text-muted-foreground p-4">Cargando...</p> : orders.map((order: any) => {
-          const sc = statusConfig[order.status] || { label: order.status, variant: "outline" as const };
-          return (
-            <Card key={order.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">Orden #{order.order_code}</CardTitle>
-                    <p className="text-xs text-muted-foreground">{order.buyer?.name || "Anónimo"} — {order.buyer?.email}</p>
+
+      <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as OrderStatus | "")}>
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="">Todas ({orders.length})</TabsTrigger>
+          {Object.entries(STATUS_CONFIG).map(([k, v]) => (
+            <TabsTrigger key={k} value={k} className="gap-1">
+              <v.icon className="w-3.5 h-3.5" />
+              {v.label} ({statusCounts[k] || 0})
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><IconRefresh className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No hay órdenes con este filtro</div>
+      ) : (
+        <div className="space-y-3">
+          {orders.map((order: any) => {
+            const sc = STATUS_CONFIG[order.status as OrderStatus] || STATUS_CONFIG.pending;
+            const next = NEXT_STATUS[order.status as OrderStatus];
+            const isExpanded = expandedId === order.id;
+            const items = order.packages?.flatMap((p: any) => p.items?.map((i: any) => ({ ...i, company: p.company?.name }))) || [];
+
+            return (
+              <Card key={order.id} className="overflow-hidden">
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : order.id)}>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Badge variant="outline" className={`font-mono text-xs shrink-0 ${sc.color}`}>
+                      #{order.order_code}
+                    </Badge>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <IconUser className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-sm font-medium truncate">{order.buyer?.name || "Anónimo"}</span>
+                        <span className="text-xs text-muted-foreground truncate">{order.buyer?.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-sm font-bold">S/ {formatMoney(order.total_amount)}</span>
+                        <span className="text-xs text-muted-foreground">· {order.packages?.length || 0} paquete(s) · {items.length} producto(s)</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={sc.variant}>{sc.label}</Badge>
-                    <Select value={order.status} onValueChange={(v) => changeStatus(order.id, v)}>
-                      <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(statusConfig).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge className={sc.color}><sc.icon className="w-3 h-3 mr-1" />{sc.label}</Badge>
+                    {next && (() => {
+                      const NextIconComp = NEXT_ICON[order.status] || IconCheck;
+                      return (
+                        <Button size="sm" variant="outline" className="h-7 text-xs"
+                          onClick={(e) => { e.stopPropagation(); setConfirm({ action: "advance", id: order.id, current: order.status, next }); }}>
+                          <NextIconComp className="w-3 h-3 mr-1" />
+                          {STATUS_CONFIG[next].label}
+                        </Button>
+                      );
+                    })()}
+                    {order.status !== "cancelled" && order.status !== "completed" && (
+                      <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setConfirm({ action: "cancel", id: order.id, current: order.status }); }}>
+                        <IconX className="w-3 h-3" />
+                      </Button>
+                    )}
+                    {isExpanded ? <IconChevronUp className="w-4 h-4 text-muted-foreground" /> : <IconChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm">Total: <strong>S/ {Number(order.total_amount).toFixed(2)}</strong> — {order.packages?.length || 0} paquete(s)</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {order.shipping?.address && `Envío: ${order.shipping.address}`}
-                  {order.invoice?.type && ` — ${order.invoice.type.toUpperCase()}: ${order.invoice.number}`}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
-        {!loading && orders.length === 0 && <p className="text-muted-foreground p-4">No hay órdenes</p>}
-      </div>
+
+                {isExpanded && (
+                  <CardContent className="border-t bg-muted/30 px-4 py-3 space-y-3">
+                    {order.shipping?.address && (
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <IconMapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>{order.shipping.address}{order.shipping.department ? `, ${order.shipping.department}` : ""}</span>
+                      </div>
+                    )}
+                    {order.invoice?.type && (
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                        <IconReceipt className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span>{order.invoice.type.toUpperCase()}: {order.invoice.number} — {order.invoice.legal_name}</span>
+                      </div>
+                    )}
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Productos</p>
+                      {items.map((item: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between text-sm bg-background rounded-md px-3 py-1.5">
+                          <span className="truncate flex-1">{item.product?.title || item.title || "Producto"}</span>
+                          <span className="text-muted-foreground text-xs ml-2">x{item.quantity}</span>
+                          <span className="font-medium ml-3">S/ {formatMoney(item.subtotal || item.unit_price * item.quantity)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-between text-sm font-medium pt-1 border-t">
+                      <span>Total</span>
+                      <span>S/ {formatMoney(order.total_amount)}</span>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      <ConfirmModal
+        open={!!confirm}
+        onOpenChange={() => setConfirm(null)}
+        title={confirm?.action === "cancel" ? "Cancelar orden" : `Cambiar estado a ${confirm?.next ? STATUS_CONFIG[confirm.next].label : ""}`}
+        description={confirm?.action === "cancel"
+          ? `¿Estás seguro de cancelar la orden #${orders.find(o => o.id === confirm?.id)?.order_code}? Esta acción no se puede deshacer.`
+          : `¿Confirmas el cambio de estado de la orden #${orders.find(o => o.id === confirm?.id)?.order_code}?`}
+        confirmLabel={confirm?.action === "cancel" ? "Sí, cancelar" : "Confirmar cambio"}
+        variant={confirm?.action === "cancel" ? "destructive" : "default"}
+        onConfirm={executeAction}
+      />
     </div>
   );
 }
+
+const NEXT_ICON: Record<string, typeof IconTruck> = {
+  pending: IconTruck,
+  paid: IconTruck,
+  shipped: IconPackage,
+  delivered: IconCheck,
+};
