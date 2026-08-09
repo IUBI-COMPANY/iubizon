@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
+    "vercel-build": "cd ../.. && yarn workspace @iubizon/db generate && cd apps/admin && next build",
     "start": "next start -p 3001",
     "lint": "eslint src --ext .ts,.tsx",
     "eslint:check": "eslint src",

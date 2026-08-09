@@ -1,8 +1,7 @@
 yarn run v1.22.22
 $ next build
 ▲ Next.js 16.3.0 (Turbopack)
-- Environments: .env.local, .env.production
-✓ Running next.config.ts took 15ms
+✓ Running next.config.ts took 44ms
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
 
@@ -11,15 +10,52 @@ $ next build
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 1717ms
+✓ Compiled successfully in 2.3s
   Running TypeScript ...
-  Finished TypeScript in 2.8s ...
+  Finished TypeScript in 2.3s ...
   Collecting page data using 7 workers ...
   Generating static pages using 7 workers (0/26) ...
   Generating static pages using 7 workers (6/26) 
   Generating static pages using 7 workers (12/26) 
   Generating static pages using 7 workers (19/26) 
-✓ Generating static pages using 7 workers (26/26) in 1353ms
+prisma:error 
+Invalid `prisma.product.findMany()` invocation:
+
+
+Authentication failed against the database server, the provided database credentials for `postgres` are not valid
+[Sitemap] Error fetching products with Prisma: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.product.findMany()` invocation:
+
+
+Authentication failed against the database server, the provided database credentials for `postgres` are not valid
+    at async o (src/app/sitemap.ts:42:22)
+    at async s (src/app/sitemap--route-entry.js:14:18)
+  40 |
+  41 |   try {
+> 42 |     const products = await prisma.product.findMany({
+     |                      ^
+  43 |       where: { status: "active" },
+  44 |       select: { id: true, updated_at: true },
+  45 |     }); {
+  code: 'P1000',
+  meta: {
+    modelName: 'Product',
+    driverAdapterError: Error [DriverAdapterError]: AuthenticationFailed
+        at async o (src/app/sitemap.ts:42:22)
+        at async s (src/app/sitemap--route-entry.js:14:18)
+      40 |
+      41 |   try {
+    > 42 |     const products = await prisma.product.findMany({
+         |                      ^
+      43 |       where: { status: "active" },
+      44 |       select: { id: true, updated_at: true },
+      45 |     }); {
+      [cause]: [Object]
+    }
+  },
+  clientVersion: '7.9.1'
+}
+✓ Generating static pages using 7 workers (26/26) in 302ms
   Finalizing page optimization ...
 
 Route (app)
@@ -88,4 +124,4 @@ Route (app)
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-Done in 8.59s.
+Done in 7.71s.
