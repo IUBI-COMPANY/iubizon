@@ -18,7 +18,11 @@ export async function GET(req: Request) {
   const [products, total] = await Promise.all([
     db.product.findMany({
       where,
-      include: { category: { select: { name: true } }, company: { select: { name: true } }, images: { take: 1, orderBy: { position: "asc" } } },
+      include: {
+        category: { select: { name: true } },
+        company: { select: { name: true } },
+        images: { take: 1, orderBy: { position: "asc" } },
+      },
       orderBy: { updated_at: "desc" },
       take: 50,
     }),

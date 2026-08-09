@@ -5,7 +5,14 @@ import { IconCheck, IconX } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
 export default function CompaniesPage() {
@@ -23,10 +30,16 @@ export default function CompaniesPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCompanies(); }, []);
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   const toggleVerification = async (id: string, verified: boolean) => {
-    await fetch("/api/companies", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, is_verified: !verified }) });
+    await fetch("/api/companies", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, is_verified: !verified }),
+    });
     fetchCompanies();
   };
 
@@ -34,14 +47,26 @@ export default function CompaniesPage() {
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
-        <p className="text-muted-foreground">Gestiona las empresas registradas</p>
+        <p className="text-muted-foreground">
+          Gestiona las empresas registradas
+        </p>
       </div>
       <div className="flex gap-2">
-        <Input placeholder="Buscar empresa..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && fetchCompanies()} className="max-w-xs" />
-        <Button variant="outline" onClick={fetchCompanies}>Buscar</Button>
+        <Input
+          placeholder="Buscar empresa..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && fetchCompanies()}
+          className="max-w-xs"
+        />
+        <Button variant="outline" onClick={fetchCompanies}>
+          Buscar
+        </Button>
       </div>
       <Card>
-        <CardHeader><CardTitle>Empresas ({companies.length})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Empresas ({companies.length})</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -57,24 +82,48 @@ export default function CompaniesPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center h-24">Cargando...</TableCell></TableRow>
-              ) : companies.map((c: any) => (
-                <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{c.legal_name || "-"}</TableCell>
-                  <TableCell className="text-sm">{c.email}</TableCell>
-                  <TableCell className="text-center"><Badge variant="secondary">{c._count?.products ?? 0}</Badge></TableCell>
-                  <TableCell className="text-center"><Badge variant="outline">{c._count?.companyMembers ?? 0}</Badge></TableCell>
-                  <TableCell className="text-center">
-                    {c.is_verified ? <IconCheck className="h-4 w-4 text-emerald-600 inline" /> : <IconX className="h-4 w-4 text-red-500 inline" />}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => toggleVerification(c.id, c.is_verified)}>
-                      {c.is_verified ? "Desmarcar" : "Verificar"}
-                    </Button>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center h-24">
+                    Cargando...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                companies.map((c: any) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {c.legal_name || "-"}
+                    </TableCell>
+                    <TableCell className="text-sm">{c.email}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="secondary">
+                        {c._count?.products ?? 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline">
+                        {c._count?.companyMembers ?? 0}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {c.is_verified ? (
+                        <IconCheck className="h-4 w-4 text-emerald-600 inline" />
+                      ) : (
+                        <IconX className="h-4 w-4 text-red-500 inline" />
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleVerification(c.id, c.is_verified)}
+                      >
+                        {c.is_verified ? "Desmarcar" : "Verificar"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

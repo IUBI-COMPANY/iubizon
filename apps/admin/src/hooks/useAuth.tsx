@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -8,7 +15,10 @@ interface AuthContextType {
   user: SupabaseUser | null;
   profile: { role: string } | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -26,7 +36,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const init = async () => {
       // Get initial session (onAuthStateChange might not fire on first load)
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!mounted) return;
 
       if (session?.user) {
@@ -41,7 +53,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_, session) => {
       if (session?.user) {
         setSupabaseUser(session.user);
         try {
@@ -61,10 +75,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [supabase]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    return { error: error?.message || null };
-  }, [supabase]);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      return { error: error?.message || null };
+    },
+    [supabase],
+  );
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
@@ -80,7 +100,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [supabase]);
 
   return (
-    <AuthContext.Provider value={{ user: supabaseUser, profile, isLoading, signIn, signOut, signInWithGoogle }}>
+    <AuthContext.Provider
+      value={{
+        user: supabaseUser,
+        profile,
+        isLoading,
+        signIn,
+        signOut,
+        signInWithGoogle,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

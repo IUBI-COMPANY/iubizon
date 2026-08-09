@@ -1,28 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IconPackage, IconShoppingCart, IconBuildingStore, IconCoin } from "@tabler/icons-react";
+import {
+  IconPackage,
+  IconShoppingCart,
+  IconBuildingStore,
+  IconCoin,
+} from "@tabler/icons-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
-    fetch("/api/dashboard").then(r => r.json()).then(setStats);
+    fetch("/api/dashboard")
+      .then((r) => r.json())
+      .then(setStats);
   }, []);
 
   const kpis = [
-    { title: "Productos Activos", value: stats?.products?.active ?? "-", icon: IconPackage, color: "text-blue-600" },
-    { title: "Órdenes Pendientes", value: stats?.orders?.pending ?? "-", icon: IconShoppingCart, color: "text-amber-600" },
-    { title: "Empresas", value: stats?.companies?.total ?? "-", icon: IconBuildingStore, color: "text-emerald-600" },
-    { title: "Ingresos Totales", value: stats?.revenue?.total ? `S/ ${stats.revenue.total.toLocaleString("es-PE")}` : "-", icon: IconCoin, color: "text-violet-600" },
+    {
+      title: "Productos Activos",
+      value: stats?.products?.active ?? "-",
+      icon: IconPackage,
+      color: "text-blue-600",
+    },
+    {
+      title: "Órdenes Pendientes",
+      value: stats?.orders?.pending ?? "-",
+      icon: IconShoppingCart,
+      color: "text-amber-600",
+    },
+    {
+      title: "Empresas",
+      value: stats?.companies?.total ?? "-",
+      icon: IconBuildingStore,
+      color: "text-emerald-600",
+    },
+    {
+      title: "Ingresos Totales",
+      value: stats?.revenue?.total
+        ? `S/ ${stats.revenue.total.toLocaleString("es-PE")}`
+        : "-",
+      icon: IconCoin,
+      color: "text-violet-600",
+    },
   ];
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Panel de administración de iubizon</p>
+        <p className="text-muted-foreground">
+          Panel de administración de iubizon
+        </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
@@ -31,7 +62,9 @@ export default function DashboardPage() {
               <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
               <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
             </CardHeader>
-            <CardContent><div className="text-2xl font-bold">{kpi.value}</div></CardContent>
+            <CardContent>
+              <div className="text-2xl font-bold">{kpi.value}</div>
+            </CardContent>
           </Card>
         ))}
       </div>

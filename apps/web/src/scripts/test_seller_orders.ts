@@ -14,7 +14,9 @@ async function main() {
   const companyIds = memberships.map((m) => m.company_id);
 
   if (companyIds.length === 0) {
-    console.log("No tienes empresas. Verifica que exista una empresa personal.");
+    console.log(
+      "No tienes empresas. Verifica que exista una empresa personal.",
+    );
     process.exit(0);
   }
 

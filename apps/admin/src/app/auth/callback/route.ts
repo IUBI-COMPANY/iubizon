@@ -7,7 +7,10 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard";
 
   if (!code) {
-    console.error("[Admin Callback] No code, all params:", Object.fromEntries(searchParams));
+    console.error(
+      "[Admin Callback] No code, all params:",
+      Object.fromEntries(searchParams),
+    );
     return NextResponse.redirect(`${origin}/auth/login?error=no_code`);
   }
 

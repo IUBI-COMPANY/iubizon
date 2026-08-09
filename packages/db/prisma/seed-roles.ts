@@ -22,12 +22,17 @@ async function main() {
   for (const email of ADMIN_EMAILS) {
     const profile = await prisma.profile.findFirst({ where: { email } });
     if (profile && profile.role !== "admin") {
-      await prisma.profile.update({ where: { id: profile.id }, data: { role: "admin" } });
+      await prisma.profile.update({
+        where: { id: profile.id },
+        data: { role: "admin" },
+      });
       console.log(`✅ ${email} → admin`);
     } else if (profile) {
       console.log(`⏭️ ${email} ya es admin`);
     } else {
-      console.log(`⚠️ ${email} no tiene perfil aún (se asignará al registrarse)`);
+      console.log(
+        `⚠️ ${email} no tiene perfil aún (se asignará al registrarse)`,
+      );
     }
   }
   await prisma.$disconnect();

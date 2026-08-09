@@ -4,11 +4,30 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const statusMap: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   active: { label: "Activo", variant: "default" },
   pending: { label: "Pendiente", variant: "secondary" },
   sold: { label: "Vendido", variant: "outline" },
@@ -32,19 +51,33 @@ export default function ProductsPage() {
     setLoading(false);
   }, [status, search]);
 
-  useEffect(() => { fetchProducts(); }, [status]);
+  useEffect(() => {
+    fetchProducts();
+  }, [status]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
-        <p className="text-muted-foreground">Gestiona todos los productos del marketplace</p>
+        <p className="text-muted-foreground">
+          Gestiona todos los productos del marketplace
+        </p>
       </div>
       <div className="flex gap-2 flex-wrap items-center">
-        <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && fetchProducts()} className="max-w-xs" />
-        <Button variant="outline" onClick={() => fetchProducts()}>Buscar</Button>
+        <Input
+          placeholder="Buscar..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && fetchProducts()}
+          className="max-w-xs"
+        />
+        <Button variant="outline" onClick={() => fetchProducts()}>
+          Buscar
+        </Button>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Todos</SelectItem>
             <SelectItem value="active">Activo</SelectItem>
@@ -55,7 +88,9 @@ export default function ProductsPage() {
         </Select>
       </div>
       <Card>
-        <CardHeader><CardTitle>Productos ({products.length})</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Productos ({products.length})</CardTitle>
+        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -70,25 +105,56 @@ export default function ProductsPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center h-24">Cargando...</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center h-24">
+                    Cargando...
+                  </TableCell>
+                </TableRow>
               ) : products.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center h-24">No hay productos</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center h-24">
+                    No hay productos
+                  </TableCell>
+                </TableRow>
               ) : (
                 products.map((p: any) => {
-                  const s = statusMap[p.status] || { label: p.status, variant: "outline" as const };
+                  const s = statusMap[p.status] || {
+                    label: p.status,
+                    variant: "outline" as const,
+                  };
                   return (
                     <TableRow key={p.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          {p.images?.[0]?.url ? <img src={p.images[0].url} alt={p.title} className="h-10 w-10 rounded object-cover" /> : <div className="h-10 w-10 rounded bg-muted" />}
-                          <span className="font-medium truncate max-w-[200px]">{p.title}</span>
+                          {p.images?.[0]?.url ? (
+                            <img
+                              src={p.images[0].url}
+                              alt={p.title}
+                              className="h-10 w-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-muted" />
+                          )}
+                          <span className="font-medium truncate max-w-[200px]">
+                            {p.title}
+                          </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.category?.name || "-"}</TableCell>
-                      <TableCell className="text-sm">{p.company?.name || "Particular"}</TableCell>
-                      <TableCell className="text-right">S/ {Number(p.price).toFixed(2)}</TableCell>
-                      <TableCell className="text-center">{p.stock ?? 1}</TableCell>
-                      <TableCell className="text-center"><Badge variant={s.variant}>{s.label}</Badge></TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {p.category?.name || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {p.company?.name || "Particular"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        S/ {Number(p.price).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {p.stock ?? 1}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant={s.variant}>{s.label}</Badge>
+                      </TableCell>
                     </TableRow>
                   );
                 })

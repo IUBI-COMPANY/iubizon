@@ -9,7 +9,12 @@ export async function GET(req: Request) {
 
   if (type === "transactions") {
     const where: any = {};
-    const txs = await db.paymentTransaction.findMany({ where, orderBy: { created_at: "desc" }, take: 50, include: { orders: { select: { order_code: true } } } });
+    const txs = await db.paymentTransaction.findMany({
+      where,
+      orderBy: { created_at: "desc" },
+      take: 50,
+      include: { orders: { select: { order_code: true } } },
+    });
     return NextResponse.json({ transactions: txs });
   }
 
@@ -24,10 +29,20 @@ export async function GET(req: Request) {
       where,
       orderBy: { created_at: "desc" },
       take: 50,
-      include: { company: { select: { id: true, name: true, email: true, bank_account: true } } },
+      include: {
+        company: {
+          select: { id: true, name: true, email: true, bank_account: true },
+        },
+      },
     }),
-    db.sellerPayout.aggregate({ where: { status: "pending" }, _sum: { net_amount: true } }),
-    db.sellerPayout.aggregate({ where: { status: "paid" }, _sum: { net_amount: true } }),
+    db.sellerPayout.aggregate({
+      where: { status: "pending" },
+      _sum: { net_amount: true },
+    }),
+    db.sellerPayout.aggregate({
+      where: { status: "paid" },
+      _sum: { net_amount: true },
+    }),
   ]);
 
   return NextResponse.json({
@@ -36,14 +51,15 @@ export async function GET(req: Request) {
       totalPending: Number(totalPending._sum.net_amount || 0),
       totalPaid: Number(totalPaid._sum.net_amount || 0),
       count: payouts.length,
-      pendingCount: payouts.filter(p => p.status === "pending").length,
-      paidCount: payouts.filter(p => p.status === "paid").length,
+      pendingCount: payouts.filter((p) => p.status === "pending").length,
+      paidCount: payouts.filter((p) => p.status === "paid").length,
     },
   });
 }
 
 export async function PATCH(req: Request) {
-  const { id, status, payment_method, reference_code, notes } = await req.json();
+  const { id, status, payment_method, reference_code, notes } =
+    await req.json();
   const data: any = {};
   if (status) data.status = status;
   if (payment_method) data.payment_method = payment_method;

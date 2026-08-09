@@ -2,7 +2,14 @@ import { NextResponse } from "next/server";
 import { db } from "@iubizon/db";
 
 export async function GET() {
-  const [totalProducts, activeProducts, totalOrders, pendingOrders, totalCompanies, totalRevenue] = await Promise.all([
+  const [
+    totalProducts,
+    activeProducts,
+    totalOrders,
+    pendingOrders,
+    totalCompanies,
+    totalRevenue,
+  ] = await Promise.all([
     db.product.count(),
     db.product.count({ where: { status: "active" } }),
     db.order.count(),

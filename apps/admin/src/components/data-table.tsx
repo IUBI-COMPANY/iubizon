@@ -98,7 +98,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {

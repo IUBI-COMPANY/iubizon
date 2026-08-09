@@ -1,11 +1,27 @@
 "use client";
 
 import * as React from "react";
-import { IconDashboard, IconPackage, IconFolders, IconShoppingCart, IconBuildingStore, IconSettings, IconWallet } from "@tabler/icons-react";
+import {
+  IconDashboard,
+  IconPackage,
+  IconFolders,
+  IconShoppingCart,
+  IconBuildingStore,
+  IconSettings,
+  IconWallet,
+} from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { useTheme } from "@/components/theme-provider.tsx";
 
 const data = {
@@ -18,7 +34,11 @@ const data = {
     { title: "Categorías", url: "/dashboard/categorias", icon: IconFolders },
   ],
   navSecondary: [
-    { title: "Configuración", url: "/dashboard/configuracion", icon: IconSettings },
+    {
+      title: "Configuración",
+      url: "/dashboard/configuracion",
+      icon: IconSettings,
+    },
   ],
 };
 

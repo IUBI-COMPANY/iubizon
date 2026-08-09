@@ -16,7 +16,7 @@
     "type:check": "turbo type:check",
     "type:check:web": "yarn workspace iubizon-web type:check",
     "prettier:check": "yarn workspaces run prettier:check",
-    "prettier:fmt": "yarn workspaces run prettier:format",
+    "prettier:format": "yarn workspaces run prettier:format",
     "db:generate": "yarn workspace @iubizon/db generate",
     "db:migrate": "yarn workspace @iubizon/db db:migrate:dev",
     "db:push": "yarn workspace @iubizon/db db:push",
