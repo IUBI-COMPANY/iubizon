@@ -1,9 +1,14 @@
-import { Outlet } from "react-router-dom";
-import { AppSidebar } from "@/components/app-sidebar.tsx";
-import { SiteHeader } from "@/components/site-header.tsx";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar.tsx";
+"use client";
 
-export default function BaseLayout() {
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <SidebarProvider
       style={
@@ -18,7 +23,7 @@ export default function BaseLayout() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <Outlet />
+            {children}
           </div>
         </div>
       </SidebarInset>
