@@ -267,7 +267,21 @@ export default function PagosPage() {
                         {p.status === "pending" && (
                           <Button
                             size="sm"
-                            className="h-7 text-xs bg-primary"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markAsProcessing(p.id);
+                            }}
+                          >
+                            <IconTruck className="w-3 h-3 mr-1" />
+                            En Proceso
+                          </Button>
+                        )}
+                        {p.status === "processing" && (
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
                             onClick={(e) => {
                               e.stopPropagation();
                               setConfirm({
@@ -382,6 +396,10 @@ export default function PagosPage() {
                               <IconTruck className="w-3 h-3 mr-1" />
                               En Proceso
                             </Button>
+                          </div>
+                        )}
+                        {p.status === "processing" && (
+                          <div className="flex gap-2 pt-2">
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"

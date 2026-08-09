@@ -65,7 +65,7 @@ export async function PATCH(req: Request) {
   if (payment_method) data.payment_method = payment_method;
   if (reference_code) data.reference_code = reference_code;
   if (notes !== undefined) data.notes = notes;
-  if (status === "paid" || status === "processing") data.paid_at = new Date();
+  if (status === "paid") data.paid_at = new Date();
 
   await db.sellerPayout.update({ where: { id }, data });
   return NextResponse.json({ success: true });
