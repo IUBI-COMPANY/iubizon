@@ -46,7 +46,7 @@ model Company {
   name         String
   slug         String    @unique
   legal_name   String
-  tax_id       String?
+  tax_id       String?   @unique
   logo_url     String?
   description  String?
   bank_account String?
@@ -285,6 +285,7 @@ model OrderPackage {
 
   @@index([order_id])
   @@index([company_id])
+  @@unique([order_id, company_id])
   @@map("order_packages")
 }
 
@@ -310,6 +311,7 @@ model OrderItem {
 
   @@index([package_id])
   @@index([product_id])
+  @@unique([package_id, product_id])
   @@map("order_items")
 }
 
@@ -333,6 +335,7 @@ model Review {
   @@index([product_id])
   @@index([buyer_id])
   @@index([order_id])
+  @@unique([buyer_id, product_id])
   @@map("reviews")
 }
 
@@ -360,6 +363,7 @@ model SellerPayout {
 
   @@index([company_id])
   @@index([package_id])
+  @@unique([package_id])
   @@map("seller_payouts")
 }
 
