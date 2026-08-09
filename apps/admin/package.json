@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "type:check": "tsc --noEmit"
+    "eslint:check": "eslint src",
+    "type:check": "tsc --noEmit",
+    "prettier:check": "prettier --check .",
+    "prettier:format": "prettier --write ."
   },
   "dependencies": {
     "@iubizon/db": "0.1.0",

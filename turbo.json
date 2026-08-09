@@ -6,10 +6,9 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
+    "lint": {},
     "type:check": {},
+    "prettier:check": {},
     "dev": {
       "cache": false,
       "persistent": true

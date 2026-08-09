@@ -10,7 +10,9 @@
     "db:migrate:prod": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "prettier:check": "prettier --check .",
+    "prettier:format": "prettier --write ."
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.0",
