@@ -8,7 +8,7 @@ const content = `# iubizon - Tecnología para educar y trabajar
 
 ## ¿Qué es iubizon?
 
-iubizon es un marketplace que une en una sola plataforma la educación y la tecnología multimedial. Brinda soluciones tanto a empresas como a clientes finales: aquí se compran y se publican pedidos, con la facilidad de armar kits y paquetes tecnológicos a la medida de cada necesidad.
+iubizon es un marketplace que une en una sola plataforma la educación y la tecnología multimedial. Brinda soluciones tanto a empresas como a clientes finales: aquí se compran y se publican pedidos, con la facilidad de armar kits y paquetes tecnológicos a la medida de cada necesidad del cliente.
 
 iubizon opera como una plataforma tecnológica conector entre empresas comercializadoras, marcas y compradores. Los precios están expresados en Soles (S/) e incluyen los impuestos de ley (IGV) salvo que se especifique lo contrario, y las transacciones se procesan a través de pasarelas de pago reguladas.
 
