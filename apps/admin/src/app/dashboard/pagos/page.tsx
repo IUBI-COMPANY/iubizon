@@ -10,7 +10,6 @@ import {
   IconClock,
   IconTruck,
   IconX,
-  IconBuildingBank,
   IconCalendar,
   IconChevronDown,
   IconChevronUp,
@@ -98,7 +97,7 @@ export default function PagosPage() {
 
   useEffect(() => {
     fetchData();
-  }, [statusFilter]);
+  }, [statusFilter, fetchData]);
 
   const markAsPaid = async () => {
     if (!confirm) return;

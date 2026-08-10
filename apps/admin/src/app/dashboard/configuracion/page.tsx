@@ -27,8 +27,6 @@ const jsonSchema = z.string().refine(
   { message: "JSON inválido" },
 );
 
-type SettingForm = { key: string; value: unknown; description: string };
-
 export default function ConfigPage() {
   const [settings, setSettings] = useState<any[]>([]);
   const [editing, setEditing] = useState<string | null>(null);

@@ -16,7 +16,13 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch("/api/dashboard")
       .then((r) => r.text())
-      .then((text) => { try { return JSON.parse(text); } catch { return null; } })
+      .then((text) => {
+        try {
+          return JSON.parse(text);
+        } catch {
+          return null;
+        }
+      })
       .then(setStats)
       .catch(() => {});
   }, []);

@@ -32,6 +32,7 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     fetchCompanies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleVerification = async (id: string, verified: boolean) => {

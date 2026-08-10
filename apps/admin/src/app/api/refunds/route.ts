@@ -44,18 +44,31 @@ export async function GET(req: Request) {
     });
 
     const itemIds = refunds.flatMap((r) => r.items.map((i) => i.order_item_id));
-    const orderItemMap = new Map<string, { title: string; image: string | null }>();
+    const orderItemMap = new Map<
+      string,
+      { title: string; image: string | null }
+    >();
     if (itemIds.length > 0) {
       const orderItems = await db.orderItem.findMany({
         where: { id: { in: itemIds } },
         include: {
           product: {
-            select: { title: true, images: { orderBy: { position: "asc" }, take: 1, select: { url: true } } },
+            select: {
+              title: true,
+              images: {
+                orderBy: { position: "asc" },
+                take: 1,
+                select: { url: true },
+              },
+            },
           },
         },
       });
       for (const oi of orderItems) {
-        orderItemMap.set(oi.id, { title: oi.product.title, image: oi.product.images[0]?.url || null });
+        orderItemMap.set(oi.id, {
+          title: oi.product.title,
+          image: oi.product.images[0]?.url || null,
+        });
       }
     }
 
@@ -68,12 +81,15 @@ export async function GET(req: Request) {
       status: r.status,
       reason: r.reason,
       refund_amount: Number(r.refund_amount),
-      return_shipping_cost: r.return_shipping_cost ? Number(r.return_shipping_cost) : null,
+      return_shipping_cost: r.return_shipping_cost
+        ? Number(r.return_shipping_cost)
+        : null,
       return_shipping_paid_by: r.return_shipping_paid_by,
       return_address: r.return_address,
       buyer_return_tracking: r.buyer_return_tracking,
       return_courier: r.return_courier,
-      return_estimated_delivery: r.return_estimated_delivery?.toISOString() ?? null,
+      return_estimated_delivery:
+        r.return_estimated_delivery?.toISOString() ?? null,
       return_tracking_url: r.return_tracking_url,
       admin_notes: r.admin_notes,
       processed_at: r.processed_at?.toISOString() ?? null,
@@ -93,7 +109,14 @@ export async function GET(req: Request) {
       }),
     }));
 
-    const [pendingCount, approvedCount, inTransitCount, returnedCount, refundedCount, rejectedCount] = await Promise.all([
+    const [
+      pendingCount,
+      approvedCount,
+      inTransitCount,
+      returnedCount,
+      refundedCount,
+      rejectedCount,
+    ] = await Promise.all([
       db.refundRequest.count({ where: { status: "pending" } }),
       db.refundRequest.count({ where: { status: "approved" } }),
       db.refundRequest.count({ where: { status: "return_in_transit" } }),
@@ -122,22 +145,40 @@ export async function PATCH(req: Request) {
   try {
     const body = await req.json();
     const { action, refundId } = body;
-    if (!refundId) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    if (!refundId)
+      return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
     if (action === "approve") {
-      const { return_address, return_shipping_cost, return_shipping_paid_by, admin_notes } = body;
-      if (!return_address?.trim()) return NextResponse.json({ error: "Dirección requerida" }, { status: 400 });
+      const {
+        return_address,
+        return_shipping_cost,
+        return_shipping_paid_by,
+        admin_notes,
+      } = body;
+      if (!return_address?.trim())
+        return NextResponse.json(
+          { error: "Dirección requerida" },
+          { status: 400 },
+        );
 
-      const refund = await db.refundRequest.findUnique({ where: { id: refundId } });
-      if (!refund) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
-      if (refund.status !== "pending") return NextResponse.json({ error: "Solo solicitudes pendientes" }, { status: 400 });
+      const refund = await db.refundRequest.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund)
+        return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+      if (refund.status !== "pending")
+        return NextResponse.json(
+          { error: "Solo solicitudes pendientes" },
+          { status: 400 },
+        );
 
       await db.refundRequest.update({
         where: { id: refundId },
         data: {
           status: "approved",
           return_address: return_address.trim(),
-          return_shipping_cost: return_shipping_cost != null ? Number(return_shipping_cost) : null,
+          return_shipping_cost:
+            return_shipping_cost != null ? Number(return_shipping_cost) : null,
           return_shipping_paid_by: return_shipping_paid_by || "buyer",
           admin_notes: admin_notes?.trim() || null,
         },
@@ -155,13 +196,23 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "reject") {
-      const refund = await db.refundRequest.findUnique({ where: { id: refundId } });
-      if (!refund) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
-      if (refund.status !== "pending") return NextResponse.json({ error: "Solo solicitudes pendientes" }, { status: 400 });
+      const refund = await db.refundRequest.findUnique({
+        where: { id: refundId },
+      });
+      if (!refund)
+        return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+      if (refund.status !== "pending")
+        return NextResponse.json(
+          { error: "Solo solicitudes pendientes" },
+          { status: 400 },
+        );
 
       await db.refundRequest.update({
         where: { id: refundId },
-        data: { status: "rejected", admin_notes: body.admin_notes?.trim() || null },
+        data: {
+          status: "rejected",
+          admin_notes: body.admin_notes?.trim() || null,
+        },
       });
 
       try {
@@ -191,13 +242,21 @@ async function handleProcessRefund(refundId: string) {
   const refund = await db.refundRequest.findUnique({
     where: { id: refundId },
     select: {
-      id: true, status: true, type: true, refund_amount: true,
+      id: true,
+      status: true,
+      type: true,
+      refund_amount: true,
       order: {
         select: {
           id: true,
           payment_transaction_id: true,
           paymentTransaction: {
-            select: { id: true, transaction_id: true, authorization_code: true, provider: true },
+            select: {
+              id: true,
+              transaction_id: true,
+              authorization_code: true,
+              provider: true,
+            },
           },
         },
       },
@@ -205,18 +264,41 @@ async function handleProcessRefund(refundId: string) {
     },
   });
 
-  if (!refund) return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
-  if (refund.status !== "return_received") return NextResponse.json({ error: "La devolución debe estar confirmada" }, { status: 400 });
+  if (!refund)
+    return NextResponse.json(
+      { error: "Solicitud no encontrada" },
+      { status: 404 },
+    );
+  if (refund.status !== "return_received")
+    return NextResponse.json(
+      { error: "La devolución debe estar confirmada" },
+      { status: 400 },
+    );
 
   const tx = refund.order.paymentTransaction;
-  if (!tx) return NextResponse.json({ error: "No se encontró la transacción de pago" }, { status: 400 });
-  if (tx.provider !== "niubiz") return NextResponse.json({ error: "Solo reembolsos Niubiz" }, { status: 400 });
+  if (!tx)
+    return NextResponse.json(
+      { error: "No se encontró la transacción de pago" },
+      { status: 400 },
+    );
+  if (tx.provider !== "niubiz")
+    return NextResponse.json(
+      { error: "Solo reembolsos Niubiz" },
+      { status: 400 },
+    );
   if (!tx.authorization_code || !tx.transaction_id) {
-    return NextResponse.json({ error: "Faltan datos de la transacción" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Faltan datos de la transacción" },
+      { status: 400 },
+    );
   }
 
   try {
-    const result = await processNiubizRefund(tx.transaction_id, tx.authorization_code, Number(refund.refund_amount));
+    const result = await processNiubizRefund(
+      tx.transaction_id,
+      tx.authorization_code,
+      Number(refund.refund_amount),
+    );
 
     await db.paymentTransaction.update({
       where: { id: tx.id },
@@ -258,28 +340,52 @@ async function handleProcessRefund(refundId: string) {
       }
     }
 
-    return NextResponse.json({ success: true, cancellationCode: result.cancellationCode });
+    return NextResponse.json({
+      success: true,
+      cancellationCode: result.cancellationCode,
+    });
   } catch (err: unknown) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Error Niubiz" }, { status: 400 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Error Niubiz" },
+      { status: 400 },
+    );
   }
 }
 
-async function processNiubizRefund(transactionId: string, authorizationCode: string, amount: number) {
-  const setting = await db.platformSetting.findUnique({ where: { key: "NIUBIZ_CONFIG" } });
+async function processNiubizRefund(
+  transactionId: string,
+  authorizationCode: string,
+  amount: number,
+) {
+  const setting = await db.platformSetting.findUnique({
+    where: { key: "NIUBIZ_CONFIG" },
+  });
 
   let environment = (process.env.NIUBIZ_ENVIRONMENT || "sandbox").trim();
-  const defaultMerchantId = environment === "production" ? "651052554" : "341198210";
-  let merchantId = process.env.NIUBIZ_MERCHANT_ID ? process.env.NIUBIZ_MERCHANT_ID.trim() : defaultMerchantId;
+  const defaultMerchantId =
+    environment === "production" ? "651052554" : "341198210";
+  let merchantId = process.env.NIUBIZ_MERCHANT_ID
+    ? process.env.NIUBIZ_MERCHANT_ID.trim()
+    : defaultMerchantId;
 
-  if (setting?.value && typeof setting.value === "object" && setting.value !== null) {
+  if (
+    setting?.value &&
+    typeof setting.value === "object" &&
+    setting.value !== null
+  ) {
     const val = setting.value as Record<string, any>;
     if (val.environment) environment = String(val.environment).trim();
     if (val.merchantId) merchantId = String(val.merchantId).trim();
   }
 
-  const user = (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim();
+  const user = (
+    process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe"
+  ).trim();
   const password = (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim();
-  const baseUrl = environment === "production" ? "https://apiprod.niubiz.com.pe" : "https://apisandbox.niubiz.com.pe";
+  const baseUrl =
+    environment === "production"
+      ? "https://apiprod.niubiz.com.pe"
+      : "https://apisandbox.niubiz.com.pe";
 
   const tokenRes = await fetch(`${baseUrl}/api.security/v1/security`, {
     method: "POST",
@@ -289,20 +395,41 @@ async function processNiubizRefund(transactionId: string, authorizationCode: str
   if (!tokenRes.ok) throw new Error("Error al obtener token Niubiz");
   const tokenData = await tokenRes.text();
 
-  const res = await fetch(`${baseUrl}/api.ecommerce/v2/ecommerce/token/cancellation/${merchantId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: tokenData },
-    body: JSON.stringify({ channel: "web", authorizationCode, transactionId, amount: Number(amount.toFixed(2)), currency: "PEN" }),
-  });
+  const res = await fetch(
+    `${baseUrl}/api.ecommerce/v2/ecommerce/token/cancellation/${merchantId}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: tokenData },
+      body: JSON.stringify({
+        channel: "web",
+        authorizationCode,
+        transactionId,
+        amount: Number(amount.toFixed(2)),
+        currency: "PEN",
+      }),
+    },
+  );
 
   const resText = await res.text();
   let data: any = {};
-  try { data = JSON.parse(resText); } catch { throw new Error(resText || "Error Niubiz"); }
+  try {
+    data = JSON.parse(resText);
+  } catch {
+    throw new Error(resText || "Error Niubiz");
+  }
 
   const actionCode = String(data.dataMap?.ACTION_CODE || "").trim();
   if (!res.ok || !["000", "00", "0"].includes(actionCode)) {
-    throw new Error(data.dataMap?.ACTION_DESCRIPTION || data.errorMessage || "Error al procesar reembolso");
+    throw new Error(
+      data.dataMap?.ACTION_DESCRIPTION ||
+        data.errorMessage ||
+        "Error al procesar reembolso",
+    );
   }
 
-  return { success: true, cancellationCode: data.dataMap?.AUTHORIZATION_CODE, rawResponse: data };
+  return {
+    success: true,
+    cancellationCode: data.dataMap?.AUTHORIZATION_CODE,
+    rawResponse: data,
+  };
 }

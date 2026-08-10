@@ -116,7 +116,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter]);
+  }, [statusFilter, fetchOrders]);
 
   const executeAction = async () => {
     if (!confirm) return;

@@ -18,7 +18,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface RefundItem {
@@ -54,23 +60,57 @@ interface Refund {
   items: RefundItem[];
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: "Pendiente", color: "bg-amber-100 text-amber-800 border-amber-200", icon: IconClock },
-  approved: { label: "Aprobado", color: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: IconCheck },
-  return_in_transit: { label: "En camino", color: "bg-blue-100 text-blue-800 border-blue-200", icon: IconTruck },
-  return_received: { label: "Devuelto", color: "bg-teal-100 text-teal-800 border-teal-200", icon: IconCheck },
-  refunded: { label: "Reembolsado", color: "bg-violet-100 text-violet-800 border-violet-200", icon: IconCash },
-  rejected: { label: "Rechazado", color: "bg-red-100 text-red-800 border-red-200", icon: IconX },
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; color: string; icon: React.ElementType }
+> = {
+  pending: {
+    label: "Pendiente",
+    color: "bg-amber-100 text-amber-800 border-amber-200",
+    icon: IconClock,
+  },
+  approved: {
+    label: "Aprobado",
+    color: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: IconCheck,
+  },
+  return_in_transit: {
+    label: "En camino",
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: IconTruck,
+  },
+  return_received: {
+    label: "Devuelto",
+    color: "bg-teal-100 text-teal-800 border-teal-200",
+    icon: IconCheck,
+  },
+  refunded: {
+    label: "Reembolsado",
+    color: "bg-violet-100 text-violet-800 border-violet-200",
+    icon: IconCash,
+  },
+  rejected: {
+    label: "Rechazado",
+    color: "bg-red-100 text-red-800 border-red-200",
+    icon: IconX,
+  },
 };
 
 function formatMoney(v: number): string {
-  return v.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return v.toLocaleString("es-PE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return "-";
   return new Date(iso).toLocaleString("es-PE", {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -86,8 +126,15 @@ export default function ReembolsosPage() {
   const [processConfirm, setProcessConfirm] = useState<Refund | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const [approveForm, setApproveForm] = useState<Record<string, { address: string; cost: string; paidBy: string; notes: string }>>({});
-  const [rejectForm, setRejectForm] = useState<Record<string, { notes: string }>>({});
+  const [approveForm, setApproveForm] = useState<
+    Record<
+      string,
+      { address: string; cost: string; paidBy: string; notes: string }
+    >
+  >({});
+  const [rejectForm, setRejectForm] = useState<
+    Record<string, { notes: string }>
+  >({});
 
   const fetchRefunds = useCallback(async () => {
     setLoading(true);
@@ -104,7 +151,11 @@ export default function ReembolsosPage() {
       const res = await fetch(`/api/refunds?${params.toString()}`);
       const text = await res.text();
       let data: any;
-      try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Respuesta inválida del servidor");
+      }
       if (!res.ok) throw new Error(data.error || "Error al cargar");
       setRefunds(data.refunds || []);
       setCounts({
@@ -122,7 +173,9 @@ export default function ReembolsosPage() {
     }
   }, [statusTab, search]);
 
-  useEffect(() => { fetchRefunds(); }, [fetchRefunds]);
+  useEffect(() => {
+    fetchRefunds();
+  }, [fetchRefunds]);
 
   const handleApprove = async (refundId: string) => {
     const form = approveForm[refundId];
@@ -134,7 +187,8 @@ export default function ReembolsosPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "approve", refundId,
+          action: "approve",
+          refundId,
           return_address: form.address.trim(),
           return_shipping_cost: form.cost ? Number(form.cost) : null,
           return_shipping_paid_by: form.paidBy || "buyer",
@@ -143,7 +197,11 @@ export default function ReembolsosPage() {
       });
       const text = await res.text();
       let data: any;
-      try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Respuesta inválida del servidor");
+      }
       if (!res.ok) throw new Error(data.error || "Error al aprobar");
       setExpandedId(null);
       await fetchRefunds();
@@ -162,13 +220,18 @@ export default function ReembolsosPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "reject", refundId,
+          action: "reject",
+          refundId,
           admin_notes: rejectForm[refundId]?.notes?.trim() || null,
         }),
       });
       const text = await res.text();
       let data: any;
-      try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Respuesta inválida del servidor");
+      }
       if (!res.ok) throw new Error(data.error || "Error al rechazar");
       setExpandedId(null);
       await fetchRefunds();
@@ -187,11 +250,18 @@ export default function ReembolsosPage() {
       const res = await fetch("/api/refunds", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "process_refund", refundId: processConfirm.id }),
+        body: JSON.stringify({
+          action: "process_refund",
+          refundId: processConfirm.id,
+        }),
       });
       const text = await res.text();
       let data: any;
-      try { data = JSON.parse(text); } catch { throw new Error("Respuesta inválida del servidor"); }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Respuesta inválida del servidor");
+      }
       if (!res.ok) throw new Error(data.error || "Error al procesar");
       setProcessConfirm(null);
       await fetchRefunds();
@@ -245,13 +315,17 @@ export default function ReembolsosPage() {
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") fetchRefunds(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") fetchRefunds();
+            }}
           />
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">{error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">
+          {error}
+        </div>
       )}
 
       <Tabs value={statusTab} onValueChange={setStatusTab}>
@@ -259,31 +333,56 @@ export default function ReembolsosPage() {
           <TabsTrigger value="pending">
             Pendientes
             {counts.pending > 0 && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px] bg-amber-100">{counts.pending}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-1.5 px-1.5 py-0 text-[10px] bg-amber-100"
+              >
+                {counts.pending}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="active">
             En Proceso
-            {((counts.approved || 0) + (counts.return_in_transit || 0)) > 0 && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px] bg-blue-100">{(counts.approved || 0) + (counts.return_in_transit || 0)}</Badge>
+            {(counts.approved || 0) + (counts.return_in_transit || 0) > 0 && (
+              <Badge
+                variant="secondary"
+                className="ml-1.5 px-1.5 py-0 text-[10px] bg-blue-100"
+              >
+                {(counts.approved || 0) + (counts.return_in_transit || 0)}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="return_received">
             Devueltos
             {counts.return_received > 0 && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px] bg-teal-100">{counts.return_received}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-1.5 px-1.5 py-0 text-[10px] bg-teal-100"
+              >
+                {counts.return_received}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="refunded">
             Reembolsados
             {counts.refunded > 0 && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px] bg-violet-100">{counts.refunded}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-1.5 px-1.5 py-0 text-[10px] bg-violet-100"
+              >
+                {counts.refunded}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="rejected">
             Rechazados
             {counts.rejected > 0 && (
-              <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px] bg-red-100">{counts.rejected}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-1.5 px-1.5 py-0 text-[10px] bg-red-100"
+              >
+                {counts.rejected}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="all">Todos</TabsTrigger>
@@ -304,7 +403,9 @@ export default function ReembolsosPage() {
       ) : refunds.length === 0 ? (
         <Card className="p-12 text-center">
           <IconShield className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm font-medium">No hay solicitudes de reembolso en esta categoría</p>
+          <p className="text-sm font-medium">
+            No hay solicitudes de reembolso en esta categoría
+          </p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -316,7 +417,11 @@ export default function ReembolsosPage() {
               <Card key={r.id} className="overflow-hidden">
                 <div
                   className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => { toggleExpand(r.id); if (!isExpanded) initApproveForm(r); initRejectForm(r.id); }}
+                  onClick={() => {
+                    toggleExpand(r.id);
+                    if (!isExpanded) initApproveForm(r);
+                    initRejectForm(r.id);
+                  }}
                 >
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
                     <span className="text-sm font-bold text-foreground">
@@ -328,14 +433,22 @@ export default function ReembolsosPage() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right text-xs text-muted-foreground">
-                      {r.type === "full" ? "Reembolso Total" : "Reembolso Parcial"}
-                      <span className="block text-sm font-bold text-foreground">S/ {formatMoney(r.refund_amount)}</span>
+                      {r.type === "full"
+                        ? "Reembolso Total"
+                        : "Reembolso Parcial"}
+                      <span className="block text-sm font-bold text-foreground">
+                        S/ {formatMoney(r.refund_amount)}
+                      </span>
                     </div>
                     <Badge className={cfg.color}>
                       <cfg.icon className="w-3 h-3 mr-1" />
                       {cfg.label}
                     </Badge>
-                    {isExpanded ? <IconChevronUp className="w-4 h-4 text-muted-foreground" /> : <IconChevronDown className="w-4 h-4 text-muted-foreground" />}
+                    {isExpanded ? (
+                      <IconChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <IconChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
                   </div>
                 </div>
 
@@ -344,44 +457,74 @@ export default function ReembolsosPage() {
                     {/* Buyer & order info */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div>
-                        <span className="text-muted-foreground block">Comprador</span>
+                        <span className="text-muted-foreground block">
+                          Comprador
+                        </span>
                         <span className="font-medium">{r.buyer_name}</span>
-                        {r.buyer_email && <span className="text-muted-foreground block truncate">{r.buyer_email}</span>}
+                        {r.buyer_email && (
+                          <span className="text-muted-foreground block truncate">
+                            {r.buyer_email}
+                          </span>
+                        )}
                       </div>
                       <div>
-                        <span className="text-muted-foreground block">Empresa</span>
+                        <span className="text-muted-foreground block">
+                          Empresa
+                        </span>
                         <span className="font-medium">{r.company_name}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block">Motivo</span>
+                        <span className="text-muted-foreground block">
+                          Motivo
+                        </span>
                         <span className="font-medium">{r.reason}</span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground block">Tipo</span>
-                        <span className="font-medium">{r.type === "full" ? "Reembolso Total" : "Reembolso Parcial"}</span>
+                        <span className="text-muted-foreground block">
+                          Tipo
+                        </span>
+                        <span className="font-medium">
+                          {r.type === "full"
+                            ? "Reembolso Total"
+                            : "Reembolso Parcial"}
+                        </span>
                       </div>
                     </div>
 
                     {/* Items */}
                     <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">Productos</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">
+                        Productos
+                      </Label>
                       <div className="space-y-1.5">
                         {r.items.map((item) => (
-                          <div key={item.order_item_id} className="flex items-center gap-3 bg-background rounded-lg px-3 py-2 border">
+                          <div
+                            key={item.order_item_id}
+                            className="flex items-center gap-3 bg-background rounded-lg px-3 py-2 border"
+                          >
                             {item.product_image ? (
-                              <img src={item.product_image} alt={item.product_title} className="w-10 h-10 rounded-md object-cover border" />
+                              <img
+                                src={item.product_image}
+                                alt={item.product_title}
+                                className="w-10 h-10 rounded-md object-cover border"
+                              />
                             ) : (
                               <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center">
                                 <IconShield className="w-4 h-4 text-muted-foreground" />
                               </div>
                             )}
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium truncate">{item.product_title}</p>
+                              <p className="text-xs font-medium truncate">
+                                {item.product_title}
+                              </p>
                               <p className="text-[11px] text-muted-foreground">
-                                {item.quantity} × S/ {formatMoney(item.unit_price)}
+                                {item.quantity} × S/{" "}
+                                {formatMoney(item.unit_price)}
                               </p>
                             </div>
-                            <span className="text-xs font-bold text-foreground shrink-0">S/ {formatMoney(item.subtotal)}</span>
+                            <span className="text-xs font-bold text-foreground shrink-0">
+                              S/ {formatMoney(item.subtotal)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -398,47 +541,76 @@ export default function ReembolsosPage() {
                     {/* Return tracking info (for approved/in_transit/returned/refunded/rejected) */}
                     {r.status !== "pending" && (
                       <div className="bg-muted rounded-lg p-3 space-y-1.5 text-xs">
-                        <span className="font-medium block">Información de Devolución</span>
+                        <span className="font-medium block">
+                          Información de Devolución
+                        </span>
                         <div className="grid grid-cols-2 gap-2">
                           {r.return_address && (
                             <div>
-                              <span className="text-muted-foreground">Dirección:</span>
+                              <span className="text-muted-foreground">
+                                Dirección:
+                              </span>
                               <span className="ml-1">{r.return_address}</span>
                             </div>
                           )}
                           {r.return_shipping_cost != null && (
                             <div>
-                              <span className="text-muted-foreground">Costo envío:</span>
-                              <span className="ml-1 font-medium">S/ {r.return_shipping_cost.toFixed(2)}</span>
+                              <span className="text-muted-foreground">
+                                Costo envío:
+                              </span>
+                              <span className="ml-1 font-medium">
+                                S/ {r.return_shipping_cost.toFixed(2)}
+                              </span>
                             </div>
                           )}
                           {r.return_shipping_paid_by && (
                             <div>
-                              <span className="text-muted-foreground">Paga:</span>
-                              <span className="ml-1">{r.return_shipping_paid_by === "seller" ? "Proveedor" : "Comprador"}</span>
+                              <span className="text-muted-foreground">
+                                Paga:
+                              </span>
+                              <span className="ml-1">
+                                {r.return_shipping_paid_by === "seller"
+                                  ? "Proveedor"
+                                  : "Comprador"}
+                              </span>
                             </div>
                           )}
                           {r.buyer_return_tracking && (
                             <div>
-                              <span className="text-muted-foreground">Tracking:</span>
-                              <span className="ml-1 font-mono">{r.buyer_return_tracking}</span>
+                              <span className="text-muted-foreground">
+                                Tracking:
+                              </span>
+                              <span className="ml-1 font-mono">
+                                {r.buyer_return_tracking}
+                              </span>
                             </div>
                           )}
                           {r.return_courier && (
                             <div>
-                              <span className="text-muted-foreground">Agencia:</span>
+                              <span className="text-muted-foreground">
+                                Agencia:
+                              </span>
                               <span className="ml-1">{r.return_courier}</span>
                             </div>
                           )}
                           {r.return_estimated_delivery && (
                             <div>
-                              <span className="text-muted-foreground">Est. llegada:</span>
-                              <span className="ml-1">{formatDate(r.return_estimated_delivery)}</span>
+                              <span className="text-muted-foreground">
+                                Est. llegada:
+                              </span>
+                              <span className="ml-1">
+                                {formatDate(r.return_estimated_delivery)}
+                              </span>
                             </div>
                           )}
                           {r.return_tracking_url && (
                             <div className="col-span-2">
-                              <a href={r.return_tracking_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              <a
+                                href={r.return_tracking_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
                                 Ver rastreo en agencia →
                               </a>
                             </div>
@@ -457,47 +629,74 @@ export default function ReembolsosPage() {
                     {/* Approval form (only for pending) */}
                     {r.status === "pending" && (
                       <div className="bg-background rounded-lg p-4 border space-y-3">
-                        <span className="text-sm font-semibold block">Aprobar o Rechazar Reembolso</span>
+                        <span className="text-sm font-semibold block">
+                          Aprobar o Rechazar Reembolso
+                        </span>
 
                         <div className="space-y-2">
                           <div>
-                            <Label className="text-xs">Dirección de Devolución *</Label>
+                            <Label className="text-xs">
+                              Dirección de Devolución *
+                            </Label>
                             <Input
                               className="h-8 text-xs"
                               value={approveForm[r.id]?.address || ""}
-                              onChange={(e) => setApproveForm((prev) => ({
-                                ...prev, [r.id]: { ...prev[r.id], address: e.target.value },
-                              }))}
+                              onChange={(e) =>
+                                setApproveForm((prev) => ({
+                                  ...prev,
+                                  [r.id]: {
+                                    ...prev[r.id],
+                                    address: e.target.value,
+                                  },
+                                }))
+                              }
                               placeholder="Av. Los Olivos 123, Lima"
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <Label className="text-xs">Costo de Envío (S/)</Label>
+                              <Label className="text-xs">
+                                Costo de Envío (S/)
+                              </Label>
                               <Input
                                 type="number"
                                 className="h-8 text-xs"
                                 value={approveForm[r.id]?.cost || ""}
-                                onChange={(e) => setApproveForm((prev) => ({
-                                  ...prev, [r.id]: { ...prev[r.id], cost: e.target.value },
-                                }))}
+                                onChange={(e) =>
+                                  setApproveForm((prev) => ({
+                                    ...prev,
+                                    [r.id]: {
+                                      ...prev[r.id],
+                                      cost: e.target.value,
+                                    },
+                                  }))
+                                }
                                 placeholder="0.00"
                               />
                             </div>
                             <div>
-                              <Label className="text-xs">¿Quién paga el envío?</Label>
+                              <Label className="text-xs">
+                                ¿Quién paga el envío?
+                              </Label>
                               <Select
                                 value={approveForm[r.id]?.paidBy || "buyer"}
-                                onValueChange={(v) => setApproveForm((prev) => ({
-                                  ...prev, [r.id]: { ...prev[r.id], paidBy: v },
-                                }))}
+                                onValueChange={(v) =>
+                                  setApproveForm((prev) => ({
+                                    ...prev,
+                                    [r.id]: { ...prev[r.id], paidBy: v },
+                                  }))
+                                }
                               >
                                 <SelectTrigger className="h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="buyer">Comprador</SelectItem>
-                                  <SelectItem value="seller">Proveedor</SelectItem>
+                                  <SelectItem value="buyer">
+                                    Comprador
+                                  </SelectItem>
+                                  <SelectItem value="seller">
+                                    Proveedor
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -507,9 +706,15 @@ export default function ReembolsosPage() {
                             <Input
                               className="h-8 text-xs"
                               value={approveForm[r.id]?.notes || ""}
-                              onChange={(e) => setApproveForm((prev) => ({
-                                ...prev, [r.id]: { ...prev[r.id], notes: e.target.value },
-                              }))}
+                              onChange={(e) =>
+                                setApproveForm((prev) => ({
+                                  ...prev,
+                                  [r.id]: {
+                                    ...prev[r.id],
+                                    notes: e.target.value,
+                                  },
+                                }))
+                              }
                               placeholder="Observaciones para el equipo..."
                             />
                           </div>
@@ -518,9 +723,12 @@ export default function ReembolsosPage() {
                             <Input
                               className="h-8 text-xs"
                               value={rejectForm[r.id]?.notes || ""}
-                              onChange={(e) => setRejectForm((prev) => ({
-                                ...prev, [r.id]: { notes: e.target.value },
-                              }))}
+                              onChange={(e) =>
+                                setRejectForm((prev) => ({
+                                  ...prev,
+                                  [r.id]: { notes: e.target.value },
+                                }))
+                              }
                               placeholder="Motivo del rechazo..."
                             />
                           </div>
@@ -531,9 +739,14 @@ export default function ReembolsosPage() {
                             size="sm"
                             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
                             onClick={() => handleApprove(r.id)}
-                            disabled={submittingId === r.id || !approveForm[r.id]?.address?.trim()}
+                            disabled={
+                              submittingId === r.id ||
+                              !approveForm[r.id]?.address?.trim()
+                            }
                           >
-                            {submittingId === r.id ? "Procesando..." : "Aprobar Reembolso"}
+                            {submittingId === r.id
+                              ? "Procesando..."
+                              : "Aprobar Reembolso"}
                           </Button>
                           <Button
                             size="sm"
@@ -542,7 +755,9 @@ export default function ReembolsosPage() {
                             onClick={() => handleReject(r.id)}
                             disabled={submittingId === r.id}
                           >
-                            {submittingId === r.id ? "Procesando..." : "Rechazar"}
+                            {submittingId === r.id
+                              ? "Procesando..."
+                              : "Rechazar"}
                           </Button>
                         </div>
                       </div>

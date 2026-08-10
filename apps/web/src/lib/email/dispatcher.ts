@@ -584,7 +584,10 @@ export async function sendReturnReceivedNotification(refundId: string) {
   }
 }
 
-export async function sendRefundStatusNotification(refundId: string, approved: boolean) {
+export async function sendRefundStatusNotification(
+  refundId: string,
+  approved: boolean,
+) {
   try {
     const resend = getResendClient();
     const fromEmail = getDefaultFromEmail();
@@ -603,7 +606,10 @@ export async function sendRefundStatusNotification(refundId: string, approved: b
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },
@@ -646,9 +652,14 @@ export async function sendRefundStatusNotification(refundId: string, approved: b
       });
 
       if (error) {
-        console.error(`[RefundStatus Email] Error enviando a ${data.buyerEmail}:`, error);
+        console.error(
+          `[RefundStatus Email] Error enviando a ${data.buyerEmail}:`,
+          error,
+        );
       } else {
-        console.log(`[RefundStatus Email] Notificación enviada a ${data.buyerEmail}`);
+        console.log(
+          `[RefundStatus Email] Notificación enviada a ${data.buyerEmail}`,
+        );
       }
     }
   } catch (err) {
