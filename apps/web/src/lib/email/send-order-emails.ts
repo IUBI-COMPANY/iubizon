@@ -13,7 +13,11 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       include: {
         buyer: {
           select: {
-            id: true, email: true, name: true, phone: true, location: true,
+            id: true,
+            email: true,
+            name: true,
+            phone: true,
+            location: true,
           },
         },
         shipping: true,
@@ -26,7 +30,9 @@ export async function sendOrderConfirmationEmails(orderId: string) {
               include: {
                 product: {
                   select: {
-                    id: true, title: true, price: true,
+                    id: true,
+                    title: true,
+                    price: true,
                     images: { orderBy: { position: "asc" }, take: 1 },
                   },
                 },
@@ -38,7 +44,9 @@ export async function sendOrderConfirmationEmails(orderId: string) {
     });
 
     if (!order || !order.buyer) {
-      console.warn(`[Order Email] No se encontró orden o comprador para ${orderId}.`);
+      console.warn(
+        `[Order Email] No se encontró orden o comprador para ${orderId}.`,
+      );
       return;
     }
 
@@ -60,9 +68,18 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       name: order.shipping?.name || order.buyer.name || "Cliente",
       phone: order.shipping?.phone || order.buyer.phone || "No especificado",
       email: order.shipping?.email?.trim() || order.buyer.email,
-      address: order.shipping?.address || order.buyer.location || "Dirección no especificada",
-      city: [order.shipping?.district, order.shipping?.province, order.shipping?.department]
-        .filter(Boolean).join(", ") || "Lima",
+      address:
+        order.shipping?.address ||
+        order.buyer.location ||
+        "Dirección no especificada",
+      city:
+        [
+          order.shipping?.district,
+          order.shipping?.province,
+          order.shipping?.department,
+        ]
+          .filter(Boolean)
+          .join(", ") || "Lima",
       department: order.shipping?.department || undefined,
       province: order.shipping?.province || undefined,
       district: order.shipping?.district || undefined,
@@ -92,7 +109,9 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       React.createElement(BuyerOrderEmail, buyerData),
     );
 
-    const companyGroupIds = Array.from(new Set(order.packages.map((p) => p.company_id)));
+    const companyGroupIds = Array.from(
+      new Set(order.packages.map((p) => p.company_id)),
+    );
     const memberEmailsByCompany = new Map<string, string[]>();
 
     if (companyGroupIds.length > 0) {
@@ -111,13 +130,18 @@ export async function sendOrderConfirmationEmails(orderId: string) {
     const sendSellers = order.packages.map(async (pkg) => {
       try {
         const companyName = pkg.company?.name || "Vendedor iubizon";
-        const recipientEmail = pkg.company?.email || "iubizon.company@gmail.com";
+        const recipientEmail =
+          pkg.company?.email || "iubizon.company@gmail.com";
         const rawMemberEmails = memberEmailsByCompany.get(pkg.company_id) || [];
         const ccEmails = Array.from(
           new Set(
             rawMemberEmails
               .map((e) => e.trim())
-              .filter((e) => e.length > 0 && e.toLowerCase() !== recipientEmail.toLowerCase()),
+              .filter(
+                (e) =>
+                  e.length > 0 &&
+                  e.toLowerCase() !== recipientEmail.toLowerCase(),
+              ),
           ),
         );
 
@@ -132,10 +156,13 @@ export async function sendOrderConfirmationEmails(orderId: string) {
           isCompanyRecipient: true,
           createdAt: createdAtFormatted,
           items: pkg.items.map((item) => ({
-            id: item.id, title: item.product.title,
-            price: Number(item.unit_price), quantity: item.quantity,
+            id: item.id,
+            title: item.product.title,
+            price: Number(item.unit_price),
+            quantity: item.quantity,
             imageUrl: item.product.images[0]?.url || null,
-            sellerName: companyName, companyName,
+            sellerName: companyName,
+            companyName,
           })),
           packageSubtotal: Number(pkg.subtotal),
           commissionAmount: Number(pkg.commission_total),
@@ -150,12 +177,18 @@ export async function sendOrderConfirmationEmails(orderId: string) {
           ccEmails.length > 0 ? ccEmails : undefined,
         );
       } catch (err) {
-        console.error(`[Order Email] Error enviando a empresa ${pkg.company_id}:`, err);
+        console.error(
+          `[Order Email] Error enviando a empresa ${pkg.company_id}:`,
+          err,
+        );
       }
     });
 
     await Promise.all([sendBuyer, ...sendSellers]);
   } catch (err) {
-    console.error(`[Order Email] Error procesando correos para ${orderId}:`, err);
+    console.error(
+      `[Order Email] Error procesando correos para ${orderId}:`,
+      err,
+    );
   }
 }

@@ -3,7 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
 import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
 import { sendResendEmail } from "./send-resend-email";
-import type { EmailOrderItem, ReturnReceivedEmailData, ReturnShippedEmailData } from "./types";
+import type {
+  EmailOrderItem,
+  ReturnReceivedEmailData,
+  ReturnShippedEmailData,
+} from "./types";
 
 export async function sendReturnShippedNotification(refundId: string) {
   try {
@@ -17,7 +21,13 @@ export async function sendReturnShippedNotification(refundId: string) {
             packages: {
               select: {
                 company: {
-                  select: { name: true, email: true, legal_name: true, tax_id: true, phone: true },
+                  select: {
+                    name: true,
+                    email: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
                 },
               },
             },
@@ -28,7 +38,10 @@ export async function sendReturnShippedNotification(refundId: string) {
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },
@@ -55,9 +68,15 @@ export async function sendReturnShippedNotification(refundId: string) {
       trackingNumber: refund.buyer_return_tracking || "N/A",
       trackingUrl: refund.return_tracking_url || null,
       estimatedDelivery: refund.return_estimated_delivery
-        ? new Date(refund.return_estimated_delivery).toLocaleDateString("es-PE", {
-            weekday: "long", year: "numeric", month: "long", day: "numeric",
-          })
+        ? new Date(refund.return_estimated_delivery).toLocaleDateString(
+            "es-PE",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          )
         : "No especificada",
       returnAddress: refund.return_address || "No especificada",
       items: refund.items.map((ri): EmailOrderItem => ({
@@ -96,7 +115,12 @@ export async function sendReturnReceivedNotification(refundId: string) {
             packages: {
               select: {
                 company: {
-                  select: { name: true, legal_name: true, tax_id: true, phone: true },
+                  select: {
+                    name: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
                 },
               },
             },
@@ -107,7 +131,10 @@ export async function sendReturnReceivedNotification(refundId: string) {
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },

@@ -20,7 +20,10 @@ export async function sendResendEmail(
   });
 
   if (error) {
-    console.error(`[Email] Error enviando a ${Array.isArray(to) ? to.join(", ") : to}:`, error);
+    console.error(
+      `[Email] Error enviando a ${Array.isArray(to) ? to.join(", ") : to}:`,
+      error,
+    );
 
     if (error.message?.includes("testing emails to your own email address")) {
       const fallbackEmail =
@@ -35,5 +38,7 @@ export async function sendResendEmail(
     return;
   }
 
-  console.log(`[Email] Enviado a ${Array.isArray(to) ? to.join(", ") : to} (ID: ${data?.id})`);
+  console.log(
+    `[Email] Enviado a ${Array.isArray(to) ? to.join(", ") : to} (ID: ${data?.id})`,
+  );
 }

@@ -9,7 +9,7 @@ import {
   Img,
   Hr,
 } from "@react-email/components";
-import { BaseLayout } from "./BaseLayout";
+import { BaseLayout } from "@/lib/email";
 import type { SellerEmailData } from "../types";
 
 export function SellerSaleEmail(data: SellerEmailData) {
@@ -248,12 +248,6 @@ const metaValueStyle: React.CSSProperties = {
   color: "#112237",
   fontSize: "12px",
   fontWeight: "700",
-  margin: "2px 0 0 0",
-};
-
-const metaDateStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: "11px",
   margin: "2px 0 0 0",
 };
 

@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Button, Column, Heading, Hr, Img, Row, Section, Text } from "@react-email/components";
+import {
+  Button,
+  Column,
+  Heading,
+  Hr,
+  Img,
+  Row,
+  Section,
+  Text,
+} from "@react-email/components";
 import { BaseLayout } from "@/lib/email";
 import type { ReturnReceivedEmailData } from "../types";
 

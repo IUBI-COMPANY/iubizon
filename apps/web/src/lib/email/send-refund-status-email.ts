@@ -4,7 +4,10 @@ import { RefundStatusEmail } from "./templates/RefundStatusEmail";
 import { sendResendEmail } from "./send-resend-email";
 import type { EmailOrderItem, RefundStatusEmailData } from "./types";
 
-export async function sendRefundStatusNotification(refundId: string, approved: boolean) {
+export async function sendRefundStatusNotification(
+  refundId: string,
+  approved: boolean,
+) {
   try {
     const refund = await prisma.refundRequest.findUnique({
       where: { id: refundId },
@@ -16,7 +19,12 @@ export async function sendRefundStatusNotification(refundId: string, approved: b
             packages: {
               select: {
                 company: {
-                  select: { name: true, legal_name: true, tax_id: true, phone: true },
+                  select: {
+                    name: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
                 },
               },
             },
@@ -27,7 +35,10 @@ export async function sendRefundStatusNotification(refundId: string, approved: b
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },

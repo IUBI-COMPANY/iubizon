@@ -21,14 +21,22 @@ export async function sendDispatchNotification(
             order_code: true,
             buyer: { select: { name: true, email: true } },
             shipping: {
-              select: { address: true, department: true, province: true, district: true },
+              select: {
+                address: true,
+                department: true,
+                province: true,
+                district: true,
+              },
             },
           },
         },
         items: {
           include: {
             product: {
-              select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+              select: {
+                title: true,
+                images: { orderBy: { position: "asc" }, take: 1 },
+              },
             },
           },
         },
@@ -49,7 +57,10 @@ export async function sendDispatchNotification(
       trackingNumber,
       trackingUrl,
       estimatedDelivery: estimatedDelivery.toLocaleDateString("es-PE", {
-        weekday: "long", year: "numeric", month: "long", day: "numeric",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       }),
       items: pkg.items.map((item) => ({
         id: item.id,
@@ -61,8 +72,10 @@ export async function sendDispatchNotification(
         companyName: pkg.company?.name || null,
       })),
       shippingAddress: shipping?.address || "",
-      shippingCity: [shipping?.district, shipping?.province, shipping?.department]
-        .filter(Boolean).join(", ") || "",
+      shippingCity:
+        [shipping?.district, shipping?.province, shipping?.department]
+          .filter(Boolean)
+          .join(", ") || "",
       companyName: pkg.company?.name || "Vendedor",
     };
 
