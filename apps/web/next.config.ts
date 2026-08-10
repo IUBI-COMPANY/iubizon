@@ -7,6 +7,15 @@ const supabaseHostname = supabaseUrl ? new URL(supabaseUrl).hostname : "";
 const nextConfig: NextConfig = {
   transpilePackages: ["@iubizon/db"],
   outputFileTracingRoot: path.resolve(__dirname, "../../"),
+  async redirects() {
+    return [
+      {
+        source: "/products",
+        destination: "/search",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

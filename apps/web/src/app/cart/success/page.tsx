@@ -177,7 +177,7 @@ function SuccessContent() {
             Ver detalles de mi pedido
           </Link>
           <Link
-            href="/products"
+            href="/search"
             className="flex-1 text-center py-3 rounded-xl border border-[#e2e8f0] text-[#112237] font-bold text-sm hover:bg-[#f8fafc] transition-colors"
           >
             Seguir comprando
