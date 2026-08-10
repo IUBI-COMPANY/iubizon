@@ -353,10 +353,14 @@ async function handleProcessRefund(refundId: string) {
     );
   }
 
-  const companyRuc = refund.order.packages[0]?.company?.tax_id;
-  if (!companyRuc) {
+  const rawRuc = refund.order.packages[0]?.company?.tax_id;
+  const companyRuc = rawRuc
+    ? rawRuc.replace(/\D/g, "").slice(-11)
+    : process.env.NIUBIZ_COMPANY_RUC || "20614600374";
+
+  if (companyRuc.length !== 11) {
     return NextResponse.json(
-      { error: "No se encontró el RUC de la empresa" },
+      { error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)` },
       { status: 400 },
     );
   }
@@ -455,12 +459,15 @@ async function processNiubizRefund(
 
   let tokenData: string;
   try {
+    const authString = Buffer.from(
+      `${config.user}:${config.password}`,
+    ).toString("base64");
+
     const tokenRes = await fetch(
       `${config.securityBaseUrl}/api.security/v1/security`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: config.user, password: config.password }),
+        headers: { Authorization: `Basic ${authString}` },
       },
     );
     if (!tokenRes.ok) {
