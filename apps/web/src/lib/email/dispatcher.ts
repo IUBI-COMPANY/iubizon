@@ -6,11 +6,13 @@ import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { DispatchNotificationEmail } from "./templates/DispatchNotificationEmail";
 import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
 import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
+import { RefundStatusEmail } from "./templates/RefundStatusEmail";
 import { formatDateTime } from "@/lib/utils";
 import type {
   BuyerEmailData,
   DispatchEmailData,
   EmailOrderItem,
+  RefundStatusEmailData,
   ReturnReceivedEmailData,
   ReturnShippedEmailData,
   SellerEmailData,
@@ -579,5 +581,77 @@ export async function sendReturnReceivedNotification(refundId: string) {
     }
   } catch (err) {
     console.error("[ReturnReceived Email] Error:", err);
+  }
+}
+
+export async function sendRefundStatusNotification(refundId: string, approved: boolean) {
+  try {
+    const resend = getResendClient();
+    const fromEmail = getDefaultFromEmail();
+
+    const refund = await prisma.refundRequest.findUnique({
+      where: { id: refundId },
+      include: {
+        order: {
+          select: {
+            order_code: true,
+            buyer: { select: { name: true, email: true } },
+          },
+        },
+        items: {
+          include: {
+            order_item: {
+              include: {
+                product: {
+                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!refund?.order?.buyer?.email) return;
+
+    const buyer = refund.order.buyer;
+    const items: EmailOrderItem[] = refund.items.map((ri) => ({
+      id: ri.order_item_id,
+      title: ri.order_item?.product?.title || "Producto",
+      price: Number(ri.unit_price),
+      quantity: ri.quantity,
+      imageUrl: ri.order_item?.product?.images?.[0]?.url || null,
+      sellerName: "",
+      companyName: null,
+    }));
+
+    const data: RefundStatusEmailData = {
+      orderCode: refund.order.order_code,
+      buyerName: buyer.name || "Cliente",
+      buyerEmail: buyer.email,
+      status: approved ? "approved" : "rejected",
+      refundType: refund.type,
+      refundAmount: Number(refund.refund_amount),
+      adminNotes: refund.admin_notes,
+      returnAddress: refund.return_address,
+      items,
+    };
+
+    if (resend) {
+      const { error } = await resend.emails.send({
+        from: fromEmail,
+        to: [data.buyerEmail],
+        subject: `${approved ? "Reembolso Aprobado" : "Reembolso Rechazado"} — Pedido #${data.orderCode} — iubizon`,
+        react: React.createElement(RefundStatusEmail, data),
+      });
+
+      if (error) {
+        console.error(`[RefundStatus Email] Error enviando a ${data.buyerEmail}:`, error);
+      } else {
+        console.log(`[RefundStatus Email] Notificación enviada a ${data.buyerEmail}`);
+      }
+    }
+  } catch (err) {
+    console.error("[RefundStatus Email] Error:", err);
   }
 }

@@ -8,6 +8,7 @@ import {
   IconShoppingCart,
   IconBuildingStore,
   IconSettings,
+  IconShield,
   IconWallet,
 } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
@@ -28,6 +29,7 @@ const data = {
   navMain: [
     { title: "Dashboard", url: "/dashboard", icon: IconDashboard },
     { title: "Órdenes", url: "/dashboard/ordenes", icon: IconShoppingCart },
+    { title: "Reembolsos", url: "/dashboard/reembolsos", icon: IconShield },
     { title: "Pagos", url: "/dashboard/pagos", icon: IconWallet },
     { title: "Empresas", url: "/dashboard/empresas", icon: IconBuildingStore },
     { title: "Productos", url: "/dashboard/productos", icon: IconPackage },

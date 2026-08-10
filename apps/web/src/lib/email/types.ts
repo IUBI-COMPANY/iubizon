@@ -92,3 +92,15 @@ export interface ReturnReceivedEmailData {
   refundType: string;
   items: EmailOrderItem[];
 }
+
+export interface RefundStatusEmailData {
+  orderCode: string;
+  buyerName: string;
+  buyerEmail: string;
+  status: string;
+  refundType: string;
+  refundAmount: number;
+  adminNotes: string | null;
+  returnAddress: string | null;
+  items: EmailOrderItem[];
+}

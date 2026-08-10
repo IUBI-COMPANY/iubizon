@@ -1,0 +1,308 @@
+import { NextResponse } from "next/server";
+import { db } from "@iubizon/db";
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status") || "";
+    const search = searchParams.get("search") || "";
+
+    const where: any = {};
+    if (status) {
+      const statuses = status.split(",").filter(Boolean);
+      if (statuses.length === 1) {
+        where.status = statuses[0];
+      } else {
+        where.status = { in: statuses };
+      }
+    }
+    if (search) {
+      where.OR = [
+        { order: { order_code: { contains: search } } },
+        { order: { buyer: { name: { contains: search } } } },
+      ];
+    }
+
+    const refunds = await db.refundRequest.findMany({
+      where,
+      include: {
+        order: {
+          select: {
+            order_code: true,
+            buyer: { select: { name: true, email: true } },
+            packages: {
+              select: {
+                company: { select: { name: true, location: true } },
+              },
+            },
+          },
+        },
+        items: true,
+      },
+      orderBy: { created_at: "desc" },
+      take: 100,
+    });
+
+    const itemIds = refunds.flatMap((r) => r.items.map((i) => i.order_item_id));
+    const orderItemMap = new Map<string, { title: string; image: string | null }>();
+    if (itemIds.length > 0) {
+      const orderItems = await db.orderItem.findMany({
+        where: { id: { in: itemIds } },
+        include: {
+          product: {
+            select: { title: true, images: { orderBy: { position: "asc" }, take: 1, select: { url: true } } },
+          },
+        },
+      });
+      for (const oi of orderItems) {
+        orderItemMap.set(oi.id, { title: oi.product.title, image: oi.product.images[0]?.url || null });
+      }
+    }
+
+    const mapped = refunds.map((r) => ({
+      id: r.id,
+      order_code: r.order.order_code,
+      buyer_name: r.order.buyer?.name || "N/A",
+      buyer_email: r.order.buyer?.email || null,
+      type: r.type,
+      status: r.status,
+      reason: r.reason,
+      refund_amount: Number(r.refund_amount),
+      return_shipping_cost: r.return_shipping_cost ? Number(r.return_shipping_cost) : null,
+      return_shipping_paid_by: r.return_shipping_paid_by,
+      return_address: r.return_address,
+      buyer_return_tracking: r.buyer_return_tracking,
+      return_courier: r.return_courier,
+      return_estimated_delivery: r.return_estimated_delivery?.toISOString() ?? null,
+      return_tracking_url: r.return_tracking_url,
+      admin_notes: r.admin_notes,
+      processed_at: r.processed_at?.toISOString() ?? null,
+      created_at: r.created_at?.toISOString() ?? new Date().toISOString(),
+      company_name: r.order.packages[0]?.company?.name || "N/A",
+      company_location: r.order.packages[0]?.company?.location || null,
+      items: r.items.map((ri) => {
+        const p = orderItemMap.get(ri.order_item_id);
+        return {
+          order_item_id: ri.order_item_id,
+          product_title: p?.title || "Producto",
+          product_image: p?.image || null,
+          quantity: ri.quantity,
+          unit_price: Number(ri.unit_price),
+          subtotal: Number(ri.subtotal),
+        };
+      }),
+    }));
+
+    const [pendingCount, approvedCount, inTransitCount, returnedCount, refundedCount, rejectedCount] = await Promise.all([
+      db.refundRequest.count({ where: { status: "pending" } }),
+      db.refundRequest.count({ where: { status: "approved" } }),
+      db.refundRequest.count({ where: { status: "return_in_transit" } }),
+      db.refundRequest.count({ where: { status: "return_received" } }),
+      db.refundRequest.count({ where: { status: "refunded" } }),
+      db.refundRequest.count({ where: { status: "rejected" } }),
+    ]);
+
+    return NextResponse.json({
+      refunds: mapped,
+      pendingCount,
+      approvedCount,
+      inTransitCount,
+      returnedCount,
+      refundedCount,
+      rejectedCount,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error desconocido";
+    console.error("[Refunds API] GET error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { action, refundId } = body;
+    if (!refundId) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+
+    if (action === "approve") {
+      const { return_address, return_shipping_cost, return_shipping_paid_by, admin_notes } = body;
+      if (!return_address?.trim()) return NextResponse.json({ error: "Dirección requerida" }, { status: 400 });
+
+      const refund = await db.refundRequest.findUnique({ where: { id: refundId } });
+      if (!refund) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+      if (refund.status !== "pending") return NextResponse.json({ error: "Solo solicitudes pendientes" }, { status: 400 });
+
+      await db.refundRequest.update({
+        where: { id: refundId },
+        data: {
+          status: "approved",
+          return_address: return_address.trim(),
+          return_shipping_cost: return_shipping_cost != null ? Number(return_shipping_cost) : null,
+          return_shipping_paid_by: return_shipping_paid_by || "buyer",
+          admin_notes: admin_notes?.trim() || null,
+        },
+      });
+
+      try {
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-refund-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refundId, approved: true }),
+        }).catch(() => {});
+      } catch {}
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "reject") {
+      const refund = await db.refundRequest.findUnique({ where: { id: refundId } });
+      if (!refund) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+      if (refund.status !== "pending") return NextResponse.json({ error: "Solo solicitudes pendientes" }, { status: 400 });
+
+      await db.refundRequest.update({
+        where: { id: refundId },
+        data: { status: "rejected", admin_notes: body.admin_notes?.trim() || null },
+      });
+
+      try {
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-refund-email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refundId, approved: false }),
+        }).catch(() => {});
+      } catch {}
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "process_refund") {
+      return handleProcessRefund(refundId);
+    }
+
+    return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error desconocido";
+    console.error("[Refunds API] PATCH error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+async function handleProcessRefund(refundId: string) {
+  const refund = await db.refundRequest.findUnique({
+    where: { id: refundId },
+    select: {
+      id: true, status: true, type: true, refund_amount: true,
+      order: {
+        select: {
+          id: true,
+          payment_transaction_id: true,
+          paymentTransaction: {
+            select: { id: true, transaction_id: true, authorization_code: true, provider: true },
+          },
+        },
+      },
+      items: { select: { order_item_id: true } },
+    },
+  });
+
+  if (!refund) return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
+  if (refund.status !== "return_received") return NextResponse.json({ error: "La devolución debe estar confirmada" }, { status: 400 });
+
+  const tx = refund.order.paymentTransaction;
+  if (!tx) return NextResponse.json({ error: "No se encontró la transacción de pago" }, { status: 400 });
+  if (tx.provider !== "niubiz") return NextResponse.json({ error: "Solo reembolsos Niubiz" }, { status: 400 });
+  if (!tx.authorization_code || !tx.transaction_id) {
+    return NextResponse.json({ error: "Faltan datos de la transacción" }, { status: 400 });
+  }
+
+  try {
+    const result = await processNiubizRefund(tx.transaction_id, tx.authorization_code, Number(refund.refund_amount));
+
+    await db.paymentTransaction.update({
+      where: { id: tx.id },
+      data: { status: "refunded", raw_response: result.rawResponse ?? null },
+    });
+
+    await db.refundRequest.update({
+      where: { id: refundId },
+      data: { status: "refunded", processed_at: new Date() },
+    });
+
+    if (refund.type === "full") {
+      await db.order.update({
+        where: { id: refund.order.id },
+        data: { status: "refunded" },
+      });
+    }
+
+    const refundedItemIds = refund.items.map((i) => i.order_item_id);
+    const packages = await db.orderPackage.findMany({
+      where: {
+        order_id: refund.order.id,
+        items: { some: { id: { in: refundedItemIds } } },
+      },
+      select: { id: true },
+    });
+
+    for (const pkg of packages) {
+      const allItems = await db.orderItem.findMany({
+        where: { package_id: pkg.id },
+        select: { id: true },
+      });
+      const allRefunded = allItems.every((i) => refundedItemIds.includes(i.id));
+      if (allRefunded) {
+        await db.sellerPayout.updateMany({
+          where: { package_id: pkg.id },
+          data: { status: "refunded" },
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true, cancellationCode: result.cancellationCode });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Error Niubiz" }, { status: 400 });
+  }
+}
+
+async function processNiubizRefund(transactionId: string, authorizationCode: string, amount: number) {
+  const setting = await db.platformSetting.findUnique({ where: { key: "NIUBIZ_CONFIG" } });
+
+  let environment = (process.env.NIUBIZ_ENVIRONMENT || "sandbox").trim();
+  const defaultMerchantId = environment === "production" ? "651052554" : "341198210";
+  let merchantId = process.env.NIUBIZ_MERCHANT_ID ? process.env.NIUBIZ_MERCHANT_ID.trim() : defaultMerchantId;
+
+  if (setting?.value && typeof setting.value === "object" && setting.value !== null) {
+    const val = setting.value as Record<string, any>;
+    if (val.environment) environment = String(val.environment).trim();
+    if (val.merchantId) merchantId = String(val.merchantId).trim();
+  }
+
+  const user = (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim();
+  const password = (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim();
+  const baseUrl = environment === "production" ? "https://apiprod.niubiz.com.pe" : "https://apisandbox.niubiz.com.pe";
+
+  const tokenRes = await fetch(`${baseUrl}/api.security/v1/security`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user, password }),
+  });
+  if (!tokenRes.ok) throw new Error("Error al obtener token Niubiz");
+  const tokenData = await tokenRes.text();
+
+  const res = await fetch(`${baseUrl}/api.ecommerce/v2/ecommerce/token/cancellation/${merchantId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: tokenData },
+    body: JSON.stringify({ channel: "web", authorizationCode, transactionId, amount: Number(amount.toFixed(2)), currency: "PEN" }),
+  });
+
+  const resText = await res.text();
+  let data: any = {};
+  try { data = JSON.parse(resText); } catch { throw new Error(resText || "Error Niubiz"); }
+
+  const actionCode = String(data.dataMap?.ACTION_CODE || "").trim();
+  if (!res.ok || !["000", "00", "0"].includes(actionCode)) {
+    throw new Error(data.dataMap?.ACTION_DESCRIPTION || data.errorMessage || "Error al procesar reembolso");
+  }
+
+  return { success: true, cancellationCode: data.dataMap?.AUTHORIZATION_CODE, rawResponse: data };
+}

@@ -6,6 +6,7 @@ import {
   IconShoppingCart,
   IconBuildingStore,
   IconCoin,
+  IconShield,
 } from "@tabler/icons-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -14,8 +15,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch("/api/dashboard")
-      .then((r) => r.json())
-      .then(setStats);
+      .then((r) => r.text())
+      .then((text) => { try { return JSON.parse(text); } catch { return null; } })
+      .then(setStats)
+      .catch(() => {});
   }, []);
 
   const kpis = [
@@ -45,6 +48,12 @@ export default function DashboardPage() {
       icon: IconCoin,
       color: "text-violet-600",
     },
+    {
+      title: "Reembolsos Pendientes",
+      value: stats?.refunds?.pending ?? "-",
+      icon: IconShield,
+      color: "text-red-600",
+    },
   ];
 
   return (
@@ -55,7 +64,7 @@ export default function DashboardPage() {
           Panel de administración de iubizon
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {kpis.map((kpi) => (
           <Card key={kpi.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
