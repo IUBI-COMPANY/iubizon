@@ -435,6 +435,7 @@ model RefundRequest {
   return_address           String?
   buyer_return_tracking    String?
   return_courier           String?
+  return_carrier_phone     String?
   return_tracking_url      String?
   return_estimated_delivery DateTime? @db.Timestamptz
   created_by             String?   @db.Uuid

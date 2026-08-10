@@ -61,6 +61,21 @@ export function ReturnReceivedEmail(data: ReturnReceivedEmailData) {
         </Row>
       </Section>
 
+      {(data.companyLegalName || data.companyTaxId || data.companyPhone) && (
+        <Section style={companyInfoBoxStyle}>
+          <Text style={metaLabelStyle}>DATOS DE LA EMPRESA</Text>
+          <Text style={companyDetailStyle}>
+            {[
+              data.companyLegalName,
+              data.companyTaxId ? `RUC: ${data.companyTaxId}` : null,
+              data.companyPhone ? `Tel: ${data.companyPhone}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </Text>
+        </Section>
+      )}
+
       <Section style={{ marginTop: "24px" }}>
         <Text style={sectionTitleStyle}>PRODUCTOS DEVUELTOS</Text>
         {data.items.map((item, index) => (
@@ -172,6 +187,18 @@ const sectionTitleStyle: React.CSSProperties = {
   fontWeight: "800",
   letterSpacing: "0.5px",
   marginBottom: "12px",
+};
+const companyInfoBoxStyle: React.CSSProperties = {
+  backgroundColor: "#f8fafc",
+  borderRadius: "12px",
+  border: "1px solid #e2e8f0",
+  padding: "16px",
+  marginTop: "16px",
+};
+const companyDetailStyle: React.CSSProperties = {
+  color: "#475569",
+  fontSize: "12px",
+  margin: "4px 0 0 0",
 };
 const itemRowStyle: React.CSSProperties = { padding: "10px 0" };
 const productImgStyle: React.CSSProperties = {

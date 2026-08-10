@@ -411,7 +411,15 @@ export async function sendReturnShippedNotification(refundId: string) {
             buyer: { select: { name: true } },
             packages: {
               select: {
-                company: { select: { name: true, email: true } },
+                company: {
+                  select: {
+                    name: true,
+                    email: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
+                },
               },
             },
           },
@@ -463,6 +471,9 @@ export async function sendReturnShippedNotification(refundId: string) {
       sellerName: company.name,
       sellerEmail: company.email,
       companyName: company.name,
+      companyLegalName: company.legal_name || null,
+      companyTaxId: company.tax_id || null,
+      companyPhone: company.phone || null,
       buyerName,
       courier: refund.return_courier || "No especificada",
       trackingNumber: refund.buyer_return_tracking || "N/A",
@@ -512,7 +523,14 @@ export async function sendReturnReceivedNotification(refundId: string) {
             buyer: { select: { name: true } },
             packages: {
               select: {
-                company: { select: { name: true } },
+                company: {
+                  select: {
+                    name: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
+                },
               },
             },
           },
@@ -537,7 +555,8 @@ export async function sendReturnReceivedNotification(refundId: string) {
     if (!refund) return;
 
     const order = refund.order;
-    const companyName = order.packages[0]?.company?.name || "Vendedor";
+    const company = order.packages[0]?.company;
+    const companyName = company?.name || "Vendedor";
     const buyerName = order.buyer?.name || "Comprador";
 
     const items: EmailOrderItem[] = refund.items.map((ri) => ({
@@ -553,6 +572,9 @@ export async function sendReturnReceivedNotification(refundId: string) {
     const data: ReturnReceivedEmailData = {
       orderCode: order.order_code,
       companyName,
+      companyLegalName: company?.legal_name || null,
+      companyTaxId: company?.tax_id || null,
+      companyPhone: company?.phone || null,
       sellerName: companyName,
       buyerName,
       refundAmount: Number(refund.refund_amount),
@@ -599,6 +621,18 @@ export async function sendRefundStatusNotification(
           select: {
             order_code: true,
             buyer: { select: { name: true, email: true } },
+            packages: {
+              select: {
+                company: {
+                  select: {
+                    name: true,
+                    legal_name: true,
+                    tax_id: true,
+                    phone: true,
+                  },
+                },
+              },
+            },
           },
         },
         items: {
@@ -621,6 +655,7 @@ export async function sendRefundStatusNotification(
     if (!refund?.order?.buyer?.email) return;
 
     const buyer = refund.order.buyer;
+    const company = refund.order.packages[0]?.company;
     const items: EmailOrderItem[] = refund.items.map((ri) => ({
       id: ri.order_item_id,
       title: ri.order_item?.product?.title || "Producto",
@@ -640,6 +675,9 @@ export async function sendRefundStatusNotification(
       refundAmount: Number(refund.refund_amount),
       adminNotes: refund.admin_notes,
       returnAddress: refund.return_address,
+      companyLegalName: company?.legal_name || null,
+      companyTaxId: company?.tax_id || null,
+      companyPhone: company?.phone || null,
       items,
     };
 

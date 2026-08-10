@@ -477,9 +477,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               </span>
             </div>
           </div>
-
-          <RefundStatus orderId={pkg.orderId} isSeller />
         </div>
+
+        <RefundStatus orderId={pkg.orderId} isSeller />
       </main>
 
       {/* Modal de Despacho Reutilizable */}

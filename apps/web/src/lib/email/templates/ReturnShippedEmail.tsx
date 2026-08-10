@@ -66,6 +66,18 @@ export function ReturnShippedEmail(data: ReturnShippedEmailData) {
 
       <Section style={addressBoxStyle}>
         <Text style={sectionTitleStyle}>DIRECCIÓN DE ENTREGA (DEVOLUCIÓN)</Text>
+        <Text style={companyNameStyle}>{data.companyName}</Text>
+        {(data.companyLegalName || data.companyTaxId || data.companyPhone) && (
+          <Text style={companyDetailStyle}>
+            {[
+              data.companyLegalName,
+              data.companyTaxId ? `RUC: ${data.companyTaxId}` : null,
+              data.companyPhone ? `Tel: ${data.companyPhone}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </Text>
+        )}
         <Text style={addressTextStyle}>{data.returnAddress}</Text>
       </Section>
 
@@ -209,6 +221,17 @@ const addressTextStyle: React.CSSProperties = {
   color: "#475569",
   fontSize: "12px",
   margin: "0 0 2px 0",
+};
+const companyNameStyle: React.CSSProperties = {
+  color: "#112237",
+  fontSize: "13px",
+  fontWeight: "700",
+  margin: "0",
+};
+const companyDetailStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontSize: "11px",
+  margin: "2px 0 4px 0",
 };
 const itemRowStyle: React.CSSProperties = { padding: "10px 0" };
 const productImgStyle: React.CSSProperties = {

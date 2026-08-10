@@ -73,6 +73,9 @@ export interface ReturnShippedEmailData {
   sellerName: string;
   sellerEmail: string;
   companyName: string;
+  companyLegalName: string | null;
+  companyTaxId: string | null;
+  companyPhone: string | null;
   buyerName: string;
   courier: string;
   trackingNumber: string;
@@ -86,6 +89,9 @@ export interface ReturnShippedEmailData {
 export interface ReturnReceivedEmailData {
   orderCode: string;
   companyName: string;
+  companyLegalName: string | null;
+  companyTaxId: string | null;
+  companyPhone: string | null;
   sellerName: string;
   buyerName: string;
   refundAmount: number;
@@ -102,5 +108,8 @@ export interface RefundStatusEmailData {
   refundAmount: number;
   adminNotes: string | null;
   returnAddress: string | null;
+  companyLegalName: string | null;
+  companyTaxId: string | null;
+  companyPhone: string | null;
   items: EmailOrderItem[];
 }

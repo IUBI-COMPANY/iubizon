@@ -53,6 +53,7 @@ export interface BuyerOrderSession {
   invoiceType: string | null;
   invoiceNumber: string | null;
   totalItems: number;
+  deliveredAt: string | null;
   hasRefund: boolean;
   refundStatus: string | null;
   refundType: string | null;
@@ -145,6 +146,10 @@ export async function GET(req: Request) {
       orderId: order.id,
       orderCode: order.order_code,
       createdAt: order.created_at?.toISOString() || new Date().toISOString(),
+      deliveredAt:
+        order.status === "delivered" || order.status === "completed"
+          ? order.updated_at?.toISOString() || null
+          : null,
       status: order.status,
       subtotal: Number(order.subtotal),
       shippingCost: Number(order.shipping_cost),

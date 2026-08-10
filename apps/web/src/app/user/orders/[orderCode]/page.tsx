@@ -73,6 +73,7 @@ interface BuyerOrderSession {
   orderId: string;
   orderCode: string;
   createdAt: string;
+  deliveredAt: string | null;
   subtotal: number;
   taxAmount: number;
   shippingCost: number;
@@ -610,6 +611,7 @@ export default function OrderDetailPage({
         orderId={session.orderId}
         orderCode={session.orderCode}
         createdAt={session.createdAt}
+        deliveredAt={session.deliveredAt}
         orderTotal={session.totalAmount}
         onRefundCreated={() => setRefundTrigger((prev) => prev + 1)}
         items={session.packages.flatMap((pkg) =>

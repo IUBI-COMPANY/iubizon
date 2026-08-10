@@ -27,6 +27,7 @@ export interface WarrantyModalProps {
   orderId?: string;
   orderCode: string;
   createdAt: string;
+  deliveredAt?: string | null;
   sellerName?: string | null;
   productTitle?: string;
   warrantyText?: string;
@@ -42,6 +43,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
   orderId,
   orderCode,
   createdAt,
+  deliveredAt,
   sellerName,
   productTitle,
   warrantyText = "6 meses por falla de fábrica (Garantía del vendedor)",
@@ -91,7 +93,6 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
     fetch(`/api/orders/refund?orderId=${encodeURIComponent(orderId)}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("[WarrantyModal] Existing refunds:", data.requests);
         setExistingRefunds(data.requests || []);
       })
       .catch((err) =>
@@ -116,16 +117,14 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
   const blockedItemIds = useMemo(() => {
     const ids = new Set<string>();
     existingRefunds.forEach((req) => {
-      if (["pending", "approved"].includes(req.status)) {
+      if (req.status !== "rejected") {
         req.items.forEach((item) => ids.add(item.order_item_id));
       }
     });
     return ids;
   }, [existingRefunds]);
 
-  const hasAnyRefund = existingRefunds.some((r) =>
-    ["pending", "approved"].includes(r.status),
-  );
+  const hasAnyRefund = existingRefunds.some((r) => r.status !== "rejected");
 
   const availableIds = useMemo(() => {
     const ids = new Set(allIds);
@@ -160,7 +159,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
 
   if (!isOpen) return null;
 
-  const orderDate = new Date(createdAt);
+  const orderDate = new Date(deliveredAt || createdAt);
   const now = new Date();
   const diffDays = Math.floor(
     (now.getTime() - orderDate.getTime()) / (1000 * 3600 * 24),

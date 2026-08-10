@@ -8,6 +8,14 @@ import {
   sendReturnReceivedNotification,
 } from "@/lib/email";
 
+const ACTIVE_REFUND_STATUSES = [
+  "pending",
+  "approved",
+  "return_in_transit",
+  "return_received",
+  "refunded",
+];
+
 export async function POST(req: Request) {
   try {
     const supabase = await createServerClient();
@@ -46,6 +54,7 @@ export async function POST(req: Request) {
         status: true,
         total_amount: true,
         created_at: true,
+        updated_at: true,
       },
     });
     if (!order)
@@ -68,15 +77,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Dentro del plazo de protección
+    // 3. Dentro del plazo de protección (desde la entrega)
     const protectionDays = await getProtectionDays();
-    const daysSinceOrder = order.created_at
+    const deliveryDate = order.updated_at || order.created_at;
+    const daysSinceDelivery = deliveryDate
       ? Math.floor(
-          (Date.now() - new Date(order.created_at).getTime()) /
-            (1000 * 3600 * 24),
+          (Date.now() - new Date(deliveryDate).getTime()) / (1000 * 3600 * 24),
         )
       : 0;
-    if (daysSinceOrder > protectionDays) {
+    if (daysSinceDelivery > protectionDays) {
       return NextResponse.json(
         {
           error: `El plazo de protección de ${protectionDays} días ha expirado`,
@@ -93,7 +102,7 @@ export async function POST(req: Request) {
           order_item_id: { in: itemIds },
           request: {
             order_id: orderId,
-            status: { in: ["pending", "approved"] },
+            status: { in: ACTIVE_REFUND_STATUSES },
           },
         },
       });
@@ -107,9 +116,8 @@ export async function POST(req: Request) {
         );
       }
     } else {
-      // Full: no puede existir ninguna solicitud activa en la orden
       const existing = await prisma.refundRequest.findFirst({
-        where: { order_id: orderId, status: { in: ["pending", "approved"] } },
+        where: { order_id: orderId, status: { in: ACTIVE_REFUND_STATUSES } },
       });
       if (existing) {
         return NextResponse.json(
@@ -246,24 +254,49 @@ export async function GET(req: Request) {
                 },
               },
               package: {
-                select: { company: { select: { name: true } } },
+                select: {
+                  company: {
+                    select: {
+                      name: true,
+                      legal_name: true,
+                      tax_id: true,
+                      phone: true,
+                    },
+                  },
+                },
               },
             },
           })
         : [];
 
-    const requestsEnriched = requests.map((r) => ({
-      ...r,
-      items: r.items.map((item) => {
-        const oi = orderItems.find((oi) => oi.id === item.order_item_id);
-        return {
-          ...item,
-          product_title: oi?.product?.title ?? null,
-          product_image: oi?.product?.images?.[0]?.url ?? null,
-          company_name: oi?.package?.company?.name ?? null,
-        };
-      }),
-    }));
+    const requestsEnriched = requests.map((r) => {
+      const firstOi =
+        r.items.length > 0
+          ? orderItems.find((oi) => oi.id === r.items[0].order_item_id)
+          : null;
+      const company = firstOi?.package?.company;
+
+      return {
+        ...r,
+        company: company
+          ? {
+              name: company.name,
+              legal_name: company.legal_name,
+              tax_id: company.tax_id,
+              phone: company.phone,
+            }
+          : null,
+        items: r.items.map((item) => {
+          const oi = orderItems.find((oi) => oi.id === item.order_item_id);
+          return {
+            ...item,
+            product_title: oi?.product?.title ?? null,
+            product_image: oi?.product?.images?.[0]?.url ?? null,
+            company_name: oi?.package?.company?.name ?? null,
+          };
+        }),
+      };
+    });
 
     return NextResponse.json({ requests: requestsEnriched });
   } catch (err) {
@@ -294,11 +327,11 @@ export async function PATCH(req: Request) {
       );
 
     if (action === "register_return") {
-      return handleRegisterReturn(refundId, user.id, body);
+      return await handleRegisterReturn(refundId, user.id, body);
     }
 
     if (action === "confirm_return") {
-      return handleConfirmReturn(refundId, user.id);
+      return await handleConfirmReturn(refundId, user.id);
     }
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
@@ -318,6 +351,7 @@ async function handleRegisterReturn(
     returnCourier,
     returnTrackingUrl,
     returnEstimatedDelivery,
+    returnCarrierPhone,
   } = body;
 
   if (!buyerReturnTracking?.trim() || !returnCourier?.trim()) {
@@ -346,27 +380,34 @@ async function handleRegisterReturn(
     );
   }
 
-  const updated = await prisma.refundRequest.update({
-    where: { id: refundId },
-    data: {
-      buyer_return_tracking: buyerReturnTracking.trim(),
-      return_courier: returnCourier.trim(),
-      return_tracking_url: returnTrackingUrl?.trim() || null,
-      return_estimated_delivery: returnEstimatedDelivery
-        ? new Date(returnEstimatedDelivery)
-        : null,
-      status: "return_in_transit",
-    },
-  });
+  try {
+    const updated = await prisma.refundRequest.update({
+      where: { id: refundId },
+      data: {
+        buyer_return_tracking: buyerReturnTracking.trim(),
+        return_courier: returnCourier.trim(),
+        return_tracking_url: returnTrackingUrl?.trim() || null,
+        return_carrier_phone: returnCarrierPhone?.trim() || null,
+        return_estimated_delivery: returnEstimatedDelivery
+          ? new Date(returnEstimatedDelivery)
+          : null,
+        status: "return_in_transit",
+      },
+    });
 
-  sendReturnShippedNotification(refundId).catch((err) =>
-    console.error(
-      "[Refund API] Error enviando notificación de devolución:",
-      err,
-    ),
-  );
+    sendReturnShippedNotification(refundId).catch((err) =>
+      console.error(
+        "[Refund API] Error enviando notificación de devolución:",
+        err,
+      ),
+    );
 
-  return NextResponse.json({ refund: updated, success: true });
+    return NextResponse.json({ refund: updated, success: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Error desconocido";
+    console.error("[Refund API] Error en handleRegisterReturn:", msg, err);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
 
 async function handleConfirmReturn(refundId: string, userId: string) {
@@ -423,17 +464,25 @@ async function handleConfirmReturn(refundId: string, userId: string) {
     );
   }
 
-  const updated = await prisma.refundRequest.update({
-    where: { id: refundId },
-    data: { status: "return_received" },
-  });
+  try {
+    const updated = await prisma.refundRequest.update({
+      where: { id: refundId },
+      data: { status: "return_received" },
+    });
 
-  sendReturnReceivedNotification(refundId).catch((err) =>
-    console.error(
-      "[Refund API] Error enviando notificación de recepción:",
-      err,
-    ),
-  );
+    sendReturnReceivedNotification(refundId).catch((err) =>
+      console.error(
+        "[Refund API] Error enviando notificación de recepción:",
+        err,
+      ),
+    );
 
-  return NextResponse.json({ refund: updated, success: true });
+    return NextResponse.json({ refund: updated, success: true });
+  } catch (err: unknown) {
+    console.error("[Refund API] Error en handleConfirmReturn:", err);
+    return NextResponse.json(
+      { error: "Error al confirmar recepción" },
+      { status: 500 },
+    );
+  }
 }
