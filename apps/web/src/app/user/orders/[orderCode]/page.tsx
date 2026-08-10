@@ -302,7 +302,9 @@ export default function OrderDetailPage({
                 {session.hasRefund && (
                   <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
-                    {session.refundType === "partial" ? "Reembolso Parcial" : "Reembolsado"}
+                    {session.refundType === "partial"
+                      ? "Reembolso Parcial"
+                      : "Reembolsado"}
                   </span>
                 )}
               </div>
@@ -597,7 +599,9 @@ export default function OrderDetailPage({
           </div>
         </div>
 
-        {session.orderId && allDelivered && <RefundStatus orderId={session.orderId} refetchKey={refundTrigger} />}
+        {session.orderId && allDelivered && (
+          <RefundStatus orderId={session.orderId} refetchKey={refundTrigger} />
+        )}
       </main>
 
       <WarrantyModal

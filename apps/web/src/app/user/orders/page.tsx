@@ -183,7 +183,7 @@ export default function UserOrdersPage() {
           (() => {
             const pendingCount = sessions.filter((s) =>
               s.packages.every((p) => p.status === "pending"),
-              ).length;
+            ).length;
             const refundedCount = sessions.filter((s) => s.hasRefund).length;
 
             const filteredSessions =
@@ -192,22 +192,22 @@ export default function UserOrdersPage() {
                 : statusTab === "refunded"
                   ? sessions.filter((s) => s.hasRefund)
                   : statusTab === "in_transit"
-                  ? sessions.filter((s) =>
-                      s.packages.some(
-                        (p) => p.status === "shipped" || p.status === "paid",
-                      ),
-                    )
-                  : statusTab === "pending"
                     ? sessions.filter((s) =>
-                        s.packages.every((p) => p.status === "pending"),
-                      )
-                    : sessions.filter((s) =>
-                        s.packages.every(
-                          (p) =>
-                            p.status === "delivered" ||
-                            p.status === "completed",
+                        s.packages.some(
+                          (p) => p.status === "shipped" || p.status === "paid",
                         ),
-                      );
+                      )
+                    : statusTab === "pending"
+                      ? sessions.filter((s) =>
+                          s.packages.every((p) => p.status === "pending"),
+                        )
+                      : sessions.filter((s) =>
+                          s.packages.every(
+                            (p) =>
+                              p.status === "delivered" ||
+                              p.status === "completed",
+                          ),
+                        );
 
             return (
               <>
@@ -306,7 +306,9 @@ export default function UserOrdersPage() {
                               {session.hasRefund && (
                                 <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1">
                                   <ShieldAlert className="w-3 h-3" />
-                                  {session.refundType === "partial" ? "Parcial" : "Reembolsado"}
+                                  {session.refundType === "partial"
+                                    ? "Parcial"
+                                    : "Reembolsado"}
                                 </span>
                               )}
                               <span className="text-sm font-black text-[#f25c05]">

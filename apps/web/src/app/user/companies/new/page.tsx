@@ -105,11 +105,14 @@ export default function NewCompanyPage() {
   const formData = watch();
 
   const provincesForDepartment = useMemo(
-    () => peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
+    () =>
+      peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
     [formData.department],
   );
   const districtsForProvince = useMemo(
-    () => provincesForDepartment.find((p) => p.name === formData.province)?.districts || [],
+    () =>
+      provincesForDepartment.find((p) => p.name === formData.province)
+        ?.districts || [],
     [provincesForDepartment, formData.province],
   );
 
@@ -492,60 +495,114 @@ export default function NewCompanyPage() {
                 </p>
               </div>
 
-
               {/* Departamento, Provincia, Distrito */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="department" className="block text-sm font-medium text-[#334155] mb-1">
+                  <label
+                    htmlFor="department"
+                    className="block text-sm font-medium text-[#334155] mb-1"
+                  >
                     Departamento *
                   </label>
-                  <Select value={formData.department || undefined} onValueChange={handleDepartmentChange}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                  <Select
+                    value={formData.department || undefined}
+                    onValueChange={handleDepartmentChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona" />
+                    </SelectTrigger>
                     <SelectContent>
                       {peruUbigeo.map((dep) => (
-                        <SelectItem key={dep.name} value={dep.name}>{dep.name}</SelectItem>
+                        <SelectItem key={dep.name} value={dep.name}>
+                          {dep.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.department && <p className="text-xs text-red-500 font-medium mt-1">{errors.department.message}</p>}
+                  {errors.department && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.department.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label htmlFor="province" className="block text-sm font-medium text-[#334155] mb-1">
+                  <label
+                    htmlFor="province"
+                    className="block text-sm font-medium text-[#334155] mb-1"
+                  >
                     Provincia *
                   </label>
-                  <Select value={formData.province || undefined} onValueChange={handleProvinceChange} disabled={!formData.department}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                  <Select
+                    value={formData.province || undefined}
+                    onValueChange={handleProvinceChange}
+                    disabled={!formData.department}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona" />
+                    </SelectTrigger>
                     <SelectContent>
                       {provincesForDepartment.map((prov) => (
-                        <SelectItem key={prov.name} value={prov.name}>{prov.name}</SelectItem>
+                        <SelectItem key={prov.name} value={prov.name}>
+                          {prov.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.province && <p className="text-xs text-red-500 font-medium mt-1">{errors.province.message}</p>}
+                  {errors.province && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.province.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label htmlFor="district" className="block text-sm font-medium text-[#334155] mb-1">
+                  <label
+                    htmlFor="district"
+                    className="block text-sm font-medium text-[#334155] mb-1"
+                  >
                     Distrito *
                   </label>
-                  <Select value={formData.district || undefined} onValueChange={handleDistrictChange} disabled={!formData.province}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                  <Select
+                    value={formData.district || undefined}
+                    onValueChange={handleDistrictChange}
+                    disabled={!formData.province}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona" />
+                    </SelectTrigger>
                     <SelectContent>
                       {districtsForProvince.map((dist) => (
-                        <SelectItem key={dist.name} value={dist.name}>{dist.name}</SelectItem>
+                        <SelectItem key={dist.name} value={dist.name}>
+                          {dist.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.district && <p className="text-xs text-red-500 font-medium mt-1">{errors.district.message}</p>}
+                  {errors.district && (
+                    <p className="text-xs text-red-500 font-medium mt-1">
+                      {errors.district.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Dirección */}
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-[#334155] mb-1">
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-[#334155] mb-1"
+                >
                   Dirección *
                 </label>
-                <Input id="location" {...register("location")} placeholder="Av. Principal 123" />
-                {errors.location && <p className="text-xs text-red-500 font-medium mt-1">{errors.location.message}</p>}
+                <Input
+                  id="location"
+                  {...register("location")}
+                  placeholder="Av. Principal 123"
+                />
+                {errors.location && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.location.message}
+                  </p>
+                )}
               </div>
 
               {/* Teléfono y Correo */}

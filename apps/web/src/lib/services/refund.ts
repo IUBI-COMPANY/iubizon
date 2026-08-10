@@ -48,16 +48,27 @@ export async function calculateRefundAmount(params: {
 
   const refundItems = params.items!.map((reqItem) => {
     const dbItem = orderItems.find((oi) => oi.id === reqItem.orderItemId);
-    if (!dbItem) throw new Error(`OrderItem ${reqItem.orderItemId} no encontrado`);
+    if (!dbItem)
+      throw new Error(`OrderItem ${reqItem.orderItemId} no encontrado`);
     if (reqItem.quantity > dbItem.quantity) {
-      throw new Error(`Cantidad solicitada (${reqItem.quantity}) excede la comprada (${dbItem.quantity})`);
+      throw new Error(
+        `Cantidad solicitada (${reqItem.quantity}) excede la comprada (${dbItem.quantity})`,
+      );
     }
     const unitPrice = Number(dbItem.unit_price);
     const subtotal = unitPrice * reqItem.quantity;
-    return { orderItemId: reqItem.orderItemId, quantity: reqItem.quantity, unitPrice, subtotal };
+    return {
+      orderItemId: reqItem.orderItemId,
+      quantity: reqItem.quantity,
+      unitPrice,
+      subtotal,
+    };
   });
 
-  const itemsSubtotal = refundItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const itemsSubtotal = refundItems.reduce(
+    (sum, item) => sum + item.subtotal,
+    0,
+  );
   const orderSubtotal = Number(order?.subtotal || 0);
   const shippingCost = Number(order?.shipping_cost || 0);
 

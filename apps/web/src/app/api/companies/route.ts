@@ -99,7 +99,9 @@ export async function POST(req: Request) {
       });
       if (existingRuc) {
         return NextResponse.json(
-          { error: `El RUC ${body.tax_id.trim()} ya está registrado en iubizon.` },
+          {
+            error: `El RUC ${body.tax_id.trim()} ya está registrado en iubizon.`,
+          },
           { status: 400 },
         );
       }

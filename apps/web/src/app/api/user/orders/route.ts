@@ -120,16 +120,24 @@ export async function GET(req: Request) {
     });
 
     const orderIds = orders.map((o) => o.id);
-    const refunds = orderIds.length > 0
-      ? await prisma.refundRequest.findMany({
-          where: {
-            order_id: { in: orderIds },
-            status: { in: ["approved", "return_in_transit", "return_received", "refunded"] },
-          },
-          select: { order_id: true, status: true, type: true },
-          orderBy: { created_at: "desc" },
-        })
-      : [];
+    const refunds =
+      orderIds.length > 0
+        ? await prisma.refundRequest.findMany({
+            where: {
+              order_id: { in: orderIds },
+              status: {
+                in: [
+                  "approved",
+                  "return_in_transit",
+                  "return_received",
+                  "refunded",
+                ],
+              },
+            },
+            select: { order_id: true, status: true, type: true },
+            orderBy: { created_at: "desc" },
+          })
+        : [];
 
     const refundByOrder = new Map(refunds.map((r) => [r.order_id, r]));
 

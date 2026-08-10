@@ -1,5 +1,14 @@
 import * as React from "react";
-import { Section, Text, Heading, Button, Row, Column, Img, Hr } from "@react-email/components";
+import {
+  Section,
+  Text,
+  Heading,
+  Button,
+  Row,
+  Column,
+  Img,
+  Hr,
+} from "@react-email/components";
 import { BaseLayout } from "./BaseLayout";
 import type { DispatchEmailData } from "../types";
 
@@ -11,7 +20,9 @@ export function DispatchNotificationEmail(data: DispatchEmailData) {
     <BaseLayout previewText={`¡Tu pedido #${data.orderCode} está en camino!`}>
       <Section style={bannerStyle}>
         <Text style={badgeStyle}>¡TU PEDIDO ESTÁ EN CAMINO!</Text>
-        <Heading style={mainHeadingStyle}>¡Buenas noticias, {data.buyerName}!</Heading>
+        <Heading style={mainHeadingStyle}>
+          ¡Buenas noticias, {data.buyerName}!
+        </Heading>
         <Text style={subtitleStyle}>
           {data.companyName} ha despachado tu pedido y está en camino a tu
           domicilio. Revisa los datos de seguimiento para estar atento a la
@@ -69,7 +80,13 @@ export function DispatchNotificationEmail(data: DispatchEmailData) {
             <Row style={itemRowStyle}>
               <Column style={{ width: "64px", verticalAlign: "top" }}>
                 {item.imageUrl ? (
-                  <Img src={item.imageUrl} alt={item.title} width="54" height="54" style={productImgStyle} />
+                  <Img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    width="54"
+                    height="54"
+                    style={productImgStyle}
+                  />
                 ) : (
                   <div style={productImgPlaceholderStyle}>📦</div>
                 )}
@@ -79,7 +96,9 @@ export function DispatchNotificationEmail(data: DispatchEmailData) {
                 <Text style={itemMetaStyle}>
                   Cant: {item.quantity} × S/ {item.price.toFixed(2)} c/u
                 </Text>
-                <Text style={sellerTagStyle}>Despachado por: {item.companyName || item.sellerName}</Text>
+                <Text style={sellerTagStyle}>
+                  Despachado por: {item.companyName || item.sellerName}
+                </Text>
               </Column>
             </Row>
             {index < data.items.length - 1 && <Hr style={lightHrStyle} />}
@@ -105,22 +124,123 @@ const bannerStyle: React.CSSProperties = {
   textAlign: "center",
   marginBottom: "20px",
 };
-const badgeStyle: React.CSSProperties = { color: "#2563eb", fontSize: "11px", fontWeight: "800", letterSpacing: "1px", margin: "0 0 6px 0" };
-const mainHeadingStyle: React.CSSProperties = { color: "#112237", fontSize: "20px", fontWeight: "800", margin: "0 0 6px 0" };
-const subtitleStyle: React.CSSProperties = { color: "#475569", fontSize: "13px", margin: "0" };
-const trackingCardStyle: React.CSSProperties = { backgroundColor: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0", marginTop: "16px" };
-const metaLabelStyle: React.CSSProperties = { color: "#94a3b8", fontSize: "10px", fontWeight: "700", letterSpacing: "0.5px", margin: "0" };
-const metaValueStyle: React.CSSProperties = { color: "#112237", fontSize: "13px", fontWeight: "700", margin: "2px 0 0 0" };
-const trackingCodeStyle: React.CSSProperties = { color: "#f25c05", fontSize: "18px", fontWeight: "800", margin: "2px 0 0 0", letterSpacing: "1px" };
-const lightHrStyle: React.CSSProperties = { borderColor: "#f1f5f9", margin: "8px 0" };
-const trackingButtonStyle: React.CSSProperties = { backgroundColor: "#2563eb", color: "#fff", fontSize: "13px", fontWeight: "700", borderRadius: "12px", padding: "12px 24px", textDecoration: "none", display: "inline-block" };
-const addressBoxStyle: React.CSSProperties = { backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "16px", marginTop: "20px" };
-const sectionTitleStyle: React.CSSProperties = { color: "#112237", fontSize: "12px", fontWeight: "800", letterSpacing: "0.5px", marginBottom: "12px" };
-const addressTextStyle: React.CSSProperties = { color: "#475569", fontSize: "12px", margin: "0 0 2px 0" };
+const badgeStyle: React.CSSProperties = {
+  color: "#2563eb",
+  fontSize: "11px",
+  fontWeight: "800",
+  letterSpacing: "1px",
+  margin: "0 0 6px 0",
+};
+const mainHeadingStyle: React.CSSProperties = {
+  color: "#112237",
+  fontSize: "20px",
+  fontWeight: "800",
+  margin: "0 0 6px 0",
+};
+const subtitleStyle: React.CSSProperties = {
+  color: "#475569",
+  fontSize: "13px",
+  margin: "0",
+};
+const trackingCardStyle: React.CSSProperties = {
+  backgroundColor: "#f8fafc",
+  borderRadius: "12px",
+  border: "1px solid #e2e8f0",
+  marginTop: "16px",
+};
+const metaLabelStyle: React.CSSProperties = {
+  color: "#94a3b8",
+  fontSize: "10px",
+  fontWeight: "700",
+  letterSpacing: "0.5px",
+  margin: "0",
+};
+const metaValueStyle: React.CSSProperties = {
+  color: "#112237",
+  fontSize: "13px",
+  fontWeight: "700",
+  margin: "2px 0 0 0",
+};
+const trackingCodeStyle: React.CSSProperties = {
+  color: "#f25c05",
+  fontSize: "18px",
+  fontWeight: "800",
+  margin: "2px 0 0 0",
+  letterSpacing: "1px",
+};
+const lightHrStyle: React.CSSProperties = {
+  borderColor: "#f1f5f9",
+  margin: "8px 0",
+};
+const trackingButtonStyle: React.CSSProperties = {
+  backgroundColor: "#2563eb",
+  color: "#fff",
+  fontSize: "13px",
+  fontWeight: "700",
+  borderRadius: "12px",
+  padding: "12px 24px",
+  textDecoration: "none",
+  display: "inline-block",
+};
+const addressBoxStyle: React.CSSProperties = {
+  backgroundColor: "#ffffff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "12px",
+  padding: "16px",
+  marginTop: "20px",
+};
+const sectionTitleStyle: React.CSSProperties = {
+  color: "#112237",
+  fontSize: "12px",
+  fontWeight: "800",
+  letterSpacing: "0.5px",
+  marginBottom: "12px",
+};
+const addressTextStyle: React.CSSProperties = {
+  color: "#475569",
+  fontSize: "12px",
+  margin: "0 0 2px 0",
+};
 const itemRowStyle: React.CSSProperties = { padding: "10px 0" };
-const productImgStyle: React.CSSProperties = { borderRadius: "8px", border: "1px solid #e2e8f0", objectFit: "cover" };
-const productImgPlaceholderStyle: React.CSSProperties = { width: "54px", height: "54px", backgroundColor: "#f1f5f9", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" };
-const itemTitleStyle: React.CSSProperties = { color: "#112237", fontSize: "13px", fontWeight: "700", margin: "0 0 2px 0" };
-const itemMetaStyle: React.CSSProperties = { color: "#64748b", fontSize: "12px", margin: "0 0 2px 0" };
-const sellerTagStyle: React.CSSProperties = { color: "#f25c05", fontSize: "11px", fontWeight: "600", margin: "0" };
-const primaryButtonStyle: React.CSSProperties = { backgroundColor: "#f25c05", color: "#ffffff", fontSize: "14px", fontWeight: "700", borderRadius: "12px", padding: "14px 28px", textDecoration: "none", display: "inline-block" };
+const productImgStyle: React.CSSProperties = {
+  borderRadius: "8px",
+  border: "1px solid #e2e8f0",
+  objectFit: "cover",
+};
+const productImgPlaceholderStyle: React.CSSProperties = {
+  width: "54px",
+  height: "54px",
+  backgroundColor: "#f1f5f9",
+  borderRadius: "8px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "20px",
+};
+const itemTitleStyle: React.CSSProperties = {
+  color: "#112237",
+  fontSize: "13px",
+  fontWeight: "700",
+  margin: "0 0 2px 0",
+};
+const itemMetaStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontSize: "12px",
+  margin: "0 0 2px 0",
+};
+const sellerTagStyle: React.CSSProperties = {
+  color: "#f25c05",
+  fontSize: "11px",
+  fontWeight: "600",
+  margin: "0",
+};
+const primaryButtonStyle: React.CSSProperties = {
+  backgroundColor: "#f25c05",
+  color: "#ffffff",
+  fontSize: "14px",
+  fontWeight: "700",
+  borderRadius: "12px",
+  padding: "14px 28px",
+  textDecoration: "none",
+  display: "inline-block",
+};

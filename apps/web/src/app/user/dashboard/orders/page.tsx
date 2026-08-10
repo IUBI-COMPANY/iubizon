@@ -415,7 +415,10 @@ function OrdersContent() {
                             className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1.5 hover:bg-red-100 transition-colors"
                           >
                             <ShieldAlert className="w-3 h-3" />
-                            Reembolso {pkg.pendingRefundType === "partial" ? "Parcial" : "Total"}
+                            Reembolso{" "}
+                            {pkg.pendingRefundType === "partial"
+                              ? "Parcial"
+                              : "Total"}
                           </Link>
                         )}
                       </div>

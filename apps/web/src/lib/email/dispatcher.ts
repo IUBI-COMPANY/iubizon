@@ -7,7 +7,14 @@ import { DispatchNotificationEmail } from "./templates/DispatchNotificationEmail
 import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
 import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
 import { formatDateTime } from "@/lib/utils";
-import type { BuyerEmailData, DispatchEmailData, EmailOrderItem, ReturnReceivedEmailData, ReturnShippedEmailData, SellerEmailData } from "./types";
+import type {
+  BuyerEmailData,
+  DispatchEmailData,
+  EmailOrderItem,
+  ReturnReceivedEmailData,
+  ReturnShippedEmailData,
+  SellerEmailData,
+} from "./types";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
   try {
@@ -301,12 +308,24 @@ export async function sendDispatchNotification(
           select: {
             order_code: true,
             buyer: { select: { name: true, email: true } },
-            shipping: { select: { address: true, department: true, province: true, district: true } },
+            shipping: {
+              select: {
+                address: true,
+                department: true,
+                province: true,
+                district: true,
+              },
+            },
           },
         },
         items: {
           include: {
-            product: { select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } } },
+            product: {
+              select: {
+                title: true,
+                images: { orderBy: { position: "asc" }, take: 1 },
+              },
+            },
           },
         },
       },
@@ -319,7 +338,10 @@ export async function sendDispatchNotification(
     const shipping = order.shipping;
 
     const deliveryDateStr = estimatedDelivery.toLocaleDateString("es-PE", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
     const items = pkg.items.map((item) => ({
@@ -342,7 +364,10 @@ export async function sendDispatchNotification(
       estimatedDelivery: deliveryDateStr,
       items,
       shippingAddress: shipping?.address || "",
-      shippingCity: [shipping?.district, shipping?.province, shipping?.department].filter(Boolean).join(", ") || "",
+      shippingCity:
+        [shipping?.district, shipping?.province, shipping?.department]
+          .filter(Boolean)
+          .join(", ") || "",
       companyName: pkg.company?.name || "Vendedor",
     };
 
@@ -355,9 +380,14 @@ export async function sendDispatchNotification(
       });
 
       if (error) {
-        console.error(`[Dispatch Email] Error enviando a ${data.buyerEmail}:`, error);
+        console.error(
+          `[Dispatch Email] Error enviando a ${data.buyerEmail}:`,
+          error,
+        );
       } else {
-        console.log(`[Dispatch Email] Notificación de envío enviada a ${data.buyerEmail}`);
+        console.log(
+          `[Dispatch Email] Notificación de envío enviada a ${data.buyerEmail}`,
+        );
       }
     }
   } catch (err) {
@@ -389,7 +419,10 @@ export async function sendReturnShippedNotification(refundId: string) {
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },
@@ -406,7 +439,10 @@ export async function sendReturnShippedNotification(refundId: string) {
 
     const deliveryDateStr = refund.return_estimated_delivery
       ? new Date(refund.return_estimated_delivery).toLocaleDateString("es-PE", {
-          weekday: "long", year: "numeric", month: "long", day: "numeric",
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         })
       : "No especificada";
 
@@ -444,9 +480,14 @@ export async function sendReturnShippedNotification(refundId: string) {
       });
 
       if (error) {
-        console.error(`[ReturnShipped Email] Error enviando a ${data.sellerEmail}:`, error);
+        console.error(
+          `[ReturnShipped Email] Error enviando a ${data.sellerEmail}:`,
+          error,
+        );
       } else {
-        console.log(`[ReturnShipped Email] Notificación de devolución enviada a ${data.sellerEmail}`);
+        console.log(
+          `[ReturnShipped Email] Notificación de devolución enviada a ${data.sellerEmail}`,
+        );
       }
     }
   } catch (err) {
@@ -479,7 +520,10 @@ export async function sendReturnReceivedNotification(refundId: string) {
             order_item: {
               include: {
                 product: {
-                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                  select: {
+                    title: true,
+                    images: { orderBy: { position: "asc" }, take: 1 },
+                  },
                 },
               },
             },
@@ -523,9 +567,14 @@ export async function sendReturnReceivedNotification(refundId: string) {
       });
 
       if (error) {
-        console.error(`[ReturnReceived Email] Error enviando a ${adminEmail}:`, error);
+        console.error(
+          `[ReturnReceived Email] Error enviando a ${adminEmail}:`,
+          error,
+        );
       } else {
-        console.log(`[ReturnReceived Email] Notificación enviada a ${adminEmail}`);
+        console.log(
+          `[ReturnReceived Email] Notificación enviada a ${adminEmail}`,
+        );
       }
     }
   } catch (err) {

@@ -149,15 +149,16 @@ export async function GET(request: Request) {
     });
 
     const orderIds = [...new Set(packages.map((p) => p.order_id))];
-    const pendingRefunds = orderIds.length > 0
-      ? await prisma.refundRequest.findMany({
-          where: {
-            order_id: { in: orderIds },
-            status: { in: ["pending", "approved", "return_in_transit"] },
-          },
-          select: { order_id: true, type: true, status: true },
-        })
-      : [];
+    const pendingRefunds =
+      orderIds.length > 0
+        ? await prisma.refundRequest.findMany({
+            where: {
+              order_id: { in: orderIds },
+              status: { in: ["pending", "approved", "return_in_transit"] },
+            },
+            select: { order_id: true, type: true, status: true },
+          })
+        : [];
 
     const result: DashboardPackage[] = packages.map((pkg) => {
       const order = pkg.order;
@@ -204,8 +205,11 @@ export async function GET(request: Request) {
           image: item.product.images[0]?.url || null,
           status: item.status,
         })),
-        hasPendingRefund: pendingRefunds.some((r) => r.order_id === pkg.order_id),
-        pendingRefundType: pendingRefunds.find((r) => r.order_id === pkg.order_id)?.type ?? null,
+        hasPendingRefund: pendingRefunds.some(
+          (r) => r.order_id === pkg.order_id,
+        ),
+        pendingRefundType:
+          pendingRefunds.find((r) => r.order_id === pkg.order_id)?.type ?? null,
       };
     });
 
@@ -335,7 +339,12 @@ export async function PATCH(req: Request) {
         trackingNumber.trim(),
         trackingUrl || null,
         estDeliveryDate,
-      ).catch((err) => console.error("[Seller Orders] Error enviando notificación de despacho:", err));
+      ).catch((err) =>
+        console.error(
+          "[Seller Orders] Error enviando notificación de despacho:",
+          err,
+        ),
+      );
 
       return NextResponse.json({ success: true });
     }

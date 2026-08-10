@@ -41,7 +41,11 @@ export async function getProtectionDays(): Promise<number> {
     const setting = await prisma.platformSetting.findUnique({
       where: { key: "BUYER_PROTECTION_DAYS" },
     });
-    if (setting && typeof setting.value === "object" && setting.value !== null) {
+    if (
+      setting &&
+      typeof setting.value === "object" &&
+      setting.value !== null
+    ) {
       const val = setting.value as Record<string, unknown>;
       return typeof val.days === "number" ? val.days : 7;
     }
