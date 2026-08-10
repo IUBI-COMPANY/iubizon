@@ -1,15 +1,5 @@
 import * as React from "react";
-import {
-  Html,
-  Head,
-  Body,
-  Container,
-  Section,
-  Text,
-  Hr,
-  Link,
-  Preview,
-} from "@react-email/components";
+import { Body, Container, Head, Hr, Html, Link, Preview, Section, Text } from "@react-email/components";
 
 interface BaseLayoutProps {
   previewText: string;

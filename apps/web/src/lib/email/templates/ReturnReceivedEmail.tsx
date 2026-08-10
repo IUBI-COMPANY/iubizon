@@ -1,15 +1,6 @@
 import * as React from "react";
-import {
-  Section,
-  Text,
-  Heading,
-  Button,
-  Row,
-  Column,
-  Img,
-  Hr,
-} from "@react-email/components";
-import { BaseLayout } from "./BaseLayout";
+import { Button, Column, Heading, Hr, Img, Row, Section, Text } from "@react-email/components";
+import { BaseLayout } from "@/lib/email";
 import type { ReturnReceivedEmailData } from "../types";
 
 export function ReturnReceivedEmail(data: ReturnReceivedEmailData) {

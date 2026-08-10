@@ -46,7 +46,7 @@ export function SellerSaleEmail(data: SellerEmailData) {
         <Row>
           <Column style={{ padding: "8px 12px" }}>
             <Text style={metaLabelStyle}>N° DE PEDIDO</Text>
-            <Text style={packageCodeValueStyle}>{data.orderCode}</Text>
+            <Text style={orderCodeValueStyle}>{data.orderCode}</Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
             <Text style={metaLabelStyle}>FECHA DE VENTA</Text>
@@ -237,7 +237,7 @@ const metaLabelStyle: React.CSSProperties = {
   margin: "0",
 };
 
-const packageCodeValueStyle: React.CSSProperties = {
+const orderCodeValueStyle: React.CSSProperties = {
   color: "#f25c05",
   fontSize: "14px",
   fontWeight: "800",

@@ -9,7 +9,7 @@ import {
   Img,
   Hr,
 } from "@react-email/components";
-import { BaseLayout } from "./BaseLayout";
+import { BaseLayout } from "@/lib/email";
 import type { BuyerEmailData } from "../types";
 
 export function BuyerOrderEmail(data: BuyerEmailData) {

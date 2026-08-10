@@ -1,15 +1,6 @@
 import * as React from "react";
-import {
-  Section,
-  Text,
-  Heading,
-  Button,
-  Row,
-  Column,
-  Img,
-  Hr,
-} from "@react-email/components";
-import { BaseLayout } from "./BaseLayout";
+import { Button, Column, Heading, Hr, Img, Row, Section, Text } from "@react-email/components";
+import { BaseLayout } from "@/lib/email";
 import type { RefundStatusEmailData } from "../types";
 
 export function RefundStatusEmail(data: RefundStatusEmailData) {
