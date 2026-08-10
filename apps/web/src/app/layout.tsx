@@ -22,12 +22,12 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.iubizon.com";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default:
-      "iubizon | La plataforma para vender productos para educar y trabajar",
+    default: "iubizon - Tecnología para educar y trabajar",
     template: "%s | iubizon",
   },
   description:
-    "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas con comisiones bajas del 9%.",
+    "iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para solicitar un reembolso.",
+
   alternates: {
     canonical: baseUrl,
   },
@@ -64,25 +64,29 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: baseUrl,
-    title:
-      "iubizon | La plataforma para vender productos para educar y trabajar",
+    url: "https://www.iubizon.com",
+    title: "iubizon - Tecnología para educar y trabajar",
     description:
-      "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas.",
+      "Compra tecnología para educar y trabajar directo a proveedores verificados y con pagos protegidos.",
+
     images: [
       {
         url: `${baseUrl}/images/banner-seo.png`,
       },
     ],
-    siteName: "iubizon - Venta de tecnología para educar y trabajar",
+
+    siteName: "iubizon - Tecnología para educar y trabajar",
   },
   twitter: {
     card: "summary_large_image",
-    title:
-      "iubizon | La plataforma para vender productos para educar y trabajar",
+    title: "iubizon - Tecnología para educar y trabajar",
     description:
-      "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas.",
-    images: [`${baseUrl}/images/banner-seo.png`],
+      "Compra tecnología para educar y trabajar directo a proveedores verificados, con pagos protegidos.",
+    images: [
+      {
+        url: "https://www.iubizon.com/og-image.jpg",
+      },
+    ],
   },
   facebook: {
     appId: "1176594967865528",
@@ -105,10 +109,21 @@ export default function RootLayout({
     "@type": "OnlineMarketplace",
     name: "iubizon",
     description:
-      "La plataforma líder para comprar y vender productos tecnológicos y servicios para educar y trabajar en el Perú.",
-    url: baseUrl,
-    logo: `${baseUrl}/images/logo.png`,
-    image: `${baseUrl}/images/banner-seo.png`,
+      "Plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para solicitar un reembolso.",
+    url: "https://www.iubizon.com",
+    logo: "https://www.iubizon.com/images/logo.png",
+    image: "https://www.iubizon.com/og-image.jpg",
+    telephone: "+51972300301",
+    email: "iubizon.company@gmail.com",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Calle las acacias, Pje. los Jazmines 181",
+      addressLocality: "Chorrillos",
+      addressRegion: "Lima",
+      postalCode: "15067",
+      addressCountry: "PE",
+    },
+
     sameAs: [
       "https://www.facebook.com/iubizon/",
       "https://www.instagram.com/iubizon",

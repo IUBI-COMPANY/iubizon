@@ -2,71 +2,111 @@ import { NextResponse } from "next/server";
 
 const content = `# iubizon - Tecnología para educar y trabajar
 
-> iubizon es el marketplace peruano que conecta empresas y compradores con productos y servicios tecnológicos y multimedia, pensados para colegios, instituciones educativas y negocios. Encuentra todo en un solo lugar, compra con proveedores verificados y recibe cada pedido con garantía oficial y protección al comprador. Nuestra misión es transformar la forma de educar y trabajar: pasamos de los cuadernos, la regla y la pizarra a soluciones basadas en proyección, interacción y participación activa.
+> iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos, envíos coordinados y 7 días de prueba para devolver tu producto. Tú compras con confianza: sin estafas, sin proveedores que no responden y con una comisión clara y transparente.
 
 ---
 
 ## ¿Qué es iubizon?
 
-iubizon es un marketplace que une en una sola plataforma la educación y la tecnología multimedial. Brinda soluciones tanto a empresas como a clientes finales: aquí se compran y se publican pedidos, con la facilidad de armar kits y paquetes tecnológicos a la medida de cada necesidad del cliente.
+iubizon es una plataforma de compra y venta de tecnología para educar y trabajar. Funciona así:
 
-iubizon opera como una plataforma tecnológica conector entre empresas comercializadoras, marcas y compradores. Los precios están expresados en Soles (S/) e incluyen los impuestos de ley (IGV) salvo que se especifique lo contrario, y las transacciones se procesan a través de pasarelas de pago reguladas.
+1. Los proveedores publican sus productos con precio, stock, garantía y categoría.
+2. El cliente encuentra el producto y compra directo con el proveedor en la plataforma.
+3. El proveedor despacha el pedido: si es un solo producto, coordina el envío directo; si son varios, el cliente puede elegir que iubizon gestione el envío.
+4. iubizon guarda el pago del cliente y, después de los 7 días de prueba, deposita el pago al proveedor.
 
----
-
-## Para compradores: encuentra todo en un solo lugar
-
-La plataforma de productos y servicios para empresas y colegios. Encuentra equipamiento tecnológico y multimedia y arma tus combos ideales para tu empresa u hogar.
-
-### Cómo comprar
-
-1. **Arma tu set o paquete tecnológico**: Selecciona productos complementarios (laptops, proyectores, impresoras o accesorios) y agrégalos a tu paquete en un solo pago unificado.
-2. **Cotización oficial en PDF**: ¿Necesitas aprobación en tu institución o empresa? Genera y descarga al instante una cotización con RUC emitida por IUBIZON COMPANY S.A.C.
-3. **Pasarela de pagos 100% segura**: Paga mediante tarjetas de crédito o débito con encriptación bancaria de alta seguridad (Visa, Mastercard, American Express).
-4. **Despacho y seguimiento**: Monitorea el estado de tu pedido desde tu panel de usuario hasta recibirlo con garantía oficial de marca.
-
-Además, puedes comprar como invitado: no necesitas registrarte ni crear contraseña para completar tu compra.
-
-### Opciones de entrega
-
-- **Envío directo del proveedor**: Cada proveedor te envía directo a tu domicilio, más rápido.
-- **Envío consolidado por iubizon**: Los proveedores envían a iubizon y nosotros te entregamos todo junto en una sola entrega.
+Nuestro objetivo es simple: que compres con total confianza. Para lograrlo, en la plataforma se valida a los proveedores con buena calificación, lo que evita estafas y proveedores que no contestan o no cumplen.
 
 ---
 
-## Para vendedores: hacer crecer tu negocio
+## Cómo funciona para clientes
 
-Conecta tus productos tecnológicos con miles de compradores institucionales y personas en todo el Perú.
+Compra el producto que necesitas (laptops, proyectores, impresoras, accesorios y más) de forma fácil y segura:
 
-1. **Crea tu perfil de empresa**: Registra tu marca o empresa con RUC, personaliza tu catálogo comercial y gestiona tu equipo de trabajo de forma independiente.
-2. **Cobros y transferencias bancarias directas**: Registra tu cuenta de ahorros o corriente (BCP, Interbank, BBVA, etc.) en tu panel de finanzas. iubizon liquida y transfiere tus ventas de forma transparente.
-3. **Gestión de pedidos y despachos**: Recibe notificaciones inmediatas ante cada venta, actualiza el código de seguimiento del envío y mantén la reputación de tu tienda alta.
+1. **Elige y compra directo con el proveedor**: Busca el producto en la plataforma y cómpralo directo. iubizon facilita la compra por ti: calculamos el IGV, armas tu carrito y completas los formularios en un solo lugar.
+2. **Recibe tu producto**: Si compras un solo producto, el proveedor coordina y realiza el envío directamente a ti. Si compras varios productos (de uno o más proveedores), tienes la opción de que iubizon gestione el envío por ti, sin costo adicional por ahora.
+3. **Pago protegido**: Tu pago queda guardado con iubizon y el proveedor solo lo recibe después de los 7 días de prueba.
+4. **Prueba y queda conforme**: Tienes 7 días de prueba (se cuentan fines de semana y feriados). Si no estás conforme o el producto presenta fallas, devuélvelo y recibe un reembolso total (incluida la comisión), asumiendo solo el costo del envío de la devolución. Pasado ese tiempo ya no se aceptan devoluciones.
+
+Además, puedes comprar sin registrarte: no necesitas crear una cuenta ni contraseña para completar tu compra.
+
+---
+
+## Cómo funciona para proveedores
+
+iubizon también es el lugar ideal para vender:
+
+1. **Regístrate gratis**: Crea tu cuenta en la plataforma con tu correo, contraseña y nombres. Es necesario iniciar sesión para publicar productos.
+2. **Conviértete en vendedor**: Dentro de la plataforma, haz clic en el botón para convertirte en vendedor. Ahí te pedimos los datos de tu negocio, como el logo y el RUC.
+3. **Publica tus productos**: Sube tus productos con precio, stock, garantía y categoría.
+4. **Pasa la validación de la plataforma**: Solo los proveedores verificados y con buena calificación participan. Así protegemos a los compradores y a los vendedores serios.
+5. **Despacha tu producto**: Para un solo producto, tú coordinas el envío con el cliente. Si el cliente compra varios productos, iubizon puede gestionar el envío por ti.
+6. **Recibe tu pago después de los 7 días de prueba**: iubizon guarda el pago del cliente y te lo deposita recién cuando pasan los 7 días de prueba. Así todos compran y venden con confianza.
+
+---
+
+## Comisiones claras y transparentes
+
+- Por cada venta, iubizon recibe el 9% del valor del producto, comisión que se descuenta del precio de venta del proveedor.
+- Si el producto cuesta menos de S/ 40 y el pago es con tarjeta, se añaden S/ 2.50 para cubrir la protección del pago con tarjeta.
+- Si el producto cuesta S/ 40 o más, solo se aplica la comisión del 9%.
+- Si el cliente devuelve el producto dentro de los 7 días de prueba, se devuelve el pago completo (incluida la comisión) y el producto vuelve al proveedor.
+- Cuando el vendedor es el propio iubizon (productos propios, mantenimiento o reparación), no hay comisión, porque iubizon es quien vende directamente.
+
+---
+
+## Productos y servicios propios de iubizon
+
+Además de la plataforma, iubizon ofrece:
+
+- **Productos propios**: iubizon también vende su propia línea de productos, siempre con garantía oficial.
+- **Mantenimiento y reparación**: ¿Tu equipo falla o se dañó? Contrata el servicio técnico de iubizon para que tus equipos duren más y funcionen bien.
 
 ---
 
 ## Seguridad y garantía
 
-### Protección en compras y garantía de fábrica
-
-Todos los productos comercializados cuentan con respaldo y garantía oficial contra fallas de fabricación. iubizon facilita la mediación directa para que recibas el producto exacto prometido. La **protección al comprador iubizon** ofrece una cobertura de 7 días para verificar la entrega e idoneidad del producto.
-
-### Prevención contra transacciones fraudulentas
-
-Auditamos las solicitudes de venta y las empresas asociadas para garantizar que los pagos procesados sean legítimos, protegiendo tanto los fondos del comprador como las retribuciones del vendedor.
-
-### Proveedores y distribuidores verificados
-
-Conecta con proveedores confiables y encuentra los productos que necesitas, con la tranquilidad de comprar en tiendas oficiales y perfiles verificados.
+- **Proveedores verificados**: Validamos a cada proveedor antes de que venda en la plataforma y solo trabajamos con los de buena calificación.
+- **Protección contra estafas**: Auditamos las solicitudes de venta y las empresas asociadas para que los pagos sean legítimos y seguros.
+- **Pagos protegidos**: El pago del cliente queda guardado con iubizon y se deposita al proveedor recién después de los 7 días de prueba. De esta forma, si algo sale mal, el cliente recupera su dinero.
+- **7 días de prueba**: Tienes 7 días (se cuentan fines de semana y feriados) para probar el producto y quedar conforme. Si no te gusta o el producto está malo, devuélvelo dentro de ese plazo y te reembolsamos todo, incluida la comisión. El cliente asume el costo del envío de la devolución y, pasados los 7 días, ya no es posible devolverlo.
+- **Garantía del proveedor**: Cada proveedor declara la garantía de su producto al publicarlo, y esta se muestra en la página del producto antes de que compres.
+- **Pagos seguros con Niubiz**: Los pagos se gestionan con el servicio de pagos de Niubiz. Paga con tarjeta de crédito o débito con encriptación de alta seguridad.
 
 ---
 
-## Nuestro compromiso con la educación y la innovación
+## Preguntas frecuentes
 
-En iubizon creemos que la forma de enseñar y trabajar puede (y debe) mejorar. Nuestra promesa es simple: entender la tecnología como un puente hacia una educación más dinámica, interactiva y participativa. Por eso ofrecemos kits y paquetes tecnológicos diseñados para transformar aulas y espacios de trabajo con proyección, interacción y participación real.
+**¿Necesito registrarme para comprar?**
+No. Puedes comprar como invitado sin crear cuenta ni contraseña.
+
+**¿Cómo se hace el envío?**
+Si compras un solo producto, el proveedor coordina y realiza el envío directamente. Si compras varios productos, iubizon puede gestionar el envío por ti, incluso si vienen de proveedores distintos, sin costo adicional por ahora.
+
+**¿Puedo devolver un producto?**
+Sí, dentro de los primeros 7 días (se cuentan fines de semana y feriados). Si no te convence o está malo, devuélvelo dentro del plazo y te reembolsamos todo, incluida la comisión. El cliente asume el costo del envío de la devolución y, pasados los 7 días, ya no se aceptan devoluciones.
+
+**¿Cuándo recibe el proveedor su pago?**
+El proveedor recibe su pago después de los 7 días de prueba. iubizon guarda el pago del cliente y solo lo deposita cuando pasan los 7 días, asegurando que la compra sea satisfactoria.
+
+**¿Qué garantía tiene mi producto?**
+La garantía la define cada proveedor al publicar su producto, y puedes verla en la página del producto antes de comprar.
+
+**¿Qué pasa si el proveedor no cumple?**
+iubizon solo trabaja con proveedores verificados y con buena calificación. Si algo sale mal, contamos con protección al comprador y mediación directa.
+
+**¿Cuánto cobra iubizon?**
+El 9% del valor del producto, que se descuenta del precio de venta del proveedor. Si el producto cuesta menos de S/ 40 y pagas con tarjeta, se añaden S/ 2.50 para la protección del pago. Cuando iubizon vende sus propios productos o servicios, no hay comisión.
+
+**¿Cómo publico un producto?**
+Regístrate gratis con tu correo, contraseña y nombres. Luego, dentro de la plataforma, haz clic en el botón para convertirte en vendedor: ahí te pedimos los datos de tu negocio, como el logo y el RUC. Una vez registrado, podrás publicar tus productos con precio, stock, garantía y categoría.
+
+**¿Qué hago si mi equipo se daña?**
+Contacta el servicio de mantenimiento y reparación de iubizon y nosotros lo arreglamos.
 
 ---
 
-## Información de contacto y ubicación
+## Contacto
 
 - **Centro de información y ayuda**: /help
 - **Correo**: iubizon.company@gmail.com
@@ -75,18 +115,6 @@ En iubizon creemos que la forma de enseñar y trabajar puede (y debe) mejorar. N
 - **Empresa**: IUBIZON COMPANY S.A.C.
 
 Síguenos en nuestras redes: Facebook, Instagram y TikTok (@iubizon).
-
----
-
-## Términos y condiciones
-
-**Aceptación del servicio**: Al acceder, explorar o realizar compras a través de iubizon.com, el usuario acepta de manera íntegra los Términos y Condiciones administrados por IUBIZON COMPANY S.A.C.
-
-**Transparencia de precios**: Todos los precios están expresados en Soles (S/) e incluyen los impuestos de ley (IGV) salvo que se especifique lo contrario. El cobro por servicio o comisión por uso de plataforma es retenido automáticamente según las condiciones pactadas con cada vendedor.
-
-**Confianza y calidad**: iubizon se reserva el derecho de retirar cualquier publicación que no cumpla los estándares de calidad, y de suspender cuentas que intenten maniobras fraudulentas, suplantación de identidad o incumplimiento reiterado en las entregas.
-
-**Privacidad de datos**: tus datos personales están protegidos conforme a la Ley N° 29733 del Perú y no son comercializados con terceros. La información financiera o de tarjetas es procesada directamente por pasarelas certificadas con cifrado SSL sin ser almacenada en nuestros servidores.
 `;
 
 export async function GET() {
