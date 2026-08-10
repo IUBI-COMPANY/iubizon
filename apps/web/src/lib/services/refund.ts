@@ -46,7 +46,8 @@ export async function calculateRefundAmount(params: {
     select: { id: true, quantity: true, unit_price: true },
   });
 
-  const refundItems = params.items!.map((reqItem) => {
+  const reqItems = params.items || [];
+  const refundItems = reqItems.map((reqItem) => {
     const dbItem = orderItems.find((oi) => oi.id === reqItem.orderItemId);
     if (!dbItem)
       throw new Error(`OrderItem ${reqItem.orderItemId} no encontrado`);

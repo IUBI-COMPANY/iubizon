@@ -3,10 +3,8 @@ import { db } from "@iubizon/db";
 
 const NIUBIZ_SANDBOX_MERCHANT = "341198210";
 const NIUBIZ_PROD_MERCHANT = "651052554";
-const NIUBIZ_SECURITY_SANDBOX = "https://apisandbox.vnforappstest.com";
-const NIUBIZ_SECURITY_PROD = "https://apiprod.vnforapps.com";
-const NIUBIZ_REFUND_SANDBOX = "https://apitestenv.vnforapps.com";
-const NIUBIZ_REFUND_PROD = "https://apiprod.vnforapps.com";
+const NIUBIZ_BASE_SANDBOX = "https://apisandbox.vnforappstest.com";
+const NIUBIZ_BASE_PROD = "https://apiprod.vnforapps.com";
 
 function triggerRefundEmail(refundId: string, approved: boolean) {
   try {
@@ -53,13 +51,14 @@ async function getNiubizConfig(): Promise<NiubizConfig> {
   }
 
   const isProd = environment === "production";
+  const baseUrl = isProd ? NIUBIZ_BASE_PROD : NIUBIZ_BASE_SANDBOX;
   return {
     environment,
     merchantId,
     user: (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim(),
     password: (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim(),
-    securityBaseUrl: isProd ? NIUBIZ_SECURITY_PROD : NIUBIZ_SECURITY_SANDBOX,
-    refundBaseUrl: isProd ? NIUBIZ_REFUND_PROD : NIUBIZ_REFUND_SANDBOX,
+    securityBaseUrl: baseUrl,
+    refundBaseUrl: baseUrl,
   };
 }
 
@@ -360,7 +359,9 @@ async function handleProcessRefund(refundId: string) {
 
   if (companyRuc.length !== 11) {
     return NextResponse.json(
-      { error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)` },
+      {
+        error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)`,
+      },
       { status: 400 },
     );
   }
@@ -548,17 +549,15 @@ async function processNiubizRefund(
       rawResponse: data,
     };
   } catch (err: unknown) {
+    if (!(err instanceof Error)) {
+      throw new Error("Error al procesar el reembolso en Niubiz");
+    }
     if (
-      err instanceof Error &&
-      (err.message.includes("Error al procesar") ||
-        err.message.includes("Niubiz:"))
+      err.message.includes("Niubiz:") ||
+      err.message.includes("Error al procesar")
     ) {
       throw err;
     }
-    console.error(
-      "[Niubiz] Error:",
-      err instanceof Error ? err.message : "Error de red",
-    );
-    throw new Error("Error al procesar el reembolso en Niubiz");
+    throw new Error(`Error al procesar el reembolso en Niubiz: ${err.message}`);
   }
 }
