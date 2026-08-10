@@ -4,8 +4,10 @@ import { getDefaultFromEmail, getResendClient } from "./client";
 import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
 import { SellerSaleEmail } from "./templates/SellerSaleEmail";
 import { DispatchNotificationEmail } from "./templates/DispatchNotificationEmail";
+import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
+import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
 import { formatDateTime } from "@/lib/utils";
-import type { BuyerEmailData, DispatchEmailData, EmailOrderItem, SellerEmailData } from "./types";
+import type { BuyerEmailData, DispatchEmailData, EmailOrderItem, ReturnReceivedEmailData, ReturnShippedEmailData, SellerEmailData } from "./types";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
   try {
@@ -360,5 +362,173 @@ export async function sendDispatchNotification(
     }
   } catch (err) {
     console.error("[Dispatch Email] Error:", err);
+  }
+}
+
+export async function sendReturnShippedNotification(refundId: string) {
+  try {
+    const resend = getResendClient();
+    const fromEmail = getDefaultFromEmail();
+
+    const refund = await prisma.refundRequest.findUnique({
+      where: { id: refundId },
+      include: {
+        order: {
+          select: {
+            order_code: true,
+            buyer: { select: { name: true } },
+            packages: {
+              select: {
+                company: { select: { name: true, email: true } },
+              },
+            },
+          },
+        },
+        items: {
+          include: {
+            order_item: {
+              include: {
+                product: {
+                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!refund?.order?.packages?.[0]?.company?.email) return;
+
+    const order = refund.order;
+    const company = order.packages[0].company;
+    const buyerName = order.buyer?.name || "Comprador";
+
+    const deliveryDateStr = refund.return_estimated_delivery
+      ? new Date(refund.return_estimated_delivery).toLocaleDateString("es-PE", {
+          weekday: "long", year: "numeric", month: "long", day: "numeric",
+        })
+      : "No especificada";
+
+    const items: EmailOrderItem[] = refund.items.map((ri) => ({
+      id: ri.order_item_id,
+      title: ri.order_item?.product?.title || "Producto",
+      price: Number(ri.unit_price),
+      quantity: ri.quantity,
+      imageUrl: ri.order_item?.product?.images?.[0]?.url || null,
+      sellerName: company.name,
+      companyName: company.name,
+    }));
+
+    const data: ReturnShippedEmailData = {
+      orderCode: order.order_code,
+      sellerName: company.name,
+      sellerEmail: company.email,
+      companyName: company.name,
+      buyerName,
+      courier: refund.return_courier || "No especificada",
+      trackingNumber: refund.buyer_return_tracking || "N/A",
+      trackingUrl: refund.return_tracking_url || null,
+      estimatedDelivery: deliveryDateStr,
+      returnAddress: refund.return_address || "No especificada",
+      items,
+      refundAmount: Number(refund.refund_amount),
+    };
+
+    if (resend) {
+      const { error } = await resend.emails.send({
+        from: fromEmail,
+        to: [data.sellerEmail],
+        subject: `Devolución en camino — Pedido #${data.orderCode} — iubizon`,
+        react: React.createElement(ReturnShippedEmail, data),
+      });
+
+      if (error) {
+        console.error(`[ReturnShipped Email] Error enviando a ${data.sellerEmail}:`, error);
+      } else {
+        console.log(`[ReturnShipped Email] Notificación de devolución enviada a ${data.sellerEmail}`);
+      }
+    }
+  } catch (err) {
+    console.error("[ReturnShipped Email] Error:", err);
+  }
+}
+
+export async function sendReturnReceivedNotification(refundId: string) {
+  try {
+    const resend = getResendClient();
+    const fromEmail = getDefaultFromEmail();
+    const adminEmail = process.env.ADMIN_EMAIL || "iubizon.company@gmail.com";
+
+    const refund = await prisma.refundRequest.findUnique({
+      where: { id: refundId },
+      include: {
+        order: {
+          select: {
+            order_code: true,
+            buyer: { select: { name: true } },
+            packages: {
+              select: {
+                company: { select: { name: true } },
+              },
+            },
+          },
+        },
+        items: {
+          include: {
+            order_item: {
+              include: {
+                product: {
+                  select: { title: true, images: { orderBy: { position: "asc" }, take: 1 } },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!refund) return;
+
+    const order = refund.order;
+    const companyName = order.packages[0]?.company?.name || "Vendedor";
+    const buyerName = order.buyer?.name || "Comprador";
+
+    const items: EmailOrderItem[] = refund.items.map((ri) => ({
+      id: ri.order_item_id,
+      title: ri.order_item?.product?.title || "Producto",
+      price: Number(ri.unit_price),
+      quantity: ri.quantity,
+      imageUrl: ri.order_item?.product?.images?.[0]?.url || null,
+      sellerName: companyName,
+      companyName,
+    }));
+
+    const data: ReturnReceivedEmailData = {
+      orderCode: order.order_code,
+      companyName,
+      sellerName: companyName,
+      buyerName,
+      refundAmount: Number(refund.refund_amount),
+      refundType: refund.type,
+      items,
+    };
+
+    if (resend) {
+      const { error } = await resend.emails.send({
+        from: fromEmail,
+        to: [adminEmail],
+        subject: `Devolución confirmada — Orden #${data.orderCode} — Procesar Reembolso`,
+        react: React.createElement(ReturnReceivedEmail, data),
+      });
+
+      if (error) {
+        console.error(`[ReturnReceived Email] Error enviando a ${adminEmail}:`, error);
+      } else {
+        console.log(`[ReturnReceived Email] Notificación enviada a ${adminEmail}`);
+      }
+    }
+  } catch (err) {
+    console.error("[ReturnReceived Email] Error:", err);
   }
 }

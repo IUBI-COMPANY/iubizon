@@ -67,3 +67,28 @@ export interface DispatchEmailData {
   shippingCity: string;
   companyName: string;
 }
+
+export interface ReturnShippedEmailData {
+  orderCode: string;
+  sellerName: string;
+  sellerEmail: string;
+  companyName: string;
+  buyerName: string;
+  courier: string;
+  trackingNumber: string;
+  trackingUrl: string | null;
+  estimatedDelivery: string;
+  returnAddress: string;
+  items: EmailOrderItem[];
+  refundAmount: number;
+}
+
+export interface ReturnReceivedEmailData {
+  orderCode: string;
+  companyName: string;
+  sellerName: string;
+  buyerName: string;
+  refundAmount: number;
+  refundType: string;
+  items: EmailOrderItem[];
+}

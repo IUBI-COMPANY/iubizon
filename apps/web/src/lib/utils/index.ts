@@ -76,6 +76,24 @@ export const formatShortMonthDate = (
   return formatInTimeZone(d, APP_TZ, "dd MMM yyyy", { locale: es });
 };
 
+/** Formatea fecha y hora con mes abreviado: "07 ago. 2026, 12:17 a. m." */
+export const formatShortDateTime = (
+  date: string | Date | null | undefined,
+): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "dd MMM'.' yyyy, h:mm a", { locale: es });
+};
+
+/** Formatea fecha con mes abreviado con punto: "07 ago. 2026" */
+export const formatShortDateWithPeriod = (
+  date: string | Date | null | undefined,
+): string => {
+  const d = toDate(date);
+  if (!d) return "-";
+  return formatInTimeZone(d, APP_TZ, "dd MMM'.' yyyy", { locale: es });
+};
+
 /** Formatea fecha y hora con mes abreviado: "06 ago 2026, 2:30 PM" */
 export const formatShortMonthDateTime = (
   date: string | Date | null | undefined,

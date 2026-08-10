@@ -8,6 +8,7 @@ import {
   Calendar,
   ChevronRight,
   Package,
+  ShieldAlert,
   ShoppingBag,
   Truck,
 } from "lucide-react";
@@ -58,6 +59,9 @@ interface BuyerOrderSession {
   totalItems: number;
   destinationAddress: string | null;
   packages: TrackingPackage[];
+  hasRefund: boolean;
+  refundStatus: string | null;
+  refundType: string | null;
 }
 
 function formatFullDate(isoString: string) {
@@ -179,12 +183,15 @@ export default function UserOrdersPage() {
           (() => {
             const pendingCount = sessions.filter((s) =>
               s.packages.every((p) => p.status === "pending"),
-            ).length;
+              ).length;
+            const refundedCount = sessions.filter((s) => s.hasRefund).length;
 
             const filteredSessions =
               statusTab === "all"
                 ? sessions
-                : statusTab === "in_transit"
+                : statusTab === "refunded"
+                  ? sessions.filter((s) => s.hasRefund)
+                  : statusTab === "in_transit"
                   ? sessions.filter((s) =>
                       s.packages.some(
                         (p) => p.status === "shipped" || p.status === "paid",
@@ -216,6 +223,14 @@ export default function UserOrdersPage() {
                     </TabsTrigger>
                     <TabsTrigger value="in_transit">En Proceso</TabsTrigger>
                     <TabsTrigger value="completed">Completados</TabsTrigger>
+                    <TabsTrigger value="refunded">
+                      Reembolsados
+                      {refundedCount > 0 && (
+                        <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-extrabold bg-red-500 text-white rounded-full">
+                          {refundedCount}
+                        </span>
+                      )}
+                    </TabsTrigger>
                     <TabsTrigger value="all">
                       Todos ({sessions.length})
                     </TabsTrigger>
@@ -288,6 +303,12 @@ export default function UserOrdersPage() {
                               >
                                 {generalStatusLabel}
                               </span>
+                              {session.hasRefund && (
+                                <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1">
+                                  <ShieldAlert className="w-3 h-3" />
+                                  {session.refundType === "partial" ? "Parcial" : "Reembolsado"}
+                                </span>
+                              )}
                               <span className="text-sm font-black text-[#f25c05]">
                                 S/ {session.totalAmount.toFixed(2)}
                               </span>

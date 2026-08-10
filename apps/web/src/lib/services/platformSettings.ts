@@ -35,3 +35,16 @@ export async function getShippingConfig(): Promise<ShippingConfig> {
     promotion_label: "Promoción de Lanzamiento (Envío GRATIS)",
   };
 }
+
+export async function getProtectionDays(): Promise<number> {
+  try {
+    const setting = await prisma.platformSetting.findUnique({
+      where: { key: "BUYER_PROTECTION_DAYS" },
+    });
+    if (setting && typeof setting.value === "object" && setting.value !== null) {
+      const val = setting.value as Record<string, unknown>;
+      return typeof val.days === "number" ? val.days : 7;
+    }
+  } catch {}
+  return 7;
+}

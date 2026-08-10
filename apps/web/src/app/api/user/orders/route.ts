@@ -53,6 +53,9 @@ export interface BuyerOrderSession {
   invoiceType: string | null;
   invoiceNumber: string | null;
   totalItems: number;
+  hasRefund: boolean;
+  refundStatus: string | null;
+  refundType: string | null;
   paymentDetails: {
     cardBrand: string | null;
     cardLast4: string | null;
@@ -116,6 +119,20 @@ export async function GET(req: Request) {
       },
     });
 
+    const orderIds = orders.map((o) => o.id);
+    const refunds = orderIds.length > 0
+      ? await prisma.refundRequest.findMany({
+          where: {
+            order_id: { in: orderIds },
+            status: { in: ["approved", "return_in_transit", "return_received", "refunded"] },
+          },
+          select: { order_id: true, status: true, type: true },
+          orderBy: { created_at: "desc" },
+        })
+      : [];
+
+    const refundByOrder = new Map(refunds.map((r) => [r.order_id, r]));
+
     const sessions: BuyerOrderSession[] = orders.map((order) => ({
       orderId: order.id,
       orderCode: order.order_code,
@@ -137,6 +154,9 @@ export async function GET(req: Request) {
         (sum, pkg) => sum + pkg.items.reduce((s, i) => s + i.quantity, 0),
         0,
       ),
+      hasRefund: refundByOrder.has(order.id),
+      refundStatus: refundByOrder.get(order.id)?.status ?? null,
+      refundType: refundByOrder.get(order.id)?.type ?? null,
       paymentDetails: order.paymentTransaction
         ? {
             cardBrand: order.paymentTransaction.card_brand || null,

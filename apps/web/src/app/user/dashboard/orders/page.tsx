@@ -20,6 +20,7 @@ import {
   Loader2,
   Package,
   ShoppingCart,
+  ShieldAlert,
   Truck,
   User as UserIcon,
   Wallet,
@@ -66,6 +67,8 @@ interface SellerPackage {
   platformCommission: number;
   netEarnings: number;
   items: SellerPackageItem[];
+  hasPendingRefund: boolean;
+  pendingRefundType: string | null;
 }
 
 function formatMoney(value: number | string | undefined | null): string {
@@ -155,6 +158,7 @@ function OrdersContent() {
       return pkg.status === "shipped" || pkg.status === "paid";
     if (statusTab === "completed")
       return pkg.status === "delivered" || pkg.status === "completed";
+    if (statusTab === "refund") return pkg.hasPendingRefund;
     return true;
   });
 
@@ -165,6 +169,7 @@ function OrdersContent() {
   const completedCount = packages.filter(
     (p) => p.status === "delivered" || p.status === "completed",
   ).length;
+  const refundCount = packages.filter((p) => p.hasPendingRefund).length;
   const totalNetEarnings = packages.reduce(
     (acc, p) => acc + (p.netEarnings || 0),
     0,
@@ -207,7 +212,7 @@ function OrdersContent() {
 
         {/* KPIs Informativos de Ventas */}
         {!loading && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="p-2.5 bg-blue-500/10 rounded-xl">
@@ -265,6 +270,25 @@ function OrdersContent() {
 
             <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
               <div className="flex items-center gap-2.5 mb-3">
+                <div className="p-2.5 bg-red-500/10 rounded-xl">
+                  <ShieldAlert className="w-5 h-5 text-red-500" />
+                </div>
+                <span className="text-xs font-bold text-[#64748b] uppercase tracking-wider">
+                  Reembolsos
+                </span>
+              </div>
+              <p className="text-2xl font-black text-[#112237]">
+                {refundCount}
+              </p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                {refundCount === 1
+                  ? "solicitud pendiente"
+                  : "solicitudes pendientes"}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-[#e2e8f0] shadow-sm">
+              <div className="flex items-center gap-2.5 mb-3">
                 <div className="p-2.5 bg-orange-500/10 rounded-xl">
                   <Wallet className="w-5 h-5 text-[#f25c05]" />
                 </div>
@@ -301,6 +325,14 @@ function OrdersContent() {
             </TabsTrigger>
             <TabsTrigger value="shipped">En proceso</TabsTrigger>
             <TabsTrigger value="completed">Completados</TabsTrigger>
+            <TabsTrigger value="refund">
+              Reembolsos
+              {refundCount > 0 && (
+                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-extrabold bg-red-500 text-white rounded-full">
+                  {refundCount}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="all">Todos ({packages.length})</TabsTrigger>
           </TabsList>
 
@@ -376,6 +408,16 @@ function OrdersContent() {
                         >
                           {badgeLabel}
                         </span>
+
+                        {pkg.hasPendingRefund && (
+                          <Link
+                            href={`/user/dashboard/orders/${encodeURIComponent(pkg.packageId)}`}
+                            className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1.5 hover:bg-red-100 transition-colors"
+                          >
+                            <ShieldAlert className="w-3 h-3" />
+                            Reembolso {pkg.pendingRefundType === "partial" ? "Parcial" : "Total"}
+                          </Link>
+                        )}
                       </div>
 
                       {/* Previsualización Compacta de Productos */}

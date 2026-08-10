@@ -17,6 +17,7 @@ export interface DashboardOrderItem {
 
 export interface DashboardPackage {
   packageId: string;
+  orderId: string;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -46,6 +47,8 @@ export interface DashboardPackage {
   platformCommission: number;
   netEarnings: number;
   items: DashboardOrderItem[];
+  hasPendingRefund: boolean;
+  pendingRefundType: string | null;
 }
 
 export async function GET(request: Request) {
@@ -145,12 +148,24 @@ export async function GET(request: Request) {
       },
     });
 
+    const orderIds = [...new Set(packages.map((p) => p.order_id))];
+    const pendingRefunds = orderIds.length > 0
+      ? await prisma.refundRequest.findMany({
+          where: {
+            order_id: { in: orderIds },
+            status: { in: ["pending", "approved", "return_in_transit"] },
+          },
+          select: { order_id: true, type: true, status: true },
+        })
+      : [];
+
     const result: DashboardPackage[] = packages.map((pkg) => {
       const order = pkg.order;
       const buyer = order.buyer;
 
       return {
         packageId: pkg.id,
+        orderId: pkg.order_id,
         companyId: pkg.company_id,
         companyName: pkg.company?.name || "Vendedor",
         trackingNumber: pkg.tracking_number,
@@ -189,6 +204,8 @@ export async function GET(request: Request) {
           image: item.product.images[0]?.url || null,
           status: item.status,
         })),
+        hasPendingRefund: pendingRefunds.some((r) => r.order_id === pkg.order_id),
+        pendingRefundType: pendingRefunds.find((r) => r.order_id === pkg.order_id)?.type ?? null,
       };
     });
 

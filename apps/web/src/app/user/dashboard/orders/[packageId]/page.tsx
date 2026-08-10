@@ -9,6 +9,7 @@ import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { DispatchModal } from "@/components/features/orders/DispatchModal";
+import { RefundStatus } from "@/components/features/orders/RefundStatus";
 import {
   ArrowLeft,
   Calendar,
@@ -34,6 +35,7 @@ interface SellerPackageItem {
 
 interface SellerPackage {
   packageId: string;
+  orderId: string;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -475,6 +477,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               </span>
             </div>
           </div>
+
+          <RefundStatus orderId={pkg.orderId} isSeller />
         </div>
       </main>
 

@@ -24,6 +24,7 @@ import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
+import { RefundStatus } from "@/components/features/orders/RefundStatus";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PackageItem {
@@ -69,6 +70,7 @@ interface PaymentDetails {
 }
 
 interface BuyerOrderSession {
+  orderId: string;
   orderCode: string;
   createdAt: string;
   subtotal: number;
@@ -79,6 +81,9 @@ interface BuyerOrderSession {
   destinationAddress: string | null;
   paymentDetails: PaymentDetails | null;
   packages: TrackingPackage[];
+  hasRefund: boolean;
+  refundStatus: string | null;
+  refundType: string | null;
 }
 
 function formatDate(isoString: string | null) {
@@ -130,12 +135,10 @@ export default function OrderDetailPage({
   >(null);
   const [warrantyModalData, setWarrantyModalData] = useState<{
     isOpen: boolean;
-    sellerName?: string | null;
-    companyName?: string | null;
-    productTitle?: string;
   }>({
     isOpen: false,
   });
+  const [refundTrigger, setRefundTrigger] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -296,6 +299,12 @@ export default function OrderDetailPage({
                 >
                   {generalStatusLabel}
                 </span>
+                {session.hasRefund && (
+                  <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase border border-red-200 bg-red-50 text-red-700 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" />
+                    {session.refundType === "partial" ? "Reembolso Parcial" : "Reembolsado"}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#64748b] flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
@@ -484,13 +493,7 @@ export default function OrderDetailPage({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
-                        setWarrantyModalData({
-                          isOpen: true,
-                          sellerName: pkg.companyName,
-                          productTitle: pkg.items[0]?.title,
-                        })
-                      }
+                      onClick={() => setWarrantyModalData({ isOpen: true })}
                       className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0"
                     >
                       <ShieldCheck className="w-4 h-4" />
@@ -593,15 +596,27 @@ export default function OrderDetailPage({
             </div>
           </div>
         </div>
+
+        {session.orderId && allDelivered && <RefundStatus orderId={session.orderId} refetchKey={refundTrigger} />}
       </main>
 
       <WarrantyModal
         isOpen={warrantyModalData.isOpen}
         onClose={() => setWarrantyModalData({ isOpen: false })}
+        orderId={session.orderId}
         orderCode={session.orderCode}
         createdAt={session.createdAt}
-        sellerName={warrantyModalData.sellerName}
-        productTitle={warrantyModalData.productTitle}
+        orderTotal={session.totalAmount}
+        onRefundCreated={() => setRefundTrigger((prev) => prev + 1)}
+        items={session.packages.flatMap((pkg) =>
+          pkg.items.map((item) => ({
+            orderItemId: item.id,
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+            companyName: pkg.companyName || undefined,
+          })),
+        )}
       />
 
       <Footer />
