@@ -21,7 +21,10 @@ export async function GET() {
     db.order.aggregate({ _sum: { total_amount: true } }),
     db.refundRequest.count({ where: { status: "pending" } }),
     db.refundRequest.count({ where: { status: "return_received" } }),
-    db.sellerPayout.aggregate({ where: { status: "pending" }, _sum: { net_amount: true } }),
+    db.sellerPayout.aggregate({
+      where: { status: "pending" },
+      _sum: { net_amount: true },
+    }),
   ]);
 
   return NextResponse.json({

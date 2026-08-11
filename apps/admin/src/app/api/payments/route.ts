@@ -62,9 +62,14 @@ export async function GET(req: Request) {
       take: 50,
       include: {
         company: {
-          select: { id: true, name: true, email: true, bank_account: true, payout_card: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            bank_account: true,
+            payout_card: true,
+          },
         },
-
       },
     }),
     db.sellerPayout.aggregate({
@@ -77,11 +82,19 @@ export async function GET(req: Request) {
     }),
   ]);
 
-  const adminIds = [...new Set(payouts.map((p) => p.updated_by).filter(Boolean))] as string[];
+  const adminIds = [
+    ...new Set(payouts.map((p) => p.updated_by).filter(Boolean)),
+  ] as string[];
   if (adminIds.length > 0) {
-    const profiles = await db.profile.findMany({ where: { id: { in: adminIds } }, select: { id: true, name: true } });
+    const profiles = await db.profile.findMany({
+      where: { id: { in: adminIds } },
+      select: { id: true, name: true },
+    });
     const pm = new Map(profiles.map((p) => [p.id, p.name]));
-    payouts.forEach((p) => { if (p.updated_by) (p as any).updated_by_name = pm.get(p.updated_by) || null; });
+    payouts.forEach((p) => {
+      if (p.updated_by)
+        (p as any).updated_by_name = pm.get(p.updated_by) || null;
+    });
   }
 
   return NextResponse.json({
@@ -97,8 +110,15 @@ export async function GET(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const { id, status, payment_method, reference_code, notes, payment_proof, updated_by } =
-    await req.json();
+  const {
+    id,
+    status,
+    payment_method,
+    reference_code,
+    notes,
+    payment_proof,
+    updated_by,
+  } = await req.json();
   const data: any = {};
   if (status) data.status = status;
   if (payment_method) data.payment_method = payment_method;
@@ -114,13 +134,22 @@ export async function PATCH(req: Request) {
         where: { id },
         include: {
           company: {
-            select: { id: true, name: true, tax_id: true, bank_account: true, payout_card: true },
+            select: {
+              id: true,
+              name: true,
+              tax_id: true,
+              bank_account: true,
+              payout_card: true,
+            },
           },
         },
       });
 
       if (!payout) {
-        return NextResponse.json({ error: "Payout no encontrado" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Payout no encontrado" },
+          { status: 404 },
+        );
       }
 
       const bankInfo = parseBankAccount(payout.company?.bank_account ?? null);

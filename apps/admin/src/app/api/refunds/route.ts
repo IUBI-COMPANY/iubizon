@@ -145,10 +145,16 @@ export async function GET(req: Request) {
       }
     }
 
-    const adminIds = [...new Set(refunds.map((r) => r.updated_by).filter(Boolean))] as string[];
-    const profiles = adminIds.length > 0
-      ? await db.profile.findMany({ where: { id: { in: adminIds } }, select: { id: true, name: true } })
-      : [];
+    const adminIds = [
+      ...new Set(refunds.map((r) => r.updated_by).filter(Boolean)),
+    ] as string[];
+    const profiles =
+      adminIds.length > 0
+        ? await db.profile.findMany({
+            where: { id: { in: adminIds } },
+            select: { id: true, name: true },
+          })
+        : [];
     const profileMap = new Map(profiles.map((p) => [p.id, p.name]));
 
     const mapped = refunds.map((r) => ({
@@ -172,7 +178,9 @@ export async function GET(req: Request) {
         r.return_estimated_delivery?.toISOString() ?? null,
       return_tracking_url: r.return_tracking_url,
       admin_notes: r.admin_notes,
-      updated_by_name: r.updated_by ? profileMap.get(r.updated_by) || null : null,
+      updated_by_name: r.updated_by
+        ? profileMap.get(r.updated_by) || null
+        : null,
       refund_method: r.refund_method,
       refund_reference: r.refund_reference,
       processed_at: r.processed_at?.toISOString() ?? null,
@@ -299,7 +307,12 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "process_refund") {
-      return await handleProcessRefund(refundId, body.refund_method, body.refund_reference, body.updated_by);
+      return await handleProcessRefund(
+        refundId,
+        body.refund_method,
+        body.refund_reference,
+        body.updated_by,
+      );
     }
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
@@ -310,7 +323,12 @@ export async function PATCH(req: Request) {
   }
 }
 
-async function handleProcessRefund(refundId: string, method?: string, refReference?: string, updatedBy?: string) {
+async function handleProcessRefund(
+  refundId: string,
+  method?: string,
+  refReference?: string,
+  updatedBy?: string,
+) {
   const refund = await db.refundRequest.findUnique({
     where: { id: refundId },
     select: {
@@ -340,17 +358,35 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
   });
 
   if (!refund)
-    return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Solicitud no encontrada" },
+      { status: 404 },
+    );
   if (refund.status !== "return_received")
-    return NextResponse.json({ error: "La devolución debe estar confirmada" }, { status: 400 });
+    return NextResponse.json(
+      { error: "La devolución debe estar confirmada" },
+      { status: 400 },
+    );
 
   const isNiubiz = !method || method === "niubiz";
 
   if (isNiubiz) {
     const tx = refund.order.paymentTransaction;
-    if (!tx) return NextResponse.json({ error: "No se encontró la transacción de pago" }, { status: 400 });
-    if (tx.provider !== "niubiz") return NextResponse.json({ error: "Solo reembolsos Niubiz" }, { status: 400 });
-    if (!tx.transaction_id) return NextResponse.json({ error: "Faltan datos de la transacción" }, { status: 400 });
+    if (!tx)
+      return NextResponse.json(
+        { error: "No se encontró la transacción de pago" },
+        { status: 400 },
+      );
+    if (tx.provider !== "niubiz")
+      return NextResponse.json(
+        { error: "Solo reembolsos Niubiz" },
+        { status: 400 },
+      );
+    if (!tx.transaction_id)
+      return NextResponse.json(
+        { error: "Faltan datos de la transacción" },
+        { status: 400 },
+      );
 
     const rawRuc = refund.order.packages[0]?.company?.tax_id;
     const companyRuc = rawRuc
@@ -359,16 +395,33 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
 
     if (companyRuc.length !== 11) {
       return NextResponse.json(
-        { error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)` },
+        {
+          error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)`,
+        },
         { status: 400 },
       );
     }
 
     try {
-      const result = await processNiubizRefund(tx.transaction_id, companyRuc, Number(refund.refund_amount), refundId);
-      await applyRefundDbUpdates(refund, tx.id, result.rawResponse ?? null, method, refReference, updatedBy);
+      const result = await processNiubizRefund(
+        tx.transaction_id,
+        companyRuc,
+        Number(refund.refund_amount),
+        refundId,
+      );
+      await applyRefundDbUpdates(
+        refund,
+        tx.id,
+        result.rawResponse ?? null,
+        method,
+        refReference,
+        updatedBy,
+      );
       triggerRefundEmail(refundId, true, "completed");
-      return NextResponse.json({ success: true, cancellationCode: result.cancellationCode });
+      return NextResponse.json({
+        success: true,
+        cancellationCode: result.cancellationCode,
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error Niubiz";
       if (msg.includes("cambió mientras se procesaba")) {
@@ -382,7 +435,14 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
   }
 
   try {
-    await applyRefundDbUpdates(refund, refund.order.paymentTransaction?.id, null, method!, refReference, updatedBy);
+    await applyRefundDbUpdates(
+      refund,
+      refund.order.paymentTransaction?.id,
+      null,
+      method!,
+      refReference,
+      updatedBy,
+    );
     triggerRefundEmail(refundId, true, "completed");
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
@@ -395,7 +455,12 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
 }
 
 async function applyRefundDbUpdates(
-  refund: { id: string; type: string; order: { id: string }; items: { order_item_id: string }[] },
+  refund: {
+    id: string;
+    type: string;
+    order: { id: string };
+    items: { order_item_id: string }[];
+  },
   txId: string | null | undefined,
   rawResponse: any,
   refundMethod?: string,
@@ -444,7 +509,10 @@ async function applyRefundDbUpdates(
 
     const refundedItemIds = refund.items.map((i) => i.order_item_id);
     const packages = await prisma.orderPackage.findMany({
-      where: { order_id: refund.order.id, items: { some: { id: { in: refundedItemIds } } } },
+      where: {
+        order_id: refund.order.id,
+        items: { some: { id: { in: refundedItemIds } } },
+      },
       select: { id: true },
     });
 

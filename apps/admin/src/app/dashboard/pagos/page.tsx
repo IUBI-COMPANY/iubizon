@@ -149,7 +149,11 @@ export default function PagosPage() {
     await fetch("/api/payments", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: "processing", updated_by: user?.id || null }),
+      body: JSON.stringify({
+        id,
+        status: "processing",
+        updated_by: user?.id || null,
+      }),
     });
     fetchData();
   };
@@ -307,33 +311,37 @@ export default function PagosPage() {
                               {formatMoney(p.commission)}
                             </span>
                           </div>
-                          </div>
+                        </div>
 
-                          {p.company?.payout_card && (
-                            <div>
-                              <p className="font-semibold text-muted-foreground uppercase mb-1">
-                                Tarjeta P2P
-                              </p>
-                              {(() => {
-                                try {
-                                  const c = typeof p.company.payout_card === "string"
+                        {p.company?.payout_card && (
+                          <div>
+                            <p className="font-semibold text-muted-foreground uppercase mb-1">
+                              Tarjeta P2P
+                            </p>
+                            {(() => {
+                              try {
+                                const c =
+                                  typeof p.company.payout_card === "string"
                                     ? JSON.parse(p.company.payout_card)
                                     : p.company.payout_card;
-                                  return (
-                                    <p className="font-medium">
-                                      {c.cardNumber
-                                        ? `****${c.cardNumber.slice(-4)}`
-                                        : c.alias || "Sin datos"}
-                                      {c.expirationMonth && ` · ${c.expirationMonth}/${c.expirationYear}`}
-                                    </p>
-                                  );
-                                } catch {
-                                  return <p className="font-medium">Ver detalles</p>;
-                                }
-                              })()}
-                            </div>
-                          )}
-                        </div>
+                                return (
+                                  <p className="font-medium">
+                                    {c.cardNumber
+                                      ? `****${c.cardNumber.slice(-4)}`
+                                      : c.alias || "Sin datos"}
+                                    {c.expirationMonth &&
+                                      ` · ${c.expirationMonth}/${c.expirationYear}`}
+                                  </p>
+                                );
+                              } catch {
+                                return (
+                                  <p className="font-medium">Ver detalles</p>
+                                );
+                              }
+                            })()}
+                          </div>
+                        )}
+                      </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         {p.status === "pending" && (
@@ -442,11 +450,11 @@ export default function PagosPage() {
                           <IconCalendar className="w-3.5 h-3.5" />
                           <span>
                             Registrado: {formatFullDate(p.created_at)}
-                          {p.updated_by_name && (
-                            <span className="ml-2">
-                              · Por: {p.updated_by_name}
-                            </span>
-                          )}
+                            {p.updated_by_name && (
+                              <span className="ml-2">
+                                · Por: {p.updated_by_name}
+                              </span>
+                            )}
                           </span>
                           {p.paid_at && (
                             <span className="ml-2">
@@ -476,9 +484,15 @@ export default function PagosPage() {
                         {p.payment_proof && (
                           <button
                             onClick={() => {
-                              const w = window.open("", "_blank", "width=800,height=600");
+                              const w = window.open(
+                                "",
+                                "_blank",
+                                "width=800,height=600",
+                              );
                               if (w) {
-                                w.document.write(`<img src="${p.payment_proof}" style="max-width:100%;max-height:100vh;" />`);
+                                w.document.write(
+                                  `<img src="${p.payment_proof}" style="max-width:100%;max-height:100vh;" />`,
+                                );
                                 w.document.title = "Comprobante de pago";
                               }
                             }}
@@ -527,10 +541,14 @@ export default function PagosPage() {
                                 accept="image/*,.pdf"
                                 className="text-xs text-foreground file:mr-2 file:py-1 file:px-3 file:text-xs file:font-semibold file:border-0 file:rounded-md file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
                               />
-                              <p className="text-[10px] text-muted-foreground">Obligatorio para pagos manuales</p>
+                              <p className="text-[10px] text-muted-foreground">
+                                Obligatorio para pagos manuales
+                              </p>
                             </div>
                             {payoutError && (
-                              <p className="text-xs text-red-500 font-medium">{payoutError}</p>
+                              <p className="text-xs text-red-500 font-medium">
+                                {payoutError}
+                              </p>
                             )}
                             <div className="flex gap-2">
                               <Button
@@ -552,7 +570,9 @@ export default function PagosPage() {
                                 ) : (
                                   <IconCheck className="w-3 h-3 mr-1" />
                                 )}
-                                {payingId === p.id ? "Procesando..." : "Pagar vía Niubiz"}
+                                {payingId === p.id
+                                  ? "Procesando..."
+                                  : "Pagar vía Niubiz"}
                               </Button>
                               <Button
                                 size="sm"
@@ -574,7 +594,9 @@ export default function PagosPage() {
                                 ) : (
                                   <IconCheck className="w-3 h-3 mr-1" />
                                 )}
-                                {payingId === p.id ? "Procesando..." : "Marcar Pagado Manual"}
+                                {payingId === p.id
+                                  ? "Procesando..."
+                                  : "Marcar Pagado Manual"}
                               </Button>
                             </div>
                           </div>

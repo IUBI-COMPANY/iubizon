@@ -470,8 +470,8 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                           Iubizon revisará el caso y procesará el reembolso.
                         </p>
                       )}
-                  </div>
-                )}
+                    </div>
+                  )}
 
                 {/* Refund method display when refunded */}
                 {req.status === "refunded" && (
@@ -480,20 +480,22 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                     {req.refund_method && req.refund_method !== "niubiz" && (
                       <span>
                         {" "}
-                        · {req.refund_method === "bank_transfer"
+                        ·{" "}
+                        {req.refund_method === "bank_transfer"
                           ? "Transferencia Bancaria"
                           : req.refund_method === "yape"
                             ? "Yape"
                             : req.refund_method === "plin"
                               ? "Plin"
                               : req.refund_method}
-                        {req.refund_reference && ` · Ref: ${req.refund_reference}`}
+                        {req.refund_reference &&
+                          ` · Ref: ${req.refund_reference}`}
                       </span>
                     )}
                   </div>
                 )}
 
-              {/* Items in refund — grouped by company */}
+                {/* Items in refund — grouped by company */}
                 {req.items.length > 0 &&
                   (() => {
                     const grouped = new Map<string, RefundItemData[]>();

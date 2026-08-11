@@ -17,7 +17,10 @@ const TEMPLATES: Record<string, React.ComponentType<any>> = {
   refund_completed: RefundCompletedEmail,
 };
 
-export function renderEmail(template: string, data: any): React.ReactElement | null {
+export function renderEmail(
+  template: string,
+  data: any,
+): React.ReactElement | null {
   const Component = TEMPLATES[template];
   if (!Component) return null;
   return React.createElement(Component, data);

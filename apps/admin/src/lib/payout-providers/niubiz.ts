@@ -14,13 +14,19 @@ async function getNiubizPayoutConfig() {
     merchantId = process.env.NIUBIZ_MERCHANT_ID.trim();
   }
 
-  if (setting?.value && typeof setting.value === "object" && setting.value !== null) {
+  if (
+    setting?.value &&
+    typeof setting.value === "object" &&
+    setting.value !== null
+  ) {
     const val = setting.value as Record<string, any>;
     if (val.environment) environment = String(val.environment).trim();
     if (val.merchantId) merchantId = String(val.merchantId).trim();
   }
 
-  const user = (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim();
+  const user = (
+    process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe"
+  ).trim();
   const password = (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim();
   const isProd = environment === "production";
 
@@ -66,7 +72,8 @@ export class NiubizPushPaymentProvider implements PayoutProvider {
     const tokenData = await tokenRes.text();
 
     const cardNumber = params.payoutCard?.cardNumber || "4509953566233704";
-    const alias = params.payoutCard?.alias || `+51${params.bankAccount.accountNumber}`;
+    const alias =
+      params.payoutCard?.alias || `+51${params.bankAccount.accountNumber}`;
 
     const senderCard = process.env.NIUBIZ_SENDER_CARD || "4509953566233704";
 
@@ -75,7 +82,9 @@ export class NiubizPushPaymentProvider implements PayoutProvider {
       channel: "mobile",
       applicationId: "P2P",
       order: {
-        purchaseNumber: String(Math.floor(Math.random() * 900000) + 100000).slice(0, 6),
+        purchaseNumber: String(
+          Math.floor(Math.random() * 900000) + 100000,
+        ).slice(0, 6),
         amount: Number(params.amount.toFixed(2)),
         currency: "PEN",
         externalTransactionId: params.externalReferenceId,
@@ -89,8 +98,11 @@ export class NiubizPushPaymentProvider implements PayoutProvider {
       recipient: {
         cardNumber,
         email: "pagos@iubizon.com",
-        firstName: params.recipientName.split(" ")[0]?.slice(0, 35) || "VENDEDOR",
-        lastName: params.recipientName.split(" ").slice(1).join(" ").slice(0, 35) || "IUBIZON",
+        firstName:
+          params.recipientName.split(" ")[0]?.slice(0, 35) || "VENDEDOR",
+        lastName:
+          params.recipientName.split(" ").slice(1).join(" ").slice(0, 35) ||
+          "IUBIZON",
         alias,
         aliasType: params.payoutCard?.aliasType || "PHONE",
       },
@@ -135,7 +147,9 @@ export class NiubizPushPaymentProvider implements PayoutProvider {
 
     if (!res.ok || (data.responseCode && data.responseCode !== "00")) {
       throw new Error(
-        data.responseMessage || data.errorMessage || "Error al procesar pago en Niubiz P2P",
+        data.responseMessage ||
+          data.errorMessage ||
+          "Error al procesar pago en Niubiz P2P",
       );
     }
 

@@ -69,7 +69,11 @@ export function PayoutCardModal({
       });
       const text = await res.text();
       let data: any = {};
-      try { data = JSON.parse(text); } catch { throw new Error(text || "Error del servidor"); }
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text || "Error del servidor");
+      }
       if (res.ok) {
         toast.success("Tarjeta de pago guardada con éxito");
         onSuccess();

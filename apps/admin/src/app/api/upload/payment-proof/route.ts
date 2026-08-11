@@ -6,15 +6,24 @@ export async function POST(req: Request) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "No se encontró el archivo" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No se encontró el archivo" },
+        { status: 400 },
+      );
     }
 
     if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
-      return NextResponse.json({ error: "Solo se permiten imágenes o PDFs" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Solo se permiten imágenes o PDFs" },
+        { status: 400 },
+      );
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "El archivo no debe superar los 5MB" }, { status: 400 });
+      return NextResponse.json(
+        { error: "El archivo no debe superar los 5MB" },
+        { status: 400 },
+      );
     }
 
     const bytes = await file.arrayBuffer();
@@ -24,6 +33,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: base64, success: true });
   } catch (err: unknown) {
     console.error("[Upload] Error:", err);
-    return NextResponse.json({ error: "Error al subir el archivo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al subir el archivo" },
+      { status: 500 },
+    );
   }
 }

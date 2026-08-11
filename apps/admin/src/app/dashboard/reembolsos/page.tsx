@@ -158,7 +158,8 @@ export default function ReembolsosPage() {
           params.set("status", statusTab);
         }
       }
-      if (searchRef.current.trim()) params.set("search", searchRef.current.trim());
+      if (searchRef.current.trim())
+        params.set("search", searchRef.current.trim());
       const res = await fetch(`/api/refunds?${params.toString()}`);
       const text = await res.text();
       let data: any;
@@ -660,7 +661,10 @@ export default function ReembolsosPage() {
                         <p className="text-emerald-800 font-semibold">
                           Reembolso procesado el {formatDate(r.processed_at)}
                           {r.updated_by_name && (
-                            <span className="text-emerald-600"> por {r.updated_by_name}</span>
+                            <span className="text-emerald-600">
+                              {" "}
+                              por {r.updated_by_name}
+                            </span>
                           )}
                         </p>
                         {r.refund_method && r.refund_method !== "niubiz" && (
@@ -673,7 +677,8 @@ export default function ReembolsosPage() {
                                 : r.refund_method === "plin"
                                   ? "Plin"
                                   : r.refund_method}
-                            {r.refund_reference && ` · Ref: ${r.refund_reference}`}
+                            {r.refund_reference &&
+                              ` · Ref: ${r.refund_reference}`}
                           </p>
                         )}
                       </div>
@@ -832,8 +837,12 @@ export default function ReembolsosPage() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="niubiz">Vía Niubiz</SelectItem>
-                                <SelectItem value="bank_transfer">Transferencia Bancaria</SelectItem>
+                                <SelectItem value="niubiz">
+                                  Vía Niubiz
+                                </SelectItem>
+                                <SelectItem value="bank_transfer">
+                                  Transferencia Bancaria
+                                </SelectItem>
                                 <SelectItem value="yape">Yape</SelectItem>
                                 <SelectItem value="plin">Plin</SelectItem>
                               </SelectContent>
@@ -843,7 +852,9 @@ export default function ReembolsosPage() {
                                 className="h-8 text-xs w-[180px]"
                                 placeholder="N° de operación / ref."
                                 value={refundReference}
-                                onChange={(e) => setRefundReference(e.target.value)}
+                                onChange={(e) =>
+                                  setRefundReference(e.target.value)
+                                }
                               />
                             )}
                           </div>

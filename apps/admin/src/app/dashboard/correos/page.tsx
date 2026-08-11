@@ -22,19 +22,28 @@ export default function CorreosPage() {
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState<{ processed: number; failed: number } | null>(null);
+  const [result, setResult] = useState<{
+    processed: number;
+    failed: number;
+  } | null>(null);
 
   const fetchEmails = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/email-queue?status=failed");
     const text = await res.text();
     let data: any = {};
-    try { data = JSON.parse(text); } catch { data = { emails: [] }; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { emails: [] };
+    }
     setEmails(data.emails || []);
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchEmails(); }, [fetchEmails]);
+  useEffect(() => {
+    fetchEmails();
+  }, [fetchEmails]);
 
   const processQueue = async () => {
     setProcessing(true);
@@ -71,7 +80,11 @@ export default function CorreosPage() {
           </p>
         </div>
         <Button onClick={processQueue} disabled={processing}>
-          {processing ? <IconRefresh className="w-4 h-4 animate-spin mr-1" /> : <IconRefresh className="w-4 h-4 mr-1" />}
+          {processing ? (
+            <IconRefresh className="w-4 h-4 animate-spin mr-1" />
+          ) : (
+            <IconRefresh className="w-4 h-4 mr-1" />
+          )}
           {processing ? "Procesando..." : "Procesar Cola"}
         </Button>
       </div>
@@ -79,13 +92,16 @@ export default function CorreosPage() {
       {result && (
         <Card>
           <CardContent className="p-4 text-sm">
-            Procesados: <strong>{result.processed}</strong> · Fallidos: <strong>{result.failed}</strong>
+            Procesados: <strong>{result.processed}</strong> · Fallidos:{" "}
+            <strong>{result.failed}</strong>
           </CardContent>
         </Card>
       )}
 
       {loading ? (
-        <Card className="p-6"><p className="text-sm text-muted-foreground">Cargando...</p></Card>
+        <Card className="p-6">
+          <p className="text-sm text-muted-foreground">Cargando...</p>
+        </Card>
       ) : emails.length === 0 ? (
         <Card className="p-12 text-center">
           <IconMail className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
@@ -99,7 +115,9 @@ export default function CorreosPage() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <IconAlertTriangle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm font-medium">{email.to_email}</span>
+                    <span className="text-sm font-medium">
+                      {email.to_email}
+                    </span>
                   </div>
                   <Badge variant="destructive" className="text-xs">
                     {email.attempts}/{email.max_attempts} intentos
@@ -111,7 +129,9 @@ export default function CorreosPage() {
                   {new Date(email.created_at).toLocaleDateString("es-PE")}
                 </p>
                 {email.last_error && (
-                  <p className="text-xs text-red-600 mt-1 truncate">{email.last_error}</p>
+                  <p className="text-xs text-red-600 mt-1 truncate">
+                    {email.last_error}
+                  </p>
                 )}
               </div>
             </Card>

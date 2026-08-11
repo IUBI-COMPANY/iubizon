@@ -42,16 +42,22 @@ export async function GET(req: Request) {
       let payoutCard = null;
       if (membership.company.payout_card) {
         try {
-          const parsed = typeof membership.company.payout_card === "string"
-            ? JSON.parse(membership.company.payout_card)
-            : membership.company.payout_card;
+          const parsed =
+            typeof membership.company.payout_card === "string"
+              ? JSON.parse(membership.company.payout_card)
+              : membership.company.payout_card;
           if (parsed && typeof parsed === "object") {
             payoutCard = parsed;
           }
         } catch {}
       }
 
-      return NextResponse.json({ type: "company", companyId, bankAccount, payoutCard });
+      return NextResponse.json({
+        type: "company",
+        companyId,
+        bankAccount,
+        payoutCard,
+      });
     }
 
     return NextResponse.json({ type: "personal", bankAccount: null });

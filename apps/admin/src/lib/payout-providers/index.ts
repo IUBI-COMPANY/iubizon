@@ -11,4 +11,9 @@ export function getPayoutProvider(name: string): PayoutProvider {
   return providers[name] || providers.manual;
 }
 
-export type { PayoutBankAccount, PayoutParams, PayoutProvider, PayoutResult } from "./types";
+export type {
+  PayoutBankAccount,
+  PayoutParams,
+  PayoutProvider,
+  PayoutResult,
+} from "./types";

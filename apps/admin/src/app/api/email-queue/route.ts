@@ -14,7 +14,10 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ emails });
   } catch (err: unknown) {
-    console.error("[EmailQueue API] Error:", err instanceof Error ? err.message : err);
+    console.error(
+      "[EmailQueue API] Error:",
+      err instanceof Error ? err.message : err,
+    );
     return NextResponse.json({ emails: [] });
   }
 }
