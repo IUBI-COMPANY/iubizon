@@ -1,7 +1,5 @@
-import React from "react";
 import { prisma } from "@/lib/prisma";
-import { RefundCompletedEmail } from "./templates/RefundCompletedEmail";
-import { sendResendEmail } from "./send-resend-email";
+import { enqueueEmail } from "./email-queue";
 import type { EmailOrderItem, RefundCompletedEmailData } from "./types";
 
 export async function sendRefundCompletedNotification(refundId: string) {
@@ -54,10 +52,11 @@ export async function sendRefundCompletedNotification(refundId: string) {
       })),
     };
 
-    await sendResendEmail(
+    await enqueueEmail(
       data.buyerEmail,
       `Reembolso Procesado — Pedido #${data.orderCode} — iubizon`,
-      React.createElement(RefundCompletedEmail, data),
+      "refund_completed",
+      data as unknown as Record<string, any>,
     );
   } catch (err) {
     console.error("[RefundCompleted Email] Error:", err);

@@ -1,9 +1,6 @@
-import React from "react";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
-import { BuyerOrderEmail } from "./templates/BuyerOrderEmail";
-import { SellerSaleEmail } from "./templates/SellerSaleEmail";
-import { sendResendEmail } from "./send-resend-email";
+import { enqueueEmail } from "./email-queue";
 import type { BuyerEmailData, EmailOrderItem, SellerEmailData } from "./types";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
@@ -103,10 +100,11 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       invoiceNumber: order.invoice?.number || undefined,
     };
 
-    const sendBuyer = sendResendEmail(
+    enqueueEmail(
       buyerData.buyerEmail,
       `Confirmación de compra #${buyerData.orderCode} — iubizon`,
-      React.createElement(BuyerOrderEmail, buyerData),
+      "buyer_order",
+      buyerData as unknown as Record<string, any>,
     );
 
     const companyGroupIds = Array.from(
@@ -170,10 +168,11 @@ export async function sendOrderConfirmationEmails(orderId: string) {
           buyerInfo: shippingForm,
         };
 
-        return sendResendEmail(
+        return enqueueEmail(
           recipientEmail,
           `¡Nueva Venta! Orden #${order.order_code} — ${companyName}`,
-          React.createElement(SellerSaleEmail, sellerData),
+          "seller_sale",
+          sellerData as unknown as Record<string, any>,
           ccEmails.length > 0 ? ccEmails : undefined,
         );
       } catch (err) {
@@ -184,7 +183,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
       }
     });
 
-    await Promise.all([sendBuyer, ...sendSellers]);
+    await Promise.all([...sendSellers]);
   } catch (err) {
     console.error(
       `[Order Email] Error procesando correos para ${orderId}:`,

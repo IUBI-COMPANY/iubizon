@@ -3,13 +3,14 @@
 import * as React from "react";
 import {
   IconDashboard,
-  IconPackage,
   IconFolders,
-  IconShoppingCart,
-  IconBuildingStore,
+  IconMail,
+  IconPackage,
   IconSettings,
   IconShield,
+  IconShoppingCart,
   IconWallet,
+  IconBuildingStore,
 } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -36,6 +37,11 @@ const data = {
     { title: "Categorías", url: "/dashboard/categorias", icon: IconFolders },
   ],
   navSecondary: [
+    {
+      title: "Correos",
+      url: "/dashboard/correos",
+      icon: IconMail,
+    },
     {
       title: "Configuración",
       url: "/dashboard/configuracion",

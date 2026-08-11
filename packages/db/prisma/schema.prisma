@@ -417,6 +417,29 @@ model PlatformSetting {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// EMAIL QUEUE — Cola de emails críticos con retry
+// ═══════════════════════════════════════════════════════════════════════
+
+model EmailQueue {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  to_email     String
+  subject      String
+  template     String
+  data         Json
+  cc           String[]  @default([])
+  status       String    @default("pending")
+  attempts     Int       @default(0)
+  max_attempts Int       @default(3)
+  last_error   String?
+  created_at   DateTime? @default(now()) @db.Timestamptz
+  updated_at   DateTime? @updatedAt @db.Timestamptz
+
+  @@index([status])
+  @@index([created_at])
+  @@map("email_queue")
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // REFUND REQUEST — Solicitud de reembolso (comprador o admin)
 // ═══════════════════════════════════════════════════════════════════════
 

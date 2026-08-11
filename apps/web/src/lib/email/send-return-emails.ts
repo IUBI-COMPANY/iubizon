@@ -1,8 +1,5 @@
-import React from "react";
 import { prisma } from "@/lib/prisma";
-import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
-import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
-import { sendResendEmail } from "./send-resend-email";
+import { enqueueEmail } from "./email-queue";
 import type {
   EmailOrderItem,
   ReturnReceivedEmailData,
@@ -91,10 +88,11 @@ export async function sendReturnShippedNotification(refundId: string) {
       refundAmount: Number(refund.refund_amount),
     };
 
-    await sendResendEmail(
+    await enqueueEmail(
       data.sellerEmail,
       `Devolución en camino — Pedido #${data.orderCode} — iubizon`,
-      React.createElement(ReturnShippedEmail, data),
+      "return_shipped",
+      data as unknown as Record<string, any>,
     );
   } catch (err) {
     console.error("[ReturnShipped Email] Error:", err);
@@ -170,10 +168,11 @@ export async function sendReturnReceivedNotification(refundId: string) {
       })),
     };
 
-    await sendResendEmail(
+    await enqueueEmail(
       adminEmail,
       `Devolución confirmada — Orden #${data.orderCode} — Procesar Reembolso`,
-      React.createElement(ReturnReceivedEmail, data),
+      "return_received",
+      data as unknown as Record<string, any>,
     );
   } catch (err) {
     console.error("[ReturnReceived Email] Error:", err);

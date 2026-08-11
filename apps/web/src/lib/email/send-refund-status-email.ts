@@ -1,7 +1,5 @@
-import React from "react";
 import { prisma } from "@/lib/prisma";
-import { RefundStatusEmail } from "./templates/RefundStatusEmail";
-import { sendResendEmail } from "./send-resend-email";
+import { enqueueEmail } from "./email-queue";
 import type { EmailOrderItem, RefundStatusEmailData } from "./types";
 
 export async function sendRefundStatusNotification(
@@ -75,10 +73,11 @@ export async function sendRefundStatusNotification(
       })),
     };
 
-    await sendResendEmail(
+    await enqueueEmail(
       data.buyerEmail,
       `${approved ? "Reembolso Aprobado" : "Reembolso Rechazado"} — Pedido #${data.orderCode} — iubizon`,
-      React.createElement(RefundStatusEmail, data),
+      "refund_status",
+      data as unknown as Record<string, any>,
     );
   } catch (err) {
     console.error("[RefundStatus Email] Error:", err);
