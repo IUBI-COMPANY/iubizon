@@ -507,6 +507,26 @@ async function applyRefundDbUpdates(
       });
     }
 
+    // Reintegrar atómicamente el stock devuelto al inventario del vendedor
+    const refundItems = await prisma.refundItem.findMany({
+      where: { request_id: refund.id },
+    });
+
+    for (const ri of refundItems) {
+      if (ri.order_item_id) {
+        const oi = await prisma.orderItem.findUnique({
+          where: { id: ri.order_item_id },
+          select: { product_id: true },
+        });
+        if (oi?.product_id) {
+          await prisma.product.update({
+            where: { id: oi.product_id },
+            data: { stock: { increment: ri.quantity } },
+          });
+        }
+      }
+    }
+
     const refundedItemIds = refund.items.map((i) => i.order_item_id);
     const packages = await prisma.orderPackage.findMany({
       where: {
@@ -517,18 +537,135 @@ async function applyRefundDbUpdates(
     });
 
     for (const pkg of packages) {
-      const allItems = await prisma.orderItem.findMany({
-        where: { package_id: pkg.id },
-        select: { id: true },
-      });
-      if (allItems.every((i) => refundedItemIds.includes(i.id))) {
-        await prisma.sellerPayout.updateMany({
-          where: { package_id: pkg.id },
-          data: { status: "refunded" },
-        });
-      }
+      await recalculatePackagePayoutInTransaction(pkg.id, prisma);
     }
   });
+}
+
+async function recalculatePackagePayoutInTransaction(
+  packageId: string,
+  prisma: any,
+) {
+  const pkg = await prisma.orderPackage.findUnique({
+    where: { id: packageId },
+    include: {
+      items: true,
+      order: {
+        select: {
+          id: true,
+          refundRequests: {
+            select: {
+              id: true,
+              status: true,
+              items: { select: { order_item_id: true, quantity: true } },
+            },
+          },
+        },
+      },
+      payouts: true,
+    },
+  });
+
+  if (!pkg) return;
+
+  const approvedRefunds = (pkg.order?.refundRequests || []).filter(
+    (r: any) => r.status === "refunded",
+  );
+
+  const refundQtyByOrderItem = new Map<string, number>();
+  for (const refund of approvedRefunds) {
+    for (const item of refund.items || []) {
+      const currentQty = refundQtyByOrderItem.get(item.order_item_id) || 0;
+      refundQtyByOrderItem.set(item.order_item_id, currentQty + item.quantity);
+    }
+  }
+
+  let originalSubtotal = 0;
+  let refundedSubtotal = 0;
+
+  for (const item of pkg.items) {
+    const itemUnitPrice = Number(item.unit_price || 0);
+    const itemQty = Number(item.quantity || 1);
+    originalSubtotal += itemUnitPrice * itemQty;
+
+    const refQty = refundQtyByOrderItem.get(item.id) || 0;
+    if (refQty > 0) {
+      refundedSubtotal += itemUnitPrice * Math.min(refQty, itemQty);
+    }
+  }
+
+  if (originalSubtotal === 0 && Number(pkg.subtotal) > 0) {
+    originalSubtotal = Number(pkg.subtotal);
+  }
+
+  const effectiveSubtotal = Math.max(0, originalSubtotal - refundedSubtotal);
+
+  let commission = 0;
+  let netAmount = 0;
+  let targetStatus = "in_hold";
+
+  if (effectiveSubtotal <= 0) {
+    commission = 0;
+    netAmount = 0;
+    targetStatus = "refunded";
+  } else {
+    if (effectiveSubtotal < 40) {
+      commission = Number((effectiveSubtotal * 0.09 + 2.5).toFixed(2));
+    } else {
+      commission = Number((effectiveSubtotal * 0.09).toFixed(2));
+    }
+    netAmount = Math.max(
+      0,
+      Number((effectiveSubtotal - commission).toFixed(2)),
+    );
+
+    const deliveryDate = pkg.updated_at
+      ? new Date(pkg.updated_at)
+      : new Date(pkg.created_at || Date.now());
+    const protectionEndDate = new Date(
+      deliveryDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+    );
+    const hasPendingRefund = (pkg.order?.refundRequests || []).some(
+      (r: any) => r.status === "pending" || r.status === "return_received",
+    );
+
+    if (new Date() >= protectionEndDate && !hasPendingRefund) {
+      targetStatus = "pending";
+    } else {
+      targetStatus = "in_hold";
+    }
+  }
+
+  const existingPayout = pkg.payouts[0];
+  if (existingPayout) {
+    let finalStatus = targetStatus;
+    if (existingPayout.status === "paid") {
+      finalStatus = "paid";
+    } else if (existingPayout.status === "cancelled") {
+      finalStatus = "cancelled";
+    }
+
+    await prisma.sellerPayout.update({
+      where: { id: existingPayout.id },
+      data: {
+        subtotal: effectiveSubtotal,
+        commission: commission,
+        net_amount: netAmount,
+        status: finalStatus,
+      },
+    });
+  } else if (effectiveSubtotal > 0) {
+    await prisma.sellerPayout.create({
+      data: {
+        company_id: pkg.company_id,
+        package_id: pkg.id,
+        subtotal: effectiveSubtotal,
+        commission: commission,
+        net_amount: netAmount,
+        status: targetStatus,
+      },
+    });
+  }
 }
 
 async function processNiubizRefund(

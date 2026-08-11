@@ -28,8 +28,13 @@ const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; icon: typeof IconClock }
 > = {
+  in_hold: {
+    label: "En Protección (7 días)",
+    color: "bg-purple-100 text-purple-800 border-purple-200",
+    icon: IconClock,
+  },
   pending: {
-    label: "Pendiente de Pago",
+    label: "Disponible para Pago",
     color: "bg-amber-100 text-amber-800 border-amber-200",
     icon: IconClock,
   },
@@ -42,6 +47,11 @@ const STATUS_CONFIG: Record<
     label: "Abonado / Transferido",
     color: "bg-emerald-100 text-emerald-800 border-emerald-200",
     icon: IconCheck,
+  },
+  refunded: {
+    label: "Reembolsado",
+    color: "bg-red-100 text-red-800 border-red-200",
+    icon: IconX,
   },
   cancelled: {
     label: "Cancelado",

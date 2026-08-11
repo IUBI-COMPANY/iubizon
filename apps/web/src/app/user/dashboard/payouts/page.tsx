@@ -21,6 +21,7 @@ import {
   FileText,
   Loader2,
   Receipt,
+  ShieldCheck,
   Truck,
   Wallet,
 } from "lucide-react";
@@ -38,9 +39,11 @@ interface SellerPayoutItem {
   referenceCode: string | null;
   notes: string | null;
   createdAt: string;
+  availableAt?: string | null;
 }
 
 interface PayoutKPIs {
+  inHoldTotal: number;
   pendingTotal: number;
   paidTotal: number;
   accumulatedTotal: number;
@@ -84,6 +87,7 @@ function PayoutsContent() {
 
   const [payouts, setPayouts] = useState<SellerPayoutItem[]>([]);
   const [kpis, setKpis] = useState<PayoutKPIs>({
+    inHoldTotal: 0,
     pendingTotal: 0,
     paidTotal: 0,
     accumulatedTotal: 0,
@@ -157,6 +161,7 @@ function PayoutsContent() {
 
   const filteredPayouts = payouts.filter((p) => {
     if (statusTab === "all") return true;
+    if (statusTab === "in_hold") return p.status === "in_hold";
     if (statusTab === "pending") return p.status === "pending";
     if (statusTab === "processing") return p.status === "processing";
     if (statusTab === "paid") return p.status === "paid";
@@ -199,12 +204,32 @@ function PayoutsContent() {
 
         {/* Tarjetas de Resumen KPI & Cuenta Bancaria (Grid de 4 columnas) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Por Cobrar / Pendiente */}
+          {/* KPI 1: En Protección (7 días) */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-[#64748b]">
-                  Por Cobrar (Pendiente)
+                  En Protección (7 días)
+                </span>
+                <div className="w-9 h-9 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-purple-700">
+                S/ {(kpis.inHoldTotal || 0).toFixed(2)}
+              </p>
+            </div>
+            <p className="text-[11px] text-[#64748b]">
+              Entregas en periodo de garantía al comprador.
+            </p>
+          </div>
+
+          {/* KPI 2: Por Cobrar (Disponible) */}
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Disponible para Cobro
                 </span>
                 <div className="w-9 h-9 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                   <Clock className="w-5 h-5" />
@@ -215,11 +240,11 @@ function PayoutsContent() {
               </p>
             </div>
             <p className="text-[11px] text-[#64748b]">
-              Entregas completadas a la espera de transferencia.
+              Garantía cumplida, disponible para transferencia.
             </p>
           </div>
 
-          {/* Pagado / Liquidado */}
+          {/* KPI 3: Total Abonado */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -236,26 +261,6 @@ function PayoutsContent() {
             </div>
             <p className="text-[11px] text-[#64748b]">
               Monto depositado en tu cuenta bancaria.
-            </p>
-          </div>
-
-          {/* Acumulado Histórico */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-2 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-[#64748b]">
-                  Total Acumulado Neto
-                </span>
-                <div className="w-9 h-9 rounded-2xl bg-orange-50 text-[#f25c05] flex items-center justify-center">
-                  <Wallet className="w-5 h-5" />
-                </div>
-              </div>
-              <p className="text-2xl font-black text-[#112237]">
-                S/ {kpis.accumulatedTotal.toFixed(2)}
-              </p>
-            </div>
-            <p className="text-[11px] text-[#64748b]">
-              Suma total de retribuciones netas generadas.
             </p>
           </div>
 
@@ -360,7 +365,8 @@ function PayoutsContent() {
         <Tabs value={statusTab} onValueChange={setStatusTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="all">Todos ({payouts.length})</TabsTrigger>
-            <TabsTrigger value="pending">Pendientes de Pago</TabsTrigger>
+            <TabsTrigger value="in_hold">En Protección (7d)</TabsTrigger>
+            <TabsTrigger value="pending">Disponibles para Pago</TabsTrigger>
             <TabsTrigger value="processing">En Proceso</TabsTrigger>
             <TabsTrigger value="paid">Pagados / Abonados</TabsTrigger>
           </TabsList>
@@ -368,20 +374,25 @@ function PayoutsContent() {
           {filteredPayouts.length > 0 ? (
             <div className="space-y-4">
               {filteredPayouts.map((p) => {
+                const isInHold = p.status === "in_hold";
                 const isPaid = p.status === "paid";
                 const isProcessing = p.status === "processing";
 
-                const badgeLabel = isPaid
-                  ? "Abonado / Transferido"
-                  : isProcessing
-                    ? "En Proceso de Depósito"
-                    : "Pendiente de Pago por iubizon";
+                const badgeLabel = isInHold
+                  ? "En Protección (7 días)"
+                  : isPaid
+                    ? "Abonado / Transferido"
+                    : isProcessing
+                      ? "En Proceso de Depósito"
+                      : "Disponible para Transferencia";
 
-                const badgeStyle = isPaid
-                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                  : isProcessing
-                    ? "bg-blue-100 text-blue-800 border-blue-200"
-                    : "bg-amber-100 text-amber-800 border-amber-200";
+                const badgeStyle = isInHold
+                  ? "bg-purple-100 text-purple-800 border-purple-200"
+                  : isPaid
+                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    : isProcessing
+                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                      : "bg-amber-100 text-amber-800 border-amber-200";
 
                 return (
                   <div
@@ -406,7 +417,7 @@ function PayoutsContent() {
                         <div className="flex items-center gap-1 text-xs text-[#64748b]">
                           <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
                           <span>
-                            Entrega completada el {formatFullDate(p.createdAt)}
+                            Entrega registrada el {formatFullDate(p.createdAt)}
                           </span>
                         </div>
                       </div>
@@ -417,6 +428,21 @@ function PayoutsContent() {
                         {badgeLabel}
                       </span>
                     </div>
+
+                    {/* Banner de Aviso de Protección de 7 días */}
+                    {isInHold && (
+                      <div className="flex items-center gap-2.5 bg-purple-50/80 border border-purple-200/80 rounded-2xl p-3 text-xs text-purple-900 font-medium">
+                        <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                        <span>
+                          Retribución protegida por la garantía de 7 días al
+                          comprador. Fecha estimada de liberación:{" "}
+                          <strong className="font-extrabold">
+                            {formatDate(p.availableAt || null)}
+                          </strong>
+                          .
+                        </span>
+                      </div>
+                    )}
 
                     {/* Desglose de Importes Financieros */}
                     <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">

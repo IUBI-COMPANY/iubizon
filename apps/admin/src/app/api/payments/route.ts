@@ -55,7 +55,7 @@ export async function GET(req: Request) {
     where.company = { name: { contains: company, mode: "insensitive" } };
   }
 
-  const [payouts, totalPending, totalPaid] = await Promise.all([
+  const [payouts, totalPending, totalInHold, totalPaid] = await Promise.all([
     db.sellerPayout.findMany({
       where,
       orderBy: { created_at: "desc" },
@@ -74,6 +74,10 @@ export async function GET(req: Request) {
     }),
     db.sellerPayout.aggregate({
       where: { status: "pending" },
+      _sum: { net_amount: true },
+    }),
+    db.sellerPayout.aggregate({
+      where: { status: "in_hold" },
       _sum: { net_amount: true },
     }),
     db.sellerPayout.aggregate({
@@ -101,9 +105,11 @@ export async function GET(req: Request) {
     payouts,
     summary: {
       totalPending: Number(totalPending._sum.net_amount || 0),
+      totalInHold: Number(totalInHold._sum.net_amount || 0),
       totalPaid: Number(totalPaid._sum.net_amount || 0),
       count: payouts.length,
       pendingCount: payouts.filter((p) => p.status === "pending").length,
+      inHoldCount: payouts.filter((p) => p.status === "in_hold").length,
       paidCount: payouts.filter((p) => p.status === "paid").length,
     },
   });
@@ -119,6 +125,39 @@ export async function PATCH(req: Request) {
     payment_proof,
     updated_by,
   } = await req.json();
+
+  const targetPayout = await db.sellerPayout.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+
+  if (!targetPayout) {
+    return NextResponse.json(
+      { error: "Payout no encontrado" },
+      { status: 404 },
+    );
+  }
+
+  if (targetPayout.status === "paid" && status === "paid") {
+    return NextResponse.json(
+      {
+        error:
+          "Esta retribución ya ha sido transferida y marcada como abonada previamente.",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (targetPayout.status === "in_hold" && status === "paid") {
+    return NextResponse.json(
+      {
+        error:
+          "Este abono está en periodo de garantía (7 días) de protección al comprador. No puede ser transferido aún.",
+      },
+      { status: 400 },
+    );
+  }
+
   const data: any = {};
   if (status) data.status = status;
   if (payment_method) data.payment_method = payment_method;
@@ -158,6 +197,16 @@ export async function PATCH(req: Request) {
       if (!bankInfo?.accountNumber) {
         return NextResponse.json(
           { error: "La empresa no tiene datos bancarios registrados" },
+          { status: 400 },
+        );
+      }
+
+      if (payment_method === "niubiz" && !cardInfo?.cardNumber) {
+        return NextResponse.json(
+          {
+            error:
+              "La empresa vendedora no tiene registrada una Tarjeta P2P o Yape/Plin válida para abonos automáticos Niubiz.",
+          },
           { status: 400 },
         );
       }

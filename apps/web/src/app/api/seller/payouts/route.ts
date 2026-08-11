@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { ensureSellerPayoutForPackages } from "@/lib/payoutService";
+import { getProtectionDays } from "@/lib/services/platformSettings";
 
 export interface SellerPayoutItem {
   id: string;
@@ -15,6 +16,9 @@ export interface SellerPayoutItem {
   referenceCode: string | null;
   notes: string | null;
   createdAt: string;
+  availableAt?: string | null;
+  trackingNumber?: string | null;
+  orderCode?: string | null;
 }
 
 export async function GET() {
@@ -38,6 +42,7 @@ export async function GET() {
       return NextResponse.json({
         payouts: [],
         kpis: {
+          inHoldTotal: 0,
           pendingTotal: 0,
           paidTotal: 0,
           accumulatedTotal: 0,
@@ -46,7 +51,7 @@ export async function GET() {
       });
     }
 
-    // Sincronizar paquetes entregados sin payout
+    // Sincronizar paquetes entregados sin payout o en recalculo
     const deliveredPackages = await prisma.orderPackage.findMany({
       where: {
         company_id: { in: companyIds },
@@ -61,9 +66,22 @@ export async function GET() {
 
     const rawPayouts = await prisma.sellerPayout.findMany({
       where: { company_id: { in: companyIds } },
+      include: {
+        package: {
+          select: {
+            tracking_number: true,
+            updated_at: true,
+            created_at: true,
+            order: { select: { order_code: true } },
+          },
+        },
+      },
       orderBy: { created_at: "desc" },
     });
 
+    const protectionDays = await getProtectionDays();
+
+    let inHoldTotal = 0;
     let pendingTotal = 0;
     let paidTotal = 0;
     let accumulatedTotal = 0;
@@ -73,10 +91,24 @@ export async function GET() {
       const sub = Number(p.subtotal || 0);
       const comm = Number(p.commission || 0);
 
-      if (p.status === "pending" || p.status === "processing")
+      if (p.status === "in_hold") {
+        inHoldTotal += net;
+      } else if (p.status === "pending" || p.status === "processing") {
         pendingTotal += net;
-      else if (p.status === "paid") paidTotal += net;
+      } else if (p.status === "paid") {
+        paidTotal += net;
+      }
       accumulatedTotal += net;
+
+      const deliveryDate = p.package?.updated_at
+        ? new Date(p.package.updated_at)
+        : p.created_at
+          ? new Date(p.created_at)
+          : new Date();
+
+      const availableDate = new Date(
+        deliveryDate.getTime() + protectionDays * 24 * 60 * 60 * 1000,
+      );
 
       return {
         id: p.id,
@@ -92,12 +124,16 @@ export async function GET() {
         createdAt: p.created_at
           ? p.created_at.toISOString()
           : new Date().toISOString(),
+        availableAt: availableDate.toISOString(),
+        trackingNumber: p.package?.tracking_number || null,
+        orderCode: p.package?.order?.order_code || null,
       };
     });
 
     return NextResponse.json({
       payouts: payoutsList,
       kpis: {
+        inHoldTotal,
         pendingTotal,
         paidTotal,
         accumulatedTotal,
