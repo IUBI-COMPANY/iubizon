@@ -10,6 +10,8 @@ export async function GET() {
     totalCompanies,
     totalRevenue,
     pendingRefunds,
+    readyRefunds,
+    pendingPayouts,
   ] = await Promise.all([
     db.product.count(),
     db.product.count({ where: { status: "active" } }),
@@ -18,6 +20,8 @@ export async function GET() {
     db.company.count(),
     db.order.aggregate({ _sum: { total_amount: true } }),
     db.refundRequest.count({ where: { status: "pending" } }),
+    db.refundRequest.count({ where: { status: "return_received" } }),
+    db.sellerPayout.aggregate({ where: { status: "pending" }, _sum: { net_amount: true } }),
   ]);
 
   return NextResponse.json({
@@ -25,6 +29,7 @@ export async function GET() {
     orders: { total: totalOrders, pending: pendingOrders },
     companies: { total: totalCompanies },
     revenue: { total: Number(totalRevenue._sum.total_amount || 0) },
-    refunds: { pending: pendingRefunds },
+    refunds: { pending: pendingRefunds, ready: readyRefunds },
+    payouts: { pendingNet: Number(pendingPayouts._sum.net_amount || 0) },
   });
 }

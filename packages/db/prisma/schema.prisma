@@ -51,6 +51,7 @@ model Company {
   logo_url     String?
   description  String?
   bank_account String?
+  payout_card  Json?
   phone        String?
   email        String
   location     String?
@@ -355,9 +356,12 @@ model SellerPayout {
   net_amount     Decimal   @db.Decimal(10, 2)
   status         String    @default("pending")
   paid_at        DateTime? @db.Timestamptz
-  payment_method String?
-  reference_code String?
-  notes          String?
+  payment_method  String?
+  reference_code  String?
+  notes           String?
+  payout_response Json?
+  payment_proof   String?
+  updated_by      String?   @db.Uuid
   created_at     DateTime? @default(now()) @db.Timestamptz
   updated_at     DateTime? @default(now()) @updatedAt @db.Timestamptz
 
@@ -466,6 +470,7 @@ model RefundRequest {
   refund_method          String?
   refund_reference       String?
   processed_at           DateTime? @db.Timestamptz
+  updated_by             String?   @db.Uuid
   created_at             DateTime? @default(now()) @db.Timestamptz
   updated_at             DateTime? @default(now()) @updatedAt @db.Timestamptz
 

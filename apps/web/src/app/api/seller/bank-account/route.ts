@@ -39,7 +39,19 @@ export async function GET(req: Request) {
         } catch {}
       }
 
-      return NextResponse.json({ type: "company", companyId, bankAccount });
+      let payoutCard = null;
+      if (membership.company.payout_card) {
+        try {
+          const parsed = typeof membership.company.payout_card === "string"
+            ? JSON.parse(membership.company.payout_card)
+            : membership.company.payout_card;
+          if (parsed && typeof parsed === "object") {
+            payoutCard = parsed;
+          }
+        } catch {}
+      }
+
+      return NextResponse.json({ type: "company", companyId, bankAccount, payoutCard });
     }
 
     return NextResponse.json({ type: "personal", bankAccount: null });
@@ -72,7 +84,39 @@ export async function POST(req: Request) {
       cci,
       holder_name,
       holder_doc,
+      payout_card,
     } = body;
+
+    if (payout_card) {
+      if (!company_id) {
+        return NextResponse.json(
+          { error: "ID de empresa requerido" },
+          { status: 400 },
+        );
+      }
+
+      const membership = await prisma.companyMember.findFirst({
+        where: { company_id, user_id: user.id },
+      });
+
+      if (!membership) {
+        return NextResponse.json(
+          { error: "No tienes permiso para actualizar esta empresa" },
+          { status: 403 },
+        );
+      }
+
+      await prisma.company.update({
+        where: { id: company_id },
+        data: { payout_card: payout_card },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Tarjeta de pago guardada con éxito.",
+        payoutCard: payout_card,
+      });
+    }
 
     if (!bank_name || !account_number || !holder_name) {
       return NextResponse.json(

@@ -10,6 +10,7 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { BankAccountModal } from "@/components/features/dashboard/BankAccountModal";
+import { PayoutCardModal } from "@/components/features/dashboard/PayoutCardModal";
 import {
   ArrowLeft,
   Calendar,
@@ -95,7 +96,9 @@ function PayoutsContent() {
 
   // Estado de Cuenta Bancaria
   const [bankAccount, setBankAccount] = useState<any>(null);
+  const [payoutCard, setPayoutCard] = useState<any>(null);
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   const fetchBankAccount = useCallback(async () => {
     try {
@@ -106,6 +109,7 @@ function PayoutsContent() {
       const data = await res.json();
       if (res.ok) {
         setBankAccount(data.bankAccount || null);
+        setPayoutCard(data.payoutCard || null);
       }
     } catch (err) {
       console.error("Error al obtener cuenta bancaria:", err);
@@ -319,6 +323,66 @@ function PayoutsContent() {
               {bankAccount ? "Editar Cuenta" : "Configurar Cuenta"}
             </Button>
           </div>
+
+          {/* Tarjeta para Pagos P2P */}
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-[#64748b]">
+                  Tarjeta Pagos P2P
+                </span>
+                <div
+                  className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
+                    payoutCard
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-purple-50 text-purple-600"
+                  }`}
+                >
+                  {payoutCard ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                </div>
+              </div>
+
+              {payoutCard ? (
+                <div>
+                  <p className="text-base font-black text-[#112237]">
+                    {payoutCard.cardNumber
+                      ? `****${payoutCard.cardNumber.slice(-4)}`
+                      : payoutCard.alias || "Sin datos"}
+                  </p>
+                  <p className="text-[11px] text-[#64748b] mt-0.5">
+                    {payoutCard.expirationMonth}/{payoutCard.expirationYear}
+                    {payoutCard.aliasType ? ` · ${payoutCard.aliasType}` : ""}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-bold text-purple-800">
+                    Sin tarjeta registrada
+                  </p>
+                  <p className="text-[11px] text-[#64748b] mt-1">
+                    Registra tu tarjeta o Yape/Plin para pagos inmediatos.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Button
+              variant={payoutCard ? "outline" : "default"}
+              onClick={() => setIsCardModalOpen(true)}
+              className={`w-full text-xs font-bold py-1.5 rounded-xl h-8 mt-3 ${
+                payoutCard
+                  ? "border-[#e2e8f0] hover:bg-slate-50 text-[#112237]"
+                  : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+              {payoutCard ? "Editar Tarjeta" : "Registrar Tarjeta"}
+            </Button>
+          </div>
         </div>
 
         {/* Pestañas de Filtrado */}
@@ -474,6 +538,15 @@ function PayoutsContent() {
         onClose={() => setIsBankModalOpen(false)}
         companyId={activeCompany?.id}
         initialData={bankAccount}
+        onSuccess={() => fetchBankAccount()}
+      />
+
+      {/* Modal de Tarjeta P2P */}
+      <PayoutCardModal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+        companyId={activeCompany?.id}
+        initialData={payoutCard}
         onSuccess={() => fetchBankAccount()}
       />
 

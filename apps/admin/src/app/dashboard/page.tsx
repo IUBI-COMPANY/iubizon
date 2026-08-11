@@ -7,6 +7,7 @@ import {
   IconBuildingStore,
   IconCoin,
   IconShield,
+  IconWallet,
 } from "@tabler/icons-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -60,6 +61,20 @@ export default function DashboardPage() {
       icon: IconShield,
       color: "text-red-600",
     },
+    {
+      title: "Por Procesar",
+      value: stats?.refunds?.ready ?? "-",
+      icon: IconShoppingCart,
+      color: "text-teal-600",
+    },
+    {
+      title: "Pendiente de Pago",
+      value: stats?.payouts?.pendingNet
+        ? `S/ ${stats.payouts.pendingNet.toLocaleString("es-PE")}`
+        : "-",
+      icon: IconWallet,
+      color: "text-orange-600",
+    },
   ];
 
   return (
@@ -70,7 +85,7 @@ export default function DashboardPage() {
           Panel de administración de iubizon
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {kpis.map((kpi) => (
           <Card key={kpi.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

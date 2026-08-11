@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   IconSearch,
   IconRefresh,
@@ -8,6 +8,7 @@ import {
   IconWallet,
   IconCheck,
   IconClock,
+  IconLoader2,
   IconTruck,
   IconX,
   IconCalendar,
@@ -21,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useAuth } from "@/hooks/useAuth";
 
 const STATUS_CONFIG: Record<
   string,
@@ -65,6 +67,8 @@ function formatFullDate(iso: string | null) {
 }
 
 export default function PagosPage() {
+  const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({});
@@ -81,6 +85,8 @@ export default function PagosPage() {
   const [payoutMethod, setPayoutMethod] = useState("");
   const [payoutRef, setPayoutRef] = useState("");
   const [payoutNotes, setPayoutNotes] = useState("");
+  const [payoutError, setPayoutError] = useState("");
+  const [payingId, setPayingId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -102,33 +108,63 @@ export default function PagosPage() {
     fetchData();
   }, [statusFilter, fetchData]);
 
-  const markAsPaid = async () => {
+  const markAsPaid = async (method: string) => {
     if (!confirm) return;
-    await fetch("/api/payments", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: confirm.id,
-        status: "paid",
-        payment_method: payoutMethod.trim() || null,
-        reference_code: payoutRef.trim() || null,
-        notes: payoutNotes.trim() || null,
-      }),
-    });
-    setConfirm(null);
-    setPayoutMethod("");
-    setPayoutRef("");
-    setPayoutNotes("");
-    fetchData();
+
+    const proofUrl = method === "manual" ? await uploadProof() : null;
+    if (method === "manual" && !proofUrl) {
+      setPayoutError("El comprobante es obligatorio para pagos manuales");
+      setConfirm(null);
+      return;
+    }
+
+    setPayingId(confirm.id);
+    try {
+      await fetch("/api/payments", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: confirm.id,
+          status: "paid",
+          payment_method: method,
+          reference_code: payoutRef.trim() || null,
+          notes: payoutNotes.trim() || null,
+          payment_proof: proofUrl,
+          updated_by: user?.id || null,
+        }),
+      });
+      setConfirm(null);
+      setPayoutMethod("");
+      setPayoutRef("");
+      setPayoutNotes("");
+      fetchData();
+    } catch {
+      // handled by API response
+    } finally {
+      setPayingId(null);
+    }
   };
 
   const markAsProcessing = async (id: string) => {
     await fetch("/api/payments", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: "processing" }),
+      body: JSON.stringify({ id, status: "processing", updated_by: user?.id || null }),
     });
     fetchData();
+  };
+
+  const uploadProof = async (): Promise<string | null> => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return null;
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload/payment-proof", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    return data.url || null;
   };
 
   return (
@@ -271,8 +307,33 @@ export default function PagosPage() {
                               {formatMoney(p.commission)}
                             </span>
                           </div>
+                          </div>
+
+                          {p.company?.payout_card && (
+                            <div>
+                              <p className="font-semibold text-muted-foreground uppercase mb-1">
+                                Tarjeta P2P
+                              </p>
+                              {(() => {
+                                try {
+                                  const c = typeof p.company.payout_card === "string"
+                                    ? JSON.parse(p.company.payout_card)
+                                    : p.company.payout_card;
+                                  return (
+                                    <p className="font-medium">
+                                      {c.cardNumber
+                                        ? `****${c.cardNumber.slice(-4)}`
+                                        : c.alias || "Sin datos"}
+                                      {c.expirationMonth && ` · ${c.expirationMonth}/${c.expirationYear}`}
+                                    </p>
+                                  );
+                                } catch {
+                                  return <p className="font-medium">Ver detalles</p>;
+                                }
+                              })()}
+                            </div>
+                          )}
                         </div>
-                      </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         {p.status === "pending" && (
@@ -381,6 +442,11 @@ export default function PagosPage() {
                           <IconCalendar className="w-3.5 h-3.5" />
                           <span>
                             Registrado: {formatFullDate(p.created_at)}
+                          {p.updated_by_name && (
+                            <span className="ml-2">
+                              · Por: {p.updated_by_name}
+                            </span>
+                          )}
                           </span>
                           {p.paid_at && (
                             <span className="ml-2">
@@ -407,6 +473,21 @@ export default function PagosPage() {
                           </div>
                         )}
 
+                        {p.payment_proof && (
+                          <button
+                            onClick={() => {
+                              const w = window.open("", "_blank", "width=800,height=600");
+                              if (w) {
+                                w.document.write(`<img src="${p.payment_proof}" style="max-width:100%;max-height:100vh;" />`);
+                                w.document.title = "Comprobante de pago";
+                              }
+                            }}
+                            className="text-xs text-blue-600 hover:underline text-left"
+                          >
+                            📎 Ver comprobante
+                          </button>
+                        )}
+
                         {p.status === "pending" && (
                           <div className="flex gap-2 pt-2">
                             <Button
@@ -425,37 +506,77 @@ export default function PagosPage() {
                             <div className="flex gap-2">
                               <Input
                                 className="h-7 text-xs flex-1"
-                                placeholder="Método: transferencia, yape, plin..."
-                                value={payoutMethod}
-                                onChange={(e) => setPayoutMethod(e.target.value)}
-                              />
-                              <Input
-                                className="h-7 text-xs w-[160px]"
-                                placeholder="N° referencia / op."
+                                placeholder="N° referencia / operación"
                                 value={payoutRef}
                                 onChange={(e) => setPayoutRef(e.target.value)}
                               />
+                              <Input
+                                className="h-7 text-xs flex-1"
+                                placeholder="Notas (opcional)..."
+                                value={payoutNotes}
+                                onChange={(e) => setPayoutNotes(e.target.value)}
+                              />
                             </div>
-                            <Input
-                              className="h-7 text-xs"
-                              placeholder="Notas (opcional)..."
-                              value={payoutNotes}
-                              onChange={(e) => setPayoutNotes(e.target.value)}
-                            />
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
-                              onClick={() =>
-                                setConfirm({
-                                  id: p.id,
-                                  companyName: p.company?.name || "Empresa",
-                                  netAmount: p.net_amount,
-                                })
-                              }
-                            >
-                              <IconCheck className="w-3 h-3 mr-1" />
-                              Marcar Pagado
-                            </Button>
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-semibold text-muted-foreground block">
+                                📎 Comprobante de pago *
+                              </label>
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*,.pdf"
+                                className="text-xs text-foreground file:mr-2 file:py-1 file:px-3 file:text-xs file:font-semibold file:border-0 file:rounded-md file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                              />
+                              <p className="text-[10px] text-muted-foreground">Obligatorio para pagos manuales</p>
+                            </div>
+                            {payoutError && (
+                              <p className="text-xs text-red-500 font-medium">{payoutError}</p>
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs bg-violet-600 hover:bg-violet-700 flex-1"
+                                onClick={() => {
+                                  setPayoutError("");
+                                  setPayoutMethod("niubiz");
+                                  setConfirm({
+                                    id: p.id,
+                                    companyName: p.company?.name || "Empresa",
+                                    netAmount: p.net_amount,
+                                  });
+                                }}
+                                disabled={!!payingId}
+                              >
+                                {payingId === p.id ? (
+                                  <IconLoader2 className="w-3 h-3 mr-1 animate-spin" />
+                                ) : (
+                                  <IconCheck className="w-3 h-3 mr-1" />
+                                )}
+                                {payingId === p.id ? "Procesando..." : "Pagar vía Niubiz"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs flex-1"
+                                disabled={!!payingId}
+                                onClick={() => {
+                                  setPayoutError("");
+                                  setPayoutMethod("manual");
+                                  setConfirm({
+                                    id: p.id,
+                                    companyName: p.company?.name || "Empresa",
+                                    netAmount: p.net_amount,
+                                  });
+                                }}
+                              >
+                                {payingId === p.id ? (
+                                  <IconLoader2 className="w-3 h-3 mr-1 animate-spin" />
+                                ) : (
+                                  <IconCheck className="w-3 h-3 mr-1" />
+                                )}
+                                {payingId === p.id ? "Procesando..." : "Marcar Pagado Manual"}
+                              </Button>
+                            </div>
                           </div>
                         )}
                       </CardContent>
@@ -513,8 +634,8 @@ export default function PagosPage() {
         onOpenChange={() => setConfirm(null)}
         title="Confirmar pago a proveedor"
         description={`¿Confirmas que ya realizaste la transferencia de S/ ${confirm ? formatMoney(confirm.netAmount) : "0"} a ${confirm?.companyName}?`}
-        confirmLabel="Sí, marcar como pagado"
-        onConfirm={markAsPaid}
+        confirmLabel={`Sí, pagar${payoutMethod === "niubiz" ? " vía Niubiz" : " manualmente"}`}
+        onConfirm={() => markAsPaid(payoutMethod)}
       />
     </div>
   );

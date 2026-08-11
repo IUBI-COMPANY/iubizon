@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RefundItem {
   order_item_id: string;
@@ -55,6 +56,7 @@ interface Refund {
   admin_notes: string | null;
   refund_method: string | null;
   refund_reference: string | null;
+  updated_by_name: string | null;
   processed_at: string | null;
   created_at: string;
   company_name: string;
@@ -117,6 +119,7 @@ function formatDate(iso: string | null): string {
 }
 
 export default function ReembolsosPage() {
+  const { user } = useAuth();
   const [refunds, setRefunds] = useState<Refund[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -201,6 +204,7 @@ export default function ReembolsosPage() {
           return_shipping_cost: form.cost ? Number(form.cost) : null,
           return_shipping_paid_by: form.paidBy || "buyer",
           admin_notes: form.notes?.trim() || null,
+          updated_by: user?.id || null,
         }),
       });
       const text = await res.text();
@@ -231,6 +235,7 @@ export default function ReembolsosPage() {
           action: "reject",
           refundId,
           admin_notes: rejectForm[refundId]?.notes?.trim() || null,
+          updated_by: user?.id || null,
         }),
       });
       const text = await res.text();
@@ -263,6 +268,7 @@ export default function ReembolsosPage() {
           refundId: processConfirm.id,
           refund_method: refundMethod,
           refund_reference: refundReference.trim() || null,
+          updated_by: user?.id || null,
         }),
       });
       const text = await res.text();
@@ -653,6 +659,9 @@ export default function ReembolsosPage() {
                       <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs">
                         <p className="text-emerald-800 font-semibold">
                           Reembolso procesado el {formatDate(r.processed_at)}
+                          {r.updated_by_name && (
+                            <span className="text-emerald-600"> por {r.updated_by_name}</span>
+                          )}
                         </p>
                         {r.refund_method && r.refund_method !== "niubiz" && (
                           <p className="text-emerald-700 mt-1">

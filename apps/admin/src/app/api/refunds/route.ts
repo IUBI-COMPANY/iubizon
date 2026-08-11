@@ -145,6 +145,12 @@ export async function GET(req: Request) {
       }
     }
 
+    const adminIds = [...new Set(refunds.map((r) => r.updated_by).filter(Boolean))] as string[];
+    const profiles = adminIds.length > 0
+      ? await db.profile.findMany({ where: { id: { in: adminIds } }, select: { id: true, name: true } })
+      : [];
+    const profileMap = new Map(profiles.map((p) => [p.id, p.name]));
+
     const mapped = refunds.map((r) => ({
       id: r.id,
       order_code: r.order.order_code,
@@ -166,6 +172,7 @@ export async function GET(req: Request) {
         r.return_estimated_delivery?.toISOString() ?? null,
       return_tracking_url: r.return_tracking_url,
       admin_notes: r.admin_notes,
+      updated_by_name: r.updated_by ? profileMap.get(r.updated_by) || null : null,
       refund_method: r.refund_method,
       refund_reference: r.refund_reference,
       processed_at: r.processed_at?.toISOString() ?? null,
@@ -257,6 +264,7 @@ export async function PATCH(req: Request) {
             return_shipping_cost != null ? Number(return_shipping_cost) : null,
           return_shipping_paid_by: return_shipping_paid_by || "buyer",
           admin_notes: admin_notes?.trim() || null,
+          updated_by: body.updated_by || null,
         },
       });
 
@@ -282,6 +290,7 @@ export async function PATCH(req: Request) {
         data: {
           status: "rejected",
           admin_notes: body.admin_notes?.trim() || null,
+          updated_by: body.updated_by || null,
         },
       });
 
@@ -290,7 +299,7 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "process_refund") {
-      return await handleProcessRefund(refundId, body.refund_method, body.refund_reference);
+      return await handleProcessRefund(refundId, body.refund_method, body.refund_reference, body.updated_by);
     }
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
@@ -301,7 +310,7 @@ export async function PATCH(req: Request) {
   }
 }
 
-async function handleProcessRefund(refundId: string, method?: string, refReference?: string) {
+async function handleProcessRefund(refundId: string, method?: string, refReference?: string, updatedBy?: string) {
   const refund = await db.refundRequest.findUnique({
     where: { id: refundId },
     select: {
@@ -357,7 +366,7 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
 
     try {
       const result = await processNiubizRefund(tx.transaction_id, companyRuc, Number(refund.refund_amount), refundId);
-      await applyRefundDbUpdates(refund, tx.id, result.rawResponse ?? null, method, refReference);
+      await applyRefundDbUpdates(refund, tx.id, result.rawResponse ?? null, method, refReference, updatedBy);
       triggerRefundEmail(refundId, true, "completed");
       return NextResponse.json({ success: true, cancellationCode: result.cancellationCode });
     } catch (err: unknown) {
@@ -373,7 +382,7 @@ async function handleProcessRefund(refundId: string, method?: string, refReferen
   }
 
   try {
-    await applyRefundDbUpdates(refund, refund.order.paymentTransaction?.id, null, method!, refReference);
+    await applyRefundDbUpdates(refund, refund.order.paymentTransaction?.id, null, method!, refReference, updatedBy);
     triggerRefundEmail(refundId, true, "completed");
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
@@ -391,6 +400,7 @@ async function applyRefundDbUpdates(
   rawResponse: any,
   refundMethod?: string,
   refundReference?: string,
+  updatedBy?: string,
 ) {
   await db.$transaction(async (prisma) => {
     const current = await prisma.refundRequest.findUnique({
@@ -421,6 +431,7 @@ async function applyRefundDbUpdates(
         processed_at: new Date(),
         refund_method: refundMethod || "niubiz",
         refund_reference: refundReference?.trim() || null,
+        updated_by: updatedBy || null,
       },
     });
 
