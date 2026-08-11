@@ -6,12 +6,16 @@ const NIUBIZ_PROD_MERCHANT = "651052554";
 const NIUBIZ_BASE_SANDBOX = "https://apisandbox.vnforappstest.com";
 const NIUBIZ_BASE_PROD = "https://apiprod.vnforapps.com";
 
-function triggerRefundEmail(refundId: string, approved: boolean) {
+function triggerRefundEmail(
+  refundId: string,
+  approved: boolean,
+  type?: string,
+) {
   try {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-refund-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refundId, approved }),
+      body: JSON.stringify({ refundId, approved, type }),
     }).catch(() => {});
   } catch {}
 }
@@ -431,6 +435,8 @@ async function handleProcessRefund(refundId: string) {
         }
       }
     });
+
+    triggerRefundEmail(refundId, true, "completed");
 
     return NextResponse.json({
       success: true,

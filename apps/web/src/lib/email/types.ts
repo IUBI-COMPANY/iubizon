@@ -113,3 +113,13 @@ export interface RefundStatusEmailData {
   companyPhone: string | null;
   items: EmailOrderItem[];
 }
+
+export interface RefundCompletedEmailData {
+  orderCode: string;
+  buyerName: string;
+  buyerEmail: string;
+  refundType: string;
+  refundAmount: number;
+  cancellationCode: string | null;
+  items: EmailOrderItem[];
+}

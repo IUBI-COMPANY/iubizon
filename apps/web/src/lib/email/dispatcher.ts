@@ -6,3 +6,4 @@ export {
   sendReturnReceivedNotification,
 } from "./send-return-emails";
 export { sendRefundStatusNotification } from "./send-refund-status-email";
+export { sendRefundCompletedNotification } from "./send-refund-completed-email";
