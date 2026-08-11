@@ -259,6 +259,7 @@ export async function PATCH(req: Request) {
       });
 
       triggerRefundEmail(refundId, true);
+      triggerRefundEmail(refundId, true, "approved_seller");
       return NextResponse.json({ success: true });
     }
 

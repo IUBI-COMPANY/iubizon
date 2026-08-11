@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   IconCheck,
   IconChevronDown,
@@ -124,7 +124,11 @@ export default function ReembolsosPage() {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [processConfirm, setProcessConfirm] = useState<Refund | null>(null);
+  const [approveConfirm, setApproveConfirm] = useState<Refund | null>(null);
+  const [rejectConfirm, setRejectConfirm] = useState<Refund | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const searchRef = useRef("");
 
   const [approveForm, setApproveForm] = useState<
     Record<
@@ -147,7 +151,7 @@ export default function ReembolsosPage() {
           params.set("status", statusTab);
         }
       }
-      if (search.trim()) params.set("search", search.trim());
+      if (searchRef.current.trim()) params.set("search", searchRef.current.trim());
       const res = await fetch(`/api/refunds?${params.toString()}`);
       const text = await res.text();
       let data: any;
@@ -171,7 +175,7 @@ export default function ReembolsosPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusTab, search]);
+  }, [statusTab]);
 
   useEffect(() => {
     fetchRefunds();
@@ -272,6 +276,20 @@ export default function ReembolsosPage() {
     }
   };
 
+  const confirmApprove = async () => {
+    if (!approveConfirm) return;
+    const id = approveConfirm.id;
+    setApproveConfirm(null);
+    await handleApprove(id);
+  };
+
+  const confirmReject = async () => {
+    if (!rejectConfirm) return;
+    const id = rejectConfirm.id;
+    setRejectConfirm(null);
+    await handleReject(id);
+  };
+
   const initApproveForm = (ref: Refund) => {
     if (!approveForm[ref.id]) {
       setApproveForm((prev) => ({
@@ -314,9 +332,14 @@ export default function ReembolsosPage() {
             placeholder="Buscar por orden o comprador..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") fetchRefunds();
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+              searchRef.current = value;
+              if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+              searchTimerRef.current = setTimeout(() => {
+                fetchRefunds();
+              }, 400);
             }}
           />
         </div>
@@ -738,7 +761,7 @@ export default function ReembolsosPage() {
                           <Button
                             size="sm"
                             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
-                            onClick={() => handleApprove(r.id)}
+                            onClick={() => setApproveConfirm(r)}
                             disabled={
                               submittingId === r.id ||
                               !approveForm[r.id]?.address?.trim()
@@ -752,7 +775,7 @@ export default function ReembolsosPage() {
                             size="sm"
                             variant="outline"
                             className="text-red-600 border-red-200 hover:bg-red-50 text-xs"
-                            onClick={() => handleReject(r.id)}
+                            onClick={() => setRejectConfirm(r)}
                             disabled={submittingId === r.id}
                           >
                             {submittingId === r.id
@@ -785,6 +808,33 @@ export default function ReembolsosPage() {
           })}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!approveConfirm}
+        onOpenChange={() => setApproveConfirm(null)}
+        title="Aprobar Reembolso"
+        description={
+          approveConfirm
+            ? `¿Estás seguro de aprobar el reembolso por S/ ${formatMoney(approveConfirm.refund_amount)} de la orden #${approveConfirm.order_code}? Se notificará al comprador y al vendedor.`
+            : ""
+        }
+        confirmLabel={submittingId ? "Aprobando..." : "Sí, Aprobar Reembolso"}
+        onConfirm={confirmApprove}
+      />
+
+      <ConfirmModal
+        open={!!rejectConfirm}
+        onOpenChange={() => setRejectConfirm(null)}
+        title="Rechazar Reembolso"
+        description={
+          rejectConfirm
+            ? `¿Estás seguro de rechazar el reembolso por S/ ${formatMoney(rejectConfirm.refund_amount)} de la orden #${rejectConfirm.order_code}? Se notificará al comprador.`
+            : ""
+        }
+        confirmLabel={submittingId ? "Rechazando..." : "Sí, Rechazar"}
+        variant="destructive"
+        onConfirm={confirmReject}
+      />
 
       <ConfirmModal
         open={!!processConfirm}

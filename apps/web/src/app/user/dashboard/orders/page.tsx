@@ -151,6 +151,14 @@ function OrdersContent() {
     }
   }, [user, isLoadingCompanies, activeCompany?.id, fetchOrders]);
 
+  useEffect(() => {
+    if (!user || packages.length === 0) return;
+    const interval = setInterval(() => {
+      fetchOrders();
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [user, packages.length, fetchOrders]);
+
   const filteredPackages = packages.filter((pkg) => {
     if (statusTab === "all") return true;
     if (statusTab === "pending") return pkg.status === "pending";

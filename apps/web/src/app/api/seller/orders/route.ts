@@ -154,7 +154,14 @@ export async function GET(request: Request) {
         ? await prisma.refundRequest.findMany({
             where: {
               order_id: { in: orderIds },
-              status: { in: ["pending", "approved", "return_in_transit"] },
+              status: {
+                in: [
+                  "pending",
+                  "approved",
+                  "return_in_transit",
+                  "return_received",
+                ],
+              },
             },
             select: { order_id: true, type: true, status: true },
           })

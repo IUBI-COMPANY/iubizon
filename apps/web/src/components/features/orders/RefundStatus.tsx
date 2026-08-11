@@ -96,6 +96,14 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
     fetchRequests();
   }, [fetchRequests]);
 
+  useEffect(() => {
+    if (!orderId) return;
+    const interval = setInterval(() => {
+      fetchRequests();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [orderId, fetchRequests]);
+
   const handleConfirmReceipt = async (refundId: string) => {
     if (
       !confirm(
