@@ -259,129 +259,100 @@ function PayoutsContent() {
             </p>
           </div>
 
-          {/* Cuenta Bancaria para Abonos (Al lado derecho de Total Acumulado Neto) */}
+          {/* Métodos de Abono (Tarjeta Única Combinada) */}
           <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#64748b]">
-                  Cuenta Bancaria Abonos
+                  Métodos de Abono
                 </span>
-                <div
-                  className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
-                    bankAccount
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-amber-50 text-amber-600"
-                  }`}
-                >
-                  {bankAccount ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : (
-                    <CreditCard className="w-5 h-5" />
-                  )}
+                <div className="w-9 h-9 rounded-2xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5" />
                 </div>
               </div>
 
-              {bankAccount ? (
-                <div>
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p className="text-base font-black text-[#112237]">
-                      {bankAccount.bank_name}
+              {/* Sección 1: Cuenta Bancaria */}
+              <div className="border-b border-[#f1f5f9] pb-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-extrabold text-[#64748b] tracking-wider uppercase">
+                    Cuenta Bancaria
+                  </span>
+                  <button
+                    onClick={() => setIsBankModalOpen(true)}
+                    className="text-[10px] font-bold text-[#f25c05] hover:text-[#d94d04] transition-colors cursor-pointer"
+                  >
+                    {bankAccount ? "Editar" : "Configurar"}
+                  </button>
+                </div>
+
+                {bankAccount ? (
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs font-black text-[#112237]">
+                        {bankAccount.bank_name}
+                      </p>
+                      <span className="text-[8px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-full uppercase">
+                        Verificada
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-bold text-[#112237] truncate">
+                      Nº {bankAccount.account_number}
                     </p>
-                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded-full uppercase">
-                      Verificada
-                    </span>
+                    <p className="text-[10px] text-[#64748b] truncate mt-0.5">
+                      {bankAccount.holder_name}
+                    </p>
                   </div>
-                  <p className="text-xs font-bold text-[#112237] truncate">
-                    Nº {bankAccount.account_number}
-                  </p>
-                  <p className="text-[11px] text-[#64748b] truncate mt-0.5">
-                    {bankAccount.holder_name}
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm font-bold text-amber-800">
-                    Sin cuenta registrada
-                  </p>
-                  <p className="text-[11px] text-[#64748b] mt-1">
-                    Registra tus datos para recibir los abonos de iubizon.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <Button
-              variant={bankAccount ? "outline" : "default"}
-              onClick={() => setIsBankModalOpen(true)}
-              className={`w-full text-xs font-bold py-1.5 rounded-xl h-8 mt-3 ${
-                bankAccount
-                  ? "border-[#e2e8f0] hover:bg-slate-50 text-[#112237]"
-                  : "bg-[#f25c05] hover:bg-[#d94d04] text-white shadow-sm"
-              }`}
-            >
-              <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-              {bankAccount ? "Editar Cuenta" : "Configurar Cuenta"}
-            </Button>
-          </div>
-
-          {/* Tarjeta para Pagos P2P */}
-          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-[#64748b]">
-                  Tarjeta Pagos P2P
-                </span>
-                <div
-                  className={`w-9 h-9 rounded-2xl flex items-center justify-center ${
-                    payoutCard
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-purple-50 text-purple-600"
-                  }`}
-                >
-                  {payoutCard ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : (
-                    <CreditCard className="w-5 h-5" />
-                  )}
-                </div>
+                ) : (
+                  <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-2.5">
+                    <p className="text-[10px] font-bold text-amber-800">
+                      Sin cuenta registrada
+                    </p>
+                    <p className="text-[9px] text-[#64748b] mt-0.5">
+                      Registra tus datos para recibir los abonos de iubizon.
+                    </p>
+                  </div>
+                )}
               </div>
 
-              {payoutCard ? (
-                <div>
-                  <p className="text-base font-black text-[#112237]">
-                    {payoutCard.cardNumber
-                      ? `****${payoutCard.cardNumber.slice(-4)}`
-                      : payoutCard.alias || "Sin datos"}
-                  </p>
-                  <p className="text-[11px] text-[#64748b] mt-0.5">
-                    {payoutCard.expirationMonth}/{payoutCard.expirationYear}
-                    {payoutCard.aliasType ? ` · ${payoutCard.aliasType}` : ""}
-                  </p>
+              {/* Sección 2: Tarjeta Pagos P2P */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-extrabold text-[#64748b] tracking-wider uppercase">
+                    Tarjeta Pagos P2P
+                  </span>
+                  <button
+                    onClick={() => setIsCardModalOpen(true)}
+                    className="text-[10px] font-bold text-purple-600 hover:text-purple-700 transition-colors cursor-pointer"
+                  >
+                    {payoutCard ? "Editar" : "Registrar"}
+                  </button>
                 </div>
-              ) : (
-                <div>
-                  <p className="text-sm font-bold text-purple-800">
-                    Sin tarjeta registrada
-                  </p>
-                  <p className="text-[11px] text-[#64748b] mt-1">
-                    Registra tu tarjeta o Yape/Plin para pagos inmediatos.
-                  </p>
-                </div>
-              )}
-            </div>
 
-            <Button
-              variant={payoutCard ? "outline" : "default"}
-              onClick={() => setIsCardModalOpen(true)}
-              className={`w-full text-xs font-bold py-1.5 rounded-xl h-8 mt-3 ${
-                payoutCard
-                  ? "border-[#e2e8f0] hover:bg-slate-50 text-[#112237]"
-                  : "bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
-              }`}
-            >
-              <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-              {payoutCard ? "Editar Tarjeta" : "Registrar Tarjeta"}
-            </Button>
+                {payoutCard ? (
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-black text-[#112237]">
+                      {payoutCard.cardNumber
+                        ? `****${payoutCard.cardNumber.slice(-4)}`
+                        : payoutCard.alias || "Sin datos"}
+                    </p>
+                    <p className="text-[10px] text-[#64748b]">
+                      Vence: {payoutCard.expirationMonth}/
+                      {payoutCard.expirationYear}
+                      {payoutCard.aliasType ? ` · ${payoutCard.aliasType}` : ""}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-2.5">
+                    <p className="text-[10px] font-bold text-purple-800">
+                      Sin tarjeta registrada
+                    </p>
+                    <p className="text-[9px] text-[#64748b] mt-0.5">
+                      Registra tu tarjeta o Yape/Plin para pagos inmediatos.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
