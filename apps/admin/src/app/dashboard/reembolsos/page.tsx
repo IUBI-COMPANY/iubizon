@@ -53,6 +53,8 @@ interface Refund {
   return_estimated_delivery: string | null;
   return_tracking_url: string | null;
   admin_notes: string | null;
+  refund_method: string | null;
+  refund_reference: string | null;
   processed_at: string | null;
   created_at: string;
   company_name: string;
@@ -124,6 +126,8 @@ export default function ReembolsosPage() {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [processConfirm, setProcessConfirm] = useState<Refund | null>(null);
+  const [refundMethod, setRefundMethod] = useState("niubiz");
+  const [refundReference, setRefundReference] = useState("");
   const [approveConfirm, setApproveConfirm] = useState<Refund | null>(null);
   const [rejectConfirm, setRejectConfirm] = useState<Refund | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -257,6 +261,8 @@ export default function ReembolsosPage() {
         body: JSON.stringify({
           action: "process_refund",
           refundId: processConfirm.id,
+          refund_method: refundMethod,
+          refund_reference: refundReference.trim() || null,
         }),
       });
       const text = await res.text();
@@ -644,8 +650,23 @@ export default function ReembolsosPage() {
 
                     {/* Processed info for refunded status */}
                     {r.status === "refunded" && r.processed_at && (
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800">
-                        Reembolso procesado el {formatDate(r.processed_at)}
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs">
+                        <p className="text-emerald-800 font-semibold">
+                          Reembolso procesado el {formatDate(r.processed_at)}
+                        </p>
+                        {r.refund_method && r.refund_method !== "niubiz" && (
+                          <p className="text-emerald-700 mt-1">
+                            Método:{" "}
+                            {r.refund_method === "bank_transfer"
+                              ? "Transferencia Bancaria"
+                              : r.refund_method === "yape"
+                                ? "Yape"
+                                : r.refund_method === "plin"
+                                  ? "Plin"
+                                  : r.refund_method}
+                            {r.refund_reference && ` · Ref: ${r.refund_reference}`}
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -786,19 +807,47 @@ export default function ReembolsosPage() {
                       </div>
                     )}
 
-                    {/* Return received info */}
+                    {/* Return received — process refund */}
                     {r.status === "return_received" && (
                       <div className="bg-teal-50 border border-teal-200 rounded-lg p-3 space-y-2">
                         <p className="text-xs text-teal-800">
                           El vendedor confirmó la recepción del producto.
                         </p>
-                        <Button
-                          size="sm"
-                          className="bg-violet-600 hover:bg-violet-700 text-white text-xs"
-                          onClick={() => setProcessConfirm(r)}
-                        >
-                          Procesar Reembolso vía Niubiz
-                        </Button>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Select
+                              value={refundMethod}
+                              onValueChange={setRefundMethod}
+                            >
+                              <SelectTrigger className="h-8 text-xs flex-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="niubiz">Vía Niubiz</SelectItem>
+                                <SelectItem value="bank_transfer">Transferencia Bancaria</SelectItem>
+                                <SelectItem value="yape">Yape</SelectItem>
+                                <SelectItem value="plin">Plin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {refundMethod !== "niubiz" && (
+                              <Input
+                                className="h-8 text-xs w-[180px]"
+                                placeholder="N° de operación / ref."
+                                value={refundReference}
+                                onChange={(e) => setRefundReference(e.target.value)}
+                              />
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            className="bg-violet-600 hover:bg-violet-700 text-white text-xs w-full"
+                            onClick={() => setProcessConfirm(r)}
+                          >
+                            {refundMethod === "niubiz"
+                              ? "Procesar Reembolso vía Niubiz"
+                              : `Procesar Reembolso por ${refundMethod === "bank_transfer" ? "Transferencia" : refundMethod === "yape" ? "Yape" : "Plin"}`}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
@@ -842,7 +891,7 @@ export default function ReembolsosPage() {
         title="Procesar Reembolso"
         description={
           processConfirm
-            ? `¿Estás seguro de procesar el reembolso por S/ ${formatMoney(processConfirm.refund_amount)} de la orden #${processConfirm.order_code}? Se realizará el cargo inverso en Niubiz a la tarjeta del comprador.`
+            ? `¿Estás seguro de procesar el reembolso por S/ ${formatMoney(processConfirm.refund_amount)} de la orden #${processConfirm.order_code}? ${refundMethod !== "niubiz" ? `Método: ${refundMethod === "bank_transfer" ? "Transferencia Bancaria" : refundMethod === "yape" ? "Yape" : "Plin"}${refundReference ? ` · Ref: ${refundReference}` : ""}` : "Se realizará el cargo inverso en Niubiz a la tarjeta del comprador."}`
             : ""
         }
         confirmLabel={processingId ? "Procesando..." : "Sí, Procesar Reembolso"}

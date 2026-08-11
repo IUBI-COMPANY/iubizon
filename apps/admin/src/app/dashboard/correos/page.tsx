@@ -27,7 +27,9 @@ export default function CorreosPage() {
   const fetchEmails = useCallback(async () => {
     setLoading(true);
     const res = await fetch("/api/email-queue?status=failed");
-    const data = await res.json();
+    const text = await res.text();
+    let data: any = {};
+    try { data = JSON.parse(text); } catch { data = { emails: [] }; }
     setEmails(data.emails || []);
     setLoading(false);
   }, []);

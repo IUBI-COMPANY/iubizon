@@ -166,6 +166,8 @@ export async function GET(req: Request) {
         r.return_estimated_delivery?.toISOString() ?? null,
       return_tracking_url: r.return_tracking_url,
       admin_notes: r.admin_notes,
+      refund_method: r.refund_method,
+      refund_reference: r.refund_reference,
       processed_at: r.processed_at?.toISOString() ?? null,
       created_at: r.created_at?.toISOString() ?? new Date().toISOString(),
       company_name: r.order.packages[0]?.company?.name || "N/A",
@@ -288,7 +290,7 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "process_refund") {
-      return await handleProcessRefund(refundId);
+      return await handleProcessRefund(refundId, body.refund_method, body.refund_reference);
     }
 
     return NextResponse.json({ error: "Acción no válida" }, { status: 400 });
@@ -299,7 +301,7 @@ export async function PATCH(req: Request) {
   }
 }
 
-async function handleProcessRefund(refundId: string) {
+async function handleProcessRefund(refundId: string, method?: string, refReference?: string) {
   const refund = await db.refundRequest.findUnique({
     where: { id: refundId },
     select: {
@@ -329,132 +331,125 @@ async function handleProcessRefund(refundId: string) {
   });
 
   if (!refund)
-    return NextResponse.json(
-      { error: "Solicitud no encontrada" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Solicitud no encontrada" }, { status: 404 });
   if (refund.status !== "return_received")
-    return NextResponse.json(
-      { error: "La devolución debe estar confirmada" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "La devolución debe estar confirmada" }, { status: 400 });
 
-  const tx = refund.order.paymentTransaction;
-  if (!tx)
-    return NextResponse.json(
-      { error: "No se encontró la transacción de pago" },
-      { status: 400 },
-    );
-  if (tx.provider !== "niubiz")
-    return NextResponse.json(
-      { error: "Solo reembolsos Niubiz" },
-      { status: 400 },
-    );
-  if (!tx.transaction_id) {
-    return NextResponse.json(
-      { error: "Faltan datos de la transacción" },
-      { status: 400 },
-    );
-  }
+  const isNiubiz = !method || method === "niubiz";
 
-  const rawRuc = refund.order.packages[0]?.company?.tax_id;
-  const companyRuc = rawRuc
-    ? rawRuc.replace(/\D/g, "").slice(-11)
-    : process.env.NIUBIZ_COMPANY_RUC || "20614600374";
+  if (isNiubiz) {
+    const tx = refund.order.paymentTransaction;
+    if (!tx) return NextResponse.json({ error: "No se encontró la transacción de pago" }, { status: 400 });
+    if (tx.provider !== "niubiz") return NextResponse.json({ error: "Solo reembolsos Niubiz" }, { status: 400 });
+    if (!tx.transaction_id) return NextResponse.json({ error: "Faltan datos de la transacción" }, { status: 400 });
 
-  if (companyRuc.length !== 11) {
-    return NextResponse.json(
-      {
-        error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)`,
-      },
-      { status: 400 },
-    );
+    const rawRuc = refund.order.packages[0]?.company?.tax_id;
+    const companyRuc = rawRuc
+      ? rawRuc.replace(/\D/g, "").slice(-11)
+      : process.env.NIUBIZ_COMPANY_RUC || "20614600374";
+
+    if (companyRuc.length !== 11) {
+      return NextResponse.json(
+        { error: `El RUC de la empresa no es válido (${companyRuc} no tiene 11 dígitos)` },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const result = await processNiubizRefund(tx.transaction_id, companyRuc, Number(refund.refund_amount), refundId);
+      await applyRefundDbUpdates(refund, tx.id, result.rawResponse ?? null, method, refReference);
+      triggerRefundEmail(refundId, true, "completed");
+      return NextResponse.json({ success: true, cancellationCode: result.cancellationCode });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error Niubiz";
+      if (msg.includes("cambió mientras se procesaba")) {
+        return NextResponse.json({ error: msg }, { status: 409 });
+      }
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Error Niubiz" },
+        { status: 400 },
+      );
+    }
   }
 
   try {
-    const result = await processNiubizRefund(
-      tx.transaction_id,
-      companyRuc,
-      Number(refund.refund_amount),
-      refundId,
-    );
-
-    await db.$transaction(async (prisma) => {
-      const current = await prisma.refundRequest.findUnique({
-        where: { id: refundId },
-        select: { status: true },
-      });
-
-      if (current?.status !== "return_received") {
-        throw new Error(
-          "El estado del reembolso cambió mientras se procesaba. Verifica e intenta de nuevo.",
-        );
-      }
-
-      await prisma.paymentTransaction.update({
-        where: { id: tx.id },
-        data: {
-          status: "refunded",
-          raw_response: result.rawResponse ?? null,
-        },
-      });
-
-      await prisma.refundRequest.update({
-        where: { id: refundId },
-        data: { status: "refunded", processed_at: new Date() },
-      });
-
-      if (refund.type === "full") {
-        await prisma.order.update({
-          where: { id: refund.order.id },
-          data: { status: "refunded" },
-        });
-      }
-
-      const refundedItemIds = refund.items.map((i) => i.order_item_id);
-      const packages = await prisma.orderPackage.findMany({
-        where: {
-          order_id: refund.order.id,
-          items: { some: { id: { in: refundedItemIds } } },
-        },
-        select: { id: true },
-      });
-
-      for (const pkg of packages) {
-        const allItems = await prisma.orderItem.findMany({
-          where: { package_id: pkg.id },
-          select: { id: true },
-        });
-        const allRefunded = allItems.every((i) =>
-          refundedItemIds.includes(i.id),
-        );
-        if (allRefunded) {
-          await prisma.sellerPayout.updateMany({
-            where: { package_id: pkg.id },
-            data: { status: "refunded" },
-          });
-        }
-      }
-    });
-
+    await applyRefundDbUpdates(refund, refund.order.paymentTransaction?.id, null, method!, refReference);
     triggerRefundEmail(refundId, true, "completed");
-
-    return NextResponse.json({
-      success: true,
-      cancellationCode: result.cancellationCode,
-    });
+    return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Error Niubiz";
-
+    const msg = err instanceof Error ? err.message : "Error";
     if (msg.includes("cambió mientras se procesaba")) {
       return NextResponse.json({ error: msg }, { status: 409 });
     }
-
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Error Niubiz" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
+}
+
+async function applyRefundDbUpdates(
+  refund: { id: string; type: string; order: { id: string }; items: { order_item_id: string }[] },
+  txId: string | null | undefined,
+  rawResponse: any,
+  refundMethod?: string,
+  refundReference?: string,
+) {
+  await db.$transaction(async (prisma) => {
+    const current = await prisma.refundRequest.findUnique({
+      where: { id: refund.id },
+      select: { status: true },
+    });
+
+    if (current?.status !== "return_received") {
+      throw new Error(
+        "El estado del reembolso cambió mientras se procesaba. Verifica e intenta de nuevo.",
+      );
+    }
+
+    if (txId) {
+      await prisma.paymentTransaction.update({
+        where: { id: txId },
+        data: {
+          status: "refunded",
+          raw_response: rawResponse,
+        },
+      });
+    }
+
+    await prisma.refundRequest.update({
+      where: { id: refund.id },
+      data: {
+        status: "refunded",
+        processed_at: new Date(),
+        refund_method: refundMethod || "niubiz",
+        refund_reference: refundReference?.trim() || null,
+      },
+    });
+
+    if (refund.type === "full") {
+      await prisma.order.update({
+        where: { id: refund.order.id },
+        data: { status: "refunded" },
+      });
+    }
+
+    const refundedItemIds = refund.items.map((i) => i.order_item_id);
+    const packages = await prisma.orderPackage.findMany({
+      where: { order_id: refund.order.id, items: { some: { id: { in: refundedItemIds } } } },
+      select: { id: true },
+    });
+
+    for (const pkg of packages) {
+      const allItems = await prisma.orderItem.findMany({
+        where: { package_id: pkg.id },
+        select: { id: true },
+      });
+      if (allItems.every((i) => refundedItemIds.includes(i.id))) {
+        await prisma.sellerPayout.updateMany({
+          where: { package_id: pkg.id },
+          data: { status: "refunded" },
+        });
+      }
+    }
+  });
 }
 
 async function processNiubizRefund(

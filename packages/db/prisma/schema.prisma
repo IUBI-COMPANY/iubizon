@@ -463,6 +463,8 @@ model RefundRequest {
   return_estimated_delivery DateTime? @db.Timestamptz
   created_by             String?   @db.Uuid
   admin_notes            String?
+  refund_method          String?
+  refund_reference       String?
   processed_at           DateTime? @db.Timestamptz
   created_at             DateTime? @default(now()) @db.Timestamptz
   updated_at             DateTime? @default(now()) @updatedAt @db.Timestamptz

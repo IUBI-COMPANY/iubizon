@@ -78,6 +78,9 @@ export default function PagosPage() {
     companyName: string;
     netAmount: number;
   } | null>(null);
+  const [payoutMethod, setPayoutMethod] = useState("");
+  const [payoutRef, setPayoutRef] = useState("");
+  const [payoutNotes, setPayoutNotes] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -104,9 +107,18 @@ export default function PagosPage() {
     await fetch("/api/payments", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: confirm.id, status: "paid" }),
+      body: JSON.stringify({
+        id: confirm.id,
+        status: "paid",
+        payment_method: payoutMethod.trim() || null,
+        reference_code: payoutRef.trim() || null,
+        notes: payoutNotes.trim() || null,
+      }),
     });
     setConfirm(null);
+    setPayoutMethod("");
+    setPayoutRef("");
+    setPayoutNotes("");
     fetchData();
   };
 
@@ -377,6 +389,17 @@ export default function PagosPage() {
                           )}
                         </div>
 
+                        {(p.payment_method || p.reference_code) && (
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <IconNotes className="w-3.5 h-3.5" />
+                            <span>
+                              {p.payment_method && `${p.payment_method}`}
+                              {p.payment_method && p.reference_code && " · "}
+                              {p.reference_code && `Ref: ${p.reference_code}`}
+                            </span>
+                          </div>
+                        )}
+
                         {p.notes && (
                           <div className="flex items-start gap-2 text-xs text-muted-foreground">
                             <IconNotes className="w-3.5 h-3.5 mt-0.5 shrink-0" />
@@ -398,7 +421,27 @@ export default function PagosPage() {
                           </div>
                         )}
                         {p.status === "processing" && (
-                          <div className="flex gap-2 pt-2">
+                          <div className="space-y-2 pt-2">
+                            <div className="flex gap-2">
+                              <Input
+                                className="h-7 text-xs flex-1"
+                                placeholder="Método: transferencia, yape, plin..."
+                                value={payoutMethod}
+                                onChange={(e) => setPayoutMethod(e.target.value)}
+                              />
+                              <Input
+                                className="h-7 text-xs w-[160px]"
+                                placeholder="N° referencia / op."
+                                value={payoutRef}
+                                onChange={(e) => setPayoutRef(e.target.value)}
+                              />
+                            </div>
+                            <Input
+                              className="h-7 text-xs"
+                              placeholder="Notas (opcional)..."
+                              value={payoutNotes}
+                              onChange={(e) => setPayoutNotes(e.target.value)}
+                            />
                             <Button
                               size="sm"
                               className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
