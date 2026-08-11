@@ -254,5 +254,21 @@ export async function PATCH(req: Request) {
   }
 
   await db.sellerPayout.update({ where: { id }, data });
+
+  if (status === "paid" || data.status === "paid") {
+    triggerPayoutEmail(id);
+  }
+
   return NextResponse.json({ success: true });
+}
+
+function triggerPayoutEmail(payoutId: string) {
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    fetch(`${appUrl}/api/send-payout-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payoutId }),
+    }).catch(() => {});
+  } catch {}
 }

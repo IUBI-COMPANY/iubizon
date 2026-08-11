@@ -272,6 +272,7 @@ export async function PATCH(req: Request) {
     const pkg = await prisma.orderPackage.findUnique({
       where: { id: packageId },
       include: {
+        order: { select: { id: true, buyer_id: true } },
         company: {
           include: {
             companyMembers: { where: { user_id: user.id } },
@@ -292,10 +293,76 @@ export async function PATCH(req: Request) {
         where: { id: packageId },
         data: { status: "cancelled", updated_at: new Date() },
       });
+
       await prisma.orderItem.updateMany({
         where: { package_id: packageId },
         data: { status: "cancelled", updated_at: new Date() },
       });
+
+      const pkgItems = await prisma.orderItem.findMany({
+        where: { package_id: packageId },
+        select: {
+          id: true,
+          product_id: true,
+          quantity: true,
+          unit_price: true,
+          subtotal: true,
+        },
+      });
+
+      // 1. Reintegrar stock al vendedor
+      for (const item of pkgItems) {
+        if (item.product_id) {
+          await prisma.product.update({
+            where: { id: item.product_id },
+            data: { stock: { increment: item.quantity } },
+          });
+        }
+      }
+
+      // 2. Crear solicitud de reembolso automática para devolución al comprador por la administración
+      if (pkg.order?.id && pkg.order?.buyer_id) {
+        const existingRefund = await prisma.refundRequest.findFirst({
+          where: {
+            order_id: pkg.order.id,
+            status: {
+              in: ["pending", "approved", "return_received", "refunded"],
+            },
+          },
+        });
+
+        if (!existingRefund) {
+          const packageSubtotal = pkgItems.reduce(
+            (acc, i) => acc + Number(i.subtotal || 0),
+            0,
+          );
+          const refundAmt =
+            packageSubtotal > 0 ? packageSubtotal : Number(pkg.subtotal || 0);
+
+          await prisma.refundRequest.create({
+            data: {
+              order_id: pkg.order.id,
+              buyer_id: pkg.order.buyer_id,
+              reason:
+                "Cancelado por la empresa vendedora (Imposibilidad de despacho)",
+              type: "full",
+              refund_amount: refundAmt,
+              platform_fee: 0,
+              net_refund: refundAmt,
+              status: "pending",
+              items: {
+                create: pkgItems.map((item) => ({
+                  order_item_id: item.id,
+                  quantity: item.quantity,
+                  unit_price: item.unit_price,
+                  subtotal: item.subtotal,
+                })),
+              },
+            },
+          });
+        }
+      }
+
       return NextResponse.json({ success: true });
     }
 
