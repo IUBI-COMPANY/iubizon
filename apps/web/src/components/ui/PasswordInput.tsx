@@ -41,7 +41,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
     {
       className,
       label,
-      value = "",
+      value,
       onChange,
       showRequirements = false,
       confirmValue,
@@ -55,8 +55,24 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
     ref,
   ) => {
     const [showPassword, setShowPassword] = React.useState(false);
+    const [internalValue, setInternalValue] = React.useState(
+      typeof value === "string" ? value : "",
+    );
 
-    const stringValue = typeof value === "string" ? value : String(value || "");
+    const isControlled = value !== undefined;
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!isControlled) {
+        setInternalValue(event.target.value);
+      }
+      onChange?.(event);
+    };
+
+    const currentValue = isControlled ? value : internalValue;
+    const stringValue =
+      typeof currentValue === "string"
+        ? currentValue
+        : String(currentValue ?? "");
     const requirements = React.useMemo(
       () => getPasswordRequirements(stringValue),
       [stringValue],
@@ -82,8 +98,8 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
             ref={ref}
             id={inputId}
             type={showPassword ? "text" : "password"}
-            value={value}
-            onChange={onChange}
+            {...(isControlled ? { value } : {})}
+            onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
             className={cn("pl-10 pr-10", className)}
