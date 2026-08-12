@@ -26,12 +26,8 @@ export const metadata: Metadata = {
     template: "%s | iubizon",
   },
   description:
-<<<<<<< HEAD
-    "iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para solicitar un reembolso.",
-
-=======
     "iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para devolver tu producto si presenta fallas.",
->>>>>>> 98ba51baa (Modificar los LLMS)
+
   alternates: {
     canonical: baseUrl,
   },
@@ -79,12 +75,7 @@ export const metadata: Metadata = {
     url: "https://www.iubizon.com",
     title: "iubizon - Tecnología para educar y trabajar",
     description:
-<<<<<<< HEAD
-      "Compra tecnología para educar y trabajar directo a proveedores verificados y con pagos protegidos.",
-
-=======
       "Compra tecnología para educar y trabajar directo a proveedores verificados, con pagos protegidos y 7 días de protección para devolver tu producto si presenta fallas.",
->>>>>>> 98ba51baa (Modificar los LLMS)
     images: [
       {
         url: `${baseUrl}/images/banner-seo.png`,
@@ -97,11 +88,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "iubizon - Tecnología para educar y trabajar",
     description:
-<<<<<<< HEAD
-      "Compra tecnología para educar y trabajar directo a proveedores verificados, con pagos protegidos.",
-=======
       "Compra tecnología para educar y trabajar directo a proveedores verificados, con pagos protegidos y 7 días de protección para devolver tu producto si presenta fallas.",
->>>>>>> 98ba51baa (Modificar los LLMS)
     images: [
       {
         url: "https://www.iubizon.com/og-image.jpg",
@@ -129,11 +116,8 @@ export default function RootLayout({
     "@type": "OnlineMarketplace",
     name: "iubizon",
     description:
-<<<<<<< HEAD
-      "Plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para solicitar un reembolso.",
-=======
       "Plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos y 7 días de protección para devolver tu producto si presenta fallas.",
->>>>>>> 98ba51baa (Modificar los LLMS)
+
     url: "https://www.iubizon.com",
     logo: "https://www.iubizon.com/images/logo.png",
     image: "https://www.iubizon.com/og-image.jpg",
