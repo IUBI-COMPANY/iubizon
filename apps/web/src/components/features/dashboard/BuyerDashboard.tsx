@@ -3,20 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowRight,
-  Building2,
-  Calendar,
-  Clock,
-  Heart,
-  Loader2,
-  MapPin,
-  Package,
-  Plus,
-  ShoppingBag,
-  Truck,
-  User as UserIcon,
-} from "lucide-react";
+import { Building2, Heart, Loader2, MapPin, Package, Plus, ShoppingBag, User as UserIcon } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import type { User } from "@/types";
 
