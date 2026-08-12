@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,6 +31,8 @@ import {
 } from "lucide-react";
 
 import { CreateCompanyStep } from "@/components/features/products/CreateCompanyStep";
+import { UploadFichaStep } from "@/components/features/products/UploadFichaStep";
+import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
 import {
   MediaUploader,
   UploadedImage,
@@ -146,7 +149,9 @@ function PublishProductForm() {
     }
   };
 
-  const [wizardStep, setWizardStep] = useState<1 | 2>(1);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
+  const [extractedData, setExtractedData] = useState<ExtractedCompanyData | null>(null);
+  const [taxIdDocumentUrl, setTaxIdDocumentUrl] = useState<string | null>(null);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -283,7 +288,7 @@ function PublishProductForm() {
   };
 
   const hasNoCompanies = !isLoadingCompanies && companies.length === 0;
-  const currentStep = hasNoCompanies ? wizardStep : 2;
+  const currentStep = hasNoCompanies ? wizardStep : 3;
 
   if (isLoadingCompanies) {
     return (
@@ -314,6 +319,7 @@ function PublishProductForm() {
           {/* Stepper por Pasos si el usuario no tiene empresas */}
           {hasNoCompanies && (
             <div className="flex items-center justify-center gap-4 mb-8 bg-white p-4 rounded-2xl border border-[#e2e8f0] shadow-sm">
+              {/* Paso 1: Ficha RUC */}
               <div className="flex items-center gap-2">
                 <div
                   className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs transition-all ${
@@ -322,49 +328,95 @@ function PublishProductForm() {
                       : "bg-emerald-500 text-white"
                   }`}
                 >
-                  {currentStep === 1 ? "1" : "OK"}
+                  {currentStep === 1 ? "1" : "✓"}
                 </div>
                 <span
                   className={`text-xs font-bold ${
                     currentStep === 1 ? "text-[#f25c05]" : "text-emerald-700"
                   }`}
                 >
-                  1. Registrar Empresa
+                  1. Ficha RUC
                 </span>
               </div>
 
-              <div className="w-12 h-0.5 bg-[#e2e8f0]" />
+              <div className="w-10 h-0.5 bg-[#e2e8f0]" />
 
+              {/* Paso 2: Registrar Empresa */}
               <div
-                className={`flex items-center gap-2 ${
-                  currentStep === 2 ? "opacity-100" : "opacity-40"
+                className={`flex items-center gap-2 transition-all ${
+                  currentStep >= 2 ? "opacity-100" : "opacity-40"
                 }`}
               >
                 <div
                   className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
                     currentStep === 2
                       ? "bg-[#f25c05] text-white shadow-md"
+                      : currentStep > 2
+                      ? "bg-emerald-500 text-white"
                       : "bg-slate-200 text-slate-600"
                   }`}
                 >
-                  2
+                  {currentStep > 2 ? "✓" : "2"}
                 </div>
                 <span
                   className={`text-xs font-bold ${
-                    currentStep === 2 ? "text-[#f25c05]" : "text-[#64748b]"
+                    currentStep === 2
+                      ? "text-[#f25c05]"
+                      : currentStep > 2
+                      ? "text-emerald-700"
+                      : "text-[#64748b]"
                   }`}
                 >
-                  2. Publicar Producto
+                  2. Registrar Empresa
+                </span>
+              </div>
+
+              <div className="w-10 h-0.5 bg-[#e2e8f0]" />
+
+              {/* Paso 3: Publicar Producto */}
+              <div
+                className={`flex items-center gap-2 transition-all ${
+                  currentStep === 3 ? "opacity-100" : "opacity-40"
+                }`}
+              >
+                <div
+                  className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
+                    currentStep === 3
+                      ? "bg-[#f25c05] text-white shadow-md"
+                      : "bg-slate-200 text-slate-600"
+                  }`}
+                >
+                  3
+                </div>
+                <span
+                  className={`text-xs font-bold ${
+                    currentStep === 3 ? "text-[#f25c05]" : "text-[#64748b]"
+                  }`}
+                >
+                  3. Publicar Producto
                 </span>
               </div>
             </div>
           )}
 
           {currentStep === 1 ? (
+            <UploadFichaStep
+              onNext={(url, data) => {
+                setTaxIdDocumentUrl(url);
+                setExtractedData(data);
+                setWizardStep(2);
+              }}
+            />
+          ) : currentStep === 2 ? (
             <CreateCompanyStep
+              extractedData={extractedData}
+              taxIdDocumentUrl={taxIdDocumentUrl}
               onCompanyCreated={async () => {
                 await refreshCompanies();
-                setWizardStep(2);
+                setWizardStep(3);
+              }}
+              onBack={() => {
+                setWizardStep(1);
               }}
             />
           ) : (
@@ -388,6 +440,23 @@ function PublishProductForm() {
                   )}
                 </div>
               </div>
+
+              {activeCompany && !activeCompany.is_personal && !activeCompany.is_verified && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm">
+                  <div className="p-2 bg-amber-100 rounded-xl shrink-0 mt-0.5">
+                    <ShieldCheck className="w-5 h-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-amber-900">
+                      Empresa en Proceso de Verificación de Ficha RUC
+                    </h4>
+                    <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                      ¡Tu documento ha sido recibido con éxito y tu cuenta se encuentra en revisión! 
+                      Mientras tanto, <strong>puedes seguir registrando y guardando tus productos</strong>. Éstos se guardarán como borradores en tu catálogo, pero no estarán disponibles para la venta pública hasta que iubizon verifique y active tu empresa.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <form
                 onSubmit={handleSubmit(onSubmit as any)}

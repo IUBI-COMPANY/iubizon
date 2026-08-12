@@ -15,6 +15,8 @@ import {
   Save,
   Search,
   Upload,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
@@ -23,6 +25,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
 import { useCompany } from "@/context/CompanyContext";
+import { FichaRucUploader } from "@/components/ui/FichaRucUploader";
+import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
 import { peruUbigeo } from "@/data-list/ubigeos";
 import {
   Select,
@@ -58,6 +62,7 @@ const companyFormSchema = z.object({
   district: z.string().min(1, "Selecciona un distrito."),
   location: z.string().min(3, "La dirección es obligatoria."),
   description: z.string().optional(),
+  tax_id_document_url: z.string().optional(),
 });
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
@@ -67,6 +72,8 @@ export default function NewCompanyPage() {
   const { refreshCompanies, setActiveCompanyId } = useCompany();
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingDocument, setIsUploadingDocument] = useState(false);
+  const [documentName, setDocumentName] = useState<string | null>(null);
   const [sunatLoading, setSunatLoading] = useState(false);
   const [sunatInfo, setSunatInfo] = useState<{
     verified: boolean;
@@ -76,11 +83,13 @@ export default function NewCompanyPage() {
   const [serverError, setServerError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     setError,
     formState: { errors },
@@ -163,9 +172,14 @@ export default function NewCompanyPage() {
       setValue("tax_type", autoTaxType, { shouldValidate: true });
       setValue("tax_id", doc, { shouldValidate: true });
       if (data.name) {
-        setValue("name", data.name, { shouldValidate: true });
+        // Siempre actualizar la Razón Social con el dato oficial de SUNAT
+        setValue("legal_name", data.name, { shouldValidate: true });
+        // Solo rellenar Nombre Comercial si Gemini no lo fijó ya (getValues = tiempo real)
+        if (!getValues("name")) {
+          setValue("name", data.name, { shouldValidate: true });
+        }
       }
-      if (data.address) {
+      if (data.address && !getValues("location")) {
         setValue("location", data.address, { shouldValidate: true });
       }
     } catch (err) {
@@ -222,6 +236,91 @@ export default function NewCompanyPage() {
       setIsUploadingLogo(false);
     }
   };
+
+  const handleExtractedDocument = (
+    url: string,
+    extractedData?: ExtractedCompanyData | null,
+  ) => {
+    const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+    setValue("tax_id_document_url", url, opts);
+
+    if (extractedData) {
+      if (extractedData.tax_id) {
+        setValue("tax_id", extractedData.tax_id, opts);
+        if (extractedData.tax_type) {
+          setValue("tax_type", extractedData.tax_type, opts);
+        }
+        handleSunatLookup(extractedData.tax_id);
+      }
+      if (extractedData.legal_name) {
+        setValue("legal_name", extractedData.legal_name, opts);
+      }
+      if (extractedData.name) {
+        setValue("name", extractedData.name, opts);
+      }
+      if (extractedData.phone) {
+        setValue("phone", extractedData.phone, opts);
+      }
+      if (extractedData.email) {
+        setValue("email", extractedData.email, opts);
+      }
+
+      // Autocompletar Departamento → Provincia → Distrito en cascada de forma secuencial y asíncrona
+      if (extractedData.department) {
+        const cleanText = (str: string) =>
+          str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toUpperCase();
+
+        const depNorm = cleanText(extractedData.department);
+        const matchedDep = peruUbigeo.find((d) => cleanText(d.name) === depNorm);
+
+        if (matchedDep) {
+          setValue("department", matchedDep.name, opts);
+
+          // Esperar a que React renderice las provincias correspondientes
+          setTimeout(() => {
+            if (extractedData.province) {
+              const provNorm = cleanText(extractedData.province);
+              const matchedProv = matchedDep.provinces.find((p) => cleanText(p.name) === provNorm);
+
+              if (matchedProv) {
+                setValue("province", matchedProv.name, opts);
+
+                // Esperar a que React renderice los distritos correspondientes
+                setTimeout(() => {
+                  if (extractedData.district) {
+                    const distNorm = cleanText(extractedData.district);
+                    const matchedDist = matchedProv.districts.find((d) => cleanText(d.name) === distNorm);
+
+                    if (matchedDist) {
+                      setValue("district", matchedDist.name, opts);
+                    }
+                  }
+                }, 50);
+              }
+            }
+          }, 50);
+        }
+      }
+
+      // Dirección (solo vía y número, sin distrito/provincia/departamento)
+      if (extractedData.location) {
+        setValue("location", extractedData.location, opts);
+      }
+
+      if (extractedData.status) {
+        setSunatInfo({
+          verified: true,
+          name: extractedData.legal_name || extractedData.name || "",
+          message: `SUNAT (IA): ${extractedData.status} - ${extractedData.condition || "HABIDO"}`,
+        });
+      }
+    }
+  };
+
 
   const onSubmit = async (values: CompanyFormValues) => {
     setIsSaving(true);
@@ -377,8 +476,16 @@ export default function NewCompanyPage() {
                 </div>
               </div>
 
-              {/* Tipo de Documento y Número — PRIMERO */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* PRIMER CAMPO: Carga de Ficha RUC en PDF para Autocompletado Automático */}
+              <FichaRucUploader
+                label="1. Adjunta tu Ficha RUC o Reporte SUNAT (PDF)"
+                helperText="Sube tu Ficha RUC en formato PDF para que la Inteligencia Artificial analice el documento y autocomplete automáticamente el RUC, Razón Social, Nombre Comercial y Dirección."
+                value={formData.tax_id_document_url}
+                onDocumentUploaded={handleExtractedDocument}
+              />
+
+              {/* RUC / Tipo de Documento */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
                     htmlFor="tax_type"

@@ -122,6 +122,7 @@ export async function createCompany(
     legal_name: string;
     logo_url?: string;
     tax_id?: string;
+    tax_id_document_url?: string;
     description?: string;
     bank_account?: string;
     phone?: string;
@@ -142,12 +143,14 @@ export async function createCompany(
         legal_name: data.legal_name || "",
         logo_url: data.logo_url || null,
         tax_id: data.tax_id || null,
+        tax_id_document_url: data.tax_id_document_url || null,
         description: data.description || null,
         bank_account: data.bank_account || null,
         phone: data.phone || null,
         location: data.location || null,
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
+        is_verified: false,
         is_personal: false,
         companyMembers: {
           create: {

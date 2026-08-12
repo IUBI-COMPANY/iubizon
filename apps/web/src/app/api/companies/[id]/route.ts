@@ -38,6 +38,8 @@ export async function GET(
         slug: true,
         legal_name: true,
         tax_id: true,
+        tax_id_document_url: true,
+        is_verified: true,
         logo_url: true,
         description: true,
         phone: true,
@@ -125,6 +127,10 @@ export async function PATCH(
         name: newName,
         slug: updatedSlug,
         tax_id: finalTaxId,
+        tax_id_document_url:
+          body.tax_id_document_url !== undefined
+            ? body.tax_id_document_url || null
+            : undefined,
         logo_url:
           body.logo_url !== undefined ? body.logo_url || null : undefined,
         phone: body.phone !== undefined ? body.phone.trim() || null : undefined,

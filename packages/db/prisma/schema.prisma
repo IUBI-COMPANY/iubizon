@@ -57,6 +57,7 @@ model Company {
   location     String?
   latitude     Float?
   longitude    Float?
+  tax_id_document_url String?
   is_verified  Boolean?  @default(false)
   is_personal  Boolean?  @default(false)
   created_at   DateTime? @default(now()) @db.Timestamptz

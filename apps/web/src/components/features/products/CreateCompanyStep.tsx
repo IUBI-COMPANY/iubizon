@@ -1,6 +1,4 @@
-"use client";
-
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,15 +6,26 @@ import { z } from "zod";
 import {
   Building2,
   CheckCircle2,
+  ExternalLink,
   Loader2,
   Search,
   Sparkles,
   Upload,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/context/ToastContext";
+import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
+import { peruUbigeo } from "@/data-list/ubigeos";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
 
 const createCompanyStepSchema = z.object({
   tax_id: z
@@ -31,8 +40,12 @@ const createCompanyStepSchema = z.object({
   legal_name: z.string().min(2, "La razón social es obligatoria."),
   email: z.string().email("Ingresa un correo electrónico válido."),
   logo_url: z.string().optional(),
+  tax_id_document_url: z.string().optional(),
   phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
-  location: z.string().min(3, "La ubicación o ciudad es obligatoria."),
+  department: z.string().min(1, "Selecciona un departamento."),
+  province: z.string().min(1, "Selecciona una provincia."),
+  district: z.string().min(1, "Selecciona un distrito."),
+  location: z.string().min(3, "La dirección es obligatoria."),
   description: z.string().optional(),
 });
 
@@ -44,10 +57,16 @@ interface CreateCompanyStepProps {
     name: string;
     slug: string;
   }) => void;
+  extractedData: ExtractedCompanyData | null;
+  taxIdDocumentUrl: string | null;
+  onBack: () => void;
 }
 
 export const CreateCompanyStep = ({
   onCompanyCreated,
+  extractedData,
+  taxIdDocumentUrl,
+  onBack,
 }: CreateCompanyStepProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -65,6 +84,7 @@ export const CreateCompanyStep = ({
     register,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<CreateCompanyStepValues>({
@@ -75,13 +95,127 @@ export const CreateCompanyStep = ({
       legal_name: "",
       email: "",
       logo_url: "",
+      tax_id_document_url: taxIdDocumentUrl || "",
       phone: "",
+      department: "Lima",
+      province: "Lima",
+      district: "",
       location: "",
       description: "",
     },
   });
 
   const formData = watch();
+
+  const provincesForDepartment = useMemo(
+    () => peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
+    [formData.department],
+  );
+  const districtsForProvince = useMemo(
+    () =>
+      provincesForDepartment.find((p) => p.name === formData.province)?.districts || [],
+    [provincesForDepartment, formData.province],
+  );
+
+  // Pre-rellenar formulario cuando se recibe extractedData (pasado desde el paso 1)
+  useEffect(() => {
+    const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+    if (taxIdDocumentUrl) {
+      setValue("tax_id_document_url", taxIdDocumentUrl, opts);
+    }
+    if (extractedData) {
+      if (extractedData.tax_id) {
+        setValue("tax_id", extractedData.tax_id, opts);
+        handleSunatLookup(extractedData.tax_id);
+      }
+      if (extractedData.legal_name) {
+        setValue("legal_name", extractedData.legal_name, opts);
+      }
+      if (extractedData.name) {
+        setValue("name", extractedData.name, opts);
+      }
+      if (extractedData.phone) {
+        setValue("phone", extractedData.phone, opts);
+      }
+      if (extractedData.email) {
+        setValue("email", extractedData.email, opts);
+      }
+
+      // Autocompletar ubigeo en cascada de forma secuencial y asíncrona para sincronizar los Selects de React/Radix
+      if (extractedData.department) {
+        const cleanText = (str: string) =>
+          str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim()
+            .toUpperCase();
+
+        const depNorm = cleanText(extractedData.department);
+        const matchedDep = peruUbigeo.find((d) => cleanText(d.name) === depNorm);
+
+        if (matchedDep) {
+          setValue("department", matchedDep.name, opts);
+
+          // Esperar a que React renderice las provincias disponibles del departamento
+          setTimeout(() => {
+            if (extractedData.province) {
+              const provNorm = cleanText(extractedData.province);
+              const matchedProv = matchedDep.provinces.find((p) => cleanText(p.name) === provNorm);
+
+              if (matchedProv) {
+                setValue("province", matchedProv.name, opts);
+
+                // Esperar a que React renderice los distritos disponibles de la provincia
+                setTimeout(() => {
+                  if (extractedData.district) {
+                    const distNorm = cleanText(extractedData.district);
+                    const matchedDist = matchedProv.districts.find((d) => cleanText(d.name) === distNorm);
+
+                    if (matchedDist) {
+                      setValue("district", matchedDist.name, opts);
+                    }
+                  }
+                }, 50);
+              }
+            }
+          }, 50);
+        }
+      }
+
+      if (extractedData.location) {
+        setValue("location", extractedData.location, opts);
+      }
+
+      if (extractedData.description) {
+        setValue("description", extractedData.description, opts);
+      }
+
+      if (extractedData.status) {
+        setSunatInfo({
+          verified: true,
+          name: extractedData.legal_name || extractedData.name || "",
+          message: `SUNAT (IA): ${extractedData.status} - ${extractedData.condition || "HABIDO"}`,
+        });
+      }
+    }
+  }, [extractedData, taxIdDocumentUrl]);
+
+  const handleDepartmentChange = (dep: string) => {
+    const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+    setValue("department", dep, opts);
+    setValue("province", "", opts);
+    setValue("district", "", opts);
+  };
+
+  const handleProvinceChange = (prov: string) => {
+    const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+    setValue("province", prov, opts);
+    setValue("district", "", opts);
+  };
+
+  const handleDistrictChange = (dist: string) => {
+    setValue("district", dist, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+  };
 
   const handleSunatLookup = async (docNum?: string) => {
     const doc = (docNum || formData.tax_id).replace(/\D/g, "");
@@ -108,12 +242,17 @@ export const CreateCompanyStep = ({
         message: `SUNAT: ${data.status || "ACTIVO"} - ${data.condition || "HABIDO"}`,
       });
 
-      setValue("tax_id", doc, { shouldValidate: true });
+      const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+      setValue("tax_id", doc, opts);
       if (data.name) {
-        setValue("legal_name", data.name, { shouldValidate: true });
+        setValue("legal_name", data.name, opts);
+        // Usar getValues() en tiempo real (no el snapshot formData que puede estar desactualizado)
+        if (!getValues("name")) {
+          setValue("name", data.name, opts);
+        }
       }
-      if (data.address) {
-        setValue("location", data.address, { shouldValidate: true });
+      if (data.address && !getValues("location")) {
+        setValue("location", data.address, opts);
       }
     } catch {
       toast.error("Error al conectar con el servicio de SUNAT.", "SUNAT");
@@ -167,6 +306,7 @@ export const CreateCompanyStep = ({
     }
   };
 
+
   const onSubmit = async (values: CreateCompanyStepValues) => {
     try {
       setIsLoading(true);
@@ -183,6 +323,7 @@ export const CreateCompanyStep = ({
           name: values.name.trim(),
           legal_name: values.legal_name.trim(),
           tax_id: formattedTaxId,
+          tax_id_document_url: values.tax_id_document_url || null,
           logo_url: values.logo_url,
           email: values.email.trim(),
           location: values.location.trim(),
@@ -215,16 +356,15 @@ export const CreateCompanyStep = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-[#112237]">
-              Paso 1: Registra tu Empresa o Marca Comercial
+              Paso 2: Confirmar y Completar Datos de la Empresa
             </h2>
             <span className="bg-orange-100 text-[#f25c05] text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              Primer Paso
+              Datos Extraídos
             </span>
           </div>
           <p className="text-xs text-[#64748b] mt-0.5">
-            Para empezar a vender en iubizon necesitas registrar la marca con la
-            que publicarás tus productos.
+            Por favor, revisa y completa los campos. Puedes modificarlos si es necesario antes de registrar tu empresa.
           </p>
         </div>
       </div>
@@ -324,8 +464,7 @@ export const CreateCompanyStep = ({
             <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
               <span>
-                Verificado: <strong>{sunatInfo.name}</strong> (
-                {sunatInfo.message})
+                Verificado: <strong>{sunatInfo.name}</strong> ({sunatInfo.message})
               </span>
             </div>
           )}
@@ -391,17 +530,67 @@ export const CreateCompanyStep = ({
           </FormField>
         </div>
 
+        {/* Departamento, Provincia, Distrito */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <FormField name="department" label="Departamento" required error={errors.department?.message}>
+            <Select value={formData.department || undefined} onValueChange={handleDepartmentChange}>
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue placeholder="Selecciona" />
+              </SelectTrigger>
+              <SelectContent>
+                {peruUbigeo.map((dep) => (
+                  <SelectItem key={dep.name} value={dep.name} className="text-xs">{dep.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+
+          <FormField name="province" label="Provincia" required error={errors.province?.message}>
+            <Select
+              value={formData.province || undefined}
+              onValueChange={handleProvinceChange}
+              disabled={!formData.department}
+            >
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue placeholder="Selecciona" />
+              </SelectTrigger>
+              <SelectContent>
+                {provincesForDepartment.map((prov) => (
+                  <SelectItem key={prov.name} value={prov.name} className="text-xs">{prov.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+
+          <FormField name="district" label="Distrito" required error={errors.district?.message}>
+            <Select
+              value={formData.district || undefined}
+              onValueChange={handleDistrictChange}
+              disabled={!formData.province}
+            >
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue placeholder="Selecciona" />
+              </SelectTrigger>
+              <SelectContent>
+                {districtsForProvince.map((dist) => (
+                  <SelectItem key={dist.name} value={dist.name} className="text-xs">{dist.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             name="location"
-            label="Ubicación / Ciudad"
+            label="Dirección"
             required
             error={errors.location?.message}
           >
             <Input
               id="field_location"
               {...register("location")}
-              placeholder="Lima, Chorrillos"
+              placeholder="Av. Principal 123, Urb. La Villa"
               className="text-xs"
             />
           </FormField>
@@ -421,7 +610,17 @@ export const CreateCompanyStep = ({
           </FormField>
         </div>
 
-        <div className="pt-4 border-t border-[#f1f5f9] flex justify-end">
+        <div className="pt-4 border-t border-[#f1f5f9] flex justify-between items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="border-[#cbd5e1] text-[#64748b] hover:bg-slate-50 text-xs font-bold px-4 py-3 rounded-xl flex items-center gap-1.5"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Volver a Ficha RUC
+          </Button>
+
           <Button
             type="submit"
             disabled={isLoading}
@@ -430,10 +629,10 @@ export const CreateCompanyStep = ({
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Registrando marca...
+                Registrando empresa...
               </>
             ) : (
-              "Guardar y Continuar"
+              "Confirmar y Guardar Empresa"
             )}
           </Button>
         </div>

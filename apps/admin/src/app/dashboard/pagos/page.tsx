@@ -197,18 +197,32 @@ export default function PagosPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <IconClock className="w-4 h-4 text-purple-600" />
+              En Protección (7 días)
+            </div>
+            <p className="text-2xl font-bold text-purple-700">
+              S/ {formatMoney(summary.totalInHold)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {summary.inHoldCount || 0} liquidaciones en periodo de garantía
+            </p>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <IconClock className="w-4 h-4 text-amber-600" />
-              Pendiente de pagar
+              Disponible para pagar
             </div>
             <p className="text-2xl font-bold text-amber-600">
               S/ {formatMoney(summary.totalPending)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {summary.pendingCount || 0} liquidaciones pendientes
+              {summary.pendingCount || 0} liquidaciones listas para abonar
             </p>
           </CardContent>
         </Card>
@@ -268,7 +282,8 @@ export default function PagosPage() {
           <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="">Todas ({payouts.length})</TabsTrigger>
-              <TabsTrigger value="pending">Pendientes</TabsTrigger>
+              <TabsTrigger value="in_hold">En Protección (7d)</TabsTrigger>
+              <TabsTrigger value="pending">Disponibles</TabsTrigger>
               <TabsTrigger value="processing">En Proceso</TabsTrigger>
               <TabsTrigger value="paid">Pagados</TabsTrigger>
             </TabsList>
@@ -296,10 +311,10 @@ export default function PagosPage() {
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div
-                          className={`p-2 rounded-lg ${p.status === "pending" ? "bg-amber-50" : p.status === "paid" ? "bg-emerald-50" : "bg-blue-50"}`}
+                          className={`p-2 rounded-lg ${p.status === "in_hold" ? "bg-purple-50" : p.status === "pending" ? "bg-amber-50" : p.status === "paid" ? "bg-emerald-50" : "bg-blue-50"}`}
                         >
                           <sc.icon
-                            className={`w-4 h-4 ${p.status === "pending" ? "text-amber-600" : p.status === "paid" ? "text-emerald-600" : "text-blue-600"}`}
+                            className={`w-4 h-4 ${p.status === "in_hold" ? "text-purple-600" : p.status === "pending" ? "text-amber-600" : p.status === "paid" ? "text-emerald-600" : "text-blue-600"}`}
                           />
                         </div>
                         <div className="min-w-0 flex-1">

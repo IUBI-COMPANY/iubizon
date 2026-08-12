@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,15 +10,21 @@ import {
   AlertTriangle,
   Building2,
   Camera,
+  CheckCircle2,
+  ExternalLink,
+  FileText,
   Loader2,
   Lock,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { FichaRucUploader } from "@/components/ui/FichaRucUploader";
+import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
 
 const editCompanySchema = z.object({
   name: z
@@ -26,6 +32,7 @@ const editCompanySchema = z.object({
     .min(2, "El nombre de la empresa debe tener al menos 2 caracteres."),
   legal_name: z.string().min(2, "La razón social es obligatoria."),
   tax_id: z.string().optional(),
+  tax_id_document_url: z.string().optional(),
   logo_url: z.string().optional(),
   phone: z.string().min(6, "Ingresa un teléfono de contacto válido."),
   email: z.string().email("Ingresa un correo electrónico corporativo válido."),
@@ -42,6 +49,7 @@ interface EditCompanyModalProps {
     slug?: string | null;
     legal_name?: string | null;
     tax_id: string | null;
+    tax_id_document_url?: string | null;
     logo_url: string | null;
     description: string | null;
     phone: string | null;
@@ -56,6 +64,7 @@ interface EditCompanyModalProps {
     slug?: string | null;
     legal_name?: string | null;
     tax_id: string | null;
+    tax_id_document_url?: string | null;
     logo_url: string | null;
     description: string | null;
     phone: string | null;
@@ -77,6 +86,8 @@ export const EditCompanyModal = ({
   const { refreshCompanies, activeCompany, setActiveCompanyId } = useCompany();
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [freshCompany, setFreshCompany] = useState(company);
@@ -130,6 +141,7 @@ export const EditCompanyModal = ({
     reset({
       name: company.name || "",
       tax_id: rawTaxIdImmediate,
+      tax_id_document_url: company.tax_id_document_url || "",
       legal_name: company.legal_name || "",
       logo_url: company.logo_url || "",
       phone: company.phone || "",
@@ -153,6 +165,7 @@ export const EditCompanyModal = ({
         reset({
           name: c.name || "",
           tax_id: rawTaxId,
+          tax_id_document_url: c.tax_id_document_url || "",
           legal_name: c.legal_name || "",
           logo_url: c.logo_url || "",
           phone: c.phone || "",
@@ -203,6 +216,35 @@ export const EditCompanyModal = ({
     }
   };
 
+  const handleExtractedDocument = (
+    url: string,
+    extractedData?: ExtractedCompanyData | null,
+  ) => {
+    setValue("tax_id_document_url", url, { shouldValidate: true });
+
+    if (extractedData) {
+      if (extractedData.legal_name && !formData.legal_name) {
+        setValue("legal_name", extractedData.legal_name, {
+          shouldValidate: true,
+        });
+      }
+      if (extractedData.name && !formData.name) {
+        setValue("name", extractedData.name, { shouldValidate: true });
+      }
+      if (extractedData.location && !formData.location) {
+        setValue("location", extractedData.location, {
+          shouldValidate: true,
+        });
+      }
+      if (extractedData.phone && !formData.phone) {
+        setValue("phone", extractedData.phone, { shouldValidate: true });
+      }
+      if (extractedData.email && !formData.email) {
+        setValue("email", extractedData.email, { shouldValidate: true });
+      }
+    }
+  };
+
   const onSubmit = async (values: EditCompanyValues) => {
     try {
       setSaving(true);
@@ -228,6 +270,7 @@ export const EditCompanyModal = ({
         name: values.name.trim(),
         legal_name: values.legal_name?.trim() || null,
         tax_id: finalTaxId,
+        tax_id_document_url: values.tax_id_document_url || null,
         logo_url: values.logo_url || null,
         phone: values.phone.trim(),
         email: values.email.trim(),
@@ -415,6 +458,14 @@ export const EditCompanyModal = ({
                 )}
               </div>
             </div>
+
+            {/* Componente Reutilizable FichaRucUploader */}
+            <FichaRucUploader
+              compact
+              value={formData.tax_id_document_url}
+              onDocumentUploaded={handleExtractedDocument}
+              companyId={company.id}
+            />
 
             <div>
               <label className="block text-xs font-semibold text-[#334155] mb-1">

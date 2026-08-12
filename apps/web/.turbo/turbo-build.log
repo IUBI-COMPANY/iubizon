@@ -2,7 +2,7 @@ yarn run v1.22.22
 $ next build
 ▲ Next.js 16.3.0 (Turbopack)
 - Environments: .env.local
-✓ Running next.config.ts took 25ms
+✓ Running next.config.ts took 61ms
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
 
@@ -11,15 +11,15 @@ $ next build
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 3.1s
+✓ Compiled successfully in 3.4s
   Running TypeScript ...
-  Finished TypeScript in 8.7s ...
+  Finished TypeScript in 3.6s ...
   Collecting page data using 7 workers ...
-  Generating static pages using 7 workers (0/27) ...
-  Generating static pages using 7 workers (6/27) 
-  Generating static pages using 7 workers (13/27) 
-  Generating static pages using 7 workers (20/27) 
-✓ Generating static pages using 7 workers (27/27) in 1410ms
+  Generating static pages using 7 workers (0/32) ...
+  Generating static pages using 7 workers (8/32) 
+  Generating static pages using 7 workers (16/32) 
+  Generating static pages using 7 workers (24/32) 
+✓ Generating static pages using 7 workers (32/32) in 1375ms
   Finalizing page optimization ...
 
 Route (app)
@@ -29,7 +29,9 @@ Route (app)
 ├ ƒ /api/companies
 ├ ƒ /api/companies/[id]
 ├ ƒ /api/companies/[id]/members
+├ ƒ /api/companies/document
 ├ ƒ /api/companies/logo
+├ ƒ /api/cron/process-emails
 ├ ƒ /api/orders
 ├ ƒ /api/orders/refund
 ├ ƒ /api/payments/niubiz/authorize
@@ -44,6 +46,9 @@ Route (app)
 ├ ƒ /api/seller/bank-account
 ├ ƒ /api/seller/orders
 ├ ƒ /api/seller/payouts
+├ ƒ /api/send-payout-email
+├ ƒ /api/send-refund-email
+├ ƒ /api/settings
 ├ ƒ /api/sunat/lookup
 ├ ƒ /api/user/dashboard
 ├ ƒ /api/user/favorites
@@ -61,7 +66,6 @@ Route (app)
 ├ ƒ /companies/[slug]
 ├ ƒ /favorites
 ├ ƒ /help
-├ ƒ /products
 ├ ƒ /products/[id]
 ├ ƒ /products/edit/[id]
 ├ ƒ /products/new
@@ -89,4 +93,4 @@ Route (app)
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-Done in 15.79s.
+Done in 11.41s.

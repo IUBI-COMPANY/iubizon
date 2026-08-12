@@ -68,7 +68,10 @@ function getSearchVariants(rawQuery: string): string[] {
 export async function getProducts(options: GetProductsOptions = {}) {
   const { limit = 20, offset = 0, filters } = options;
 
-  const where: Prisma.ProductWhereInput = { status: "active" };
+  const where: Prisma.ProductWhereInput = {
+    status: "active",
+    company: { is_verified: true },
+  };
 
   if (!filters?.includeOutOfStock) {
     where.stock = { gt: 0 };
@@ -220,6 +223,7 @@ export async function getProductsByCategory(categorySlug: string, limit = 20) {
   const where: Prisma.ProductWhereInput = {
     category_id: category.id,
     status: "active",
+    company: { is_verified: true },
   };
 
   const [products, total] = await Promise.all([
@@ -246,6 +250,7 @@ export async function getRelatedProducts(
       id: { not: productId },
       status: "active",
       stock: { gt: 0 },
+      company: { is_verified: true },
     },
     include: productInclude,
     orderBy: { favorites_count: "desc" },

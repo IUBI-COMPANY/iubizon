@@ -130,6 +130,13 @@ export async function POST(request: Request) {
     );
   }
 
+  const targetCompany = await prisma.company.findUnique({
+    where: { id: company_id },
+    select: { is_verified: true, is_personal: true },
+  });
+
+  const shouldBeInactive = targetCompany && !targetCompany.is_personal && !targetCompany.is_verified;
+
   if (category_id === "other") {
     const otrosCat = await prisma.category.findUnique({
       where: { slug: "otros" },
@@ -165,7 +172,7 @@ export async function POST(request: Request) {
         category_id,
         company_id,
         created_by: user.id,
-        status: "active",
+        status: shouldBeInactive ? "inactive" : "active",
         stock,
         location: location || null,
         latitude,

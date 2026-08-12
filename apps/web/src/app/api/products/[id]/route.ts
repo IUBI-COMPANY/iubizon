@@ -34,6 +34,33 @@ export async function GET(
       );
     }
 
+    // Si la empresa del producto no es personal y no está verificada,
+    // solo permitimos que lo vean los miembros de dicha empresa.
+    if (product.company && !product.company.is_personal && !product.company.is_verified) {
+      const supabase = await createServerClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      let isMember = false;
+      if (user) {
+        const membership = await prisma.companyMember.findFirst({
+          where: {
+            company_id: product.company_id,
+            user_id: user.id,
+          },
+        });
+        if (membership) isMember = true;
+      }
+
+      if (!isMember) {
+        return NextResponse.json(
+          { error: "Producto no encontrado" },
+          { status: 404 },
+        );
+      }
+    }
+
     return NextResponse.json({ product, success: true });
   } catch (error: unknown) {
     console.error("Error al obtener producto:", error);
