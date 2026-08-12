@@ -26,6 +26,7 @@ export default function CorreosPage() {
   const [result, setResult] = useState<{
     processed: number;
     failed: number;
+    requeued?: number;
   } | null>(null);
 
   const fetchEmails = useCallback(async () => {
@@ -113,7 +114,8 @@ export default function CorreosPage() {
         <Card>
           <CardContent className="p-4 text-sm">
             Procesados: <strong>{result.processed}</strong> · Fallidos:{" "}
-            <strong>{result.failed}</strong>
+            <strong>{result.failed}</strong> · Reencolados:{" "}
+            <strong>{result.requeued ?? 0}</strong>
           </CardContent>
         </Card>
       )}
