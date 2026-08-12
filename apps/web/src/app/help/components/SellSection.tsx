@@ -18,22 +18,33 @@ export function SellSection() {
         <div className="flex items-start gap-3 bg-[#f8fafc] p-4 rounded-2xl border border-[#e2e8f0]">
           <Building2 className="w-5 h-5 text-[#f25c05] shrink-0 mt-0.5" />
           <div>
-            <strong className="text-[#112237] block mb-0.5 text-sm">Crea tu Perfil de Empresa</strong>
-            Registra tu marca o empresa con RUC, personaliza tu catálogo comercial y gestiona tu equipo de trabajo de forma independiente.
+            <strong className="text-[#112237] block mb-0.5 text-sm">
+              Crea tu Perfil de Empresa
+            </strong>
+            Registra tu marca o empresa con RUC, personaliza tu catálogo
+            comercial y gestiona tu equipo de trabajo de forma independiente.
           </div>
         </div>
         <div className="flex items-start gap-3 bg-[#f8fafc] p-4 rounded-2xl border border-[#e2e8f0]">
           <CreditCard className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div>
-            <strong className="text-[#112237] block mb-0.5 text-sm">Cobros y Transferencias Bancarias Directas</strong>
-            Registra tu cuenta de ahorros o cuenta corriente en el panel de finanzas. Iubizon liquida y transfiere tus ventas de forma transparente.
+            <strong className="text-[#112237] block mb-0.5 text-sm">
+              Cobros y Transferencias Bancarias Directas
+            </strong>
+            Registra tu cuenta de ahorros o cuenta corriente en el panel de
+            finanzas. Iubizon liquida y transfiere tus ventas de forma
+            transparente.
           </div>
         </div>
         <div className="flex items-start gap-3 bg-[#f8fafc] p-4 rounded-2xl border border-[#e2e8f0]">
           <Package className="w-5 h-5 text-[#f25c05] shrink-0 mt-0.5" />
           <div>
-            <strong className="text-[#112237] block mb-0.5 text-sm">Gestión de Pedidos & Despachos</strong>
-            Recibe notificaciones inmediatas ante cada venta, actualiza el código de seguimiento del envío y mantén la reputación de tu tienda alta.
+            <strong className="text-[#112237] block mb-0.5 text-sm">
+              Gestión de Pedidos & Despachos
+            </strong>
+            Recibe notificaciones inmediatas ante cada venta, actualiza el
+            código de seguimiento del envío y mantén la reputación de tu tienda
+            alta.
           </div>
         </div>
       </div>
