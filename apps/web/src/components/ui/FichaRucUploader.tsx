@@ -20,6 +20,8 @@ export interface FichaRucUploaderProps {
     extractedData?: ExtractedCompanyData | null,
     fileName?: string,
   ) => void;
+  onUploadStart?: () => void;
+  onUploadError?: (message: string) => void;
   disabled?: boolean;
   companyId?: string | null;
   compact?: boolean;
@@ -31,6 +33,8 @@ export interface FichaRucUploaderProps {
 export function FichaRucUploader({
   value,
   onDocumentUploaded,
+  onUploadStart,
+  onUploadError,
   disabled = false,
   companyId = null,
   compact = false,
@@ -69,6 +73,7 @@ export function FichaRucUploader({
 
     try {
       setIsUploading(true);
+      if (onUploadStart) onUploadStart();
 
       const formData = new FormData();
       formData.append("file", file);
@@ -105,6 +110,7 @@ export function FichaRucUploader({
         err instanceof Error ? err.message : "Error al procesar la Ficha RUC";
       console.error("[FichaRucUploader] Error:", msg);
       toast.error(msg, "Error de Carga");
+      if (onUploadError) onUploadError(msg);
     } finally {
       setIsUploading(false);
       if (e.target) e.target.value = "";

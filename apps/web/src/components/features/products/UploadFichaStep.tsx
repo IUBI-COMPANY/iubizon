@@ -15,6 +15,19 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
   const [extractedData, setExtractedData] =
     useState<ExtractedCompanyData | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const handleUploadStart = () => {
+    setHasError(false);
+    setIsUploaded(false);
+    setDocUrl(null);
+    setExtractedData(null);
+  };
+
+  const handleUploadError = () => {
+    setHasError(true);
+    setIsUploaded(false);
+  };
 
   const handleDocumentUploaded = (
     url: string,
@@ -23,11 +36,16 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
     setDocUrl(url);
     setExtractedData(data ?? null);
     setIsUploaded(true);
+    setHasError(false);
   };
 
   const handleContinue = () => {
     if (!docUrl) return;
     onNext(docUrl, extractedData);
+  };
+
+  const handleSkip = () => {
+    onNext("", null);
   };
 
   return (
@@ -57,6 +75,8 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
           helperText="Sube el PDF oficial de SUNAT. La Inteligencia Artificial extraerá tu RUC, Razón Social, Nombre Comercial, dirección, teléfono y correo automáticamente."
           value={docUrl ?? undefined}
           onDocumentUploaded={handleDocumentUploaded}
+          onUploadStart={handleUploadStart}
+          onUploadError={handleUploadError}
         />
 
         {/* Preview de datos extraídos */}
@@ -114,6 +134,28 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800">
             <p className="font-semibold mb-0.5">PDF adjuntado correctamente</p>
             <p>Podrás ingresar los datos manualmente en el siguiente paso.</p>
+          </div>
+        )}
+
+        {/* Si el procesamiento o subida de la IA falló por completo */}
+        {hasError && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-800 space-y-2">
+            <p className="font-semibold flex items-center gap-1.5 text-red-900">
+              <span>⚠️</span> El procesamiento automático de la Ficha RUC falló
+            </p>
+            <p className="text-[#64748b] leading-relaxed">
+              No te preocupes. Puedes omitir la carga automática y rellenar los
+              datos de tu empresa manualmente en el siguiente paso. Podrás subir
+              tu Ficha RUC más tarde.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSkip}
+              className="w-full text-red-700 border-red-250 hover:bg-red-50/50 mt-1 h-9 rounded-lg text-[11px] font-bold"
+            >
+              Omitir paso de IA y registrar manualmente →
+            </Button>
           </div>
         )}
 

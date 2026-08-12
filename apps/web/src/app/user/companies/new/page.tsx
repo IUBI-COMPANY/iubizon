@@ -63,6 +63,12 @@ const companyFormSchema = z.object({
   location: z.string().min(3, "La dirección es obligatoria."),
   description: z.string().optional(),
   tax_id_document_url: z.string().optional(),
+  accept_terms: z.literal(true, {
+    errorMap: () => ({
+      message:
+        "Debes aceptar los términos y condiciones para registrar tu empresa.",
+    }),
+  }),
 });
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>;
@@ -108,6 +114,7 @@ export default function NewCompanyPage() {
       district: "",
       location: "",
       description: "",
+      accept_terms: false as any,
     },
   });
 
@@ -782,6 +789,37 @@ export default function NewCompanyPage() {
                 {errors.description && (
                   <p className="text-xs text-red-500 font-medium mt-1">
                     {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Términos y Condiciones */}
+              <div className="pt-2 pb-1">
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="accept_terms"
+                    {...register("accept_terms")}
+                    className="w-4 h-4 rounded border-[#cbd5e1] text-[#f25c05] focus:ring-[#f25c05] mt-0.5 accent-[#f25c05]"
+                  />
+                  <span className="text-xs text-[#64748b] leading-tight">
+                    Acepto los{" "}
+                    <Link
+                      href="/help"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#f25c05] hover:underline font-semibold inline-flex items-center gap-0.5"
+                    >
+                      términos y condiciones
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>{" "}
+                    de la plataforma iubizon y autorizo la creación de mi perfil
+                    comercial.
+                  </span>
+                </label>
+                {errors.accept_terms && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    {errors.accept_terms.message}
                   </p>
                 )}
               </div>
