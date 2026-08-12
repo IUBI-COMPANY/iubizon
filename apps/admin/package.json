@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "yarn workspace @iubizon/db generate && next dev -p 3001",
     "build": "next build",
     "vercel-build": "cd ../.. && yarn workspace @iubizon/db generate && cd apps/admin && next build",
     "start": "next start -p 3001",
