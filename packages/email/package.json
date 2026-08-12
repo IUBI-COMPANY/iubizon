@@ -4,7 +4,9 @@
   "private": true,
   "main": "./index.ts",
   "scripts": {
-    "lint": "echo 'lint: ok'"
+    "lint": "echo 'lint: ok'",
+    "prettier:check": "prettier --check .",
+    "prettier:format": "prettier --write ."
   },
   "dependencies": {
     "@iubizon/db": "0.1.0",
