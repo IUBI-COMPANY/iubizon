@@ -2,7 +2,7 @@ yarn run v1.22.22
 $ next build
 ▲ Next.js 16.3.0 (Turbopack)
 - Environments: .env.local
-✓ Running next.config.ts took 61ms
+✓ Running next.config.ts took 44ms
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
 
@@ -11,15 +11,15 @@ $ next build
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
   Creating an optimized production build ...
-✓ Compiled successfully in 3.4s
+✓ Compiled successfully in 4.0s
   Running TypeScript ...
-  Finished TypeScript in 3.6s ...
+  Finished TypeScript in 6.1s ...
   Collecting page data using 7 workers ...
   Generating static pages using 7 workers (0/32) ...
   Generating static pages using 7 workers (8/32) 
   Generating static pages using 7 workers (16/32) 
   Generating static pages using 7 workers (24/32) 
-✓ Generating static pages using 7 workers (32/32) in 1375ms
+✓ Generating static pages using 7 workers (32/32) in 1751ms
   Finalizing page optimization ...
 
 Route (app)
@@ -93,4 +93,4 @@ Route (app)
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-Done in 11.41s.
+Done in 15.04s.

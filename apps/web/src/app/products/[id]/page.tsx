@@ -4,6 +4,8 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import Script from "next/script";
+import { Metadata } from "next";
 import {
   MapPin,
   Eye,
@@ -27,8 +29,48 @@ import { stockLabel } from "@/lib/utils/stockLabel";
 
 export const dynamic = "force-dynamic";
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.iubizon.com";
+
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+
+  if (!product) {
+    return {
+      title: "Producto no encontrado | iubizon",
+    };
+  }
+
+  const title = `${product.title} | Compre en iubizon`;
+  const description = product.description
+    ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
+    : `Adquiera ${product.title} al mejor precio en la tienda de iubizon.`;
+  const mainImage = product.images?.[0]?.url || `${baseUrl}/og-image.jpg`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/products/${product.id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `${baseUrl}/products/${product.id}`,
+      images: [{ url: mainImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [mainImage],
+    },
+  };
 }
 
 async function getProduct(id: string) {
@@ -121,6 +163,31 @@ export default async function ProductDetailPage({ params }: Props) {
   const CategoryIcon = product.category
     ? getCategoryIcon(product.category.slug)
     : null;
+
+  const productSchema = {
+    "@context": "https://schema.org" as const,
+    "@type": "Product" as const,
+    name: product.title,
+    image: images.map((img: any) => img.url),
+    description: product.description
+      ? product.description.replace(/<[^>]*>/g, "")
+      : "",
+    category: product.category?.name,
+    offers: {
+      "@type": "Offer" as const,
+      price: product.price,
+      priceCurrency: "PEN",
+      availability:
+        (product.stock ?? 0) > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      url: `${baseUrl}/products/${product.id}`,
+    },
+    brand: {
+      "@type": "Brand" as const,
+      name: product.company?.name || "iubizon",
+    },
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -464,6 +531,15 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
 
       <Footer />
+
+      <Script
+        id="product-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productSchema),
+        }}
+        strategy="beforeInteractive"
+      />
     </div>
   );
 }

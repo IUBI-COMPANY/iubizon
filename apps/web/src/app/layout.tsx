@@ -17,37 +17,40 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.iubizon.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.iubizon.com"),
+  metadataBase: new URL(baseUrl),
   title: {
     default:
-      "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
+      "iubizon | La plataforma para vender productos para educar y trabajar",
     template: "%s | iubizon",
   },
   description:
-    "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas. like Wallapop - marketplace C2C y B2C en Lima y todo Peru.",
+    "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas con comisiones bajas del 9%.",
   alternates: {
-    canonical: "https://www.iubizon.com",
+    canonical: baseUrl,
   },
-  authors: [{ name: "iubizon", url: "https://www.iubizon.com" }],
+  authors: [{ name: "iubizon", url: baseUrl }],
   creator: "iubizon",
   publisher: "iubizon",
   category: "shopping",
   keywords: [
-    "marketplace peru",
-    "comprar online peru",
-    "vender productos peru",
-    "tienda online lima",
-    "electronica peru",
-    "hogar peru",
-    "herramientas peru",
-    "productos nuevos peru",
-    "productos usados peru",
-    "wallapop peru",
-    "mercado libre peru",
-    "compra venta peru",
-    "tienda virtual peru",
-    "comercio electronico peru",
+    "plataforma para educar y trabajar",
+    "tecnologia para educacion peru",
+    "equipamiento de oficina peru",
+    "proyectores para colegios",
+    "laptops para trabajar peru",
+    "pantallas interactivas peru",
+    "equipamiento educativo peru",
+    "tecnologia educativa peru",
+    "iubizon peru",
+    "B2B educacion peru",
+    "tecnologia corporativa peru",
+    "proveedores de tecnologia peru",
+    "vender proyectores peru",
+    "pantallas led peru",
+    "impresoras corporativas peru",
   ],
   robots: {
     index: true,
@@ -61,28 +64,25 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://www.iubizon.com",
+    url: baseUrl,
     title:
-      "iubizon - Marketplace Peru | Comprar y Vender Productos Nuevos y Usados",
+      "iubizon | La plataforma para vender productos para educar y trabajar",
     description:
-      "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas.",
+      "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas.",
     images: [
       {
-        url: "https://www.iubizon.com/og-image.jpg",
+        url: `${baseUrl}/images/banner-seo.png`,
       },
     ],
-    siteName: "iubizon - Marketplace Peru",
+    siteName: "iubizon - Venta de tecnología para educar y trabajar",
   },
   twitter: {
     card: "summary_large_image",
-    title: "iubizon - Marketplace Peru",
+    title:
+      "iubizon | La plataforma para vender productos para educar y trabajar",
     description:
-      "Compra y vende productos nuevos y usados en Peru. Electronica, hogar, herramientas y mas.",
-    images: [
-      {
-        url: "https://www.iubizon.com/og-image.jpg",
-      },
-    ],
+      "Compra y vende proyectores, pantallas interactivas, laptops, impresoras y servicios tecnológicos en el Perú. Encuentra proveedores verificados para equipar aulas y oficinas.",
+    images: [`${baseUrl}/images/banner-seo.png`],
   },
   facebook: {
     appId: "1176594967865528",
@@ -105,20 +105,10 @@ export default function RootLayout({
     "@type": "OnlineMarketplace",
     name: "iubizon",
     description:
-      "Marketplace Peru para comprar y vender productos nuevos y usados. Electronica, hogar, herramientas y mas.",
-    url: "https://www.iubizon.com",
-    logo: "https://www.iubizon.com/images/logo.png",
-    image: "https://www.iubizon.com/og-image.jpg",
-    telephone: "+51972300301",
-    email: "iubizon.company@gmail.com",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "Calle las acacias, Pje. los Jazmines 181",
-      addressLocality: "Chorrillos",
-      addressRegion: "Lima",
-      postalCode: "15067",
-      addressCountry: "PE",
-    },
+      "La plataforma líder para comprar y vender productos tecnológicos y servicios para educar y trabajar en el Perú.",
+    url: baseUrl,
+    logo: `${baseUrl}/images/logo.png`,
+    image: `${baseUrl}/images/banner-seo.png`,
     sameAs: [
       "https://www.facebook.com/iubizon/",
       "https://www.instagram.com/iubizon",
