@@ -12,6 +12,7 @@ import { useToast } from "@/context/ToastContext";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
 import { FieldError } from "@/components/ui/FieldError";
 import { Label } from "@/components/ui/Label";
@@ -84,6 +85,7 @@ const productFormSchema = z.object({
   warrantyOption: z.string(),
   customWarranty: z.string().optional(),
   warrantyConditions: z.string().optional(),
+  is_complementary: z.boolean().default(false),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -249,6 +251,7 @@ function PublishProductForm() {
             values.hasWarranty && values.warrantyConditions?.trim()
               ? values.warrantyConditions.trim()
               : null,
+          is_complementary: values.is_complementary ?? false,
         }),
       });
 
@@ -680,6 +683,27 @@ function PublishProductForm() {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* Producto Complementario */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] p-5 shadow-sm">
+                  <Checkbox
+                    checked={formData.is_complementary ?? false}
+                    onChange={(checked) =>
+                      setValue("is_complementary", checked, {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <span className="text-sm font-semibold text-[#112237]">
+                      Producto complementario
+                    </span>
+                    <p className="text-[11px] text-[#64748b] mt-1">
+                      Este producto no aparecerá en búsquedas ni en el Home.
+                      Solo será visible en &quot;Complementa tu paquete&quot;
+                      durante el checkout.
+                    </p>
+                  </Checkbox>
                 </div>
 
                 {/* Description (optional) */}

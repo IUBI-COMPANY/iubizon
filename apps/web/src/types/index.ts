@@ -42,6 +42,7 @@ export interface SearchFilters {
   condition?: ProductCondition[];
   location?: string;
   isBundle?: boolean;
+  isComplementary?: boolean;
   includeOutOfStock?: boolean;
   sortBy?:
     | "most_relevance"

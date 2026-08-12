@@ -73,9 +73,14 @@ export const CartOrderBumps = ({
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-white truncate">
+                  <a
+                    href={`/products/${bump.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-white truncate block hover:text-[#f25c05] hover:underline transition-colors"
+                  >
                     {bump.title}
-                  </p>
+                  </a>
                   <p className="text-xs font-bold text-[#f25c05] mt-0.5">
                     S/ {bump.price.toFixed(2)}
                   </p>

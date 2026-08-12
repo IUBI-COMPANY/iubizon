@@ -137,6 +137,7 @@ export async function PUT(
       video_url,
       warranty,
       warranty_conditions,
+      is_complementary,
     } = body;
 
     if (description) {
@@ -176,6 +177,7 @@ export async function PUT(
           !isNaN(parsedStock) && { stock: Math.max(0, parsedStock) }),
         ...(availabilityType && { availability_type: availabilityType }),
         ...(video_url !== undefined && { video_url }),
+        ...(is_complementary !== undefined && { is_complementary }),
         ...((warranty !== undefined || warranty_conditions !== undefined) && {
           specifications: {
             warranty: warranty || "Sin garantía del vendedor",

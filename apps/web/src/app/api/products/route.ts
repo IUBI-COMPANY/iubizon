@@ -29,6 +29,7 @@ export async function POST(request: Request) {
   let video_url: string | null = null;
   let warranty: string | null = null;
   let warranty_conditions: string | null = null;
+  let is_complementary = false;
 
   const contentType = request.headers.get("content-type") || "";
 
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
     video_url = body.video_url || null;
     warranty = body.warranty || null;
     warranty_conditions = body.warranty_conditions || null;
+    is_complementary = body.is_complementary === true;
   } else {
     const formData = await request.formData();
     title = formData.get("title") as string;
@@ -76,6 +78,9 @@ export async function POST(request: Request) {
     warranty = (formData.get("warranty") as string) || null;
     warranty_conditions =
       (formData.get("warranty_conditions") as string) || null;
+    is_complementary =
+      formData.get("is_complementary") === "true" ||
+      formData.get("is_complementary") === "1";
   }
 
   if (!title || !price || !condition || !category_id) {
@@ -182,6 +187,7 @@ export async function POST(request: Request) {
         availability_type: availability_type || "unique",
         delivery_preference: delivery_preference || null,
         video_url: video_url || null,
+        is_complementary,
         specifications: {
           warranty: defaultWarranty,
           warranty_coverage:

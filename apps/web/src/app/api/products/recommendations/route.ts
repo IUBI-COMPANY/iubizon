@@ -20,9 +20,22 @@ export async function GET(req: Request) {
     const limit = Number(searchParams.get("limit") || "6");
     const skip = (page - 1) * limit;
 
+    const complementaryProducts = await prisma.product.findMany({
+      where: {
+        status: "active",
+        stock: { gt: 0 },
+        is_complementary: true,
+        ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
+      },
+      select: { id: true },
+      orderBy: { views: "desc" },
+    });
+    const complementaryIds = complementaryProducts.map((p) => p.id);
+
     const baseWhere = {
       status: "active" as const,
       stock: { gt: 0 },
+      is_complementary: false,
       ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
       ...(excludeCompanyIds.length > 0
         ? { company_id: { notIn: excludeCompanyIds } }
@@ -57,9 +70,12 @@ export async function GET(req: Request) {
     }
     targetSlugs = Array.from(new Set(targetSlugs));
 
+    const existingUpperSet = new Set([...excludeIds, ...complementaryIds]);
+
     const affinityProducts = await prisma.product.findMany({
       where: {
         ...baseWhere,
+        id: { notIn: Array.from(existingUpperSet) },
         category:
           targetSlugs.length > 0 ? { slug: { in: targetSlugs } } : undefined,
       },
@@ -71,14 +87,16 @@ export async function GET(req: Request) {
     const fallbackProducts = await prisma.product.findMany({
       where: {
         ...baseWhere,
-        id: { notIn: Array.from(new Set([...excludeIds, ...affinityIds])) },
+        id: {
+          notIn: Array.from(new Set([...existingUpperSet, ...affinityIds])),
+        },
       },
       select: { id: true },
       orderBy: { views: "desc" },
     });
     const fallbackIds = fallbackProducts.map((p) => p.id);
 
-    const allOrderedIds = [...affinityIds, ...fallbackIds];
+    const allOrderedIds = [...complementaryIds, ...affinityIds, ...fallbackIds];
     const totalCount = allOrderedIds.length;
 
     const paginatedIds = allOrderedIds.slice(skip, skip + limit);
@@ -86,7 +104,8 @@ export async function GET(req: Request) {
 
     const products = await prisma.product.findMany({
       where: {
-        ...baseWhere,
+        status: "active",
+        stock: { gt: 0 },
         id: { in: paginatedIds },
       },
       select: {

@@ -69,6 +69,7 @@ const editProductSchema = z.object({
           "No se permite incluir datos de contacto (teléfonos, correos, etc.) en la descripción.",
       },
     ),
+  is_complementary: z.boolean(),
 });
 
 type EditProductValues = z.infer<typeof editProductSchema>;
@@ -119,6 +120,7 @@ export default function EditProductPage({ params }: Props) {
       hasWarranty: false,
       warranty: "6 meses por falla de fábrica (Garantía del vendedor)",
       warranty_conditions: "",
+      is_complementary: false,
     },
   });
 
@@ -194,6 +196,7 @@ export default function EditProductPage({ params }: Props) {
             fetchedWarranty ||
             "6 meses por falla de fábrica (Garantía del vendedor)",
           warranty_conditions: fetchedConditions,
+          is_complementary: data.is_complementary ?? false,
         });
 
         if (Array.isArray(data.images)) {
@@ -267,6 +270,7 @@ export default function EditProductPage({ params }: Props) {
             values.hasWarranty && values.warranty_conditions?.trim()
               ? values.warranty_conditions.trim()
               : null,
+          is_complementary: values.is_complementary,
         }),
       });
 
@@ -595,6 +599,27 @@ export default function EditProductPage({ params }: Props) {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Producto Complementario */}
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm">
+            <Checkbox
+              checked={formValues.is_complementary ?? false}
+              onChange={(checked) =>
+                setValue("is_complementary", checked, {
+                  shouldValidate: true,
+                })
+              }
+            >
+              <span className="text-sm font-semibold text-[#112237]">
+                Producto complementario
+              </span>
+              <p className="text-[11px] text-[#64748b] mt-1">
+                Este producto no aparecerá en búsquedas ni en el Home. Solo será
+                visible en &quot;Complementa tu paquete&quot; durante el
+                checkout.
+              </p>
+            </Checkbox>
           </div>
 
           {/* CARD 3: Descripción Detallada */}

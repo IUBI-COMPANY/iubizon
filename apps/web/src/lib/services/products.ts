@@ -118,6 +118,8 @@ export async function getProducts(options: GetProductsOptions = {}) {
     if (filters.maxPrice) where.price.lte = filters.maxPrice;
   }
 
+  where.is_complementary = filters?.isComplementary ?? false;
+
   if (filters?.condition && filters.condition.length > 0) {
     where.condition = { in: filters.condition };
   }
@@ -223,6 +225,7 @@ export async function getProductsByCategory(categorySlug: string, limit = 20) {
   const where: Prisma.ProductWhereInput = {
     category_id: category.id,
     status: "active",
+    is_complementary: false,
     company: { is_verified: true },
   };
 
@@ -249,6 +252,7 @@ export async function getRelatedProducts(
       category_id: categoryId,
       id: { not: productId },
       status: "active",
+      is_complementary: false,
       stock: { gt: 0 },
       company: { is_verified: true },
     },
