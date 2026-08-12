@@ -31,11 +31,17 @@ export default function CompaniesPage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [expandedCompanyId, setExpandedCompanyId] = useState<string | null>(null);
+  const [expandedCompanyId, setExpandedCompanyId] = useState<string | null>(
+    null,
+  );
 
   // Confirm Modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string; verified: boolean } | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<{
+    id: string;
+    name: string;
+    verified: boolean;
+  } | null>(null);
 
   const fetchCompanies = async () => {
     setLoading(true);
@@ -52,7 +58,11 @@ export default function CompaniesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const triggerVerificationConfirm = (id: string, name: string, verified: boolean) => {
+  const triggerVerificationConfirm = (
+    id: string,
+    name: string,
+    verified: boolean,
+  ) => {
     setSelectedCompany({ id, name, verified });
     setConfirmOpen(true);
   };
@@ -60,7 +70,7 @@ export default function CompaniesPage() {
   const handleConfirmVerification = async () => {
     if (!selectedCompany) return;
     const { id, name, verified } = selectedCompany;
-    
+
     try {
       const res = await fetch("/api/companies", {
         method: "PATCH",
@@ -76,15 +86,23 @@ export default function CompaniesPage() {
       if (!verified) {
         // Se aprobó la empresa
         if (data.wasSuspendedLongTime) {
-          toast.warning(`"${name}" aprobada. Debido a que estuvo inactiva por más de 1 mes, todos sus productos se configuraron como inactivos y con stock 0 para evitar inconsistencias.`);
+          toast.warning(
+            `"${name}" aprobada. Debido a que estuvo inactiva por más de 1 mes, todos sus productos se configuraron como inactivos y con stock 0 para evitar inconsistencias.`,
+          );
         } else if (data.activatedCount > 0) {
-          toast.success(`"${name}" aprobada con éxito. Se activaron ${data.activatedCount} productos que cumplieron con los requisitos de fotos, stock y precio.`);
+          toast.success(
+            `"${name}" aprobada con éxito. Se activaron ${data.activatedCount} productos que cumplieron con los requisitos de fotos, stock y precio.`,
+          );
         } else {
-          toast.success(`"${name}" aprobada. Ningún producto inactivo cumplió con los requisitos de publicación (fotos, stock y precio).`);
+          toast.success(
+            `"${name}" aprobada. Ningún producto inactivo cumplió con los requisitos de publicación (fotos, stock y precio).`,
+          );
         }
       } else {
         // Se desmarcó la verificación
-        toast.info(`Se retiró la verificación de "${name}". Todos sus productos pasaron a estado inactivo.`);
+        toast.info(
+          `Se retiró la verificación de "${name}". Todos sus productos pasaron a estado inactivo.`,
+        );
       }
     } catch (err: any) {
       toast.error(err.message || "Error al procesar la solicitud.");
@@ -130,7 +148,9 @@ export default function CompaniesPage() {
                 <TableHead>Empresa / Marca</TableHead>
                 <TableHead>Razón Social / RUC</TableHead>
                 <TableHead className="text-center">Productos</TableHead>
-                <TableHead className="text-center">Estado Verificación</TableHead>
+                <TableHead className="text-center">
+                  Estado Verificación
+                </TableHead>
                 <TableHead className="text-right">Evaluación</TableHead>
               </TableRow>
             </TableHeader>
@@ -143,7 +163,10 @@ export default function CompaniesPage() {
                 </TableRow>
               ) : companies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center h-24 text-muted-foreground"
+                  >
                     No se encontraron empresas registradas.
                   </TableCell>
                 </TableRow>
@@ -152,11 +175,16 @@ export default function CompaniesPage() {
                   const isExpanded = expandedCompanyId === c.id;
                   return (
                     <Fragment key={c.id}>
-                      <TableRow 
+                      <TableRow
                         className="cursor-pointer hover:bg-slate-50/80 transition-colors"
                         onClick={() => handleRowClick(c.id)}
                       >
-                        <TableCell onClick={(e) => { e.stopPropagation(); handleRowClick(c.id); }}>
+                        <TableCell
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRowClick(c.id);
+                          }}
+                        >
                           {isExpanded ? (
                             <IconChevronUp className="w-4 h-4 text-slate-500" />
                           ) : (
@@ -165,11 +193,17 @@ export default function CompaniesPage() {
                         </TableCell>
                         <TableCell className="font-semibold">
                           <div>{c.name}</div>
-                          <div className="text-xs text-muted-foreground font-normal">{c.email}</div>
+                          <div className="text-xs text-muted-foreground font-normal">
+                            {c.email}
+                          </div>
                         </TableCell>
                         <TableCell className="text-sm">
-                          <div className="font-medium text-slate-800">{c.legal_name || "-"}</div>
-                          <div className="text-xs text-muted-foreground font-mono">{c.tax_id || "Sin RUC"}</div>
+                          <div className="font-medium text-slate-800">
+                            {c.legal_name || "-"}
+                          </div>
+                          <div className="text-xs text-muted-foreground font-mono">
+                            {c.tax_id || "Sin RUC"}
+                          </div>
                         </TableCell>
                         <TableCell className="text-center">
                           <Badge variant="secondary">
@@ -183,18 +217,34 @@ export default function CompaniesPage() {
                               Verificada / Aprobada
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300">
+                            <Badge
+                              variant="outline"
+                              className="bg-amber-50 text-amber-800 border-amber-300"
+                            >
                               <IconX className="h-3.5 w-3.5 mr-1 text-amber-600 inline" />
                               Pendiente de Evaluación
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <TableCell
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Button
                             variant={c.is_verified ? "outline" : "default"}
                             size="sm"
-                            className={c.is_verified ? "" : "bg-emerald-600 hover:bg-emerald-700 text-white font-bold"}
-                            onClick={() => triggerVerificationConfirm(c.id, c.name, c.is_verified)}
+                            className={
+                              c.is_verified
+                                ? ""
+                                : "bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                            }
+                            onClick={() =>
+                              triggerVerificationConfirm(
+                                c.id,
+                                c.name,
+                                c.is_verified,
+                              )
+                            }
                           >
                             {c.is_verified ? "Desmarcar" : "Aprobar Empresa"}
                           </Button>
@@ -203,9 +253,11 @@ export default function CompaniesPage() {
 
                       {isExpanded && (
                         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                          <TableCell colSpan={6} className="p-0 border-t border-slate-100">
+                          <TableCell
+                            colSpan={6}
+                            className="p-0 border-t border-slate-100"
+                          >
                             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
-                              
                               {/* Tarjeta de Datos Detallados */}
                               <div className="space-y-4">
                                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -217,29 +269,39 @@ export default function CompaniesPage() {
                                   <div className="flex items-start gap-2.5">
                                     <IconPhone className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                                     <div>
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase">Teléfono de Contacto</p>
-                                      <p className="text-sm font-medium text-slate-700">{c.phone || "No registrado"}</p>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                                        Teléfono de Contacto
+                                      </p>
+                                      <p className="text-sm font-medium text-slate-700">
+                                        {c.phone || "No registrado"}
+                                      </p>
                                     </div>
                                   </div>
 
                                   <div className="flex items-start gap-2.5">
                                     <IconMapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                                     <div>
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase">Domicilio Fiscal / Ubicación</p>
-                                      <p className="text-sm font-medium text-slate-700 leading-relaxed">{c.location || "No registrado"}</p>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                                        Domicilio Fiscal / Ubicación
+                                      </p>
+                                      <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                                        {c.location || "No registrado"}
+                                      </p>
                                     </div>
                                   </div>
 
                                   {c.description && (
                                     <div className="pt-2 border-t border-slate-100">
-                                      <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Descripción Sugerida por IA</p>
+                                      <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+                                        Descripción Sugerida por IA
+                                      </p>
                                       <p className="text-xs text-slate-600 leading-relaxed italic bg-slate-50 p-2.5 rounded-lg border border-slate-150">
                                         "{c.description}"
                                       </p>
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 <div className="flex gap-3">
                                   {c.tax_id_document_url && (
                                     <a
@@ -261,7 +323,7 @@ export default function CompaniesPage() {
                                   <IconFileText className="w-4 h-4 text-purple-600" />
                                   Documento Adjuntado (Ficha RUC)
                                 </h3>
-                                
+
                                 {c.tax_id_document_url ? (
                                   <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm h-[320px] bg-white relative">
                                     <iframe
@@ -285,14 +347,16 @@ export default function CompaniesPage() {
                                 ) : (
                                   <div className="border-2 border-dashed border-slate-200 rounded-2xl h-[320px] flex flex-col items-center justify-center text-center p-6 bg-slate-100/50">
                                     <IconFileText className="w-10 h-10 text-slate-300 mb-2" />
-                                    <p className="text-sm font-bold text-slate-500">Sin Documento</p>
+                                    <p className="text-sm font-bold text-slate-500">
+                                      Sin Documento
+                                    </p>
                                     <p className="text-xs text-slate-400 mt-1 max-w-[240px]">
-                                      Este comercio no ha subido su Ficha RUC (PDF) para validación.
+                                      Este comercio no ha subido su Ficha RUC
+                                      (PDF) para validación.
                                     </p>
                                   </div>
                                 )}
                               </div>
-
                             </div>
                           </TableCell>
                         </TableRow>
@@ -311,13 +375,19 @@ export default function CompaniesPage() {
         <ConfirmModal
           open={confirmOpen}
           onOpenChange={setConfirmOpen}
-          title={selectedCompany.verified ? "¿Desmarcar Verificación?" : "¿Aprobar Empresa?"}
+          title={
+            selectedCompany.verified
+              ? "¿Desmarcar Verificación?"
+              : "¿Aprobar Empresa?"
+          }
           description={
             selectedCompany.verified
               ? `¿Estás seguro de que deseas quitar la verificación de "${selectedCompany.name}"? Todos sus productos asociados dejarán de estar publicados en la tienda de iubizon inmediatamente.`
               : `¿Estás seguro de que deseas aprobar y verificar a "${selectedCompany.name}"? Esto habilitará todos sus productos para que estén visibles y listos para la venta en iubizon.`
           }
-          confirmLabel={selectedCompany.verified ? "Sí, Desmarcar" : "Sí, Aprobar Empresa"}
+          confirmLabel={
+            selectedCompany.verified ? "Sí, Desmarcar" : "Sí, Aprobar Empresa"
+          }
           variant={selectedCompany.verified ? "destructive" : "default"}
           onConfirm={handleConfirmVerification}
         />

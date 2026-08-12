@@ -25,7 +25,10 @@ export function findRucInText(text: string): string | null {
   if (matches) {
     for (const m of matches) {
       const clean = m.replace(/\D/g, "");
-      if (clean.length === 11 && (clean.startsWith("10") || clean.startsWith("20"))) {
+      if (
+        clean.length === 11 &&
+        (clean.startsWith("10") || clean.startsWith("20"))
+      ) {
         return clean;
       }
     }
@@ -46,7 +49,11 @@ export function findRucInText(text: string): string | null {
  * Parser de texto directo del PDF para extraer campos que Gemini puede omitir.
  * Los PDFs de SUNAT contienen texto seleccionable en UTF-8.
  */
-function parsePdfRawText(pdfBuffer: Buffer): { phone: string | null; email: string | null; name: string | null } {
+function parsePdfRawText(pdfBuffer: Buffer): {
+  phone: string | null;
+  email: string | null;
+  name: string | null;
+} {
   // Intentar leer el texto del PDF en múltiples codificaciones
   const texts = [
     pdfBuffer.toString("utf-8"),
@@ -94,7 +101,9 @@ function parsePdfRawText(pdfBuffer: Buffer): { phone: string | null; email: stri
 
     // Buscar email
     if (!email) {
-      const emailMatch = text.match(/([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/i);
+      const emailMatch = text.match(
+        /([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/i,
+      );
       if (emailMatch && emailMatch[1]) {
         const candidate = emailMatch[1].trim();
         // Filtrar emails genéricos de SUNAT
@@ -106,7 +115,9 @@ function parsePdfRawText(pdfBuffer: Buffer): { phone: string | null; email: stri
 
     // Buscar Nombre Comercial
     if (!name) {
-      const nameMatch = text.match(/Nombre\s+Comercial[\s\S]{0,30}?([A-Z][A-Z0-9\s\.]{1,50})(?:\n|\r|\t|\|)/i);
+      const nameMatch = text.match(
+        /Nombre\s+Comercial[\s\S]{0,30}?([A-Z][A-Z0-9\s\.]{1,50})(?:\n|\r|\t|\|)/i,
+      );
       if (nameMatch && nameMatch[1]) {
         const candidate = nameMatch[1].trim();
         if (candidate && candidate !== "-" && candidate.length >= 2) {
@@ -132,11 +143,11 @@ async function callGeminiWithPdf(
   // Modelos en orden de preferencia
   const models = [
     // Modelos disponibles (verificados vía ListModels API - Agosto 2026)
-    "gemini-flash-latest",      // Alias estable → siempre el Flash más reciente
-    "gemini-3.6-flash",         // Gemini 3.6 Flash (último estable)
-    "gemini-3.5-flash",         // Gemini 3.5 Flash (fallback)
-    "gemini-2.5-flash",         // Gemini 2.5 Flash (amplio soporte PDF)
-    "gemini-pro-latest",        // Alias Pro más reciente
+    "gemini-flash-latest", // Alias estable → siempre el Flash más reciente
+    "gemini-3.6-flash", // Gemini 3.6 Flash (último estable)
+    "gemini-3.5-flash", // Gemini 3.5 Flash (fallback)
+    "gemini-2.5-flash", // Gemini 2.5 Flash (amplio soporte PDF)
+    "gemini-pro-latest", // Alias Pro más reciente
   ];
 
   const prompt = `Eres un sistema de extracción de datos de documentos SUNAT del Perú.
@@ -169,7 +180,6 @@ REGLAS CRÍTICAS:
 6. location: Debe formarse como '[Tipo y Nombre Vía] NRO [Nro] [Tipo y Nombre Zona]'. No incluyas distrito, provincia o departamento aquí. Ej: 'CAL. LAS ACACIAS NRO 181 URB. LA VILLA'.
 7. description: Escribe en primera persona del plural ('Somos una marca comprometida con...'). Debe ser persuasivo, comercial, invitando a la compra y de máximo 3-4 líneas.
 8. Devuelve SOLO el JSON, sin texto adicional.`;
-
 
   for (const model of models) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -206,7 +216,10 @@ REGLAS CRÍTICAS:
       console.log(`[Gemini] Status ${response.status} para modelo ${model}`);
 
       if (!response.ok) {
-        console.warn(`[Gemini] Error HTTP ${response.status} en ${model}:`, responseBody.slice(0, 500));
+        console.warn(
+          `[Gemini] Error HTTP ${response.status} en ${model}:`,
+          responseBody.slice(0, 500),
+        );
         continue;
       }
 
@@ -214,7 +227,10 @@ REGLAS CRÍTICAS:
       const rawText: string =
         result?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
-      console.log(`[Gemini] Respuesta cruda de ${model}:`, rawText.slice(0, 800));
+      console.log(
+        `[Gemini] Respuesta cruda de ${model}:`,
+        rawText.slice(0, 800),
+      );
 
       if (!rawText) {
         console.warn(`[Gemini] Respuesta vacía del modelo ${model}`);
@@ -230,7 +246,10 @@ REGLAS CRÍTICAS:
       // Extraer el primer objeto JSON válido
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        console.warn(`[Gemini] No se encontró JSON en la respuesta de ${model}:`, cleaned.slice(0, 300));
+        console.warn(
+          `[Gemini] No se encontró JSON en la respuesta de ${model}:`,
+          cleaned.slice(0, 300),
+        );
         continue;
       }
 
@@ -238,12 +257,18 @@ REGLAS CRÍTICAS:
       console.log(`[Gemini] Datos parseados de ${model}:`, parsed);
 
       // Normalizar tax_id
-      const rawTaxId = parsed.tax_id ? String(parsed.tax_id).replace(/\D/g, "") : null;
+      const rawTaxId = parsed.tax_id
+        ? String(parsed.tax_id).replace(/\D/g, "")
+        : null;
       const tax_id = rawTaxId && rawTaxId.length === 11 ? rawTaxId : null;
 
       // Normalizar phone (quitar prefijos como "1 - ")
       let phone: string | null = null;
-      if (parsed.phone && parsed.phone !== null && String(parsed.phone).trim() !== "-") {
+      if (
+        parsed.phone &&
+        parsed.phone !== null &&
+        String(parsed.phone).trim() !== "-"
+      ) {
         const rawPhone = String(parsed.phone).replace(/\D/g, "");
         if (rawPhone.length >= 7) {
           // Tomar los últimos 9 dígitos (número peruano)
@@ -262,15 +287,29 @@ REGLAS CRÍTICAS:
         legal_name: parsed.legal_name ? String(parsed.legal_name).trim() : null,
         name: parsed.name ? String(parsed.name).trim() : null,
         location: parsed.location ? String(parsed.location).trim() : null,
-        department: parsed.department ? String(parsed.department).trim().toUpperCase() : null,
-        province: parsed.province ? String(parsed.province).trim().toUpperCase() : null,
-        district: parsed.district ? String(parsed.district).trim().toUpperCase() : null,
-        description: parsed.description ? String(parsed.description).trim() : null,
+        department: parsed.department
+          ? String(parsed.department).trim().toUpperCase()
+          : null,
+        province: parsed.province
+          ? String(parsed.province).trim().toUpperCase()
+          : null,
+        district: parsed.district
+          ? String(parsed.district).trim().toUpperCase()
+          : null,
+        description: parsed.description
+          ? String(parsed.description).trim()
+          : null,
         phone,
         email,
         status: parsed.status ? String(parsed.status).trim() : "ACTIVO",
-        condition: parsed.condition ? String(parsed.condition).trim() : "HABIDO",
-        tax_type: tax_id?.startsWith("20") ? "ruc20" : tax_id?.startsWith("10") ? "ruc10" : undefined,
+        condition: parsed.condition
+          ? String(parsed.condition).trim()
+          : "HABIDO",
+        tax_type: tax_id?.startsWith("20")
+          ? "ruc20"
+          : tax_id?.startsWith("10")
+            ? "ruc10"
+            : undefined,
       };
     } catch (err) {
       console.error(`[Gemini] Excepción con modelo ${model}:`, err);
@@ -283,7 +322,9 @@ REGLAS CRÍTICAS:
 /**
  * Consulta APIs públicas de SUNAT como fallback.
  */
-async function fetchSunatPublicData(ruc: string): Promise<Partial<ExtractedCompanyData> | null> {
+async function fetchSunatPublicData(
+  ruc: string,
+): Promise<Partial<ExtractedCompanyData> | null> {
   const endpoints = [
     `https://api.apis.net.pe/v2/sunat/ruc?numero=${ruc}`,
     `https://api.apis.net.pe/v1/ruc?numero=${ruc}`,
@@ -293,13 +334,16 @@ async function fetchSunatPublicData(ruc: string): Promise<Partial<ExtractedCompa
   for (const url of endpoints) {
     try {
       const res = await fetch(url, {
-        headers: { Accept: "application/json", "User-Agent": "iubizon-web/1.0" },
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "iubizon-web/1.0",
+        },
         signal: AbortSignal.timeout(5000),
       });
 
       if (!res.ok) continue;
 
-      const data = await res.json() as Record<string, unknown>;
+      const data = (await res.json()) as Record<string, unknown>;
       const nombre =
         (data.razonSocial as string) ||
         (data.nombre as string) ||
@@ -309,10 +353,14 @@ async function fetchSunatPublicData(ruc: string): Promise<Partial<ExtractedCompa
       if (!nombre) continue;
 
       const parts = [
-        (data.direccion as string) || ((data.resultado as Record<string, unknown>)?.direccion as string),
-        (data.distrito as string) || ((data.resultado as Record<string, unknown>)?.distrito as string),
-        (data.provincia as string) || ((data.resultado as Record<string, unknown>)?.provincia as string),
-        (data.departamento as string) || ((data.resultado as Record<string, unknown>)?.departamento as string),
+        (data.direccion as string) ||
+          ((data.resultado as Record<string, unknown>)?.direccion as string),
+        (data.distrito as string) ||
+          ((data.resultado as Record<string, unknown>)?.distrito as string),
+        (data.provincia as string) ||
+          ((data.resultado as Record<string, unknown>)?.provincia as string),
+        (data.departamento as string) ||
+          ((data.resultado as Record<string, unknown>)?.departamento as string),
       ].filter(Boolean);
 
       return {
@@ -343,12 +391,16 @@ export async function extractCompanyDataFromPdf(
   pdfBuffer: Buffer,
   fileName?: string,
 ): Promise<ExtractedCompanyData | null> {
-  console.log(`[DocumentExtractor] Iniciando extracción. Archivo: ${fileName}, Tamaño: ${pdfBuffer.length} bytes`);
+  console.log(
+    `[DocumentExtractor] Iniciando extracción. Archivo: ${fileName}, Tamaño: ${pdfBuffer.length} bytes`,
+  );
 
   // Intentar detectar RUC del nombre de archivo como respaldo
   const rucFromFileName = fileName ? findRucInText(fileName) : null;
   if (rucFromFileName) {
-    console.log(`[DocumentExtractor] RUC detectado en nombre de archivo: ${rucFromFileName}`);
+    console.log(
+      `[DocumentExtractor] RUC detectado en nombre de archivo: ${rucFromFileName}`,
+    );
   }
 
   // ── Capa 1: Google Gemini IA ──────────────────────────────────────────────
@@ -356,33 +408,46 @@ export async function extractCompanyDataFromPdf(
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_GEMINI_API_KEY ||
     ""
-  ).trim().replace(/^["']|["']$/g, "");
+  )
+    .trim()
+    .replace(/^["']|["']$/g, "");
 
   // Parsear texto del PDF como respaldo para campos que Gemini puede omitir
   const textParsed = parsePdfRawText(pdfBuffer);
   console.log(`[DocumentExtractor] Parser de texto directo:`, textParsed);
 
   if (apiKey) {
-    console.log(`[DocumentExtractor] API Key de Gemini encontrada (${apiKey.length} chars). Llamando a Gemini...`);
+    console.log(
+      `[DocumentExtractor] API Key de Gemini encontrada (${apiKey.length} chars). Llamando a Gemini...`,
+    );
     const base64Pdf = pdfBuffer.toString("base64");
     const geminiResult = await callGeminiWithPdf(base64Pdf, apiKey);
 
     if (geminiResult) {
-      console.log(`[DocumentExtractor] ✅ Gemini extrajo datos exitosamente:`, geminiResult);
+      console.log(
+        `[DocumentExtractor] ✅ Gemini extrajo datos exitosamente:`,
+        geminiResult,
+      );
 
       // Si Gemini no devolvió RUC, usar el del nombre de archivo
       if (!geminiResult.tax_id && rucFromFileName) {
         geminiResult.tax_id = rucFromFileName;
-        geminiResult.tax_type = rucFromFileName.startsWith("20") ? "ruc20" : "ruc10";
+        geminiResult.tax_type = rucFromFileName.startsWith("20")
+          ? "ruc20"
+          : "ruc10";
       }
 
       // Completar campos que Gemini devolvió como null usando el parser de texto
       if (!geminiResult.phone && textParsed.phone) {
-        console.log(`[DocumentExtractor] Completando phone con parser de texto: ${textParsed.phone}`);
+        console.log(
+          `[DocumentExtractor] Completando phone con parser de texto: ${textParsed.phone}`,
+        );
         geminiResult.phone = textParsed.phone;
       }
       if (!geminiResult.email && textParsed.email) {
-        console.log(`[DocumentExtractor] Completando email con parser de texto: ${textParsed.email}`);
+        console.log(
+          `[DocumentExtractor] Completando email con parser de texto: ${textParsed.email}`,
+        );
         geminiResult.email = textParsed.email;
       }
       if (!geminiResult.name && textParsed.name) {
@@ -392,15 +457,21 @@ export async function extractCompanyDataFromPdf(
       return geminiResult;
     }
 
-    console.warn(`[DocumentExtractor] ⚠️ Gemini no retornó datos. Intentando fallback SUNAT...`);
+    console.warn(
+      `[DocumentExtractor] ⚠️ Gemini no retornó datos. Intentando fallback SUNAT...`,
+    );
   } else {
-    console.warn(`[DocumentExtractor] ⚠️ No hay API Key de Gemini configurada. Usando fallback SUNAT...`);
+    console.warn(
+      `[DocumentExtractor] ⚠️ No hay API Key de Gemini configurada. Usando fallback SUNAT...`,
+    );
   }
 
   // ── Capa 2: Fallback SUNAT API por RUC ───────────────────────────────────
   const rucToQuery = rucFromFileName;
   if (rucToQuery) {
-    console.log(`[DocumentExtractor] Consultando SUNAT API con RUC: ${rucToQuery}`);
+    console.log(
+      `[DocumentExtractor] Consultando SUNAT API con RUC: ${rucToQuery}`,
+    );
     const sunatData = await fetchSunatPublicData(rucToQuery);
     if (sunatData) {
       console.log(`[DocumentExtractor] ✅ SUNAT API retornó datos:`, sunatData);

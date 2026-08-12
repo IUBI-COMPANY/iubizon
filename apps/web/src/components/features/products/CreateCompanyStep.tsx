@@ -108,12 +108,14 @@ export const CreateCompanyStep = ({
   const formData = watch();
 
   const provincesForDepartment = useMemo(
-    () => peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
+    () =>
+      peruUbigeo.find((d) => d.name === formData.department)?.provinces || [],
     [formData.department],
   );
   const districtsForProvince = useMemo(
     () =>
-      provincesForDepartment.find((p) => p.name === formData.province)?.districts || [],
+      provincesForDepartment.find((p) => p.name === formData.province)
+        ?.districts || [],
     [provincesForDepartment, formData.province],
   );
 
@@ -151,7 +153,9 @@ export const CreateCompanyStep = ({
             .toUpperCase();
 
         const depNorm = cleanText(extractedData.department);
-        const matchedDep = peruUbigeo.find((d) => cleanText(d.name) === depNorm);
+        const matchedDep = peruUbigeo.find(
+          (d) => cleanText(d.name) === depNorm,
+        );
 
         if (matchedDep) {
           setValue("department", matchedDep.name, opts);
@@ -160,7 +164,9 @@ export const CreateCompanyStep = ({
           setTimeout(() => {
             if (extractedData.province) {
               const provNorm = cleanText(extractedData.province);
-              const matchedProv = matchedDep.provinces.find((p) => cleanText(p.name) === provNorm);
+              const matchedProv = matchedDep.provinces.find(
+                (p) => cleanText(p.name) === provNorm,
+              );
 
               if (matchedProv) {
                 setValue("province", matchedProv.name, opts);
@@ -169,7 +175,9 @@ export const CreateCompanyStep = ({
                 setTimeout(() => {
                   if (extractedData.district) {
                     const distNorm = cleanText(extractedData.district);
-                    const matchedDist = matchedProv.districts.find((d) => cleanText(d.name) === distNorm);
+                    const matchedDist = matchedProv.districts.find(
+                      (d) => cleanText(d.name) === distNorm,
+                    );
 
                     if (matchedDist) {
                       setValue("district", matchedDist.name, opts);
@@ -214,7 +222,11 @@ export const CreateCompanyStep = ({
   };
 
   const handleDistrictChange = (dist: string) => {
-    setValue("district", dist, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+    setValue("district", dist, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
 
   const handleSunatLookup = async (docNum?: string) => {
@@ -242,7 +254,11 @@ export const CreateCompanyStep = ({
         message: `SUNAT: ${data.status || "ACTIVO"} - ${data.condition || "HABIDO"}`,
       });
 
-      const opts = { shouldValidate: true, shouldDirty: true, shouldTouch: true };
+      const opts = {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      };
       setValue("tax_id", doc, opts);
       if (data.name) {
         setValue("legal_name", data.name, opts);
@@ -306,7 +322,6 @@ export const CreateCompanyStep = ({
     }
   };
 
-
   const onSubmit = async (values: CreateCompanyStepValues) => {
     try {
       setIsLoading(true);
@@ -364,7 +379,8 @@ export const CreateCompanyStep = ({
             </span>
           </div>
           <p className="text-xs text-[#64748b] mt-0.5">
-            Por favor, revisa y completa los campos. Puedes modificarlos si es necesario antes de registrar tu empresa.
+            Por favor, revisa y completa los campos. Puedes modificarlos si es
+            necesario antes de registrar tu empresa.
           </p>
         </div>
       </div>
@@ -464,7 +480,8 @@ export const CreateCompanyStep = ({
             <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
               <span>
-                Verificado: <strong>{sunatInfo.name}</strong> ({sunatInfo.message})
+                Verificado: <strong>{sunatInfo.name}</strong> (
+                {sunatInfo.message})
               </span>
             </div>
           )}
@@ -532,20 +549,39 @@ export const CreateCompanyStep = ({
 
         {/* Departamento, Provincia, Distrito */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <FormField name="department" label="Departamento" required error={errors.department?.message}>
-            <Select value={formData.department || undefined} onValueChange={handleDepartmentChange}>
+          <FormField
+            name="department"
+            label="Departamento"
+            required
+            error={errors.department?.message}
+          >
+            <Select
+              value={formData.department || undefined}
+              onValueChange={handleDepartmentChange}
+            >
               <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="Selecciona" />
               </SelectTrigger>
               <SelectContent>
                 {peruUbigeo.map((dep) => (
-                  <SelectItem key={dep.name} value={dep.name} className="text-xs">{dep.name}</SelectItem>
+                  <SelectItem
+                    key={dep.name}
+                    value={dep.name}
+                    className="text-xs"
+                  >
+                    {dep.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FormField>
 
-          <FormField name="province" label="Provincia" required error={errors.province?.message}>
+          <FormField
+            name="province"
+            label="Provincia"
+            required
+            error={errors.province?.message}
+          >
             <Select
               value={formData.province || undefined}
               onValueChange={handleProvinceChange}
@@ -556,13 +592,24 @@ export const CreateCompanyStep = ({
               </SelectTrigger>
               <SelectContent>
                 {provincesForDepartment.map((prov) => (
-                  <SelectItem key={prov.name} value={prov.name} className="text-xs">{prov.name}</SelectItem>
+                  <SelectItem
+                    key={prov.name}
+                    value={prov.name}
+                    className="text-xs"
+                  >
+                    {prov.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </FormField>
 
-          <FormField name="district" label="Distrito" required error={errors.district?.message}>
+          <FormField
+            name="district"
+            label="Distrito"
+            required
+            error={errors.district?.message}
+          >
             <Select
               value={formData.district || undefined}
               onValueChange={handleDistrictChange}
@@ -573,7 +620,13 @@ export const CreateCompanyStep = ({
               </SelectTrigger>
               <SelectContent>
                 {districtsForProvince.map((dist) => (
-                  <SelectItem key={dist.name} value={dist.name} className="text-xs">{dist.name}</SelectItem>
+                  <SelectItem
+                    key={dist.name}
+                    value={dist.name}
+                    className="text-xs"
+                  >
+                    {dist.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -135,7 +135,8 @@ export async function POST(request: Request) {
     select: { is_verified: true, is_personal: true },
   });
 
-  const shouldBeInactive = targetCompany && !targetCompany.is_personal && !targetCompany.is_verified;
+  const shouldBeInactive =
+    targetCompany && !targetCompany.is_personal && !targetCompany.is_verified;
 
   if (category_id === "other") {
     const otrosCat = await prisma.category.findUnique({

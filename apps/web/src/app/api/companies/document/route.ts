@@ -25,7 +25,10 @@ export async function POST(req: Request) {
     }
 
     const allowedTypes = ["application/pdf"];
-    if (!allowedTypes.includes(file.type) && !file.name.toLowerCase().endsWith(".pdf")) {
+    if (
+      !allowedTypes.includes(file.type) &&
+      !file.name.toLowerCase().endsWith(".pdf")
+    ) {
       return NextResponse.json(
         { error: "Únicamente se permiten archivos en formato PDF (.pdf)" },
         { status: 400 },
@@ -52,12 +55,10 @@ export async function POST(req: Request) {
         console.error("Error analizando PDF con IA:", err);
         return null;
       }),
-      supabase.storage
-        .from("product-images")
-        .upload(fileName, arrayBuffer, {
-          contentType: "application/pdf",
-          upsert: true,
-        }),
+      supabase.storage.from("product-images").upload(fileName, arrayBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      }),
     ]);
 
     if (uploadResult.error) {

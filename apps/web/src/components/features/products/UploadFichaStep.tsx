@@ -12,10 +12,14 @@ interface UploadFichaStepProps {
 
 export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
   const [docUrl, setDocUrl] = useState<string | null>(null);
-  const [extractedData, setExtractedData] = useState<ExtractedCompanyData | null>(null);
+  const [extractedData, setExtractedData] =
+    useState<ExtractedCompanyData | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
 
-  const handleDocumentUploaded = (url: string, data?: ExtractedCompanyData | null) => {
+  const handleDocumentUploaded = (
+    url: string,
+    data?: ExtractedCompanyData | null,
+  ) => {
     setDocUrl(url);
     setExtractedData(data ?? null);
     setIsUploaded(true);
@@ -39,7 +43,8 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
               Sube tu Ficha RUC o Reporte SUNAT
             </h2>
             <p className="text-xs text-[#64748b]">
-              La IA analizará el PDF y pre-rellenará todos los campos automáticamente
+              La IA analizará el PDF y pre-rellenará todos los campos
+              automáticamente
             </p>
           </div>
         </div>
@@ -66,11 +71,18 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
                 <DataRow label="RUC" value={extractedData.tax_id} />
               )}
               {extractedData.legal_name && (
-                <DataRow label="Razón Social" value={extractedData.legal_name} />
+                <DataRow
+                  label="Razón Social"
+                  value={extractedData.legal_name}
+                />
               )}
-              {extractedData.name && extractedData.name !== extractedData.legal_name && (
-                <DataRow label="Nombre Comercial" value={extractedData.name} />
-              )}
+              {extractedData.name &&
+                extractedData.name !== extractedData.legal_name && (
+                  <DataRow
+                    label="Nombre Comercial"
+                    value={extractedData.name}
+                  />
+                )}
               {extractedData.phone && (
                 <DataRow label="Teléfono" value={extractedData.phone} />
               )}
@@ -86,8 +98,12 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
             </div>
             {extractedData.description && (
               <div className="pt-2 border-t border-emerald-100 min-w-0">
-                <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide">Descripción Generada</p>
-                <p className="text-xs text-[#112237] font-medium italic line-clamp-2">"{extractedData.description}"</p>
+                <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide">
+                  Descripción Generada
+                </p>
+                <p className="text-xs text-[#112237] font-medium italic line-clamp-2">
+                  "{extractedData.description}"
+                </p>
               </div>
             )}
           </div>
@@ -133,7 +149,9 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
 function DataRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide">{label}</p>
+      <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide">
+        {label}
+      </p>
       <p className="text-xs text-[#112237] font-medium truncate">{value}</p>
     </div>
   );

@@ -150,7 +150,8 @@ function PublishProductForm() {
   };
 
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
-  const [extractedData, setExtractedData] = useState<ExtractedCompanyData | null>(null);
+  const [extractedData, setExtractedData] =
+    useState<ExtractedCompanyData | null>(null);
   const [taxIdDocumentUrl, setTaxIdDocumentUrl] = useState<string | null>(null);
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -352,8 +353,8 @@ function PublishProductForm() {
                     currentStep === 2
                       ? "bg-[#f25c05] text-white shadow-md"
                       : currentStep > 2
-                      ? "bg-emerald-500 text-white"
-                      : "bg-slate-200 text-slate-600"
+                        ? "bg-emerald-500 text-white"
+                        : "bg-slate-200 text-slate-600"
                   }`}
                 >
                   {currentStep > 2 ? "✓" : "2"}
@@ -363,8 +364,8 @@ function PublishProductForm() {
                     currentStep === 2
                       ? "text-[#f25c05]"
                       : currentStep > 2
-                      ? "text-emerald-700"
-                      : "text-[#64748b]"
+                        ? "text-emerald-700"
+                        : "text-[#64748b]"
                   }`}
                 >
                   2. Registrar Empresa
@@ -441,22 +442,30 @@ function PublishProductForm() {
                 </div>
               </div>
 
-              {activeCompany && !activeCompany.is_personal && !activeCompany.is_verified && (
-                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm">
-                  <div className="p-2 bg-amber-100 rounded-xl shrink-0 mt-0.5">
-                    <ShieldCheck className="w-5 h-5 text-amber-700" />
+              {activeCompany &&
+                !activeCompany.is_personal &&
+                !activeCompany.is_verified && (
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 shadow-sm">
+                    <div className="p-2 bg-amber-100 rounded-xl shrink-0 mt-0.5">
+                      <ShieldCheck className="w-5 h-5 text-amber-700" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-900">
+                        Empresa en Proceso de Verificación de Ficha RUC
+                      </h4>
+                      <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                        ¡Tu documento ha sido recibido con éxito y tu cuenta se
+                        encuentra en revisión! Mientras tanto,{" "}
+                        <strong>
+                          puedes seguir registrando y guardando tus productos
+                        </strong>
+                        . Éstos se guardarán como borradores en tu catálogo,
+                        pero no estarán disponibles para la venta pública hasta
+                        que iubizon verifique y active tu empresa.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-amber-900">
-                      Empresa en Proceso de Verificación de Ficha RUC
-                    </h4>
-                    <p className="text-xs text-amber-800 mt-1 leading-relaxed">
-                      ¡Tu documento ha sido recibido con éxito y tu cuenta se encuentra en revisión! 
-                      Mientras tanto, <strong>puedes seguir registrando y guardando tus productos</strong>. Éstos se guardarán como borradores en tu catálogo, pero no estarán disponibles para la venta pública hasta que iubizon verifique y active tu empresa.
-                    </p>
-                  </div>
-                </div>
-              )}
+                )}
 
               <form
                 onSubmit={handleSubmit(onSubmit as any)}

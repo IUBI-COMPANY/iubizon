@@ -275,7 +275,9 @@ export default function NewCompanyPage() {
             .toUpperCase();
 
         const depNorm = cleanText(extractedData.department);
-        const matchedDep = peruUbigeo.find((d) => cleanText(d.name) === depNorm);
+        const matchedDep = peruUbigeo.find(
+          (d) => cleanText(d.name) === depNorm,
+        );
 
         if (matchedDep) {
           setValue("department", matchedDep.name, opts);
@@ -284,7 +286,9 @@ export default function NewCompanyPage() {
           setTimeout(() => {
             if (extractedData.province) {
               const provNorm = cleanText(extractedData.province);
-              const matchedProv = matchedDep.provinces.find((p) => cleanText(p.name) === provNorm);
+              const matchedProv = matchedDep.provinces.find(
+                (p) => cleanText(p.name) === provNorm,
+              );
 
               if (matchedProv) {
                 setValue("province", matchedProv.name, opts);
@@ -293,7 +297,9 @@ export default function NewCompanyPage() {
                 setTimeout(() => {
                   if (extractedData.district) {
                     const distNorm = cleanText(extractedData.district);
-                    const matchedDist = matchedProv.districts.find((d) => cleanText(d.name) === distNorm);
+                    const matchedDist = matchedProv.districts.find(
+                      (d) => cleanText(d.name) === distNorm,
+                    );
 
                     if (matchedDist) {
                       setValue("district", matchedDist.name, opts);
@@ -320,7 +326,6 @@ export default function NewCompanyPage() {
       }
     }
   };
-
 
   const onSubmit = async (values: CompanyFormValues) => {
     setIsSaving(true);

@@ -36,7 +36,11 @@ export async function GET(
 
     // Si la empresa del producto no es personal y no está verificada,
     // solo permitimos que lo vean los miembros de dicha empresa.
-    if (product.company && !product.company.is_personal && !product.company.is_verified) {
+    if (
+      product.company &&
+      !product.company.is_personal &&
+      !product.company.is_verified
+    ) {
       const supabase = await createServerClient();
       const {
         data: { user },

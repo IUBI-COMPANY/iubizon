@@ -44,12 +44,18 @@ export async function PATCH(req: Request) {
 
     // Si la empresa ha sido verificada/aprobada
     if (is_verified) {
-      const lastUpdated = currentCompany?.updated_at ? new Date(currentCompany.updated_at) : new Date();
+      const lastUpdated = currentCompany?.updated_at
+        ? new Date(currentCompany.updated_at)
+        : new Date();
       const diffTime = Math.abs(new Date().getTime() - lastUpdated.getTime());
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
       // Caso A: Re-aprobación tardía (Más de 30 días de inactividad / suspensión)
-      if (currentCompany && currentCompany.is_verified === false && diffDays > 30) {
+      if (
+        currentCompany &&
+        currentCompany.is_verified === false &&
+        diffDays > 30
+      ) {
         wasSuspendedLongTime = true;
         // Poner todos los productos en inactivo y stock a 0 para obligar a revisión de inventario
         await tx.product.updateMany({
@@ -119,9 +125,9 @@ export async function PATCH(req: Request) {
     return { updatedCompany, activatedCount, wasSuspendedLongTime };
   });
 
-  return NextResponse.json({ 
-    success: true, 
+  return NextResponse.json({
+    success: true,
     activatedCount: result.activatedCount,
-    wasSuspendedLongTime: result.wasSuspendedLongTime 
+    wasSuspendedLongTime: result.wasSuspendedLongTime,
   });
 }
