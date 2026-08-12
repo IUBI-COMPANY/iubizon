@@ -6,7 +6,7 @@ export function BuySection() {
       <div className="border-b border-[#f1f5f9] pb-4">
         <h2 className="text-xl font-black text-[#112237] flex items-center gap-2">
           <ShoppingBag className="w-5 h-5 text-[#f25c05]" />
-          Cómo Comprar en iubizon
+          Cómo Comprar en IUBIZON
         </h2>
         <p className="text-xs text-[#64748b] mt-1">
           Sigue estos pasos para adquirir tecnología de forma rápida y segura.

@@ -6,7 +6,7 @@ export function SecuritySection() {
       <div className="border-b border-[#f1f5f9] pb-4">
         <h2 className="text-xl font-black text-[#112237] flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-[#f25c05]" />
-          Protección iubizon & Garantías
+          Protección IUBIZON & Garantías
         </h2>
         <p className="text-xs text-[#64748b] mt-1">
           Compostura legal y técnica diseñada para respaldar cada transacción

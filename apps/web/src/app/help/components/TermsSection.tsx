@@ -10,7 +10,7 @@ export function TermsSection() {
         </h2>
         <p className="text-xs text-[#64748b] mt-1">
           Última actualización: 2026. Documento regulador de servicios para la
-          plataforma iubizon.
+          plataforma IUBIZON.
         </p>
       </div>
 
@@ -21,7 +21,7 @@ export function TermsSection() {
           </h3>
           <p>
             Al acceder, navegar o realizar transacciones a través de la
-            plataforma web iubizon.com, el usuario acepta de manera íntegra y
+            plataforma web IUBIZON, el usuario acepta de manera íntegra y
             sin reservas los presentes Términos y Condiciones administrados por{" "}
             <strong>IUBIZON COMPANY S.A.C.</strong> (RUC 20614600374). Si no está
             de acuerdo con estas cláusulas, deberá abstenerse de utilizar los
@@ -34,7 +34,7 @@ export function TermsSection() {
             2. Rol de la Plataforma e Intermediación Tecnológica
           </h3>
           <p>
-            iubizon opera exclusivamente como una plataforma tecnológica de
+            IUBIZON opera exclusivamente como una plataforma tecnológica de
             intermediación que facilita la conexión entre compradores
             (institucionales o clientes finales) y proveedores o vendedores
             verificados. Los proveedores son los únicos responsables de publicar
@@ -65,7 +65,7 @@ export function TermsSection() {
             Para compras de un solo producto, el proveedor gestiona el despacho y
             coordinación de envío directo al cliente. Cuando el cliente realiza
             una compra con múltiples productos (de uno o varios proveedores),
-            iubizon ofrece la opción de gestionar un envío consolidado por
+            IUBIZON ofrece la opción de gestionar un envío consolidado por
             cuenta propia (cubierto por la plataforma por el momento).
           </p>
         </div>
@@ -81,7 +81,7 @@ export function TermsSection() {
             proveedor. En compras con tarjeta de crédito o débito menores a S/
             40, se aplica un costo adicional de S/ 2.50 destinado a la
             protección de tarjeta. Para productos propios comercializados
-            directamente por iubizon o servicios de mantenimiento y reparación,
+            directamente por IUBIZON o servicios de mantenimiento y reparación,
             no aplica cobro de comisión intermediaria.
           </p>
         </div>
@@ -95,7 +95,7 @@ export function TermsSection() {
             periodo de 7 días calendario de protección al cliente, contados a
             partir de la fecha confirmada de entrega del producto (se incluyen
             fines de semana y feriados). Transcurrido dicho plazo sin que se
-            haya registrado ningún reporte en la plataforma, iubizon procederá a
+            haya registrado ningún reporte en la plataforma, IUBIZON procederá a
             liberar y abonar los fondos correspondientes al proveedor.
           </p>
         </div>
@@ -137,7 +137,7 @@ export function TermsSection() {
             9. Suspensión de Cuentas e Infracciones
           </h3>
           <p>
-            iubizon se reserva la facultad discrecional de suspender o cancelar
+            IUBIZON se reserva la facultad discrecional de suspender o cancelar
             definitivamente el acceso o cuenta de cualquier usuario o empresa
             que incurra en maniobras fraudulentas, suplantación de identidad,
             incumplimiento reiterado en las entregas, o que publique productos que
