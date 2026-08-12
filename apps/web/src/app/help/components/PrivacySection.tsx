@@ -64,9 +64,9 @@ export function PrivacySection() {
             3. Finalidad del Tratamiento de Datos
           </h3>
           <p>
-            La información recopilada se utiliza exclusivamente para las
-            siguientes finalidades: (a) procesar compras, pagos y emisiones
-            de cotizaciones en formato PDF; (b) coordinar despachos de pedidos
+            La información recopilada se utiliza para las siguientes
+            finalidades: (a) procesar compras, pagos y emisiones de
+            cotizaciones en formato PDF; (b) coordinar despachos de pedidos
             con proveedores o empresas de transporte; (c) gestionar el módulo
             de reembolsos y devoluciones durante el periodo de protección de
             siete días; (d) realizar abonos y transferencias bancarias a
@@ -74,8 +74,10 @@ export function PrivacySection() {
             relacionadas con el estado de los pedidos, actualizaciones de la
             plataforma y notificaciones relevantes para la operación del
             usuario; (f) verificar la identidad del usuario y prevenir
-            actividades fraudulentas; y (g) cumplir con obligaciones legales
-            y regulatorias aplicables.
+            actividades fraudulentas; (g) cumplir con obligaciones legales
+            y regulatorias aplicables; y (h) fines legítimos de interés
+            comercial vinculados al mejoramiento continuo de los servicios
+            de la plataforma.
           </p>
           <p className="mt-2">
             IUBIZON no utilizará los datos personales para fines distintos a
@@ -336,11 +338,10 @@ export function PrivacySection() {
             modificaciones serán publicadas en esta misma página y serán
             efectivas desde su fecha de publicación. IUBIZON notificará a
             los usuarios registrados sobre las modificaciones relevantes a
-            través del correo electrónico registrado en la plataforma, con
-            una antelación mínima de quince (15) días calendario antes de
-            la entrada en vigor de los cambios, cuando dichos cambios
-            afecten sustancialmente los derechos de los titulares de los
-            datos.
+            través del correo electrónico registrado en la plataforma con
+            una antelación razonable antes de la entrada en vigor de los
+            cambios, cuando dichos cambios afecten sustancialmente los
+            derechos de los titulares de los datos.
           </p>
           <p className="mt-2">
             Se recomienda a los usuarios revisar periódicamente esta política

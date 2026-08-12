@@ -224,11 +224,11 @@ export function TermsSection() {
             al proveedor, asumiendo el costo del flete de envío de retorno.
             Una vez que el proveedor confirme la recepción del producto en
             condiciones aceptables, IUBIZON procederá a reembolsar al cliente
-            el ciento por ciento (100%) del monto pagado, incluyendo el monto
-            de la comisión cobrada por el servicio. Vencidos los siete (7)
-            días calendario de protección, no procederán devoluciones a través
-            de la plataforma, sin perjuicio de los derechos legales del
-            consumidor conforme a la normativa peruana vigente.
+            el monto pagado por el producto, descontando la comisión por
+            servicio cobrada por la intermediación, la cual será retenida por
+            IUBIZON en compensación por los servicios prestados. Vencidos los
+            siete (7) días calendario de protección, no procederán
+            devoluciones a través de la plataforma.
           </p>
         </div>
 
@@ -351,11 +351,9 @@ export function TermsSection() {
           </p>
           <p className="mt-2">
             La suspensión o cancelación de la cuenta no generará derecho a
-            indemnización alguna por parte de IUBIZON. El usuario afectado
-            podrá presentar un recurso de revisión dentro de los diez (10)
-            días hábiles siguientes a la notificación de la medida, adjuntando
-            las evidencias que considere pertinentes para la revisión de su
-            caso.
+            indemnización alguna por parte de IUBIZON. Las decisiones
+            adoptadas por IUBIZON en ejercicio de esta facultad serán
+            definitivas e inapelables.
           </p>
         </div>
 
