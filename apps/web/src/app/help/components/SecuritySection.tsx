@@ -152,7 +152,7 @@ export function SecuritySection() {
             por interrupciones, demoras o fallas derivadas de causas ajenas a
             su control, incluyendo pero no limitándose a: desastres naturales,
             actos gubernamentales, fallas en la red de telecomunicaciones,
-            ataques cibernéticos de fuerza mayor o casos fortuitos.
+            ataques cibernéticos, fuerza mayor o caso fortuito.
           </p>
         </div>
       </div>

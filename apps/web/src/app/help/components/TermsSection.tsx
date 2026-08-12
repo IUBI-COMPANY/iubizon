@@ -142,7 +142,7 @@ export function TermsSection() {
             inconsistencias en la información de dirección proporcionada por
             el comprador. En caso de que el despacho sea gestionado por el
             proveedor, este deberá actualizar el código de seguimiento del
-            envío en la plataforma dentro de las 24 horas siguientes a la
+            envío en la plataforma dentro de las 24 horas siguientes al
             despacho del producto.
           </p>
         </div>
@@ -224,9 +224,8 @@ export function TermsSection() {
             al proveedor, asumiendo el costo del flete de envío de retorno.
             Una vez que el proveedor confirme la recepción del producto en
             condiciones aceptables, IUBIZON procederá a reembolsar al cliente
-            el monto pagado por el producto, descontando la comisión por
-            servicio cobrada por la intermediación, la cual será retenida por
-            IUBIZON en compensación por los servicios prestados. Vencidos los
+            el ciento por ciento (100%) del monto pagado, incluyendo el monto
+            de la comisión cobrada por el servicio. Vencidos los
             siete (7) días calendario de protección, no procederán
             devoluciones a través de la plataforma.
           </p>

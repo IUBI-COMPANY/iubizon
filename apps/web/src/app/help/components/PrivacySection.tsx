@@ -81,7 +81,7 @@ export function PrivacySection() {
           </p>
           <p className="mt-2">
             IUBIZON no utilizará los datos personales para fines distintos a
-            los aquí descritos sin Obtener previamente el consentimiento
+            los aquí descritos sin obtener previamente el consentimiento
             expreso del usuario, salvo que medie una obligación legal que
             así lo requiera.
           </p>
@@ -101,7 +101,7 @@ export function PrivacySection() {
             electrónico oficial de IUBIZON. La revocación del consentimiento
             podrá afectar la prestación de determinados servicios de la
             plataforma, siendo informado el usuario sobre las consecuencias
-            antes de la processing de su solicitud.
+            antes del procesamiento de su solicitud.
           </p>
           <p className="mt-2">
             En el caso de usuarios registrados como vendedores, el
@@ -224,7 +224,7 @@ export function PrivacySection() {
             transferencia internacional de datos personales, IUBIZON
             solicitará el consentimiento previo, informado y expreso del
             titular de los datos, y garantizará que el país o la
-            destinataria de la transferencia cuente con un nivel de
+            destinación de la transferencia cuente con un nivel de
             protección adecuado conforme a lo establecido en la Ley N° 29733
             y su Reglamento.
           </p>
