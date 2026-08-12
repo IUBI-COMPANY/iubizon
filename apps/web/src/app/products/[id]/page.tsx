@@ -4,7 +4,6 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import Script from "next/script";
 import { Metadata } from "next";
 import {
   MapPin,
@@ -532,13 +531,12 @@ export default async function ProductDetailPage({ params }: Props) {
 
       <Footer />
 
-      <Script
+      <script
         id="product-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productSchema),
         }}
-        strategy="beforeInteractive"
       />
     </div>
   );
