@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const content = `# iubizon - Tecnología para educar y trabajar
 
-> iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos, envíos coordinados y 7 días de prueba para devolver tu producto. Tú compras con confianza: sin estafas, sin proveedores que no responden y con una comisión clara y transparente.
+> iubizon es la plataforma de tecnología para educar y trabajar. Compra directo a proveedores verificados con pagos protegidos, envíos coordinados y 7 días de protección al cliente. Tú compras con confianza: sin estafas, sin proveedores que no responden y con una comisión clara y transparente.
 
 ## Soluciones y Servicios
 
@@ -15,8 +15,8 @@ const content = `# iubizon - Tecnología para educar y trabajar
 ## Por qué elegirnos
 
 - [Proveedores verificados](/help?tab=seguridad): Solo trabajamos con proveedores evaluados y con buena calificación, para que nunca te fallen ni te dejen de responder.
-- [Pago protegido](/help?tab=seguridad): Tu pago queda guardado con iubizon y el proveedor solo lo recibe después de los 7 días de prueba. Si algo sale mal, recuperas tu dinero.
-- [7 días de prueba para devolver](/help?tab=seguridad): Prueba tu producto hasta 7 días (se cuentan fines de semana y feriados). Si no te convence, devuélvelo y te reembolsamos todo, incluida la comisión. Solo asumes el costo del envío de la devolución.
+- [Pago protegido](/help?tab=seguridad): Tu pago queda guardado con iubizon y el proveedor solo lo recibe después de los 7 días de protección al cliente, contados desde que recibes tu producto. Si algo sale mal, recuperas tu dinero.
+- [Protección de 7 días](/help?tab=seguridad): Si tu producto presenta alguna falla o inconveniente, tienes 7 días desde que lo recibes (se cuentan fines de semana y feriados) para devolverlo desde el módulo de reembolsos y te reembolsamos todo, incluida la comisión. iubizon hace seguimiento a tu caso; solo asumes el costo del envío de la devolución, que va directo al proveedor. Pasados los 7 días ya no hay opción a devolverlo.
 - [Pagos seguros con Niubiz](/help?tab=seguridad): Paga con tarjeta de crédito o débito con total tranquilidad, con pagos gestionados por el servicio de pagos Niubiz.
 - [Comisión transparente](/help?tab=vender): El 9% de cada venta se descuenta del precio del proveedor; en compras menores a S/ 40 pagadas con tarjeta, se añaden S/ 2.50 para proteger tu pago.
 
