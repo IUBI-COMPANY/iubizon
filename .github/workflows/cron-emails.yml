@@ -1,0 +1,13 @@
+name: Process Email Queue
+on:
+  schedule:
+    - cron: "*/2 * * * *"
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger email processing
+        run: |
+          curl -fsS https://www.iubizon.com/api/cron/process-emails

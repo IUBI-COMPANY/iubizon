@@ -2,11 +2,5 @@
   "buildCommand": "cd ../.. && yarn workspace @iubizon/db generate && cd apps/web && next build",
   "installCommand": "yarn install --frozen-lockfile",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "crons": [
-    {
-      "path": "/api/cron/process-emails",
-      "schedule": "*/2 * * * *"
-    }
-  ]
+  "framework": "nextjs"
 }
