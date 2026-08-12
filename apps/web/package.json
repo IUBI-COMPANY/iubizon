@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@iubizon/db": "0.1.0",
+    "@iubizon/email": "0.1.0",
     "@prisma/client": "^7.9.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

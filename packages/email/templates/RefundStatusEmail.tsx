@@ -1,80 +1,104 @@
 import * as React from "react";
 import {
+  Button,
+  Column,
+  Heading,
+  Hr,
+  Img,
+  Row,
   Section,
   Text,
-  Heading,
-  Button,
-  Row,
-  Column,
-  Img,
-  Hr,
 } from "@react-email/components";
-import { BaseLayout } from "@/lib/email";
-import type { DispatchEmailData } from "../types";
+import { BaseLayout } from "./BaseLayout";
+import type { RefundStatusEmailData } from "../types";
 
-export function DispatchNotificationEmail(data: DispatchEmailData) {
+export function RefundStatusEmail(data: RefundStatusEmailData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://iubizon.com";
   const orderUrl = `${baseUrl}/user/orders/${data.orderCode}`;
+  const isApproved = data.status === "approved";
 
   return (
-    <BaseLayout previewText={`¡Tu pedido #${data.orderCode} está en camino!`}>
-      <Section style={bannerStyle}>
-        <Text style={badgeStyle}>¡TU PEDIDO ESTÁ EN CAMINO!</Text>
-        <Heading style={mainHeadingStyle}>
-          ¡Buenas noticias, {data.buyerName}!
-        </Heading>
+    <BaseLayout
+      previewText={`${isApproved ? "Actualización" : "Respuesta"} de reembolso — Pedido #${data.orderCode}`}
+    >
+      <Section style={bannerStyle(isApproved)}>
+        <Text style={badgeStyle(isApproved)}>
+          {isApproved ? "REEMBOLSO APROBADO" : "REEMBOLSO RECHAZADO"}
+        </Text>
+        <Heading style={mainHeadingStyle}>Hola, {data.buyerName}</Heading>
         <Text style={subtitleStyle}>
-          {data.companyName} ha despachado tu pedido y está en camino a tu
-          domicilio. Revisa los datos de seguimiento para estar atento a la
-          entrega.
+          {isApproved
+            ? `Tu solicitud de reembolso para la orden #${data.orderCode} ha sido aprobada. Revisa las instrucciones de devolución en la plataforma.`
+            : `Lamentamos informarte que tu solicitud de reembolso para la orden #${data.orderCode} no ha sido aprobada.`}
         </Text>
       </Section>
 
-      {/* Datos de Tracking */}
-      <Section style={trackingCardStyle}>
+      <Section style={infoCardStyle}>
         <Row>
           <Column style={{ padding: "8px 12px" }}>
             <Text style={metaLabelStyle}>N° DE PEDIDO</Text>
             <Text style={metaValueStyle}>{data.orderCode}</Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
-            <Text style={metaLabelStyle}>EMPRESA DE TRANSPORTE</Text>
-            <Text style={metaValueStyle}>{data.courier}</Text>
+            <Text style={metaLabelStyle}>TIPO</Text>
+            <Text style={metaValueStyle}>
+              {data.refundType === "full"
+                ? "Reembolso Total"
+                : "Reembolso Parcial"}
+            </Text>
           </Column>
         </Row>
         <Hr style={lightHrStyle} />
         <Row>
           <Column style={{ padding: "8px 12px" }}>
-            <Text style={metaLabelStyle}>CÓDIGO DE SEGUIMIENTO</Text>
-            <Text style={trackingCodeStyle}>{data.trackingNumber}</Text>
+            <Text style={metaLabelStyle}>MONTO</Text>
+            <Text style={amountValueStyle}>
+              S/ {data.refundAmount.toFixed(2)}
+            </Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
-            <Text style={metaLabelStyle}>FECHA ESTIMADA DE ENTREGA</Text>
-            <Text style={metaValueStyle}>{data.estimatedDelivery}</Text>
+            <Text style={metaLabelStyle}>ESTADO</Text>
+            <Text
+              style={{
+                ...metaValueStyle,
+                color: isApproved ? "#059669" : "#dc2626",
+              }}
+            >
+              {isApproved ? "Aprobado" : "Rechazado"}
+            </Text>
           </Column>
         </Row>
-        {data.trackingUrl && (
-          <>
-            <Hr style={lightHrStyle} />
-            <Section style={{ textAlign: "center", padding: "8px 0" }}>
-              <Button href={data.trackingUrl} style={trackingButtonStyle}>
-                Seguir mi envío en línea
-              </Button>
-            </Section>
-          </>
-        )}
       </Section>
 
-      {/* Dirección de entrega */}
-      <Section style={addressBoxStyle}>
-        <Text style={sectionTitleStyle}>DIRECCIÓN DE ENTREGA</Text>
-        <Text style={addressTextStyle}>{data.shippingAddress}</Text>
-        <Text style={addressTextStyle}>{data.shippingCity}</Text>
-      </Section>
+      {data.adminNotes && (
+        <Section style={notesBoxStyle}>
+          <Text style={sectionTitleStyle}>NOTAS DEL EQUIPO</Text>
+          <Text style={notesTextStyle}>{data.adminNotes}</Text>
+        </Section>
+      )}
 
-      {/* Productos enviados */}
+      {isApproved && data.returnAddress && (
+        <Section style={addressBoxStyle}>
+          <Text style={sectionTitleStyle}>DIRECCIÓN DE DEVOLUCIÓN</Text>
+          {(data.companyLegalName ||
+            data.companyTaxId ||
+            data.companyPhone) && (
+            <Text style={companyDetailStyle}>
+              {[
+                data.companyLegalName,
+                data.companyTaxId ? `RUC: ${data.companyTaxId}` : null,
+                data.companyPhone ? `Tel: ${data.companyPhone}` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </Text>
+          )}
+          <Text style={addressTextStyle}>{data.returnAddress}</Text>
+        </Section>
+      )}
+
       <Section style={{ marginTop: "24px" }}>
-        <Text style={sectionTitleStyle}>PRODUCTOS ENVIADOS</Text>
+        <Text style={sectionTitleStyle}>PRODUCTOS EN REEMBOLSO</Text>
         {data.items.map((item, index) => (
           <React.Fragment key={item.id || index}>
             <Row style={itemRowStyle}>
@@ -96,9 +120,6 @@ export function DispatchNotificationEmail(data: DispatchEmailData) {
                 <Text style={itemMetaStyle}>
                   Cant: {item.quantity} × S/ {item.price.toFixed(2)} c/u
                 </Text>
-                <Text style={sellerTagStyle}>
-                  Despachado por: {item.companyName || item.sellerName}
-                </Text>
               </Column>
             </Row>
             {index < data.items.length - 1 && <Hr style={lightHrStyle} />}
@@ -106,31 +127,30 @@ export function DispatchNotificationEmail(data: DispatchEmailData) {
         ))}
       </Section>
 
-      {/* Botón de acción */}
       <Section style={{ textAlign: "center", marginTop: "32px" }}>
         <Button href={orderUrl} style={primaryButtonStyle}>
-          Ver Estado de mi Pedido
+          Ver Estado de mi Reembolso
         </Button>
       </Section>
     </BaseLayout>
   );
 }
 
-const bannerStyle: React.CSSProperties = {
-  backgroundColor: "#eff6ff",
-  border: "1px solid #bfdbfe",
+const bannerStyle = (approved: boolean): React.CSSProperties => ({
+  backgroundColor: approved ? "#ecfdf5" : "#fef2f2",
+  border: `1px solid ${approved ? "#a7f3d0" : "#fecaca"}`,
   borderRadius: "12px",
   padding: "20px",
   textAlign: "center",
   marginBottom: "20px",
-};
-const badgeStyle: React.CSSProperties = {
-  color: "#2563eb",
+});
+const badgeStyle = (approved: boolean): React.CSSProperties => ({
+  color: approved ? "#059669" : "#dc2626",
   fontSize: "11px",
   fontWeight: "800",
   letterSpacing: "1px",
   margin: "0 0 6px 0",
-};
+});
 const mainHeadingStyle: React.CSSProperties = {
   color: "#112237",
   fontSize: "20px",
@@ -141,8 +161,9 @@ const subtitleStyle: React.CSSProperties = {
   color: "#475569",
   fontSize: "13px",
   margin: "0",
+  lineHeight: "1.5",
 };
-const trackingCardStyle: React.CSSProperties = {
+const infoCardStyle: React.CSSProperties = {
   backgroundColor: "#f8fafc",
   borderRadius: "12px",
   border: "1px solid #e2e8f0",
@@ -161,28 +182,17 @@ const metaValueStyle: React.CSSProperties = {
   fontWeight: "700",
   margin: "2px 0 0 0",
 };
-const trackingCodeStyle: React.CSSProperties = {
+const amountValueStyle: React.CSSProperties = {
   color: "#f25c05",
   fontSize: "18px",
   fontWeight: "800",
   margin: "2px 0 0 0",
-  letterSpacing: "1px",
 };
 const lightHrStyle: React.CSSProperties = {
   borderColor: "#f1f5f9",
   margin: "8px 0",
 };
-const trackingButtonStyle: React.CSSProperties = {
-  backgroundColor: "#2563eb",
-  color: "#fff",
-  fontSize: "13px",
-  fontWeight: "700",
-  borderRadius: "12px",
-  padding: "12px 24px",
-  textDecoration: "none",
-  display: "inline-block",
-};
-const addressBoxStyle: React.CSSProperties = {
+const notesBoxStyle: React.CSSProperties = {
   backgroundColor: "#ffffff",
   border: "1px solid #e2e8f0",
   borderRadius: "12px",
@@ -196,10 +206,28 @@ const sectionTitleStyle: React.CSSProperties = {
   letterSpacing: "0.5px",
   marginBottom: "12px",
 };
+const notesTextStyle: React.CSSProperties = {
+  color: "#475569",
+  fontSize: "12px",
+  margin: "0",
+  lineHeight: "1.5",
+};
+const addressBoxStyle: React.CSSProperties = {
+  backgroundColor: "#f8fafc",
+  borderRadius: "12px",
+  border: "1px solid #e2e8f0",
+  padding: "16px",
+  marginTop: "20px",
+};
 const addressTextStyle: React.CSSProperties = {
   color: "#475569",
   fontSize: "12px",
   margin: "0 0 2px 0",
+};
+const companyDetailStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontSize: "11px",
+  margin: "2px 0 4px 0",
 };
 const itemRowStyle: React.CSSProperties = { padding: "10px 0" };
 const productImgStyle: React.CSSProperties = {
@@ -227,12 +255,6 @@ const itemMetaStyle: React.CSSProperties = {
   color: "#64748b",
   fontSize: "12px",
   margin: "0 0 2px 0",
-};
-const sellerTagStyle: React.CSSProperties = {
-  color: "#f25c05",
-  fontSize: "11px",
-  fontWeight: "600",
-  margin: "0",
 };
 const primaryButtonStyle: React.CSSProperties = {
   backgroundColor: "#f25c05",

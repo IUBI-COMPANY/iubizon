@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { processPendingEmails } from "@/lib/email/email-queue";
+import { processPendingEmails } from "@iubizon/email";
 
 export async function GET() {
   try {

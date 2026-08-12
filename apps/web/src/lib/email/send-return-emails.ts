@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { enqueueEmail } from "./email-queue";
+import { enqueueEmail } from "@iubizon/email";
 import type {
   EmailOrderItem,
   ReturnReceivedEmailData,
   ReturnShippedEmailData,
-} from "./types";
+} from "@iubizon/email";
 
 export async function sendReturnShippedNotification(refundId: string) {
   try {

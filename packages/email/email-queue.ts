@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { db as prisma } from "@iubizon/db";
 import { getDefaultFromEmail, getResendClient } from "./client";
 import { renderEmail } from "./email-renderer";
 
@@ -104,7 +104,7 @@ export async function processPendingEmails(
           });
           await prisma.emailQueue.update({
             where: { id: email.id },
-            data: { status: "sent" },
+            data: { status: "sent", last_error: null },
           });
           processed++;
         } else if (email.attempts + 1 >= email.max_attempts) {
@@ -123,7 +123,7 @@ export async function processPendingEmails(
       } else {
         await prisma.emailQueue.update({
           where: { id: email.id },
-          data: { status: "sent" },
+          data: { status: "sent", last_error: null },
         });
         processed++;
       }

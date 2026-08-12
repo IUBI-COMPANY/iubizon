@@ -9,27 +9,27 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { BaseLayout } from "@/lib/email";
-import type { RefundStatusEmailData } from "../types";
+import { BaseLayout } from "./BaseLayout";
+import type { ReturnReceivedEmailData } from "../types";
 
-export function RefundStatusEmail(data: RefundStatusEmailData) {
+export function ReturnReceivedEmail(data: ReturnReceivedEmailData) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://iubizon.com";
-  const orderUrl = `${baseUrl}/user/orders/${data.orderCode}`;
-  const isApproved = data.status === "approved";
 
   return (
     <BaseLayout
-      previewText={`${isApproved ? "Actualización" : "Respuesta"} de reembolso — Pedido #${data.orderCode}`}
+      previewText={`Producto devuelto exitosamente — Orden #${data.orderCode}`}
     >
-      <Section style={bannerStyle(isApproved)}>
-        <Text style={badgeStyle(isApproved)}>
-          {isApproved ? "REEMBOLSO APROBADO" : "REEMBOLSO RECHAZADO"}
-        </Text>
-        <Heading style={mainHeadingStyle}>Hola, {data.buyerName}</Heading>
+      <Section style={bannerStyle}>
+        <Text style={badgeStyle}>PRODUCTO DEVUELTO EXITOSAMENTE</Text>
+        <Heading style={mainHeadingStyle}>
+          Reembolso listo para procesar
+        </Heading>
         <Text style={subtitleStyle}>
-          {isApproved
-            ? `Tu solicitud de reembolso para la orden #${data.orderCode} ha sido aprobada. Revisa las instrucciones de devolución en la plataforma.`
-            : `Lamentamos informarte que tu solicitud de reembolso para la orden #${data.orderCode} no ha sido aprobada.`}
+          <strong>{data.sellerName}</strong> ({data.companyName}) ha confirmado
+          la recepción del producto devuelto por{" "}
+          <strong>{data.buyerName}</strong> en la orden{" "}
+          <strong>#{data.orderCode}</strong>. Procede a revisar y procesar el
+          reembolso.
         </Text>
       </Section>
 
@@ -40,7 +40,7 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
             <Text style={metaValueStyle}>{data.orderCode}</Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
-            <Text style={metaLabelStyle}>TIPO</Text>
+            <Text style={metaLabelStyle}>TIPO DE REEMBOLSO</Text>
             <Text style={metaValueStyle}>
               {data.refundType === "full"
                 ? "Reembolso Total"
@@ -51,54 +51,33 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
         <Hr style={lightHrStyle} />
         <Row>
           <Column style={{ padding: "8px 12px" }}>
-            <Text style={metaLabelStyle}>MONTO</Text>
-            <Text style={amountValueStyle}>
-              S/ {data.refundAmount.toFixed(2)}
-            </Text>
+            <Text style={metaLabelStyle}>VENDEDOR</Text>
+            <Text style={metaValueStyle}>{data.companyName}</Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
-            <Text style={metaLabelStyle}>ESTADO</Text>
-            <Text
-              style={{
-                ...metaValueStyle,
-                color: isApproved ? "#059669" : "#dc2626",
-              }}
-            >
-              {isApproved ? "Aprobado" : "Rechazado"}
-            </Text>
+            <Text style={metaLabelStyle}>COMPRADOR</Text>
+            <Text style={metaValueStyle}>{data.buyerName}</Text>
           </Column>
         </Row>
       </Section>
 
-      {data.adminNotes && (
-        <Section style={notesBoxStyle}>
-          <Text style={sectionTitleStyle}>NOTAS DEL EQUIPO</Text>
-          <Text style={notesTextStyle}>{data.adminNotes}</Text>
-        </Section>
-      )}
-
-      {isApproved && data.returnAddress && (
-        <Section style={addressBoxStyle}>
-          <Text style={sectionTitleStyle}>DIRECCIÓN DE DEVOLUCIÓN</Text>
-          {(data.companyLegalName ||
-            data.companyTaxId ||
-            data.companyPhone) && (
-            <Text style={companyDetailStyle}>
-              {[
-                data.companyLegalName,
-                data.companyTaxId ? `RUC: ${data.companyTaxId}` : null,
-                data.companyPhone ? `Tel: ${data.companyPhone}` : null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </Text>
-          )}
-          <Text style={addressTextStyle}>{data.returnAddress}</Text>
+      {(data.companyLegalName || data.companyTaxId || data.companyPhone) && (
+        <Section style={companyInfoBoxStyle}>
+          <Text style={metaLabelStyle}>DATOS DE LA EMPRESA</Text>
+          <Text style={companyDetailStyle}>
+            {[
+              data.companyLegalName,
+              data.companyTaxId ? `RUC: ${data.companyTaxId}` : null,
+              data.companyPhone ? `Tel: ${data.companyPhone}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </Text>
         </Section>
       )}
 
       <Section style={{ marginTop: "24px" }}>
-        <Text style={sectionTitleStyle}>PRODUCTOS EN REEMBOLSO</Text>
+        <Text style={sectionTitleStyle}>PRODUCTOS DEVUELTOS</Text>
         {data.items.map((item, index) => (
           <React.Fragment key={item.id || index}>
             <Row style={itemRowStyle}>
@@ -120,6 +99,9 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
                 <Text style={itemMetaStyle}>
                   Cant: {item.quantity} × S/ {item.price.toFixed(2)} c/u
                 </Text>
+                <Text style={sellerTagStyle}>
+                  Vendido por: {item.companyName || item.sellerName}
+                </Text>
               </Column>
             </Row>
             {index < data.items.length - 1 && <Hr style={lightHrStyle} />}
@@ -127,30 +109,43 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
         ))}
       </Section>
 
+      <Section style={amountBoxStyle}>
+        <Row>
+          <Column>
+            <Text style={amountLabelStyle}>MONTO A REEMBOLSAR</Text>
+          </Column>
+          <Column style={{ textAlign: "right" }}>
+            <Text style={amountValueStyle}>
+              S/ {data.refundAmount.toFixed(2)}
+            </Text>
+          </Column>
+        </Row>
+      </Section>
+
       <Section style={{ textAlign: "center", marginTop: "32px" }}>
-        <Button href={orderUrl} style={primaryButtonStyle}>
-          Ver Estado de mi Reembolso
+        <Button href={`${baseUrl}/admin`} style={primaryButtonStyle}>
+          Ir al Panel de Administración
         </Button>
       </Section>
     </BaseLayout>
   );
 }
 
-const bannerStyle = (approved: boolean): React.CSSProperties => ({
-  backgroundColor: approved ? "#ecfdf5" : "#fef2f2",
-  border: `1px solid ${approved ? "#a7f3d0" : "#fecaca"}`,
+const bannerStyle: React.CSSProperties = {
+  backgroundColor: "#ecfdf5",
+  border: "1px solid #a7f3d0",
   borderRadius: "12px",
   padding: "20px",
   textAlign: "center",
   marginBottom: "20px",
-});
-const badgeStyle = (approved: boolean): React.CSSProperties => ({
-  color: approved ? "#059669" : "#dc2626",
+};
+const badgeStyle: React.CSSProperties = {
+  color: "#059669",
   fontSize: "11px",
   fontWeight: "800",
   letterSpacing: "1px",
   margin: "0 0 6px 0",
-});
+};
 const mainHeadingStyle: React.CSSProperties = {
   color: "#112237",
   fontSize: "20px",
@@ -182,22 +177,9 @@ const metaValueStyle: React.CSSProperties = {
   fontWeight: "700",
   margin: "2px 0 0 0",
 };
-const amountValueStyle: React.CSSProperties = {
-  color: "#f25c05",
-  fontSize: "18px",
-  fontWeight: "800",
-  margin: "2px 0 0 0",
-};
 const lightHrStyle: React.CSSProperties = {
   borderColor: "#f1f5f9",
   margin: "8px 0",
-};
-const notesBoxStyle: React.CSSProperties = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #e2e8f0",
-  borderRadius: "12px",
-  padding: "16px",
-  marginTop: "20px",
 };
 const sectionTitleStyle: React.CSSProperties = {
   color: "#112237",
@@ -206,28 +188,17 @@ const sectionTitleStyle: React.CSSProperties = {
   letterSpacing: "0.5px",
   marginBottom: "12px",
 };
-const notesTextStyle: React.CSSProperties = {
-  color: "#475569",
-  fontSize: "12px",
-  margin: "0",
-  lineHeight: "1.5",
-};
-const addressBoxStyle: React.CSSProperties = {
+const companyInfoBoxStyle: React.CSSProperties = {
   backgroundColor: "#f8fafc",
   borderRadius: "12px",
   border: "1px solid #e2e8f0",
   padding: "16px",
-  marginTop: "20px",
-};
-const addressTextStyle: React.CSSProperties = {
-  color: "#475569",
-  fontSize: "12px",
-  margin: "0 0 2px 0",
+  marginTop: "16px",
 };
 const companyDetailStyle: React.CSSProperties = {
-  color: "#64748b",
-  fontSize: "11px",
-  margin: "2px 0 4px 0",
+  color: "#475569",
+  fontSize: "12px",
+  margin: "4px 0 0 0",
 };
 const itemRowStyle: React.CSSProperties = { padding: "10px 0" };
 const productImgStyle: React.CSSProperties = {
@@ -255,6 +226,31 @@ const itemMetaStyle: React.CSSProperties = {
   color: "#64748b",
   fontSize: "12px",
   margin: "0 0 2px 0",
+};
+const sellerTagStyle: React.CSSProperties = {
+  color: "#f25c05",
+  fontSize: "11px",
+  fontWeight: "600",
+  margin: "0",
+};
+const amountBoxStyle: React.CSSProperties = {
+  backgroundColor: "#f8fafc",
+  borderRadius: "12px",
+  border: "1px solid #e2e8f0",
+  padding: "16px",
+  marginTop: "20px",
+};
+const amountLabelStyle: React.CSSProperties = {
+  color: "#64748b",
+  fontSize: "12px",
+  fontWeight: "700",
+  margin: "0",
+};
+const amountValueStyle: React.CSSProperties = {
+  color: "#f25c05",
+  fontSize: "18px",
+  fontWeight: "800",
+  margin: "0",
 };
 const primaryButtonStyle: React.CSSProperties = {
   backgroundColor: "#f25c05",

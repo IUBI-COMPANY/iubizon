@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
-import { enqueueEmail } from "./email-queue";
-import type { BuyerEmailData, EmailOrderItem, SellerEmailData } from "./types";
+import { enqueueEmail } from "@iubizon/email";
+import type {
+  BuyerEmailData,
+  EmailOrderItem,
+  SellerEmailData,
+} from "@iubizon/email";
 
 export async function sendOrderConfirmationEmails(orderId: string) {
   try {

@@ -48,5 +48,3 @@ export const db = new Proxy({} as PrismaClient, {
     return typeof value === "function" ? value.bind(client) : value;
   },
 });
-
-export * from "@prisma/client";

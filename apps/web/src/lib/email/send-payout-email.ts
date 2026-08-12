@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getDefaultFromEmail, getResendClient } from "./client";
+import { getDefaultFromEmail, getResendClient } from "@iubizon/email";
 
 export async function sendSellerPayoutNotification(payoutId: string) {
   try {

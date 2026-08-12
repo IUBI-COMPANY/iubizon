@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { enqueueEmail } from "./email-queue";
-import type { EmailOrderItem, RefundStatusEmailData } from "./types";
+import { enqueueEmail } from "@iubizon/email";
+import type { EmailOrderItem, RefundStatusEmailData } from "@iubizon/email";
 
 export async function sendRefundStatusNotification(
   refundId: string,

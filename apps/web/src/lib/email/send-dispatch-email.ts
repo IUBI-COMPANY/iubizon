@@ -1,8 +1,8 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
-import { DispatchNotificationEmail } from "./templates/DispatchNotificationEmail";
-import { sendResendEmail } from "./send-resend-email";
-import type { DispatchEmailData } from "./types";
+import { DispatchNotificationEmail } from "@iubizon/email";
+import { sendResendEmail } from "@iubizon/email";
+import type { DispatchEmailData } from "@iubizon/email";
 
 export async function sendDispatchNotification(
   packageId: string,

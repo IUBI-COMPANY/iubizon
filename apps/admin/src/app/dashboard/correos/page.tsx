@@ -51,7 +51,9 @@ export default function CorreosPage() {
     setProcessing(true);
     setResult(null);
     try {
-      const res = await fetch("/api/cron/process-emails");
+      const res = await fetch("/api/email-queue/process", {
+        method: "POST",
+      });
       const data = await res.json();
       setResult(data);
       await fetchEmails();

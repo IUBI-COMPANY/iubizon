@@ -8,7 +8,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { BaseLayout } from "@/lib/email";
+import { BaseLayout } from "./BaseLayout";
 import type { RefundCompletedEmailData } from "../types";
 
 export function RefundCompletedEmail(data: RefundCompletedEmailData) {

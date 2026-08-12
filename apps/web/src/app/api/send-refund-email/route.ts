@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getDefaultFromEmail, getResendClient } from "@/lib/email/client";
+import { getDefaultFromEmail, getResendClient } from "@iubizon/email";
 import { sendRefundStatusNotification } from "@/lib/email";
 import { sendRefundCompletedNotification } from "@/lib/email";
 
