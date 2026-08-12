@@ -28,6 +28,7 @@ interface UserProduct {
   status: string;
   stock?: number | null;
   views: number;
+  is_complementary?: boolean;
   category: string | null;
   imageCount: number;
   images: Array<{ id: string; url: string; position: number }>;
@@ -247,9 +248,16 @@ export default function ProductsManagementPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-sm text-[#112237] line-clamp-1">
-                          {product.title}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-sm text-[#112237] line-clamp-1">
+                            {product.title}
+                          </p>
+                          {product.is_complementary && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 shrink-0">
+                              Complementario
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-[#64748b]">
                           {product.condition === "new"
                             ? "Nuevo"

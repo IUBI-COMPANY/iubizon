@@ -536,9 +536,14 @@ export default function CartCheckoutPage() {
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-sm text-[#112237] truncate">
+                            <a
+                              href={`/products/${item.product_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-semibold text-sm text-[#112237] truncate block hover:text-[#f25c05] hover:underline transition-colors"
+                            >
                               {item.title}
-                            </p>
+                            </a>
                             <div className="flex items-center gap-2 mt-0.5">
                               <p className="text-xs font-bold text-[#f25c05]">
                                 S/ {item.price.toFixed(2)}

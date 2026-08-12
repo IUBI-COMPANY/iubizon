@@ -388,9 +388,16 @@ export default async function ProductDetailPage({ params }: Props) {
 
                 {/* Título del Producto */}
                 <div className="flex items-start justify-between gap-3">
-                  <h1 className="text-xl font-bold text-[#112237] leading-tight">
-                    {product.title}
-                  </h1>
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-xl font-bold text-[#112237] leading-tight">
+                      {product.title}
+                    </h1>
+                    {product.is_complementary && (
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        Producto complementario
+                      </span>
+                    )}
+                  </div>
                   <FavoriteButton productId={product.id} />
                 </div>
 

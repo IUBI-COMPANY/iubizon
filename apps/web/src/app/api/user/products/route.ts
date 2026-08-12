@@ -69,6 +69,7 @@ export async function GET(req: Request) {
         status: true,
         stock: true,
         views: true,
+        is_complementary: true,
         created_at: true,
         category: { select: { name: true } },
         images: {
@@ -92,6 +93,7 @@ export async function GET(req: Request) {
         status: p.status,
         stock: p.stock ?? 1,
         views: p.views || 0,
+        is_complementary: p.is_complementary,
         category: p.category?.name || null,
         imageCount: p._count.images,
         images: p.images.map((img) => ({
