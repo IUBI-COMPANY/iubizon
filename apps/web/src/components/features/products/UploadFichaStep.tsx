@@ -122,7 +122,7 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
                   Descripción Generada
                 </p>
                 <p className="text-xs text-[#112237] font-medium italic line-clamp-2">
-                                    &ldquo;{extractedData.description}&rdquo;
+                  &ldquo;{extractedData.description}&rdquo;
                 </p>
               </div>
             )}
