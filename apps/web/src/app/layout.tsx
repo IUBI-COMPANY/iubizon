@@ -38,7 +38,15 @@ export const metadata: Metadata = {
   authors: [{ name: "iubizon", url: baseUrl }],
   creator: "iubizon",
   publisher: "iubizon",
-  category: "shopping",
+  category: [
+    "proyectores y ecrams",
+    "laptops y computadoras",
+    "impresoras y accesorios",
+    "pantallas interactivas",
+    "celulares y tablets",
+    "audio y conferencias",
+    "mobiliario escolar y oficina",
+  ],
   keywords: [
     "plataforma para educar y trabajar",
     "tecnologia para educacion peru",
