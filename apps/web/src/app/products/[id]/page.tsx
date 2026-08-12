@@ -243,21 +243,6 @@ export default async function ProductDetailPage({ params }: Props) {
                       </div>
                     );
                   })()}
-
-                  {/* Location */}
-                  {product.location && (
-                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#f8fafc]">
-                      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-[#3b82f6]/10">
-                        <MapPin className="w-4.5 h-4.5 text-[#3b82f6]" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#64748b]">Ubicación</p>
-                        <p className="text-sm font-medium text-[#112237]">
-                          {product.location}
-                        </p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Views */}
@@ -372,14 +357,6 @@ export default async function ProductDetailPage({ params }: Props) {
                         Disponible
                       </span>
                     )}
-                  </div>
-                )}
-
-                {/* Ubicación */}
-                {product.location && (
-                  <div className="flex items-center gap-2 text-xs text-[#64748b] pt-2 border-t border-[#e2e8f0]">
-                    <MapPin className="w-4 h-4 text-[#f25c05] shrink-0" />
-                    <span>{product.location}</span>
                   </div>
                 )}
 

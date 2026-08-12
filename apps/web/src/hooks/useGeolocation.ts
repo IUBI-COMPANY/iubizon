@@ -45,9 +45,10 @@ export function useGeolocation() {
     );
   }, []);
 
-  useEffect(() => {
-    getLocation();
-  }, [getLocation]);
+  // Desactivamos la detección automática por ahora (futura implementación)
+  // useEffect(() => {
+  //   getLocation();
+  // }, [getLocation]);
 
   return {
     coordinates,

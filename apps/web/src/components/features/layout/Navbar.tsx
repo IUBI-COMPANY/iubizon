@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/Input";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { useGeolocation } from "@/hooks/useGeolocation";
 import { useCompany } from "@/context/CompanyContext";
 import { CompanySwitcher } from "@/components/features/companies/CompanySwitcher";
 
@@ -30,7 +29,6 @@ export const Navbar = () => {
   const router = useRouter();
   const { user, isLoading, signOut } = useAuth();
   const { itemCount } = useCart();
-  const { coordinates } = useGeolocation();
   const { companies, activeCompany, setActiveCompanyId } = useCompany();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,11 +75,6 @@ export const Navbar = () => {
       params.set("order_by", "most_relevance");
     } else {
       params.set("order_by", "nearest");
-    }
-
-    if (coordinates) {
-      params.set("lat", coordinates.latitude.toString());
-      params.set("lng", coordinates.longitude.toString());
     }
 
     router.push(`/search?${params.toString()}`);
@@ -208,7 +201,11 @@ export const Navbar = () => {
                       </p>
                       {!activeCompany && (
                         <Link
-                          href="/user/companies/new"
+                          href={
+                            companies.length === 0
+                              ? "/products/new"
+                              : "/user/companies/new"
+                          }
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#f25c05] hover:underline mt-1"
                           onClick={() => setShowUserMenu(false)}
                         >

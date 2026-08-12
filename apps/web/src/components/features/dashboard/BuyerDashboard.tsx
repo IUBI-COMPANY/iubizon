@@ -133,7 +133,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
             </div>
             <div>
               <h3 className="font-bold text-lg text-white mb-1">
-                ¿Deseas vender tus productos o servicios en iubizon?
+                ¿Deseas vender tus productos en iubizon?
               </h3>
               <p className="text-xs text-slate-300">
                 Crea tu perfil de empresa con RUC 20, RUC 10 o DNI y accede al
@@ -142,7 +142,7 @@ export const BuyerDashboard = ({ user, stats }: BuyerDashboardProps) => {
             </div>
           </div>
           <Link
-            href="/user/companies/new"
+            href="/products/new"
             className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-5 py-3 rounded-xl transition-all shadow-md shrink-0 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />

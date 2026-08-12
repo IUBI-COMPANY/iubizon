@@ -29,15 +29,13 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/lib/supabase/client";
+import { useCompany } from "@/context/CompanyContext";
 
 export default function UserProfileHubPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
-  const supabase = createClient();
+  const { companies, isLoadingCompanies } = useCompany();
 
-  const [isUpgradingVendor, setIsUpgradingVendor] = useState(false);
-  const [vendorSuccess, setVendorSuccess] = useState(false);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
 
@@ -46,30 +44,6 @@ export default function UserProfileHubPage() {
       router.push("/auth/login?redirect=/user/profile");
     }
   }, [user, authLoading, router]);
-
-  const handleUpgradeToVendor = async () => {
-    if (!user || isUpgradingVendor) return;
-    setIsUpgradingVendor(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          is_pro: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      if (error) throw error;
-      setVendorSuccess(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
-    } catch (err) {
-      console.error("Error al actualizar a vendedor:", err);
-    } finally {
-      setIsUpgradingVendor(false);
-    }
-  };
 
   if (authLoading) {
     return (
@@ -189,73 +163,37 @@ export default function UserProfileHubPage() {
           </Card>
 
           {/* ========================================== */}
-          {/* 2. SECCIÓN: PASARSE A VENDEDOR / ESTADO    */}
+          {/* 2. SECCIÓN: BANNER REGISTRO DE EMPRESA     */}
           {/* ========================================== */}
-          {user.is_pro ? (
-            <Card className="border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 shadow-sm">
-              <CardContent className="p-6 flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-emerald-900 font-bold text-lg">
-                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                    ¡Tu Cuenta de Vendedor B2B está Activa!
-                  </div>
-                  <p className="text-sm text-emerald-800">
-                    Tienes acceso a publicar productos ilimitados, bundles de
-                    tecnología/educación y tarifa reducida de comisión
-                    (&lt;10%).
-                  </p>
-                </div>
-                <Link href="/user/dashboard/products">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
-                    Ir a mis productos
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : (
+          {!isLoadingCompanies && companies.length === 0 && (
             <Card className="border border-[#112237]/10 bg-gradient-to-br from-[#112237] to-[#1e3a5f] text-white shadow-md overflow-hidden relative">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                   <div className="space-y-3 max-w-xl">
                     <div className="inline-flex items-center gap-1.5 bg-[#f25c05] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                       <Sparkles className="w-3.5 h-3.5" />
-                      Plan Vendedor iubizon
+                      Comienza a Vender
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold">
                       ¿Quieres vender equipos multimedia y tecnológicos?
                     </h3>
                     <p className="text-sm text-slate-300 leading-relaxed">
-                      Conviértete en Vendedor Verificado y publica tus
-                      proyectores, pantallas, audio, impresoras y servicios para
-                      colegios y empresas con comisiones reducidas (&lt;10%).
+                      Regístrate hoy y vende como{" "}
+                      <strong>Empresa (RUC 20)</strong> o{" "}
+                      <strong>Persona Natural con Negocio (RUC 10)</strong>{" "}
+                      adjuntando <strong>solo tu ficha RUC</strong>. Publica tus
+                      proyectores, pantallas, audio, impresoras, etc. Con
+                      comisiones bajas del <strong>9%</strong>.
                     </p>
                   </div>
 
                   <div className="shrink-0">
-                    {vendorSuccess ? (
-                      <div className="inline-flex items-center gap-2 bg-emerald-500 text-white px-5 py-3 rounded-lg font-semibold text-sm">
-                        <CheckCircle2 className="w-5 h-5" />
-                        ¡Activado con Éxito!
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={handleUpgradeToVendor}
-                        disabled={isUpgradingVendor}
-                        className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-semibold px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-transform active:scale-95"
-                      >
-                        {isUpgradingVendor ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Activando...
-                          </>
-                        ) : (
-                          <>
-                            <Store className="w-4 h-4" />
-                            Pasarme a Vendedor
-                          </>
-                        )}
+                    <Link href="/products/new">
+                      <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transition-transform active:scale-95 text-sm">
+                        <Store className="w-4 h-4" />
+                        Registrar mi empresa
                       </Button>
-                    )}
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -306,11 +244,13 @@ export default function UserProfileHubPage() {
                       Notificaciones por Correo
                     </p>
                     <p className="text-xs text-[#64748b]">
-                      Recibe estados de pedidos y facturas por email
+                      Recibe estados de pedidos y facturas por email (Necesario
+                      para notificar ventas y pagos)
                     </p>
                   </div>
                   <input
                     type="checkbox"
+                    disabled
                     checked={emailNotifications}
                     onChange={(e) => setEmailNotifications(e.target.checked)}
                     className="w-5 h-5 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05] cursor-pointer"

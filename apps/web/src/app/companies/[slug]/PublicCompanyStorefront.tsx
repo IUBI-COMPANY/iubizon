@@ -131,27 +131,6 @@ export const PublicCompanyStorefront = ({
                       {companyData.tax_id}
                     </span>
                   )}
-
-                  {companyData.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-[#f25c05]" />
-                      {companyData.location}
-                    </span>
-                  )}
-
-                  {companyData.phone && (
-                    <span className="flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5 text-blue-400" />
-                      {companyData.phone}
-                    </span>
-                  )}
-
-                  {companyData.email && (
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3.5 h-3.5 text-amber-400" />
-                      {companyData.email}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
