@@ -279,55 +279,7 @@ export function PrivacySection() {
 
         <div>
           <h3 className="font-extrabold text-sm text-[#112237] mb-1">
-            12. Derechos ARCO (Acceso, Rectificación, Cancelación y Oposición)
-          </h3>
-          <p>
-            Conforme a la Ley N° 29733 de Protección de Datos Personales de
-            la República del Perú y su Reglamento, el titular de los datos
-            personales tiene derecho a: (a) <strong>Acceso</strong>: solicitar
-            información sobre los datos personales que IUBIZON tiene
-            almacenados sobre su persona; (b) <strong>Rectificación</strong>:
-            solicitar la corrección de datos personales inexactos, incompletos
-            o no actualizados; (c) <strong>Cancelación</strong>: solicitar la
-            eliminación de sus datos personales cuando considere que no son
-            necesarios para la finalidad para la que fueron recopilados o
-            cuando haya concluido la relación contractual; y (d)
-            <strong>Oposición</strong>: oponerse al tratamiento de sus datos
-            personales para una finalidad específica.
-          </p>
-          <p className="mt-2">
-            Para ejercer cualquiera de estos derechos, el titular deberá
-            enviar una solicitud formal a través del correo electrónico
-            oficial de IUBIZON: <strong>iubizon.company@gmail.com</strong>,
-            indicando de forma clara y precisa el derecho que desea ejercer,
-            adjuntando una copia legible de su documento de identidad y
-            cualquier otra información que permita la identificación del
-            titular. IUBIZON responderá a la solicitud en un plazo máximo
-            de diez (10) días hábiles contados a partir de la recepción de
-            la solicitud.
-          </p>
-        </div>
-
-        <div>
-          <h3 className="font-extrabold text-sm text-[#112237] mb-1">
-            13. Procedimiento de Reclamo ante la Autoridad Nacional
-          </h3>
-          <p>
-            En caso de que el titular de los datos considere que sus derechos
-            han sido vulnerados o que IUBIZON no ha respondido adecuadamente
-            a su solicitud de ejercicio de derechos ARCO, podrá presentar
-            una queja o reclamo ante la Autoridad Nacional de Protección de
-            Datos Personales (ANPDP), dependiente del Ministerio de Justicia
-            del Perú, conforme al procedimiento establecido en la Ley N° 29733
-            y su Reglamento. La ANPDP tiene la facultad de investigar las
-            quejas, imponer sanciones administrativas y ordenar la adopción
-            de medidas correctivas cuando corresponda.
-          </p>
-        </div>
-
-        <div>
-          <h3 className="font-extrabold text-sm text-[#112237] mb-1">
-            14. Modificaciones de esta Política
+            12. Modificaciones de esta Política
           </h3>
           <p>
             IUBIZON se reserva el derecho de modificar, actualizar o
@@ -354,7 +306,7 @@ export function PrivacySection() {
 
         <div>
           <h3 className="font-extrabold text-sm text-[#112237] mb-1">
-            15. Jurisdicción Aplicable y Ley Vigente
+            13. Jurisdicción Aplicable y Ley Vigente
           </h3>
           <p>
             La presente Política de Privacidad se rige por las leyes de la
