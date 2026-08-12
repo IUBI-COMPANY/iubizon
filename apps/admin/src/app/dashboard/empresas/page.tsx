@@ -296,7 +296,7 @@ export default function CompaniesPage() {
                                         Descripción Sugerida por IA
                                       </p>
                                       <p className="text-xs text-slate-600 leading-relaxed italic bg-slate-50 p-2.5 rounded-lg border border-slate-150">
-                                        "{c.description}"
+                                                                                &ldquo;{c.description}&rdquo;
                                       </p>
                                     </div>
                                   )}
