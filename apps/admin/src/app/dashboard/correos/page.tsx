@@ -22,6 +22,7 @@ export default function CorreosPage() {
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("pending");
   const [result, setResult] = useState<{
     processed: number;
     failed: number;
@@ -29,7 +30,7 @@ export default function CorreosPage() {
 
   const fetchEmails = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/email-queue?status=failed");
+    const res = await fetch(`/api/email-queue?status=${statusFilter}`);
     const text = await res.text();
     let data: any = {};
     try {
@@ -39,7 +40,7 @@ export default function CorreosPage() {
     }
     setEmails(data.emails || []);
     setLoading(false);
-  }, []);
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchEmails();
@@ -76,7 +77,7 @@ export default function CorreosPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Cola de Correos</h1>
           <p className="text-muted-foreground text-sm">
-            Monitorea los emails fallidos y reprocesa la cola manualmente
+            Monitorea y reprocesa los emails manualmente
           </p>
         </div>
         <Button onClick={processQueue} disabled={processing}>
@@ -87,6 +88,25 @@ export default function CorreosPage() {
           )}
           {processing ? "Procesando..." : "Procesar Cola"}
         </Button>
+      </div>
+
+      <div className="flex gap-2">
+        {(["pending", "sending", "failed", "sent"] as const).map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              statusFilter === status
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {status === "pending" && "Pendientes"}
+            {status === "sending" && "Enviando"}
+            {status === "failed" && "Fallidos"}
+            {status === "sent" && "Enviados"}
+          </button>
+        ))}
       </div>
 
       {result && (
@@ -105,7 +125,7 @@ export default function CorreosPage() {
       ) : emails.length === 0 ? (
         <Card className="p-12 text-center">
           <IconMail className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm font-medium">No hay emails fallidos</p>
+          <p className="text-sm font-medium">No hay emails en esta categoría</p>
         </Card>
       ) : (
         <div className="space-y-3">
