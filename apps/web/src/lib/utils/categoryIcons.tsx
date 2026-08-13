@@ -28,6 +28,20 @@ const iconMap: Record<string, LucideIcon> = {
   otros: MoreHorizontal,
 };
 
+const categoryIconImages: Record<string, string> = {
+  proyectores: "/icons/categories/proyectores.webp",
+  laptops: "/icons/categories/laptops.webp",
+  "pantallas-interactivas": "/icons/categories/pantallas-interactivas.webp",
+  moviles: "/icons/categories/moviles.webp",
+  audio: "/icons/categories/audio.webp",
+  mobiliario: "/icons/categories/mobiliario.webp",
+  robot: "/icons/categories/robot.webp",
+};
+
 export function getCategoryIcon(slug: string): LucideIcon {
   return iconMap[slug] ?? LayoutGrid;
+}
+
+export function getCategoryIconImage(slug: string): string | null {
+  return categoryIconImages[slug] ?? null;
 }
