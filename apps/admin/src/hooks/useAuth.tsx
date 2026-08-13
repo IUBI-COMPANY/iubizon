@@ -55,7 +55,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Evita re-render innecesario al volver a la pestaña (refresh de token)
+      if (event === "TOKEN_REFRESHED") return;
+
       if (session?.user) {
         setSupabaseUser(session.user);
         try {

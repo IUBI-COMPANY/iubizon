@@ -65,6 +65,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
+      // Evita re-render innecesario al volver a la pestaña (refresh de token)
+      // que provocaba recargas en páginas que dependen de `user`.
+      if (event === "TOKEN_REFRESHED") return;
+
       if (event === "SIGNED_OUT" || !session?.user) {
         setSupabaseUser(null);
         setProfile(null);

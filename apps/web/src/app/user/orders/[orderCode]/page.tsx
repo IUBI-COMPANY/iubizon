@@ -178,11 +178,13 @@ export default function OrderDetailPage({
     }
   }, [orderCode]);
 
+  const userId = user?.id;
+
   useEffect(() => {
-    if (user) {
+    if (userId) {
       fetchOrderDetail();
     }
-  }, [user, fetchOrderDetail]);
+  }, [userId, fetchOrderDetail]);
 
   const handleConfirmReceipt = async (pkg: TrackingPackage) => {
     if (!confirm("¿Confirmas que has recibido este paquete a satisfacción?"))
@@ -209,8 +211,6 @@ export default function OrderDetailPage({
       setConfirmingPackageKey(null);
     }
   };
-
-  console.log({ session });
 
   if (authLoading || (loading && !error)) {
     return (
