@@ -18,6 +18,7 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useInitialLoading } from "@/hooks/useInitialLoading";
 
 interface PackageItem {
   id: string;
@@ -80,13 +81,15 @@ function formatFullDate(isoString: string) {
 export default function UserOrdersPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [sessions, setSessions] = useState<BuyerOrderSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, startLoading, stopLoading } = useInitialLoading();
   const [error, setError] = useState<string | null>(null);
   const [statusTab, setStatusTab] = useState("pending");
 
+  const userId = user?.id;
+
   const fetchUserOrders = useCallback(async () => {
     try {
-      setLoading(true);
+      startLoading();
       setError(null);
       const res = await fetch("/api/user/orders");
       const data = await res.json();
@@ -103,15 +106,15 @@ export default function UserOrdersPage() {
         err instanceof Error ? err.message : "Error al cargar tus pedidos.",
       );
     } finally {
-      setLoading(false);
+      stopLoading();
     }
-  }, []);
+  }, [startLoading, stopLoading]);
 
   useEffect(() => {
-    if (user) {
+    if (userId) {
       fetchUserOrders();
     }
-  }, [user, fetchUserOrders]);
+  }, [userId, fetchUserOrders]);
 
   if (authLoading || (loading && !error)) {
     return (

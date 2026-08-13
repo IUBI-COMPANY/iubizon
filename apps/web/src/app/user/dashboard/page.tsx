@@ -9,6 +9,7 @@ import { Footer } from "@/components/features/layout/Footer";
 import { BuyerDashboard } from "@/components/features/dashboard/BuyerDashboard";
 import { CompanyDashboard } from "@/components/features/dashboard/CompanyDashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useInitialLoading } from "@/hooks/useInitialLoading";
 import { useCompany } from "@/context/CompanyContext";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/context/ToastContext";
@@ -61,13 +62,15 @@ function DashboardContent() {
     : null;
 
   const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, startLoading, stopLoading } = useInitialLoading();
+
+  const userId = user?.id;
 
   const fetchDashboardData = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
 
     try {
-      setLoading(true);
+      startLoading();
       const url = targetCompanyId
         ? `/api/user/dashboard?company_id=${targetCompanyId}`
         : `/api/user/dashboard`;
@@ -81,15 +84,15 @@ function DashboardContent() {
     } catch (err) {
       console.error("Error al cargar dashboard:", err);
     } finally {
-      setLoading(false);
+      stopLoading();
     }
-  }, [user, targetCompanyId]);
+  }, [userId, targetCompanyId, startLoading, stopLoading]);
 
   useEffect(() => {
-    if (user) {
+    if (userId) {
       fetchDashboardData();
     }
-  }, [user, targetCompanyId, fetchDashboardData]);
+  }, [userId, targetCompanyId, fetchDashboardData]);
 
   // Procesar confirmación de pago Niubiz al redirigir al Dashboard
   useEffect(() => {
