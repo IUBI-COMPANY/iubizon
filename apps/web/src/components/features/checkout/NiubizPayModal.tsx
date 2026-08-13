@@ -106,8 +106,9 @@ export function NiubizPayModal({
         );
       }
 
-      // Ocultar loading antes de mostrar el formulario de Niubiz
-      setLoadingSession(false);
+      // Mantener el loading visible mientras carga el formulario de Niubiz.
+      // El formulario usa z-index 2147483646 (mayor que el overlay), por lo que
+      // aparecerá encima del loading cuando esté listo, sin dejar la página interactiva.
 
       window.VisanetCheckout.configure({
         sessiontoken: data.sessionKey,
@@ -127,10 +128,17 @@ export function NiubizPayModal({
               data.purchaseNumber,
             );
           } else {
+            setLoadingSession(false);
             onError(
               "El formulario de pago fue cerrado sin completar la transacción.",
             );
           }
+        },
+        cancel: () => {
+          setLoadingSession(false);
+          onError(
+            "El formulario de pago fue cerrado sin completar la transacción.",
+          );
         },
       });
 
