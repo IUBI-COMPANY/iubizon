@@ -69,9 +69,7 @@ function LoginContent() {
           <IconLock className="w-6 h-6 text-primary-foreground" />
         </div>
         <CardTitle className="text-xl">iubizon Admin</CardTitle>
-        <CardDescription>
-          Acceso exclusivo para administradores
-        </CardDescription>
+        <CardDescription>Acceso exclusivo para administradores</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isNotAdminError && (

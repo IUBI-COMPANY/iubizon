@@ -44,8 +44,7 @@ export async function POST(
     if (!user) {
       return NextResponse.json(
         {
-          error:
-            "Debes iniciar sesión o registrarte para realizar una compra.",
+          error: "Debes iniciar sesión o registrarte para realizar una compra.",
         },
         { status: 401 },
       );

@@ -6,12 +6,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as
-    | "signup"
-    | "recovery"
-    | "invite"
-    | "magiclink"
-    | "email_change"
-    | null;
+    "signup" | "recovery" | "invite" | "magiclink" | "email_change" | null;
   const next = searchParams.get("next") ?? "/";
 
   let supabaseResponse = NextResponse.next({ request });
@@ -62,7 +57,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-
       const redirectTo = type === "recovery" ? "/auth/reset-password" : next;
       const redirectUrl = next.startsWith("http")
         ? next

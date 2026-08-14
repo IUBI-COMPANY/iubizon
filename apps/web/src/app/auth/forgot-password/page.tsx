@@ -1,17 +1,23 @@
 "use client";
 
-import {Suspense, useState} from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {z} from "zod";
-import {ArrowLeft, Mail} from "lucide-react";
-import {Button} from "@/components/ui/Button";
-import {Input} from "@/components/ui/Input";
-import {Label} from "@/components/ui/Label";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/Card";
-import {createClient} from "@/lib/supabase/client";
-import {AuthBackButton} from "@/components/features/auth/AuthBackButton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { ArrowLeft, Mail } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { createClient } from "@/lib/supabase/client";
+import { AuthBackButton } from "@/components/features/auth/AuthBackButton";
 
 const forgotPasswordSchema = z.object({
   email: z
