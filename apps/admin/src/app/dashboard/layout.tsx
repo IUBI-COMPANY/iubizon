@@ -17,8 +17,12 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && (!user || profile?.role !== "admin")) {
-      router.replace("/auth/login");
+    if (!isLoading) {
+      if (!user) {
+        router.replace("/auth/login");
+      } else if (profile?.role !== "admin") {
+        router.replace("/auth/login?error=not_admin");
+      }
     }
   }, [user, profile, isLoading, router]);
 
