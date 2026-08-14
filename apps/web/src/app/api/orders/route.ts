@@ -36,9 +36,6 @@ export async function POST(req: Request) {
 
     const buyerId = await getOrCreateBuyerProfile({
       userId: user.id,
-      email: shipping?.email || user.email,
-      name: shipping?.name,
-      phone: shipping?.phone,
     });
 
     if (!items || !Array.isArray(items) || items.length === 0) {

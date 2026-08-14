@@ -132,9 +132,6 @@ export async function completeOrderFromPayment(input: CompleteOrderInput) {
 
     const effectiveBuyerId = await getOrCreateBuyerProfile({
       userId: buyerUserId,
-      email: effectiveEmail,
-      name: shipping?.name,
-      phone: shipping?.phone,
       txPrisma: tx,
     });
 

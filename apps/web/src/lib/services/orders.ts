@@ -222,27 +222,25 @@ export async function createFullOrder(params: {
 
 export async function getOrCreateBuyerProfile(params: {
   userId: string;
-  email?: string | null;
-  name?: string | null;
-  phone?: string | null;
   txPrisma?: Prisma.TransactionClient;
 }) {
   const client = params.txPrisma || prisma;
   const userId = params.userId;
-  const email = params.email?.trim() || "";
-  const name = params.name?.trim() || "Cliente";
 
-  const profile = await client.profile.upsert({
+  const existing = await client.profile.findUnique({
     where: { id: userId },
-    create: {
+    select: { id: true },
+  });
+
+  if (existing) {
+    return existing.id;
+  }
+
+  const profile = await client.profile.create({
+    data: {
       id: userId,
-      email,
-      name,
-      phone: params.phone?.trim() || null,
-    },
-    update: {
-      ...(email ? { email } : {}),
-      ...(name ? { name } : {}),
+      email: `user_${userId.slice(0, 8)}@iubizon.local`,
+      name: "Usuario",
     },
     select: { id: true },
   });
