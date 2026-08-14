@@ -89,9 +89,35 @@ export async function GET(req: Request) {
     const orders = await prisma.order.findMany({
       where,
       orderBy: { created_at: "desc" },
-      include: {
-        shipping: true,
-        invoice: true,
+      select: {
+        id: true,
+        order_code: true,
+        created_at: true,
+        updated_at: true,
+        status: true,
+        subtotal: true,
+        shipping_cost: true,
+        tax_amount: true,
+        total_amount: true,
+        payment_method: true,
+        shipping: {
+          select: {
+            name: true,
+            phone: true,
+            email: true,
+            address: true,
+            department: true,
+            province: true,
+            district: true,
+          },
+        },
+        invoice: {
+          select: {
+            type: true,
+            number: true,
+            doc_type: true,
+          },
+        },
         paymentTransaction: {
           select: {
             card_brand: true,
@@ -100,17 +126,34 @@ export async function GET(req: Request) {
           },
         },
         packages: {
-          include: {
+          select: {
+            id: true,
+            tracking_number: true,
+            courier: true,
+            tracking_url: true,
+            estimated_delivery: true,
+            status: true,
+            subtotal: true,
+            net_earnings: true,
             company: {
               select: { id: true, name: true, logo_url: true, slug: true },
             },
             items: {
-              include: {
+              select: {
+                id: true,
+                product_id: true,
+                unit_price: true,
+                quantity: true,
+                subtotal: true,
                 product: {
                   select: {
                     id: true,
                     title: true,
-                    images: { orderBy: { position: "asc" }, take: 1 },
+                    images: {
+                      orderBy: { position: "asc" },
+                      take: 1,
+                      select: { url: true },
+                    },
                   },
                 },
               },

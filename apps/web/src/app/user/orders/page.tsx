@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useInitialLoading } from "@/hooks/useInitialLoading";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 
 interface PackageItem {
   id: string;
@@ -109,6 +110,11 @@ export default function UserOrdersPage() {
       stopLoading();
     }
   }, [startLoading, stopLoading]);
+
+  useRealtimeOrders({
+    userId: userId,
+    onUpdate: fetchUserOrders,
+  });
 
   useEffect(() => {
     if (userId) {

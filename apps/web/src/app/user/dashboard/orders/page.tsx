@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -151,6 +152,11 @@ function OrdersContent() {
       setIsRefreshing(false);
     }
   }, [user, isLoadingCompanies, activeCompany?.id]);
+
+  useRealtimeOrders({
+    companyId: activeCompany?.id,
+    onUpdate: fetchOrders,
+  });
 
   useEffect(() => {
     if (user && !isLoadingCompanies) {

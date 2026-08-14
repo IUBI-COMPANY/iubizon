@@ -13,6 +13,7 @@ import { useInitialLoading } from "@/hooks/useInitialLoading";
 import { useCompany } from "@/context/CompanyContext";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/context/ToastContext";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 
 interface DashboardData {
   isCompanyMode: boolean;
@@ -87,6 +88,12 @@ function DashboardContent() {
       stopLoading();
     }
   }, [userId, targetCompanyId, startLoading, stopLoading]);
+
+  useRealtimeOrders({
+    companyId: targetCompanyId,
+    userId: user?.id,
+    onUpdate: fetchDashboardData,
+  });
 
   useEffect(() => {
     if (userId) {

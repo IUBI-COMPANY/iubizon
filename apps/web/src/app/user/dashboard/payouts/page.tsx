@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -158,6 +159,11 @@ function PayoutsContent() {
       setIsRefreshing(false);
     }
   }, [user, activeCompany?.id]);
+
+  useRealtimeOrders({
+    companyId: activeCompany?.id,
+    onUpdate: fetchPayouts,
+  });
 
   useEffect(() => {
     if (user) {
