@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@iubizon/db";
-
-const NIUBIZ_SANDBOX_MERCHANT = "341198210";
-const NIUBIZ_PROD_MERCHANT = "651052554";
-const NIUBIZ_BASE_SANDBOX = "https://apisandbox.vnforappstest.com";
-const NIUBIZ_BASE_PROD = "https://apiprod.vnforapps.com";
+import { processNiubizRefund } from "@/lib/niubiz";
 
 function triggerRefundEmail(
   refundId: string,
@@ -18,52 +14,6 @@ function triggerRefundEmail(
       body: JSON.stringify({ refundId, approved, type }),
     }).catch(() => {});
   } catch {}
-}
-
-interface NiubizConfig {
-  environment: string;
-  merchantId: string;
-  user: string;
-  password: string;
-  securityBaseUrl: string;
-  refundBaseUrl: string;
-}
-
-async function getNiubizConfig(): Promise<NiubizConfig> {
-  const setting = await db.platformSetting.findUnique({
-    where: { key: "NIUBIZ_CONFIG" },
-  });
-
-  let environment = (process.env.NIUBIZ_ENVIRONMENT || "sandbox").trim();
-  let merchantId =
-    environment === "production"
-      ? NIUBIZ_PROD_MERCHANT
-      : NIUBIZ_SANDBOX_MERCHANT;
-
-  if (process.env.NIUBIZ_MERCHANT_ID) {
-    merchantId = process.env.NIUBIZ_MERCHANT_ID.trim();
-  }
-
-  if (
-    setting?.value &&
-    typeof setting.value === "object" &&
-    setting.value !== null
-  ) {
-    const val = setting.value as Record<string, any>;
-    if (val.environment) environment = String(val.environment).trim();
-    if (val.merchantId) merchantId = String(val.merchantId).trim();
-  }
-
-  const isProd = environment === "production";
-  const baseUrl = isProd ? NIUBIZ_BASE_PROD : NIUBIZ_BASE_SANDBOX;
-  return {
-    environment,
-    merchantId,
-    user: (process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe").trim(),
-    password: (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim(),
-    securityBaseUrl: baseUrl,
-    refundBaseUrl: baseUrl,
-  };
 }
 
 export async function GET(req: Request) {
@@ -665,117 +615,5 @@ async function recalculatePackagePayoutInTransaction(
         status: targetStatus,
       },
     });
-  }
-}
-
-async function processNiubizRefund(
-  transactionId: string,
-  ruc: string,
-  amount: number,
-  refundId: string,
-) {
-  const config = await getNiubizConfig();
-
-  let tokenData: string;
-  try {
-    const authString = Buffer.from(
-      `${config.user}:${config.password}`,
-    ).toString("base64");
-
-    const tokenRes = await fetch(
-      `${config.securityBaseUrl}/api.security/v1/security`,
-      {
-        method: "POST",
-        headers: { Authorization: `Basic ${authString}` },
-      },
-    );
-    if (!tokenRes.ok) {
-      const errText = await tokenRes.text().catch(() => "");
-      throw new Error(
-        `Error al obtener token Niubiz (${tokenRes.status}): ${errText}`,
-      );
-    }
-    tokenData = await tokenRes.text();
-  } catch (err: unknown) {
-    const originalMsg = err instanceof Error ? err.message : String(err);
-    console.error(
-      "[Niubiz] Token error:",
-      originalMsg,
-      "env:",
-      config.environment,
-    );
-    throw new Error(
-      `No se pudo conectar a Niubiz (${config.environment}): ${originalMsg}`,
-    );
-  }
-
-  try {
-    const endpoint = `${config.refundBaseUrl}/api.refund/v1/refund/${config.merchantId}/${transactionId}`;
-    const payload = {
-      ruc,
-      comment: "Reembolso iubizon",
-      externalReferenceId: refundId.slice(0, 20),
-      amount: Number(amount.toFixed(2)),
-    };
-
-    console.log("[Niubiz] Refund request:", endpoint, JSON.stringify(payload));
-
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: tokenData,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const resText = await res.text();
-    let data: any = {};
-    try {
-      data = JSON.parse(resText);
-    } catch {
-      throw new Error(resText || "Error al procesar reembolso en Niubiz");
-    }
-
-    console.log(
-      "[Niubiz] Refund response:",
-      res.status,
-      JSON.stringify({
-        errorCode: data.errorCode,
-        errorMessage: data.errorMessage,
-        codError: data.data?.CODERROR,
-      }),
-    );
-
-    if (!res.ok || data.errorCode !== 0) {
-      throw new Error(
-        data.errorMessage ||
-          data.data?.DSCERROR ||
-          "Error al procesar reembolso en Niubiz",
-      );
-    }
-
-    if (data.data?.CODERROR !== "100") {
-      throw new Error(
-        `Niubiz: ${data.data?.DSCERROR || "Error en la devolución"}`,
-      );
-    }
-
-    return {
-      success: true,
-      cancellationCode: data.data?.CODIGODEVOLUCION,
-      rawResponse: data,
-    };
-  } catch (err: unknown) {
-    if (!(err instanceof Error)) {
-      throw new Error("Error al procesar el reembolso en Niubiz");
-    }
-    if (
-      err.message.includes("Niubiz:") ||
-      err.message.includes("Error al procesar")
-    ) {
-      throw err;
-    }
-    throw new Error(`Error al procesar el reembolso en Niubiz: ${err.message}`);
   }
 }

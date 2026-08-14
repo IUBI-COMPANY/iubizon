@@ -242,11 +242,31 @@ export async function POST(req: Request) {
             : undefined,
         },
       });
-      return respondWithError(
-        authResult.errorMessage || "Pago rechazado por el banco emisor",
-        isFormPost,
-        req.url,
-        400,
+
+      const actionDescription =
+        authResult.actionDescription ||
+        authResult.errorMessage ||
+        "Pago rechazado por el banco emisor";
+      const transactionDate = new Date().toISOString();
+
+      if (isFormPost) {
+        const targetUrl = new URL("/cart/result", req.url);
+        targetUrl.searchParams.set("status", "denied");
+        targetUrl.searchParams.set("purchaseNumber", purchaseNumber);
+        targetUrl.searchParams.set("actionDescription", actionDescription);
+        targetUrl.searchParams.set("transactionDate", transactionDate);
+        return NextResponse.redirect(targetUrl, 303);
+      }
+
+      return NextResponse.json(
+        {
+          error: actionDescription,
+          denied: true,
+          purchaseNumber,
+          transactionDate,
+          actionDescription,
+        },
+        { status: 400 },
       );
     }
     paymentAuthorized = true;
@@ -402,7 +422,7 @@ export async function POST(req: Request) {
 
     if (isFormPost) {
       return NextResponse.redirect(
-        new URL(`/cart/success?order_code=${purchaseNumber}`, req.url),
+        new URL(`/cart/result?order_code=${purchaseNumber}`, req.url),
         303,
       );
     }

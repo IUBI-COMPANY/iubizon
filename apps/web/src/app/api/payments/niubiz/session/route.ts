@@ -93,8 +93,17 @@ export async function POST(req: Request) {
     const { sessionKey, merchantId, environment } = await createNiubizSession({
       amount: numericAmount,
       purchaseNumber,
-      customerEmail,
       customerIp: clientIp,
+      customer: {
+        email: customerEmail,
+        documentNumber: shipping?.documentNumber,
+        phone: shipping?.phone,
+        address: shipping?.address,
+        city: shipping?.district || shipping?.province,
+        state: shipping?.department,
+        country: "PE",
+        registered: Boolean(user),
+      },
     });
 
     await prisma.paymentTransaction.create({

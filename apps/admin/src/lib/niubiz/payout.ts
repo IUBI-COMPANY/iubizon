@@ -1,75 +1,17 @@
-import type { PayoutParams, PayoutProvider, PayoutResult } from "./types";
-
-async function getNiubizPayoutConfig() {
-  const { db } = await import("@iubizon/db");
-
-  const setting = await db.platformSetting.findUnique({
-    where: { key: "NIUBIZ_CONFIG" },
-  });
-
-  let environment = (process.env.NIUBIZ_ENVIRONMENT || "sandbox").trim();
-  let merchantId = environment === "production" ? "651052554" : "341198210";
-
-  if (process.env.NIUBIZ_MERCHANT_ID) {
-    merchantId = process.env.NIUBIZ_MERCHANT_ID.trim();
-  }
-
-  if (
-    setting?.value &&
-    typeof setting.value === "object" &&
-    setting.value !== null
-  ) {
-    const val = setting.value as Record<string, any>;
-    if (val.environment) environment = String(val.environment).trim();
-    if (val.merchantId) merchantId = String(val.merchantId).trim();
-  }
-
-  const user = (
-    process.env.NIUBIZ_USER || "integraciones@niubiz.com.pe"
-  ).trim();
-  const password = (process.env.NIUBIZ_PASSWORD || "_7592UGz").trim();
-  const isProd = environment === "production";
-
-  return {
-    environment,
-    merchantId,
-    user,
-    password,
-    securityBaseUrl: isProd
-      ? "https://apiprod.vnforapps.com"
-      : "https://apisandbox.vnforappstest.com",
-    payoutBaseUrl: isProd
-      ? "https://apiprod.vnforapps.com/api.visadirect/v2/p2p"
-      : "https://apitestenv.vnforapps.com/api.visadirect/sandbox/p2p",
-  };
-}
+import type {
+  PayoutParams,
+  PayoutProvider,
+  PayoutResult,
+} from "@/lib/payout-providers/types";
+import { getNiubizConfig, getNiubizPayoutUrl } from "./config";
+import { getNiubizSecurityToken } from "./security";
 
 export class NiubizPushPaymentProvider implements PayoutProvider {
   readonly name = "niubiz";
 
   async processPayout(params: PayoutParams): Promise<PayoutResult> {
-    const config = await getNiubizPayoutConfig();
-
-    const authString = Buffer.from(
-      `${config.user}:${config.password}`,
-    ).toString("base64");
-
-    const tokenRes = await fetch(
-      `${config.securityBaseUrl}/api.security/v1/security`,
-      {
-        method: "POST",
-        headers: { Authorization: `Basic ${authString}` },
-      },
-    );
-
-    if (!tokenRes.ok) {
-      const errText = await tokenRes.text().catch(() => "");
-      throw new Error(
-        `Error al obtener token Niubiz (${tokenRes.status}): ${errText}`,
-      );
-    }
-
-    const tokenData = await tokenRes.text();
+    const config = await getNiubizConfig();
+    const tokenData = await getNiubizSecurityToken(config);
 
     const cardNumber = params.payoutCard?.cardNumber || "4509953566233704";
     const alias =
@@ -77,7 +19,7 @@ export class NiubizPushPaymentProvider implements PayoutProvider {
 
     const senderCard = process.env.NIUBIZ_SENDER_CARD || "4509953566233704";
 
-    const endpoint = `${config.payoutBaseUrl}/${config.merchantId}`;
+    const endpoint = `${getNiubizPayoutUrl(config.environment)}/${config.merchantId}`;
     const payload = {
       channel: "mobile",
       applicationId: "P2P",

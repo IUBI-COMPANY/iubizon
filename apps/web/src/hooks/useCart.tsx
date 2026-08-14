@@ -9,7 +9,7 @@ import {
 } from "react";
 import type { Product } from "@/types";
 
-interface CartItem {
+export interface CartItem {
   id: string;
   product_id: string;
   title: string;
@@ -19,7 +19,6 @@ interface CartItem {
   company_id: string;
   stock?: number | null;
 }
-
 interface CartContextType {
   items: CartItem[];
   addItem: (

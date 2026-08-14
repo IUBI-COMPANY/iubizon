@@ -1,5 +1,5 @@
 import type { PayoutProvider } from "./types";
-import { NiubizPushPaymentProvider } from "./niubiz";
+import { NiubizPushPaymentProvider } from "@/lib/niubiz";
 import { ManualPayoutProvider } from "./manual";
 
 const providers: Record<string, PayoutProvider> = {

@@ -113,7 +113,19 @@ async function main() {
     },
     {
       key: "NIUBIZ_CONFIG",
-      value: { enabled: true, environment: "sandbox", max_installments: 12 },
+      value: {
+        enabled: true,
+        environment: "sandbox",
+        max_installments: 12,
+        registrationCount: 1,
+        serviceLocation: {
+          urlAddress: "https://iubizon.com",
+          cityName: "Lima",
+          countrySubdivisionCode: "LMA",
+          countryCode: "PER",
+          postalCode: "15023",
+        },
+      },
       description: "Configuración global de la pasarela de pago Niubiz",
       category: "payment_gateway",
     },

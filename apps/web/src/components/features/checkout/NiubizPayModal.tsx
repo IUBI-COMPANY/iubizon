@@ -174,6 +174,17 @@ export function NiubizPayModal({
 
       const data = await res.json();
       if (!res.ok || !data.success) {
+        if (data.denied) {
+          const params = new URLSearchParams({
+            status: "denied",
+            purchaseNumber: data.purchaseNumber || purchaseNumber,
+            actionDescription:
+              data.actionDescription || data.error || "Pago rechazado",
+            transactionDate: data.transactionDate || new Date().toISOString(),
+          });
+          window.location.href = `/cart/result?${params.toString()}`;
+          return;
+        }
         throw new Error(
           data.error || "La tarjeta fue denegada por el banco emisor.",
         );
