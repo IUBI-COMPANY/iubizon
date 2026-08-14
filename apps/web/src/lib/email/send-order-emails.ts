@@ -66,7 +66,7 @@ export async function sendOrderConfirmationEmails(orderId: string) {
     );
 
     const shippingForm = {
-      name: order.shipping?.name || order.buyer.name || "Cliente",
+      name: order.buyer?.name || order.shipping?.name || "Cliente",
       phone: order.shipping?.phone || order.buyer.phone || "No especificado",
       email: order.shipping?.email?.trim() || order.buyer.email,
       address:
