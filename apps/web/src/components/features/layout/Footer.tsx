@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Phone, Mail, MapPin } from "lucide-react";
+import { Facebook, Instagram, Phone, Mail, MapPin, Landmark } from "lucide-react";
 import type { Category } from "@/types";
 
 interface FooterProps {
@@ -163,7 +163,93 @@ export const Footer = ({ categories = [] }: FooterProps) => {
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-8 pt-8">
+        {/* Medios de Pago */}
+        <div className="border-t border-white/10 mt-8 pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <h4 className="font-semibold text-sm mb-3 text-white">
+              Medios de pago
+            </h4>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* 1. Transferencia Bancaria */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1.5 hover:scale-105 transition-transform cursor-pointer"
+                title="Transferencia bancaria / Depósito"
+              >
+                <Landmark className="w-6 h-6 text-[#002A8D]" />
+              </div>
+
+              {/* 2. Efectivo / Soles */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1.5 hover:scale-105 transition-transform cursor-pointer"
+                title="Efectivo / Soles"
+              >
+                <div className="flex items-center gap-0.5 text-emerald-600 font-extrabold text-xs bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                  <span className="text-[9px] text-emerald-500">•</span>
+                  <span>S/</span>
+                  <span className="text-[9px] text-emerald-500">•</span>
+                </div>
+              </div>
+
+              {/* 3. BCP */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-2 hover:scale-105 transition-transform cursor-pointer"
+                title="BCP"
+              >
+                <Image
+                  src="/svg/bcp.svg"
+                  alt="BCP"
+                  width={50}
+                  height={20}
+                  className="h-4 w-auto object-contain"
+                />
+              </div>
+
+              {/* 4. BBVA */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-2 hover:scale-105 transition-transform cursor-pointer"
+                title="BBVA"
+              >
+                <Image
+                  src="/svg/bbva.svg"
+                  alt="BBVA"
+                  width={50}
+                  height={20}
+                  className="h-3.5 w-auto object-contain"
+                />
+              </div>
+
+              {/* 5. Yape */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 hover:scale-105 transition-transform cursor-pointer"
+                title="Yape"
+              >
+                <Image
+                  src="/images/yape.png"
+                  alt="Yape"
+                  width={30}
+                  height={30}
+                  className="h-7 w-7 object-contain rounded-lg"
+                />
+              </div>
+
+              {/* 6. Plin */}
+              <div
+                className="w-14 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center p-1 hover:scale-105 transition-transform cursor-pointer"
+                title="Plin"
+              >
+                <Image
+                  src="/images/plin.png"
+                  alt="Plin"
+                  width={30}
+                  height={30}
+                  className="h-7 w-7 object-contain rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 mt-6 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-[#94a3b8] text-sm">
               © {currentYear} Iubizon. Todos los derechos reservados.
