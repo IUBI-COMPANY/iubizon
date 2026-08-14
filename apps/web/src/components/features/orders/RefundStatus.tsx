@@ -233,8 +233,73 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
 
               <div className="space-y-3 text-xs text-[#334155]">
                 <p className="text-[11px] text-[#64748b] italic">
-                  {req.reason}
+                  Motivo: "{req.reason}"
                 </p>
+
+                {/* Lista de Productos del Reembolso con Imagen Principal */}
+                {req.items && req.items.length > 0 && (
+                  <div className="bg-[#f8fafc] rounded-2xl p-3 border border-[#e2e8f0] space-y-2">
+                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider flex items-center justify-between">
+                      <span>
+                        {req.type === "full"
+                          ? "Productos de la Orden (Reembolso Completo)"
+                          : req.items.length === 1
+                            ? "Producto Seleccionado (Reembolso Parcial)"
+                            : "Productos Seleccionados (Reembolso Parcial)"}
+                      </span>
+                      <span className="text-[#f25c05] font-semibold lowercase font-sans text-[11px]">
+                        {req.items.length}{" "}
+                        {req.items.length === 1 ? "ítem" : "ítems"}
+                      </span>
+                    </p>
+                    <div className="divide-y divide-[#e2e8f0]/60">
+                      {req.items.map((item) => (
+                        <div
+                          key={item.id || item.order_item_id}
+                          className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
+                        >
+                          <div className="w-12 h-12 rounded-xl border border-[#e2e8f0] overflow-hidden relative bg-white flex-shrink-0 shadow-2xs">
+                            {item.product_image ? (
+                              <Image
+                                src={item.product_image}
+                                alt={item.product_title || "Producto"}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
+                                <Package className="w-5 h-5" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-xs text-[#112237] line-clamp-1">
+                              {item.product_title || "Producto"}
+                            </p>
+                            <div className="flex items-center gap-2 text-[11px] text-[#64748b] mt-0.5">
+                              <span>Cant: {item.quantity} un.</span>
+                              <span>·</span>
+                              <span>
+                                S/ {Number(item.unit_price).toFixed(2)} c/u
+                              </span>
+                              {item.company_name && (
+                                <>
+                                  <span>·</span>
+                                  <span className="text-[#f25c05] font-medium">
+                                    {item.company_name}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right font-bold text-xs text-[#112237]">
+                            S/ {Number(item.subtotal).toFixed(2)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {req.admin_notes && (
                   <p className="text-[11px] text-[#112237]">

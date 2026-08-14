@@ -167,24 +167,21 @@ export async function POST(req: Request) {
         refund_amount: calc.refundAmount,
         platform_fee: 0,
         net_refund: calc.refundAmount,
-        items:
-          type === "partial"
-            ? {
-                create: calc.items.map((item) => ({
-                  order_item_id: item.orderItemId,
-                  quantity: item.quantity,
-                  unit_price: item.unitPrice,
-                  subtotal: item.subtotal,
-                })),
-              }
-            : undefined,
+        items: {
+          create: calc.items.map((item) => ({
+            order_item_id: item.orderItemId,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            subtotal: item.subtotal,
+          })),
+        },
       },
       include: { items: true },
     });
 
     return NextResponse.json({ refund, success: true });
   } catch (err: unknown) {
-    console.error("[Refund API] Error:", err);
+    console.error("[Refund API] Error POST:", err);
     const msg =
       err instanceof Error ? err.message : "Error al procesar solicitud";
     return NextResponse.json({ error: msg }, { status: 400 });
@@ -235,45 +232,82 @@ export async function GET(req: Request) {
       include: { items: true },
     });
 
-    const itemIds = requests.flatMap((r) =>
-      r.items.map((i) => i.order_item_id),
-    );
-    const orderItems =
-      itemIds.length > 0
-        ? await prisma.orderItem.findMany({
-            where: { id: { in: itemIds } },
-            include: {
-              product: {
-                select: {
-                  title: true,
-                  images: {
-                    take: 1,
-                    orderBy: { position: "asc" },
-                    select: { url: true },
-                  },
-                },
-              },
-              package: {
-                select: {
-                  company: {
-                    select: {
-                      name: true,
-                      legal_name: true,
-                      tax_id: true,
-                      phone: true,
-                    },
-                  },
-                },
+    const allOrderItems = await prisma.orderItem.findMany({
+      where: {
+        package: { order_id: orderId },
+      },
+      include: {
+        product: {
+          select: {
+            title: true,
+            images: {
+              orderBy: { position: "asc" },
+              take: 1,
+              select: { url: true },
+            },
+          },
+        },
+        package: {
+          select: {
+            company: {
+              select: {
+                name: true,
+                legal_name: true,
+                tax_id: true,
+                phone: true,
               },
             },
-          })
-        : [];
+          },
+        },
+      },
+    });
 
     const requestsEnriched = requests.map((r) => {
+      let itemsList: Array<{
+        id: string;
+        order_item_id: string;
+        quantity: number;
+        unit_price: number;
+        subtotal: number;
+        product_title: string | null;
+        product_image: string | null;
+        company_name: string | null;
+      }> = [];
+
+      if (r.items && r.items.length > 0) {
+        itemsList = r.items.map((item) => {
+          const oi = allOrderItems.find((oi) => oi.id === item.order_item_id);
+          return {
+            id: item.id,
+            order_item_id: item.order_item_id,
+            quantity: item.quantity,
+            unit_price: Number(item.unit_price),
+            subtotal: Number(item.subtotal),
+            product_title: oi?.product?.title ?? null,
+            product_image: oi?.product?.images?.[0]?.url ?? null,
+            company_name: oi?.package?.company?.name ?? null,
+          };
+        });
+      } else {
+        // Fallback for full refund requests where no explicit items were saved in DB
+        itemsList = allOrderItems.map((oi) => ({
+          id: oi.id,
+          order_item_id: oi.id,
+          quantity: oi.quantity,
+          unit_price: Number(oi.unit_price),
+          subtotal: Number(oi.unit_price) * oi.quantity,
+          product_title: oi.product?.title ?? null,
+          product_image: oi.product?.images?.[0]?.url ?? null,
+          company_name: oi.package?.company?.name ?? null,
+        }));
+      }
+
       const firstOi =
-        r.items.length > 0
-          ? orderItems.find((oi) => oi.id === r.items[0].order_item_id)
-          : null;
+        allOrderItems.find(
+          (oi) =>
+            itemsList.length > 0 && oi.id === itemsList[0].order_item_id,
+        ) || allOrderItems[0] || null;
+
       const company = firstOi?.package?.company;
 
       return {
@@ -286,15 +320,7 @@ export async function GET(req: Request) {
               phone: company.phone,
             }
           : null,
-        items: r.items.map((item) => {
-          const oi = orderItems.find((oi) => oi.id === item.order_item_id);
-          return {
-            ...item,
-            product_title: oi?.product?.title ?? null,
-            product_image: oi?.product?.images?.[0]?.url ?? null,
-            company_name: oi?.package?.company?.name ?? null,
-          };
-        }),
+        items: itemsList,
       };
     });
 
