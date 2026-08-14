@@ -289,7 +289,6 @@ export async function GET(req: Request) {
           };
         });
       } else {
-        // Fallback for full refund requests where no explicit items were saved in DB
         itemsList = allOrderItems.map((oi) => ({
           id: oi.id,
           order_item_id: oi.id,
@@ -304,10 +303,9 @@ export async function GET(req: Request) {
 
       const firstOi =
         allOrderItems.find(
-          (oi) => itemsList.length > 0 && oi.id === itemsList[0].order_item_id,
-        ) ||
-        allOrderItems[0] ||
-        null;
+          (oi) =>
+            itemsList.length > 0 && oi.id === itemsList[0].order_item_id,
+        ) || allOrderItems[0] || null;
 
       const company = firstOi?.package?.company;
 
@@ -443,6 +441,7 @@ async function handleConfirmReturn(refundId: string, userId: string) {
     select: {
       id: true,
       status: true,
+      order_id: true,
       items: { select: { order_item_id: true } },
       order: {
         select: {
@@ -450,9 +449,9 @@ async function handleConfirmReturn(refundId: string, userId: string) {
             select: {
               company: {
                 select: {
+                  id: true,
                   companyMembers: {
-                    where: { user_id: userId },
-                    select: { id: true },
+                    select: { user_id: true },
                   },
                 },
               },
@@ -470,23 +469,36 @@ async function handleConfirmReturn(refundId: string, userId: string) {
       { status: 404 },
     );
 
-  const refundedItemIds = new Set(refund.items.map((i) => i.order_item_id));
+  const refundedItemIds = new Set(
+    refund.items.map((i: { order_item_id: string }) => i.order_item_id),
+  );
 
-  const isSellerOfRefundedItems = refund.order.packages.some((p) => {
-    if (p.company.companyMembers.length === 0) return false;
-    const hasRefundedItem = p.items.some((item) =>
-      refundedItemIds.has(item.id),
+  const isSeller = refund.order.packages.some((p: any) => {
+    if (!p.company) return false;
+    const isMember = p.company.companyMembers.some(
+      (m: { user_id: string }) => m.user_id === userId,
     );
-    return hasRefundedItem;
+
+    if (!isMember) return false;
+
+    if (refundedItemIds.size > 0) {
+      return p.items.some((item: { id: string }) =>
+        refundedItemIds.has(item.id),
+      );
+    }
+    return true;
   });
 
-  if (!isSellerOfRefundedItems) {
+  if (!isSeller) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  if (refund.status !== "return_in_transit") {
+  if (refund.status !== "return_in_transit" && refund.status !== "approved") {
     return NextResponse.json(
-      { error: "El producto aún no está en camino de vuelta" },
+      {
+        error:
+          "La devolución debe estar en tránsito o aprobada para confirmar la recepción",
+      },
       { status: 400 },
     );
   }
