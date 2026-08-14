@@ -59,32 +59,54 @@ export async function GET(req: Request) {
       where = { created_by: user.id };
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        price: true,
-        condition: true,
-        status: true,
-        stock: true,
-        views: true,
-        is_complementary: true,
-        created_at: true,
-        category: { select: { name: true } },
-        images: {
-          orderBy: { position: "asc" },
-          take: 1,
-          select: { id: true, url: true, position: true },
+    const searchQuery = searchParams.get("search") || undefined;
+    const page = Math.max(1, Number(searchParams.get("page") || "1"));
+    const limitParam = searchParams.get("limit");
+    const fetchAll = searchParams.get("all") === "true";
+    const limit = fetchAll ? 1000 : Math.max(1, Number(limitParam || "10"));
+    const offset = (page - 1) * limit;
+
+    if (searchQuery && searchQuery.trim()) {
+      where.title = { contains: searchQuery.trim(), mode: "insensitive" };
+    }
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          condition: true,
+          status: true,
+          stock: true,
+          views: true,
+          is_complementary: true,
+          created_at: true,
+          category: { select: { name: true } },
+          images: {
+            orderBy: { position: "asc" },
+            take: 1,
+            select: { id: true, url: true, position: true },
+          },
+          _count: { select: { images: true } },
         },
-        _count: { select: { images: true } },
-      },
-      orderBy: { updated_at: "desc" },
-    });
+        orderBy: { updated_at: "desc" },
+        skip: fetchAll ? undefined : offset,
+        take: fetchAll ? undefined : limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
 
     return NextResponse.json({
       isCompanyMode,
       company: targetCompany,
+      total,
+      page,
+      limit,
+      totalPages,
       products: products.map((p) => ({
         id: p.id,
         title: p.title,

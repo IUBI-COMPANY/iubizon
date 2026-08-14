@@ -24,6 +24,10 @@ import { detectForbiddenContactInfo } from "@/lib/utils/contactDetector";
 import { syncProductMedia } from "@/lib/services/mediaUpload";
 import { useToast } from "@/context/ToastContext";
 import {
+  WarrantyField,
+  getFormattedWarrantyText,
+} from "@/components/ui/WarrantyField";
+import {
   AlertCircle,
   ArrowLeft,
   Banknote,
@@ -32,6 +36,35 @@ import {
   Loader2,
   Package,
 } from "lucide-react";
+
+function parseWarrantyString(str: string): { option: string; custom: string } {
+  if (!str || str.toLowerCase().includes("sin garantía")) {
+    return { option: "6_months", custom: "" };
+  }
+  if (str.includes("3 meses") || str.includes("3 Meses")) {
+    return { option: "3_months", custom: "" };
+  }
+  if (str.includes("6 meses") || str.includes("6 Meses")) {
+    return { option: "6_months", custom: "" };
+  }
+  if (
+    str.includes("12 meses") ||
+    str.includes("12 Meses") ||
+    str.includes("1 año") ||
+    str.includes("1 Año")
+  ) {
+    return { option: "12_months", custom: "" };
+  }
+  if (
+    str.includes("24 meses") ||
+    str.includes("24 Meses") ||
+    str.includes("2 años") ||
+    str.includes("2 Años")
+  ) {
+    return { option: "24_months", custom: "" };
+  }
+  return { option: "custom", custom: str };
+}
 
 const editProductSchema = z.object({
   title: z
@@ -54,6 +87,8 @@ const editProductSchema = z.object({
       message: "El stock debe ser 0 o más.",
     }),
   hasWarranty: z.boolean(),
+  warrantyOption: z.string().optional(),
+  customWarranty: z.string().optional(),
   warranty: z.string().optional(),
   warranty_conditions: z.string().optional(),
   description: z
@@ -187,6 +222,9 @@ export default function EditProductPage({ params }: Props) {
           !!fetchedWarranty &&
           !fetchedWarranty.toLowerCase().includes("sin garantía");
 
+        const { option: initialOption, custom: initialCustom } =
+          parseWarrantyString(fetchedWarranty);
+
         reset({
           title: data.title || "",
           description: data.description || "",
@@ -199,6 +237,8 @@ export default function EditProductPage({ params }: Props) {
               ? data.stock.toString()
               : "1",
           hasWarranty: initialHasWarranty,
+          warrantyOption: initialOption,
+          customWarranty: initialCustom,
           warranty:
             fetchedWarranty ||
             "6 meses por falla de fábrica (Garantía del vendedor)",
@@ -264,6 +304,13 @@ export default function EditProductPage({ params }: Props) {
         videoPreview,
       });
 
+      const finalWarrantyText = getFormattedWarrantyText(
+        values.hasWarranty ?? false,
+        values.warrantyOption ?? "6_months",
+        values.customWarranty ?? "",
+        "product",
+      );
+
       const parsedStock = parseInt(values.stock, 10) || 0;
       const response = await fetch(`/api/products/${productId}`, {
         method: "PUT",
@@ -280,7 +327,7 @@ export default function EditProductPage({ params }: Props) {
           availability_type: parsedStock > 1 ? "available" : "unique",
           video_url: uploadedVideoUrl,
           warranty: values.hasWarranty
-            ? (values.warranty ?? null)
+            ? finalWarrantyText
             : "Sin garantía del vendedor",
           warranty_conditions:
             values.hasWarranty && values.warranty_conditions?.trim()
@@ -568,66 +615,25 @@ export default function EditProductPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#f1f5f9] space-y-3">
-              <Checkbox
-                checked={formValues.hasWarranty}
-                onChange={(checked) => {
-                  setValue("hasWarranty", checked, { shouldValidate: true });
-                  if (!checked) {
-                    setValue("warranty", "Sin garantía del vendedor", {
-                      shouldValidate: true,
-                    });
-                  }
-                }}
-              >
-                <span className="font-semibold text-xs text-[#112237]">
-                  ¿Este producto incluye garantía del vendedor o fabricante?
-                </span>
-              </Checkbox>
-
-              {formValues.hasWarranty && (
-                <div className="space-y-3">
-                  <div>
-                    <Label
-                      htmlFor="warranty"
-                      className="text-xs font-semibold text-[#112237] block mb-1"
-                    >
-                      Detalle o tiempo de garantía del Vendedor
-                    </Label>
-                    <Input
-                      id="warranty"
-                      placeholder="Ej: 6 meses por falla de fábrica (Garantía del vendedor)"
-                      {...register("warranty")}
-                      className="text-xs"
-                    />
-                  </div>
-
-                  <div className="bg-[#f8fafc] rounded-xl p-3 border border-[#e2e8f0] space-y-2 text-xs text-[#64748b]">
-                    <p className="font-semibold text-[#112237]">
-                      Cobertura estándar:{" "}
-                      <span className="font-normal text-[#475569]">
-                        Fallas de fabricación y componentes defectuosos de
-                        origen.
-                      </span>
-                    </p>
-                    <div>
-                      <Label
-                        htmlFor="warranty_conditions"
-                        className="text-[11px] font-semibold text-[#112237] block mb-1"
-                      >
-                        Condiciones especiales o requisitos (opcional)
-                      </Label>
-                      <Input
-                        id="warranty_conditions"
-                        placeholder="Ej: Conservar empaque original y comprobante."
-                        {...register("warranty_conditions")}
-                        className="bg-white text-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <WarrantyField
+              itemType="product"
+              hasWarranty={formValues.hasWarranty}
+              onHasWarrantyChange={(checked) =>
+                setValue("hasWarranty", checked, { shouldValidate: true })
+              }
+              warrantyOption={formValues.warrantyOption || "6_months"}
+              onWarrantyOptionChange={(opt) =>
+                setValue("warrantyOption", opt, { shouldValidate: true })
+              }
+              customWarranty={formValues.customWarranty || ""}
+              onCustomWarrantyChange={(val) =>
+                setValue("customWarranty", val, { shouldValidate: true })
+              }
+              warrantyConditions={formValues.warranty_conditions || ""}
+              onWarrantyConditionsChange={(val) =>
+                setValue("warranty_conditions", val, { shouldValidate: true })
+              }
+            />
           </div>
 
           {/* Producto Complementario */}

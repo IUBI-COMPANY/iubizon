@@ -8,7 +8,9 @@ import {
   Clock,
   HelpCircle,
   Loader2,
+  ShieldAlert,
   ShieldCheck,
+  Truck,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -31,7 +33,9 @@ export interface WarrantyModalProps {
   sellerName?: string | null;
   productTitle?: string;
   warrantyText?: string;
-  warrantyConditions?: string | null;
+  hasWarranty?: boolean;
+  warrantyPeriod?: string;
+  warrantyConditions?: string;
   items?: RefundableItem[];
   orderTotal?: number;
   onRefundCreated?: () => void;
@@ -47,6 +51,8 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
   sellerName,
   productTitle,
   warrantyText = "6 meses por falla de fábrica (Garantía del vendedor)",
+  hasWarranty,
+  warrantyPeriod,
   warrantyConditions,
   items,
   orderTotal,
@@ -54,6 +60,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [error, setError] = useState("");
   const [reason, setReason] = useState("");
   const [refundType, setRefundType] = useState<"full" | "partial">("full");
@@ -75,6 +82,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
       setReason("");
       setError("");
       setSuccess(false);
+      setShowConfirmModal(false);
     }
   }, [isOpen]);
 
@@ -166,12 +174,31 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
   );
   const isWithinProtection = diffDays <= protectionDays;
 
-  const canSubmit =
-    refundType === "full" ? !hasAnyRefund : selectedIds.size > 0;
+  const hasValidReason = reason.trim().length >= 5;
 
-  const handleRefundRequest = async () => {
+  const canSubmit =
+    isWithinProtection &&
+    hasValidReason &&
+    (refundType === "full" ? !hasAnyRefund : selectedIds.size > 0);
+
+  const handleOpenConfirm = () => {
+    if (!isWithinProtection) {
+      setError(`El plazo de protección de ${protectionDays} días ha expirado.`);
+      return;
+    }
+    if (!hasValidReason) {
+      setError(
+        "Por favor ingresa el motivo detallado de tu solicitud (mínimo 5 caracteres).",
+      );
+      return;
+    }
+    if (!orderId || !canSubmit) return;
+    setError("");
+    setShowConfirmModal(true);
+  };
+
+  const executeRefundRequest = async () => {
     if (!orderId) return;
-    if (!canSubmit) return;
     setLoading(true);
     setError("");
     try {
@@ -194,6 +221,7 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al enviar solicitud");
+      setShowConfirmModal(false);
       setSuccess(true);
       onRefundCreated?.();
     } catch (err: unknown) {
@@ -455,17 +483,33 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
                 Motivo del reembolso <span className="text-[#f25c05]">*</span>
               </label>
               <textarea
-                className="w-full text-xs border border-[#e2e8f0] rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#f25c05]/30 focus:border-[#f25c05]"
+                className={`w-full text-xs border rounded-xl p-3 focus:outline-none focus:ring-2 transition-all ${
+                  reason.length > 0 && !hasValidReason
+                    ? "border-red-300 focus:ring-red-200 focus:border-red-500 bg-red-50/20"
+                    : "border-[#e2e8f0] focus:ring-[#f25c05]/30 focus:border-[#f25c05]"
+                }`}
                 rows={3}
-                placeholder="Describe el motivo de tu solicitud de reembolso..."
+                placeholder="Describe en detalle el motivo de tu solicitud de reembolso (requerido)..."
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  if (error) setError("");
+                }}
               />
+              {reason.length > 0 && !hasValidReason && (
+                <p className="text-[11px] text-red-500 font-medium mt-1">
+                  El motivo es obligatorio y debe tener al menos 5 caracteres.
+                </p>
+              )}
             </div>
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && (
+              <p className="text-xs font-semibold text-red-500 bg-red-50 p-2.5 rounded-lg border border-red-200">
+                {error}
+              </p>
+            )}
             <Button
               className="w-full bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-2"
-              onClick={handleRefundRequest}
+              onClick={handleOpenConfirm}
               disabled={loading || !canSubmit}
             >
               {loading ? (
@@ -509,6 +553,89 @@ export const WarrantyModal: React.FC<WarrantyModalProps> = ({
           Cerrar
         </Button>
       </div>
+
+      {/* Modal de Advertencia / Confirmación antes de enviar */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#e2e8f0] relative space-y-4">
+            <button
+              type="button"
+              onClick={() => setShowConfirmModal(false)}
+              className="absolute top-4 right-4 text-[#94a3b8] hover:text-[#112237]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 text-amber-600">
+              <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-[#112237]">
+                  ¿Confirmar solicitud de reembolso?
+                </h3>
+                <p className="text-xs text-[#64748b]">
+                  Información sobre el proceso y tiempos
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] space-y-3 text-xs text-[#475569]">
+              <div className="flex items-start gap-2.5">
+                <Clock className="w-4 h-4 text-[#f25c05] shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-[#112237] block mb-0.5">
+                    Tiempo de atención:
+                  </strong>
+                  La revisión y resolución del caso por parte del vendedor e
+                  Iubizon puede tomar entre <strong>2 a 5 días hábiles</strong>.
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 pt-2.5 border-t border-[#e2e8f0]">
+                <Truck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-[#112237] block mb-0.5">
+                    Logística y costos de envío:
+                  </strong>
+                  En caso de requerirse la devolución física del producto, cada
+                  parte asume los costos de envío correspondientes a su tramo,
+                  conforme a los Términos de Servicio.
+                </div>
+              </div>
+            </div>
+
+            {error && <p className="text-xs text-red-500">{error}</p>}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="text-xs font-semibold px-4 py-2.5 rounded-xl border-[#e2e8f0]"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={loading}
+              >
+                Volver y revisar
+              </Button>
+              <Button
+                type="button"
+                className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2"
+                onClick={executeRefundRequest}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
+                <span>
+                  {loading ? "Enviando..." : "Sí, Confirmar Solicitud"}
+                </span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

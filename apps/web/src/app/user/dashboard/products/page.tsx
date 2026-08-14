@@ -6,12 +6,16 @@ import Image from "next/image";
 import {
   ArrowLeft,
   Building2,
+  ChevronLeft,
+  ChevronRight,
   Edit,
   Eye,
   Loader2,
   Package,
   Plus,
+  Search,
   User as UserIcon,
+  X,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import { Navbar } from "@/components/features/layout/Navbar";
@@ -42,6 +46,12 @@ export default function ProductsManagementPage() {
   const [products, setProducts] = useState<UserProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const hasLoadedOnce = useRef(false);
 
   const fetchProducts = useCallback(async () => {
@@ -53,15 +63,19 @@ export default function ProductsManagementPage() {
       } else {
         setLoading(true);
       }
-      const url = activeCompany?.id
-        ? `/api/user/products?company_id=${activeCompany.id}`
-        : `/api/user/products`;
+      const params = new URLSearchParams();
+      if (activeCompany?.id) params.set("company_id", activeCompany.id);
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
 
-      const res = await fetch(url);
+      const res = await fetch(`/api/user/products?${params.toString()}`);
       const json = await res.json();
 
       if (res.ok && Array.isArray(json.products)) {
         setProducts(json.products);
+        if (typeof json.total === "number") setTotal(json.total);
+        if (typeof json.totalPages === "number") setTotalPages(json.totalPages);
         hasLoadedOnce.current = true;
       }
     } catch (err) {
@@ -70,7 +84,7 @@ export default function ProductsManagementPage() {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, [user, activeCompany?.id]);
+  }, [user, activeCompany?.id, page, limit, searchQuery]);
 
   useEffect(() => {
     if (!user) return;
@@ -182,6 +196,51 @@ export default function ProductsManagementPage() {
               Nuevo producto
             </button>
           </Link>
+        </div>
+
+        {/* Barra de Filtro / Búsqueda y Conteo */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 bg-white p-3.5 rounded-2xl border border-[#e2e8f0] shadow-sm">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+            <input
+              type="text"
+              placeholder="Buscar en mis productos..."
+              value={searchInputValue}
+              onChange={(e) => setSearchInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setPage(1);
+                  setSearchQuery(searchInputValue);
+                }
+              }}
+              className="w-full text-xs bg-[#f8fafc] border border-[#e2e8f0] rounded-xl pl-9 pr-8 py-2 text-[#112237] focus:outline-none focus:border-[#f25c05] focus:bg-white transition-all"
+            />
+            {searchInputValue && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchInputValue("");
+                  setSearchQuery("");
+                  setPage(1);
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#112237]"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end text-xs text-[#64748b]">
+            <span className="font-semibold">
+              Total: <strong className="text-[#112237]">{total}</strong>{" "}
+              {total === 1 ? "producto" : "productos"}
+            </span>
+            {searchQuery && (
+              <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium border border-amber-200 text-[11px]">
+                Filtrado por: "{searchQuery}"
+              </span>
+            )}
+          </div>
         </div>
 
         {loading && !isRefreshing ? (
@@ -332,6 +391,86 @@ export default function ProductsManagementPage() {
                 );
               })}
             </div>
+
+            {/* Pie de Tabla con Controles de Paginación */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-[#f1f5f9] bg-[#f8fafc] text-xs">
+                <span className="text-[#64748b] font-medium">
+                  Mostrando{" "}
+                  <strong className="text-[#112237]">
+                    {(page - 1) * limit + 1}
+                  </strong>{" "}
+                  a{" "}
+                  <strong className="text-[#112237]">
+                    {Math.min(page * limit, total)}
+                  </strong>{" "}
+                  de <strong className="text-[#112237]">{total}</strong>{" "}
+                  productos
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#e2e8f0] bg-white font-semibold text-[#475569] hover:bg-[#f1f5f9] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    Anterior
+                  </button>
+
+                  <div className="flex items-center gap-1 px-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(
+                        (pNum) =>
+                          Math.abs(pNum - page) <= 2 ||
+                          pNum === 1 ||
+                          pNum === totalPages,
+                      )
+                      .map((pNum, idx, arr) => {
+                        const showEllipsis = idx > 0 && pNum - arr[idx - 1] > 1;
+                        return (
+                          <span key={pNum} className="flex items-center gap-1">
+                            {showEllipsis && (
+                              <span className="text-[#94a3b8]">...</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPage(pNum);
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              }}
+                              className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                                page === pNum
+                                  ? "bg-[#f25c05] text-white shadow-xs"
+                                  : "bg-white text-[#475569] border border-[#e2e8f0] hover:bg-[#f1f5f9]"
+                              }`}
+                            >
+                              {pNum}
+                            </button>
+                          </span>
+                        );
+                      })}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={page >= totalPages}
+                    onClick={() => {
+                      setPage((p) => Math.min(totalPages, p + 1));
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#e2e8f0] bg-white font-semibold text-[#475569] hover:bg-[#f1f5f9] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    Siguiente
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-[#e2e8f0] p-12 text-center shadow-sm">
