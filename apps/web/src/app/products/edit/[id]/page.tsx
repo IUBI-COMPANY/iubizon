@@ -90,6 +90,8 @@ export default function EditProductPage({ params }: Props) {
   const [success, setSuccess] = useState(false);
   const [productId, setProductId] = useState<string>("");
 
+  const [isCompanyUnverified, setIsCompanyUnverified] = useState(false);
+
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -161,6 +163,11 @@ export default function EditProductPage({ params }: Props) {
         }
 
         const data = prodResult.product;
+        const isUnverified =
+          data.company &&
+          !data.company.is_personal &&
+          !data.company.is_verified;
+        if (mounted) setIsCompanyUnverified(!!isUnverified);
 
         const fetchedWarranty =
           data.specifications &&
@@ -186,7 +193,7 @@ export default function EditProductPage({ params }: Props) {
           price: data.price ? data.price.toString() : "0",
           condition: data.condition || "good",
           category_id: data.category_id || "",
-          status: data.status || "active",
+          status: isUnverified ? "inactive" : data.status || "active",
           stock:
             data.stock !== undefined && data.stock !== null
               ? data.stock.toString()
@@ -239,6 +246,15 @@ export default function EditProductPage({ params }: Props) {
     setSaving(true);
     setSubmitError(null);
 
+    if (isCompanyUnverified && values.status === "active") {
+      const errMsg =
+        "No puedes activar esta publicación porque tu empresa está pendiente de verificación por un administrador.";
+      setSubmitError(errMsg);
+      toast.error(errMsg, "Acción no permitida");
+      setSaving(false);
+      return;
+    }
+
     try {
       const { videoUrl: uploadedVideoUrl } = await syncProductMedia({
         productId,
@@ -259,7 +275,7 @@ export default function EditProductPage({ params }: Props) {
           price: parseFloat(values.price),
           condition: values.condition,
           category_id: values.category_id,
-          status: values.status,
+          status: isCompanyUnverified ? "inactive" : values.status,
           stock: parsedStock,
           availability_type: parsedStock > 1 ? "available" : "unique",
           video_url: uploadedVideoUrl,
@@ -530,12 +546,22 @@ export default function EditProductPage({ params }: Props) {
                 <select
                   id="status"
                   {...register("status")}
-                  className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1"
+                  disabled={isCompanyUnverified}
+                  className="flex h-11 w-full rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 text-xs font-medium text-[#112237] focus:outline-none focus:ring-2 focus:ring-[#f25c05]/20 focus:border-[#f25c05] mt-1 disabled:opacity-60 disabled:bg-slate-100"
                 >
-                  <option value="active">Activo (Visible)</option>
+                  <option value="active" disabled={isCompanyUnverified}>
+                    {isCompanyUnverified
+                      ? "Activo (Requiere Empresa Verificada)"
+                      : "Activo (Visible)"}
+                  </option>
                   <option value="inactive">Inactivo (Pausado)</option>
                   <option value="sold">Vendido / Agotado</option>
                 </select>
+                {isCompanyUnverified && (
+                  <p className="text-[11px] text-amber-800 font-medium mt-1.5 p-2 bg-amber-50 rounded-lg border border-amber-200 leading-relaxed">
+                    ⚠️ Tu empresa se encuentra en revisión por el equipo de iubizon. Las publicaciones de la empresa permanecerán en estado <strong>Inactivo</strong> hasta que un administrador verifique y apruebe tu empresa.
+                  </p>
+                )}
               </div>
             </div>
 

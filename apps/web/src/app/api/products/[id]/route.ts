@@ -102,7 +102,16 @@ export async function PUT(
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: targetId },
-      select: { id: true, company_id: true },
+      select: {
+        id: true,
+        company_id: true,
+        company: {
+          select: {
+            is_verified: true,
+            is_personal: true,
+          },
+        },
+      },
     });
 
     if (!existingProduct) {
@@ -139,6 +148,23 @@ export async function PUT(
       warranty_conditions,
       is_complementary,
     } = body;
+
+    if (status === "active") {
+      const isCompanyUnverified =
+        existingProduct.company &&
+        !existingProduct.company.is_personal &&
+        !existingProduct.company.is_verified;
+
+      if (isCompanyUnverified) {
+        return NextResponse.json(
+          {
+            error:
+              "No puedes activar esta publicación porque tu empresa está pendiente de verificación por un administrador.",
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     if (description) {
       const { detectForbiddenContactInfo } =

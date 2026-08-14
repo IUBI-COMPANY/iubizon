@@ -7,16 +7,38 @@ interface FooterProps {
   categories?: Category[];
 }
 
+const DEFAULT_CATEGORIES = [
+  { name: "Proyectores y Ecrams", slug: "proyectores" },
+  { name: "Laptops y Computadoras", slug: "laptops" },
+  { name: "Pantallas Interactivas", slug: "pantallas-interactivas" },
+  { name: "Celulares y Tablets", slug: "moviles" },
+  { name: "Audio y Conferencia", slug: "audio" },
+  { name: "Mobiliario Escolar y Oficina", slug: "mobiliario" },
+  { name: "Redes y Conectividad", slug: "redes" },
+  { name: "Electrónica e Impresión", slug: "electronica" },
+  { name: "Accesorios y Periféricos", slug: "accesorios" },
+  { name: "Útiles y Suministros", slug: "utiles-suministros" },
+  { name: "Otros", slug: "otros" },
+];
+
 export const Footer = ({ categories = [] }: FooterProps) => {
   const currentYear = new Date().getFullYear();
+
+  const categoryItems =
+    categories && categories.length > 0
+      ? categories.map((cat) => ({
+          label: cat.name,
+          href: `/search?category_id=${cat.id}`,
+        }))
+      : DEFAULT_CATEGORIES.map((cat) => ({
+          label: cat.name,
+          href: `/search?keywords=${encodeURIComponent(cat.slug)}`,
+        }));
 
   const footerLinks = {
     comprar: [
       { label: "Todas las categorías", href: "/search" },
-      ...categories.map((cat) => ({
-        label: cat.name,
-        href: `/search?category_id=${cat.id}`,
-      })),
+      ...categoryItems,
     ],
     vender: [{ label: "Publicar producto", href: "/products/new" }],
     ayuda: [

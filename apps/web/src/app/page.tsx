@@ -18,7 +18,7 @@ interface CategoryWithStats extends Category {
 export default async function MarketplaceHomePage() {
   const [productsRes, categoriesRes] = await Promise.allSettled([
     getActiveProducts(),
-    getPopularCategories(6),
+    getPopularCategories(),
   ]);
 
   const products = productsRes.status === "fulfilled" ? productsRes.value : [];

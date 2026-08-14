@@ -27,7 +27,7 @@ export async function getTechCategories() {
   });
 }
 
-export async function getPopularCategories(limit = 6) {
+export async function getPopularCategories(limit?: number) {
   const categories = await prisma.category.findMany({
     include: {
       _count: {
@@ -35,7 +35,7 @@ export async function getPopularCategories(limit = 6) {
       },
     },
     orderBy: { sort_order: "asc" },
-    take: limit,
+    ...(limit ? { take: limit } : {}),
   });
 
   return categories.map((cat) => ({

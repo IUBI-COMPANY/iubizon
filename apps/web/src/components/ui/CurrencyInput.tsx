@@ -48,7 +48,7 @@ export const CurrencyInput = React.forwardRef<
       error,
       placeholder = "0.00",
       showTaxAlert = true,
-      taxAlertMessage = "El precio debe incluir los impuestos de acuerdo a ley.",
+      taxAlertMessage = "El precio debe incluir costos adicionales y los impuestos de acuerdo a ley.",
       ...props
     },
     ref,

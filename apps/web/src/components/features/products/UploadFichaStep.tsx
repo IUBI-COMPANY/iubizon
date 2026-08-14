@@ -159,8 +159,8 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
           </div>
         )}
 
-        {/* Botón continuar */}
-        <div className="pt-2">
+        {/* Botones continuar / omitir */}
+        <div className="pt-2 space-y-3">
           <Button
             type="button"
             disabled={!isUploaded}
@@ -179,7 +179,18 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
               </>
             )}
           </Button>
-          <p className="text-[11px] text-center text-[#94a3b8] mt-2">
+
+          {!isUploaded && (
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="w-full py-3 px-4 text-xs font-bold text-[#64748b] hover:text-[#112237] bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              ¿No tienes tu Ficha RUC a la mano? Omitir paso y registrar empresa manualmente →
+            </button>
+          )}
+
+          <p className="text-[11px] text-center text-[#94a3b8]">
             El PDF no se comparte con nadie — solo se usa para extraer datos
           </p>
         </div>
