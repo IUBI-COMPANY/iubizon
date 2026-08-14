@@ -372,171 +372,254 @@ function PayoutsContent() {
         </div>
 
         {/* Pestañas de Filtrado */}
-        <Tabs value={statusTab} onValueChange={setStatusTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="all">Todos ({payouts.length})</TabsTrigger>
-            <TabsTrigger value="in_hold">En Protección (7d)</TabsTrigger>
-            <TabsTrigger value="pending">Disponibles para Pago</TabsTrigger>
-            <TabsTrigger value="processing">En Proceso</TabsTrigger>
-            <TabsTrigger value="paid">Pagados / Abonados</TabsTrigger>
-          </TabsList>
+        {(() => {
+          const inHoldPayoutsCount = payouts.filter(
+            (p) => p.status === "in_hold",
+          ).length;
+          const pendingPayoutsCount = payouts.filter(
+            (p) => p.status === "pending",
+          ).length;
+          const processingPayoutsCount = payouts.filter(
+            (p) => p.status === "processing",
+          ).length;
+          const paidPayoutsCount = payouts.filter(
+            (p) => p.status === "paid",
+          ).length;
+          const allPayoutsCount = payouts.length;
 
-          {filteredPayouts.length > 0 ? (
-            <div className="space-y-4">
-              {filteredPayouts.map((p) => {
-                const isInHold = p.status === "in_hold";
-                const isPaid = p.status === "paid";
-                const isProcessing = p.status === "processing";
+          return (
+            <Tabs value={statusTab} onValueChange={setStatusTab}>
+              <TabsList className="mb-6 flex-wrap h-auto gap-1">
+                <TabsTrigger value="all">
+                  Todos
+                  {allPayoutsCount > 0 && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                        statusTab === "all"
+                          ? "bg-[#f25c05] text-white"
+                          : "bg-slate-200 text-slate-700"
+                      }`}
+                    >
+                      {allPayoutsCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="in_hold">
+                  En Protección (7d)
+                  {inHoldPayoutsCount > 0 && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                        statusTab === "in_hold"
+                          ? "bg-purple-600 text-white"
+                          : "bg-purple-100 text-purple-800"
+                      }`}
+                    >
+                      {inHoldPayoutsCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  Disponibles para Pago
+                  {pendingPayoutsCount > 0 && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                        statusTab === "pending"
+                          ? "bg-amber-500 text-white"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {pendingPayoutsCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="processing">
+                  En Proceso
+                  {processingPayoutsCount > 0 && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                        statusTab === "processing"
+                          ? "bg-blue-500 text-white"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {processingPayoutsCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="paid">
+                  Pagados / Abonados
+                  {paidPayoutsCount > 0 && (
+                    <span
+                      className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                        statusTab === "paid"
+                          ? "bg-emerald-500 text-white"
+                          : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
+                      {paidPayoutsCount}
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          );
+        })()}
 
-                const badgeLabel = isInHold
-                  ? "En Protección (7 días)"
-                  : isPaid
-                    ? "Abonado / Transferido"
-                    : isProcessing
-                      ? "En Proceso de Depósito"
-                      : "Disponible para Transferencia";
+        {filteredPayouts.length > 0 ? (
+          <div className="space-y-4">
+            {filteredPayouts.map((p) => {
+              const isInHold = p.status === "in_hold";
+              const isPaid = p.status === "paid";
+              const isProcessing = p.status === "processing";
 
-                const badgeStyle = isInHold
-                  ? "bg-purple-100 text-purple-800 border-purple-200"
-                  : isPaid
-                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                    : isProcessing
-                      ? "bg-blue-100 text-blue-800 border-blue-200"
-                      : "bg-amber-100 text-amber-800 border-amber-200";
+              const badgeLabel = isInHold
+                ? "En Protección (7 días)"
+                : isPaid
+                  ? "Abonado / Transferido"
+                  : isProcessing
+                    ? "En Proceso de Depósito"
+                    : "Disponible para Transferencia";
 
-                return (
-                  <div
-                    key={p.id}
-                    className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4 hover:border-[#cbd5e1] transition-all"
-                  >
-                    {/* Cabecera de la Retribución */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        {p.trackingNumber ? (
-                          <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>Tracking Id: {p.trackingNumber}</span>
-                          </span>
-                        ) : (
-                          <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                            <Receipt className="w-3.5 h-3.5 text-[#64748b]" />
-                            <span>Orden #{p.orderCode || "VENTA"}</span>
-                          </span>
-                        )}
+              const badgeStyle = isInHold
+                ? "bg-purple-100 text-purple-800 border-purple-200"
+                : isPaid
+                  ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                  : isProcessing
+                    ? "bg-blue-100 text-blue-800 border-blue-200"
+                    : "bg-amber-100 text-amber-800 border-amber-200";
 
-                        <div className="flex items-center gap-1 text-xs text-[#64748b]">
-                          <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
-                          <span>
-                            Entrega registrada el {formatFullDate(p.createdAt)}
-                          </span>
-                        </div>
-                      </div>
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4 hover:border-[#cbd5e1] transition-all"
+                >
+                  {/* Cabecera de la Retribución */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {p.trackingNumber ? (
+                        <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Tracking Id: {p.trackingNumber}</span>
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                          <Receipt className="w-3.5 h-3.5 text-[#64748b]" />
+                          <span>Orden #{p.orderCode || "VENTA"}</span>
+                        </span>
+                      )}
 
-                      <span
-                        className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase border ${badgeStyle}`}
-                      >
-                        {badgeLabel}
-                      </span>
-                    </div>
-
-                    {/* Banner de Aviso de Protección de 7 días */}
-                    {isInHold && (
-                      <div className="flex items-center gap-2.5 bg-purple-50/80 border border-purple-200/80 rounded-2xl p-3 text-xs text-purple-900 font-medium">
-                        <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                      <div className="flex items-center gap-1 text-xs text-[#64748b]">
+                        <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
                         <span>
-                          Retribución protegida por la garantía de 7 días al
-                          comprador. Fecha estimada de liberación:{" "}
-                          <strong className="font-extrabold">
-                            {formatDate(p.availableAt || null)}
-                          </strong>
-                          .
+                          Entrega registrada el {formatFullDate(p.createdAt)}
                         </span>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Desglose de Importes Financieros */}
-                    <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      <div className="space-y-2 text-[#334155]">
-                        <p className="flex justify-between border-b border-slate-200/60 pb-1.5">
-                          <strong className="text-[#112237]">
-                            Valor Bruto de Productos:
-                          </strong>
-                          <span>S/ {p.subtotal.toFixed(2)}</span>
-                        </p>
-                        <p className="flex justify-between border-b border-slate-200/60 pb-1.5 text-[#64748b]">
-                          <strong className="text-[#112237]">
-                            Comisión iubizon:
-                          </strong>
-                          <span>- S/ {p.commission.toFixed(2)}</span>
-                        </p>
-                        <p className="text-[11px] text-red-500 pt-0.5">
-                          iubizon transfiere directamente el saldo neto a tu
-                          cuenta tras haber pasado los 7 días de posibles
-                          reembolsos del comprador.
-                        </p>
+                    <span
+                      className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold uppercase border ${badgeStyle}`}
+                    >
+                      {badgeLabel}
+                    </span>
+                  </div>
+
+                  {/* Banner de Aviso de Protección de 7 días */}
+                  {isInHold && (
+                    <div className="flex items-center gap-2.5 bg-purple-50/80 border border-purple-200/80 rounded-2xl p-3 text-xs text-purple-900 font-medium">
+                      <ShieldCheck className="w-4 h-4 text-purple-600 shrink-0" />
+                      <span>
+                        Retribución protegida por la garantía de 7 días al
+                        comprador. Fecha estimada de liberación:{" "}
+                        <strong className="font-extrabold">
+                          {formatDate(p.availableAt || null)}
+                        </strong>
+                        .
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Desglose de Importes Financieros */}
+                  <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div className="space-y-2 text-[#334155]">
+                      <p className="flex justify-between border-b border-slate-200/60 pb-1.5">
+                        <strong className="text-[#112237]">
+                          Valor Bruto de Productos:
+                        </strong>
+                        <span>S/ {p.subtotal.toFixed(2)}</span>
+                      </p>
+                      <p className="flex justify-between border-b border-slate-200/60 pb-1.5 text-[#64748b]">
+                        <strong className="text-[#112237]">
+                          Comisión iubizon:
+                        </strong>
+                        <span>- S/ {p.commission.toFixed(2)}</span>
+                      </p>
+                      <p className="text-[11px] text-red-500 pt-0.5">
+                        iubizon transfiere directamente el saldo neto a tu
+                        cuenta tras haber pasado los 7 días de posibles
+                        reembolsos del comprador.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col justify-between space-y-3 border-t md:border-t-0 pt-3 md:pt-0 border-[#e2e8f0]">
+                      <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#e2e8f0]">
+                        <span className="text-xs font-extrabold text-[#112237]">
+                          Monto Neto a Recibir:
+                        </span>
+                        <span className="text-2xl font-black text-emerald-600">
+                          S/ {p.netAmount.toFixed(2)}
+                        </span>
                       </div>
 
-                      <div className="flex flex-col justify-between space-y-3 border-t md:border-t-0 pt-3 md:pt-0 border-[#e2e8f0]">
-                        <div className="flex items-center justify-between bg-white rounded-xl p-3 border border-[#e2e8f0]">
-                          <span className="text-xs font-extrabold text-[#112237]">
-                            Monto Neto a Recibir:
-                          </span>
-                          <span className="text-2xl font-black text-emerald-600">
-                            S/ {p.netAmount.toFixed(2)}
-                          </span>
-                        </div>
-
-                        {/* Datos de Transferencia / Voucher si está pagado */}
-                        {isPaid && (
-                          <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200 text-emerald-900 text-xs space-y-1">
-                            <p className="font-bold flex items-center gap-1.5 text-[11px]">
-                              <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
-                              <span>Detalle del Abono por iubizon:</span>
+                      {/* Datos de Transferencia / Voucher si está pagado */}
+                      {isPaid && (
+                        <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200 text-emerald-900 text-xs space-y-1">
+                          <p className="font-bold flex items-center gap-1.5 text-[11px]">
+                            <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Detalle del Abono por iubizon:</span>
+                          </p>
+                          {p.paymentMethod && (
+                            <p>
+                              <strong>Método:</strong> {p.paymentMethod}
                             </p>
-                            {p.paymentMethod && (
-                              <p>
-                                <strong>Método:</strong> {p.paymentMethod}
-                              </p>
-                            )}
-                            {p.referenceCode && (
-                              <p>
-                                <strong>Nro. Operación / Voucher:</strong>{" "}
-                                <span className="font-mono">
-                                  {p.referenceCode}
-                                </span>
-                              </p>
-                            )}
-                            {p.paidAt && (
-                              <p className="text-[10px] text-emerald-700">
-                                Abonado el {formatDate(p.paidAt)}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                          )}
+                          {p.referenceCode && (
+                            <p>
+                              <strong>Nro. Operación / Voucher:</strong>{" "}
+                              <span className="font-mono">
+                                {p.referenceCode}
+                              </span>
+                            </p>
+                          )}
+                          {p.paidAt && (
+                            <p className="text-[10px] text-emerald-700">
+                              Abonado el {formatDate(p.paidAt)}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-white rounded-3xl border border-[#e2e8f0] shadow-sm">
-              <FileText className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
-              <h2 className="text-base font-bold text-[#112237] mb-1">
-                No tienes registros de pago en esta sección
-              </h2>
-              <p className="text-xs text-[#64748b] mb-6">
-                Cuando tus entregas sean marcadas como completadas, tus pagos
-                pendientes aparecerán aquí.
-              </p>
-              <Link href="/user/dashboard/orders">
-                <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-6 py-2.5 rounded-xl">
-                  Ir a Gestión de Pedidos
-                </Button>
-              </Link>
-            </div>
-          )}
-        </Tabs>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#e2e8f0] shadow-sm">
+            <FileText className="w-12 h-12 text-[#cbd5e1] mx-auto mb-3" />
+            <h2 className="text-base font-bold text-[#112237] mb-1">
+              No tienes registros de pago en esta sección
+            </h2>
+            <p className="text-xs text-[#64748b] mb-6">
+              Cuando tus entregas sean marcadas como completadas, tus pagos
+              pendientes aparecerán aquí.
+            </p>
+            <Link href="/user/dashboard/orders">
+              <Button className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-6 py-2.5 rounded-xl">
+                Ir a Gestión de Pedidos
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Modal de Configuración Bancaria */}

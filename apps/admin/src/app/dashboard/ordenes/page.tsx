@@ -169,14 +169,41 @@ export default function OrdersPage() {
         value={statusFilter}
         onValueChange={(v) => setStatusFilter(v as OrderStatus | "")}
       >
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="">Todas ({orders.length})</TabsTrigger>
-          {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-            <TabsTrigger key={k} value={k} className="gap-1">
-              <v.icon className="w-3.5 h-3.5" />
-              {v.label} ({statusCounts[k] || 0})
-            </TabsTrigger>
-          ))}
+        <TabsList className="w-full justify-start overflow-x-auto gap-1">
+          <TabsTrigger value="">
+            Todas
+            {orders.length > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusFilter === ""
+                    ? "bg-[#f25c05] text-white"
+                    : "bg-slate-200 text-slate-700"
+                }`}
+              >
+                {orders.length}
+              </span>
+            )}
+          </TabsTrigger>
+          {Object.entries(STATUS_CONFIG).map(([k, v]) => {
+            const count = statusCounts[k] || 0;
+            return (
+              <TabsTrigger key={k} value={k} className="gap-1">
+                <v.icon className="w-3.5 h-3.5" />
+                {v.label}
+                {count > 0 && (
+                  <span
+                    className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                      statusFilter === k
+                        ? "bg-[#f25c05] text-white"
+                        : "bg-slate-200 text-slate-700"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
       </Tabs>
 

@@ -365,63 +365,91 @@ export default function ReembolsosPage() {
       )}
 
       <Tabs value={statusTab} onValueChange={setStatusTab}>
-        <TabsList className="mb-4">
+        <TabsList className="mb-4 flex-wrap h-auto gap-1">
           <TabsTrigger value="pending">
             Pendientes
-            {counts.pending > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1.5 px-1.5 py-0 text-[10px] bg-amber-100"
+            {(counts.pending || 0) > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "pending"
+                    ? "bg-amber-500 text-white"
+                    : "bg-amber-100 text-amber-800"
+                }`}
               >
                 {counts.pending}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="active">
             En Proceso
             {(counts.approved || 0) + (counts.return_in_transit || 0) > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1.5 px-1.5 py-0 text-[10px] bg-blue-100"
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "active"
+                    ? "bg-blue-500 text-white"
+                    : "bg-blue-100 text-blue-800"
+                }`}
               >
                 {(counts.approved || 0) + (counts.return_in_transit || 0)}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="return_received">
             Devueltos
-            {counts.return_received > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1.5 px-1.5 py-0 text-[10px] bg-teal-100"
+            {(counts.return_received || 0) > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "return_received"
+                    ? "bg-teal-600 text-white"
+                    : "bg-teal-100 text-teal-800"
+                }`}
               >
                 {counts.return_received}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="refunded">
             Reembolsados
-            {counts.refunded > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1.5 px-1.5 py-0 text-[10px] bg-violet-100"
+            {(counts.refunded || 0) > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "refunded"
+                    ? "bg-violet-600 text-white"
+                    : "bg-violet-100 text-violet-800"
+                }`}
               >
                 {counts.refunded}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="rejected">
             Rechazados
-            {counts.rejected > 0 && (
-              <Badge
-                variant="secondary"
-                className="ml-1.5 px-1.5 py-0 text-[10px] bg-red-100"
+            {(counts.rejected || 0) > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "rejected"
+                    ? "bg-red-500 text-white"
+                    : "bg-red-100 text-red-800"
+                }`}
               >
                 {counts.rejected}
-              </Badge>
+              </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="all">Todos</TabsTrigger>
+          <TabsTrigger value="all">
+            Todos
+            {refunds.length > 0 && (
+              <span
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                  statusTab === "all"
+                    ? "bg-[#f25c05] text-white"
+                    : "bg-slate-200 text-slate-700"
+                }`}
+              >
+                {refunds.length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 

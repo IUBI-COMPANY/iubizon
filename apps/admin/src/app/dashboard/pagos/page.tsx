@@ -279,15 +279,98 @@ export default function PagosPage() {
 
       {tab === "payouts" ? (
         <>
-          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v)}>
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="">Todas ({payouts.length})</TabsTrigger>
-              <TabsTrigger value="in_hold">En Protección (7d)</TabsTrigger>
-              <TabsTrigger value="pending">Disponibles</TabsTrigger>
-              <TabsTrigger value="processing">En Proceso</TabsTrigger>
-              <TabsTrigger value="paid">Pagados</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          {(() => {
+            const inHoldCount = payouts.filter(
+              (p) => p.status === "in_hold",
+            ).length;
+            const pendingCount = payouts.filter(
+              (p) => p.status === "pending",
+            ).length;
+            const processingCount = payouts.filter(
+              (p) => p.status === "processing",
+            ).length;
+            const paidCount = payouts.filter((p) => p.status === "paid").length;
+
+            return (
+              <Tabs
+                value={statusFilter}
+                onValueChange={(v) => setStatusFilter(v)}
+              >
+                <TabsList className="w-full justify-start overflow-x-auto gap-1">
+                  <TabsTrigger value="">
+                    Todas
+                    {payouts.length > 0 && (
+                      <span
+                        className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                          statusFilter === ""
+                            ? "bg-[#f25c05] text-white"
+                            : "bg-slate-200 text-slate-700"
+                        }`}
+                      >
+                        {payouts.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="in_hold">
+                    En Protección (7d)
+                    {inHoldCount > 0 && (
+                      <span
+                        className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                          statusFilter === "in_hold"
+                            ? "bg-purple-600 text-white"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {inHoldCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="pending">
+                    Disponibles
+                    {pendingCount > 0 && (
+                      <span
+                        className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                          statusFilter === "pending"
+                            ? "bg-amber-500 text-white"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {pendingCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="processing">
+                    En Proceso
+                    {processingCount > 0 && (
+                      <span
+                        className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                          statusFilter === "processing"
+                            ? "bg-blue-500 text-white"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
+                        {processingCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="paid">
+                    Pagados
+                    {paidCount > 0 && (
+                      <span
+                        className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                          statusFilter === "paid"
+                            ? "bg-emerald-500 text-white"
+                            : "bg-emerald-100 text-emerald-800"
+                        }`}
+                      >
+                        {paidCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            );
+          })()}
 
           {loading ? (
             <div className="flex justify-center py-12">

@@ -187,7 +187,18 @@ export default function UserOrdersPage() {
             const pendingCount = sessions.filter((s) =>
               s.packages.every((p) => p.status === "pending"),
             ).length;
+            const inTransitCount = sessions.filter((s) =>
+              s.packages.some(
+                (p) => p.status === "shipped" || p.status === "paid",
+              ),
+            ).length;
+            const completedCount = sessions.filter((s) =>
+              s.packages.every(
+                (p) => p.status === "delivered" || p.status === "completed",
+              ),
+            ).length;
             const refundedCount = sessions.filter((s) => s.hasRefund).length;
+            const allCount = sessions.length;
 
             const filteredSessions =
               statusTab === "all"
@@ -215,27 +226,76 @@ export default function UserOrdersPage() {
             return (
               <>
                 <Tabs value={statusTab} onValueChange={setStatusTab}>
-                  <TabsList className="mb-6">
+                  <TabsList className="mb-6 flex-wrap h-auto gap-1">
                     <TabsTrigger value="pending">
                       Pendientes
                       {pendingCount > 0 && (
-                        <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-extrabold bg-amber-500 text-white rounded-full">
+                        <span
+                          className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                            statusTab === "pending"
+                              ? "bg-amber-500 text-white"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
                           {pendingCount}
                         </span>
                       )}
                     </TabsTrigger>
-                    <TabsTrigger value="in_transit">En Proceso</TabsTrigger>
-                    <TabsTrigger value="completed">Completados</TabsTrigger>
+                    <TabsTrigger value="in_transit">
+                      En Proceso
+                      {inTransitCount > 0 && (
+                        <span
+                          className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                            statusTab === "in_transit"
+                              ? "bg-blue-500 text-white"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {inTransitCount}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="completed">
+                      Completados
+                      {completedCount > 0 && (
+                        <span
+                          className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                            statusTab === "completed"
+                              ? "bg-emerald-500 text-white"
+                              : "bg-emerald-100 text-emerald-800"
+                          }`}
+                        >
+                          {completedCount}
+                        </span>
+                      )}
+                    </TabsTrigger>
                     <TabsTrigger value="refunded">
                       Reembolsados
                       {refundedCount > 0 && (
-                        <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-[10px] font-extrabold bg-red-500 text-white rounded-full">
+                        <span
+                          className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                            statusTab === "refunded"
+                              ? "bg-red-500 text-white"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
                           {refundedCount}
                         </span>
                       )}
                     </TabsTrigger>
                     <TabsTrigger value="all">
-                      Todos ({sessions.length})
+                      Todos
+                      {allCount > 0 && (
+                        <span
+                          className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
+                            statusTab === "all"
+                              ? "bg-[#f25c05] text-white"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {allCount}
+                        </span>
+                      )}
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
