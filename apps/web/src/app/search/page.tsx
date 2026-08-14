@@ -247,6 +247,7 @@ function SearchContent() {
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -262,7 +263,9 @@ function SearchContent() {
         params.set("page", page.toString());
         params.set("limit", limit.toString());
 
-        const res = await fetch(`/api/products/search?${params.toString()}`);
+        const res = await fetch(`/api/products/search?${params.toString()}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) {
           throw new Error("Respuesta no válida del servidor");
         }
@@ -274,7 +277,8 @@ function SearchContent() {
           setProducts(data);
           setTotal(totalCount);
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === "AbortError") return;
         console.error("Error al buscar productos:", err);
         if (mounted) {
           setProducts([]);
@@ -291,6 +295,7 @@ function SearchContent() {
 
     return () => {
       mounted = false;
+      controller.abort();
     };
   }, [
     keywords,

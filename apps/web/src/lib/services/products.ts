@@ -34,7 +34,7 @@ const productInclude = {
       positive_reviews: true,
     },
   },
-  images: { orderBy: { position: "asc" as const } },
+  images: { orderBy: { position: "asc" as const }, take: 1 },
 };
 
 function getSearchVariants(rawQuery: string): string[] {

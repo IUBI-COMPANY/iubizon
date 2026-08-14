@@ -22,17 +22,57 @@ import {
 } from "lucide-react";
 import { ProductImageGallery } from "@/components/features/products/ProductImageGallery";
 import { ProductActionsBlock } from "./ProductActionsBlock";
+import { cache } from "react";
 import { FavoriteButton } from "./FavoriteButton";
 import { getCategoryIcon } from "@/lib/utils/categoryIcons";
 import { stockLabel } from "@/lib/utils/stockLabel";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.iubizon.com";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
+
+const getProduct = cache(async (id: string) => {
+  try {
+    const raw = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo_url: true,
+            location: true,
+            is_verified: true,
+            is_personal: true,
+          },
+        },
+        creator: {
+          select: { id: true, name: true, email: true, avatar_url: true },
+        },
+        category: true,
+        images: { orderBy: { position: "asc" } },
+      },
+    });
+
+    if (!raw) return null;
+
+    return {
+      ...raw,
+      price: Number(raw.price),
+      location: raw.company?.location ?? null,
+      delivery_preference: ["pickup", "delivery"],
+      availability_type: (raw.stock ?? 1) > 0 ? "available" : "on_order",
+    } as any;
+  } catch (error) {
+    console.error("Error fetching product with Prisma:", error);
+    return null;
+  }
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -70,45 +110,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [mainImage],
     },
   };
-}
-
-async function getProduct(id: string) {
-  try {
-    const raw = await prisma.product.findUnique({
-      where: { id },
-      include: {
-        company: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo_url: true,
-            location: true,
-            is_verified: true,
-            is_personal: true,
-          },
-        },
-        creator: {
-          select: { id: true, name: true, email: true, avatar_url: true },
-        },
-        category: true,
-        images: { orderBy: { position: "asc" } },
-      },
-    });
-
-    if (!raw) return null;
-
-    return {
-      ...raw,
-      price: Number(raw.price),
-      location: raw.company?.location ?? null,
-      delivery_preference: ["pickup", "delivery"],
-      availability_type: (raw.stock ?? 1) > 0 ? "available" : "on_order",
-    } as any;
-  } catch (error) {
-    console.error("Error fetching product with Prisma:", error);
-    return null;
-  }
 }
 
 const conditionConfig: Record<

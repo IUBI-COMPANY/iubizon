@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { Alert } from "@/components/ui/Alert";
 import type { Category } from "@/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface CategoryWithStats extends Category {
   product_count: number;

@@ -1,12 +1,19 @@
+import { cache } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { Building2 } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
-import { getPublicCompanyBySlugOrId } from "@/lib/services/companies";
+import { getPublicCompanyBySlugOrId as getPublicCompanyRaw } from "@/lib/services/companies";
 import { getCategories } from "@/lib/services/categories";
 import { PublicCompanyStorefront } from "./PublicCompanyStorefront";
 import type { Product } from "@/types";
+
+export const revalidate = 60;
+
+const getPublicCompanyBySlugOrId = cache(async (slug: string) => {
+  return getPublicCompanyRaw(slug);
+});
 
 interface Props {
   params: Promise<{ slug: string }>;
