@@ -94,7 +94,7 @@ function formatFullDate(isoString: string) {
 
 function OrdersContent() {
   const { user, isLoading: authLoading } = useAuth();
-  const { activeCompany, isLoadingCompanies } = useCompany();
+  const { companies, activeCompany, isLoadingCompanies } = useCompany();
   const router = useRouter();
 
   const [packages, setPackages] = useState<SellerPackage[]>([]);
@@ -114,6 +114,13 @@ function OrdersContent() {
       router.push("/auth/login?redirect=/user/dashboard/orders");
     }
   }, [user, authLoading, router]);
+
+  // Solo usuarios con empresa (o miembros de una) pueden acceder a esta ruta.
+  useEffect(() => {
+    if (!authLoading && user && !isLoadingCompanies && companies.length === 0) {
+      router.replace("/user/dashboard");
+    }
+  }, [authLoading, user, isLoadingCompanies, companies.length, router]);
 
   const fetchOrders = useCallback(async () => {
     if (!user || isLoadingCompanies) return;
@@ -192,6 +199,9 @@ function OrdersContent() {
   }
 
   if (!user) return null;
+
+  // Evitar renderizar la UI de ventas mientras se redirige a usuarios sin empresa.
+  if (companies.length === 0) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">

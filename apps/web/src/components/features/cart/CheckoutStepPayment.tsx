@@ -15,6 +15,7 @@ import { PaymentMethods } from "@/components/features/checkout/PaymentMethods";
 import {
   PAYMENT_METHODS,
   getPaymentMethod,
+  type PaymentSuccessData,
 } from "@/components/features/checkout/paymentWidgets";
 import type { CartItem } from "@/hooks/useCart";
 import type { ShippingFormState } from "./checkout-schema";
@@ -40,7 +41,7 @@ interface CheckoutStepPaymentProps {
   total: number;
   shippingCost: number;
   onValidate: () => boolean;
-  onSuccess: (orderCode: string) => void;
+  onSuccess: (data: PaymentSuccessData) => void;
   onError: (errorMessage: string) => void;
 }
 

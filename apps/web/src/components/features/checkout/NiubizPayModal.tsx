@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import type { PaymentSuccessData } from "@/components/features/checkout/paymentWidgets";
 
 interface NiubizPayModalProps {
   amount: number;
@@ -10,7 +11,7 @@ interface NiubizPayModalProps {
   shippingForm: any;
   invoiceDetails: any;
   onValidate?: () => boolean;
-  onSuccess: (orderCode: string) => void;
+  onSuccess: (data: PaymentSuccessData) => void;
   onError: (errorMessage: string) => void;
 }
 
@@ -193,7 +194,14 @@ export function NiubizPayModal({
       setLoadingMsg(
         "¡Pago Aprobado! Redireccionando al comprobante de tu compra...",
       );
-      onSuccess(data.orderCode || data.sessionCode);
+      onSuccess({
+        orderCode: data.orderCode || data.sessionCode,
+        amount: data.amount ?? amount,
+        currency: data.currency || "PEN",
+        cardBrand: data.cardBrand ?? null,
+        cardLast4: data.cardLast4 ?? null,
+        transactionDate: data.transactionDate || new Date().toISOString(),
+      });
     } catch (err: unknown) {
       setLoadingSession(false);
       const msg =

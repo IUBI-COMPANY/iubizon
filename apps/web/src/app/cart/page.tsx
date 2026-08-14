@@ -31,6 +31,7 @@ import {
   type ShippingFormState,
   type DeliveryType,
 } from "@/components/features/cart/checkout-schema";
+import type { PaymentSuccessData } from "@/components/features/checkout/paymentWidgets";
 
 export default function CartCheckoutPage() {
   const router = useRouter();
@@ -404,7 +405,7 @@ export default function CartCheckoutPage() {
   };
 
   // Éxito del pago: limpiar estado y redirigir al comprobante
-  const handlePaymentSuccess = (orderCode: string) => {
+  const handlePaymentSuccess = (data: PaymentSuccessData) => {
     toast.success(
       "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
       "¡Gracias por tu compra!",
@@ -440,7 +441,16 @@ export default function CartCheckoutPage() {
         ),
       );
     }
-    router.push(`/cart/result?order_code=${orderCode}`);
+
+    const params = new URLSearchParams({
+      order_code: data.orderCode,
+      amount: String(data.amount ?? ""),
+      currency: data.currency || "PEN",
+      cardBrand: data.cardBrand ?? "",
+      cardLast4: data.cardLast4 ?? "",
+      transactionDate: data.transactionDate || new Date().toISOString(),
+    });
+    router.push(`/cart/result?${params.toString()}`);
   };
 
   return (

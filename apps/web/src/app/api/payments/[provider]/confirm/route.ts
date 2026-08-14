@@ -238,16 +238,34 @@ export async function POST(
       console.error(`[Payments Confirm Email Error] ${createdOrder.id}:`, err),
     );
 
+    const paymentSummary = {
+      orderCode: createdOrder.order_code,
+      amount: Number(amount),
+      currency: existingTx?.currency ?? "PEN",
+      cardBrand: confirmResult.cardBrand ?? null,
+      cardLast4: confirmResult.cardLast4 ?? null,
+      transactionDate: createdOrder.created_at
+        ? new Date(createdOrder.created_at).toISOString()
+        : new Date().toISOString(),
+    };
+
     if (isFormPost) {
+      const params = new URLSearchParams({
+        order_code: paymentSummary.orderCode,
+        amount: String(paymentSummary.amount),
+        currency: paymentSummary.currency,
+        cardBrand: paymentSummary.cardBrand ?? "",
+        cardLast4: paymentSummary.cardLast4 ?? "",
+        transactionDate: paymentSummary.transactionDate,
+      });
       return NextResponse.redirect(
-        new URL(`/cart/result?order_code=${purchaseNumber}`, req.url),
+        new URL(`/cart/result?${params.toString()}`, req.url),
         303,
       );
     }
 
     return NextResponse.json({
       success: true,
-      orderCode: createdOrder.order_code,
       orderId: createdOrder.id,
       ordersCount: createdOrder.packages.reduce(
         (s, p) => s + p.items.length,
@@ -255,6 +273,7 @@ export async function POST(
       ),
       authorizationCode: confirmResult.authorizationCode,
       financials: aggregateOrderFinancials(createdOrder.packages),
+      ...paymentSummary,
     });
   } catch (err: unknown) {
     const msg =

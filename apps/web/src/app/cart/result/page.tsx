@@ -25,19 +25,6 @@ interface OrderPackageSummary {
   productTitles: string[];
 }
 
-interface PaymentDetails {
-  cardBrand: string | null;
-  cardLast4: string | null;
-  authorizationCode: string | null;
-}
-
-interface OrderSummary {
-  orderCode: string;
-  createdAt: string;
-  totalAmount: number;
-  paymentDetails: PaymentDetails | null;
-}
-
 function PackageCard({
   pkg,
   index,
@@ -81,6 +68,7 @@ function ResultContent() {
 
   const isDenied = searchParams.get("status") === "denied";
   const orderCode = searchParams.get("order_code") || "";
+
   const deniedPurchaseNumber =
     searchParams.get("purchaseNumber") || searchParams.get("order_code") || "";
   const deniedActionDescription =
@@ -89,9 +77,15 @@ function ResultContent() {
   const deniedTransactionDate =
     searchParams.get("transactionDate") || new Date().toISOString();
 
-  const [order, setOrder] = useState<OrderSummary | null>(null);
+  // Resumen de la transacción aprobada (llega por query params desde el redirect).
+  const approvedAmount = Number(searchParams.get("amount")) || 0;
+  const approvedCurrency = searchParams.get("currency") || "PEN";
+  const approvedCardBrand = searchParams.get("cardBrand") || null;
+  const approvedCardLast4 = searchParams.get("cardLast4") || null;
+  const approvedTransactionDate =
+    searchParams.get("transactionDate") || new Date().toISOString();
+
   const [packages, setPackages] = useState<OrderPackageSummary[]>([]);
-  const [loading, setLoading] = useState(!isDenied && Boolean(orderCode));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -114,36 +108,6 @@ function ResultContent() {
       }
     } catch {}
   }, [clearCart, isDenied]);
-
-  useEffect(() => {
-    if (isDenied || !orderCode) return;
-
-    let cancelled = false;
-    setLoading(true);
-    fetch(`/api/user/orders?code=${encodeURIComponent(orderCode)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled && data.session) {
-          setOrder(data.session);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isDenied, orderCode]);
-
-  if (loading) {
-    return (
-      <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#f25c05]" />
-      </main>
-    );
-  }
 
   // ── VENTA DENEGADA ────────────────────────────────────────────────────────
   if (isDenied) {
@@ -215,11 +179,10 @@ function ResultContent() {
   }
 
   // ── VENTA APROBADA ───────────────────────────────────────────────────────
-  const payment = order?.paymentDetails;
   const cardLabel =
-    payment?.cardBrand && payment?.cardLast4
-      ? `${payment.cardBrand} (**** ${payment.cardLast4})`
-      : payment?.cardBrand || "Tarjeta (Niubiz)";
+    approvedCardBrand && approvedCardLast4
+      ? `${approvedCardBrand} (**** ${approvedCardLast4})`
+      : approvedCardBrand || "Tarjeta (Niubiz)";
 
   return (
     <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl">
@@ -248,9 +211,7 @@ function ResultContent() {
             <span className="text-[#64748b] font-semibold">
               Número de pedido
             </span>
-            <span className="font-black text-[#112237]">
-              {order?.orderCode || orderCode}
-            </span>
+            <span className="font-black text-[#112237]">{orderCode}</span>
           </div>
           <div className="p-4 flex items-center justify-between text-xs">
             <span className="text-[#64748b] font-semibold">Tarjeta</span>
@@ -259,19 +220,21 @@ function ResultContent() {
           <div className="p-4 flex items-center justify-between text-xs">
             <span className="text-[#64748b] font-semibold">Importe</span>
             <span className="font-black text-[#f25c05]">
-              S/ {order ? order.totalAmount.toFixed(2) : "0.00"}
+              S/ {approvedAmount.toFixed(2)}
             </span>
           </div>
           <div className="p-4 flex items-center justify-between text-xs">
             <span className="text-[#64748b] font-semibold">Moneda</span>
-            <span className="font-semibold text-[#112237]">PEN</span>
+            <span className="font-semibold text-[#112237]">
+              {approvedCurrency}
+            </span>
           </div>
           <div className="p-4 flex items-center justify-between text-xs">
             <span className="text-[#64748b] font-semibold">
               Fecha y hora del pedido
             </span>
             <span className="font-semibold text-[#112237]">
-              {order ? formatDateTime(order.createdAt) : "—"}
+              {formatDateTime(approvedTransactionDate)}
             </span>
           </div>
         </div>

@@ -7,6 +7,18 @@ import type { CartItem } from "@/hooks/useCart";
 import type { ShippingFormState } from "@/components/features/cart/checkout-schema";
 
 /**
+ * Datos de una transacción aprobada, para mostrarlos en la página de resultado.
+ */
+export interface PaymentSuccessData {
+  orderCode: string;
+  amount: number;
+  currency: string;
+  cardBrand: string | null;
+  cardLast4: string | null;
+  transactionDate: string;
+}
+
+/**
  * Props comunes que todo widget de pago debe aceptar.
  */
 export interface PaymentWidgetProps {
@@ -15,7 +27,7 @@ export interface PaymentWidgetProps {
   shippingForm: ShippingFormState;
   invoiceDetails: Record<string, unknown>;
   onValidate: () => boolean;
-  onSuccess: (orderCode: string) => void;
+  onSuccess: (data: PaymentSuccessData) => void;
   onError: (errorMessage: string) => void;
 }
 

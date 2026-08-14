@@ -82,7 +82,7 @@ function formatFullDate(isoString: string) {
 
 function PayoutsContent() {
   const { user, isLoading: authLoading } = useAuth();
-  const { activeCompany } = useCompany();
+  const { companies, activeCompany, isLoadingCompanies } = useCompany();
   const router = useRouter();
 
   const [payouts, setPayouts] = useState<SellerPayoutItem[]>([]);
@@ -125,6 +125,13 @@ function PayoutsContent() {
       router.push("/auth/login?redirect=/user/dashboard/payouts");
     }
   }, [user, authLoading, router]);
+
+  // Solo usuarios con empresa (o miembros de una) pueden acceder a esta ruta.
+  useEffect(() => {
+    if (!authLoading && user && !isLoadingCompanies && companies.length === 0) {
+      router.replace("/user/dashboard");
+    }
+  }, [authLoading, user, isLoadingCompanies, companies.length, router]);
 
   const fetchPayouts = useCallback(async () => {
     if (!user) return;
@@ -177,6 +184,9 @@ function PayoutsContent() {
   }
 
   if (!user) return null;
+
+  // Evitar renderizar la UI de retribuciones mientras se redirige a usuarios sin empresa.
+  if (companies.length === 0) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">

@@ -102,8 +102,22 @@ export async function GET(request: Request) {
       companyId = companyIdParam;
     }
 
+    // Seguridad: un usuario sin empresa (ni membresía) no debe ver ninguna venta.
+    if (!companyId) {
+      const commissionConfig = await getCommissionConfig();
+      return NextResponse.json({
+        packages: [],
+        totalCount: 0,
+        commission: {
+          baseRate: commissionConfig.base_rate,
+          fixedFee: commissionConfig.fixed_fee,
+          threshold: commissionConfig.threshold_amount,
+        },
+      });
+    }
+
     const packages = await prisma.orderPackage.findMany({
-      where: companyId ? { company_id: companyId } : {},
+      where: { company_id: companyId },
       orderBy: { created_at: "desc" },
       include: {
         company: { select: { id: true, name: true } },
