@@ -83,7 +83,7 @@ export default function UserOrdersPage() {
   const [sessions, setSessions] = useState<BuyerOrderSession[]>([]);
   const { loading, startLoading, stopLoading } = useInitialLoading();
   const [error, setError] = useState<string | null>(null);
-  const [statusTab, setStatusTab] = useState("pending");
+  const [statusTab, setStatusTab] = useState("all");
 
   const userId = user?.id;
 
