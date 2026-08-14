@@ -1,50 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-async function migrateGuestOrders(supabaseUserId: string, userEmail: string) {
-  try {
-    const existingProfile = await prisma.profile.findUnique({
-      where: { id: supabaseUserId },
-    });
-    if (existingProfile) return;
-
-    const guestProfile = await prisma.profile.findFirst({
-      where: { email: userEmail, id: { not: supabaseUserId } },
-    });
-    if (!guestProfile) return;
-
-    await prisma.$transaction([
-      prisma.order.updateMany({
-        where: { buyer_id: guestProfile.id },
-        data: { buyer_id: supabaseUserId },
-      }),
-      prisma.product.updateMany({
-        where: { created_by: guestProfile.id },
-        data: { created_by: supabaseUserId },
-      }),
-      prisma.review.updateMany({
-        where: { buyer_id: guestProfile.id },
-        data: { buyer_id: supabaseUserId },
-      }),
-      prisma.favorite.updateMany({
-        where: { user_id: guestProfile.id },
-        data: { user_id: supabaseUserId },
-      }),
-      prisma.companyMember.updateMany({
-        where: { user_id: guestProfile.id },
-        data: { user_id: supabaseUserId },
-      }),
-      prisma.profile.delete({ where: { id: guestProfile.id } }),
-    ]);
-
-    console.log(
-      `[Auth Callback] Migradas órdenes de guest (${guestProfile.id}) → usuario (${supabaseUserId})`,
-    );
-  } catch (err) {
-    console.error("[Auth Callback] Error migrando guest orders:", err);
-  }
-}
+import { migrateGuestDataToUser } from "@/lib/services/orders";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -89,7 +45,7 @@ export async function GET(request: NextRequest) {
     if (!error) {
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user?.email) {
-        await migrateGuestOrders(userData.user.id, userData.user.email);
+        await migrateGuestDataToUser(userData.user.id, userData.user.email);
       }
 
       const redirectResponse = NextResponse.redirect(`${origin}${next}`);
@@ -109,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (!error) {
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user?.email) {
-        await migrateGuestOrders(userData.user.id, userData.user.email);
+        await migrateGuestDataToUser(userData.user.id, userData.user.email);
       }
 
       const redirectTo = type === "recovery" ? "/auth/reset-password" : next;

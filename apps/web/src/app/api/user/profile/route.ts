@@ -15,9 +15,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let profile = await prisma.profile.findUnique({
-      where: { id: supabaseUser.id },
-    });
+    if (supabaseUser.email) {
+      const { migrateGuestDataToUser } = await import("@/lib/services/orders");
+      await migrateGuestDataToUser(supabaseUser.id, supabaseUser.email);
+    }
 
     const googleAvatar =
       supabaseUser.user_metadata?.avatar_url ??
@@ -32,50 +33,11 @@ export async function GET() {
       )?.picture ??
       null;
 
+    let profile = await prisma.profile.findUnique({
+      where: { id: supabaseUser.id },
+    });
+
     if (!profile) {
-      // ¿Existe un perfil guest (compra sin cuenta) con el mismo email?
-      // Si es así, migrar sus órdenes al nuevo perfil autenticado.
-      const guestProfile = await prisma.profile.findFirst({
-        where: {
-          email: supabaseUser.email ?? "",
-          id: { not: supabaseUser.id },
-        },
-      });
-
-      if (guestProfile) {
-        await prisma.$transaction([
-          // Migrar órdenes de compra del guest al perfil autenticado
-          prisma.order.updateMany({
-            where: { buyer_id: guestProfile.id },
-            data: { buyer_id: supabaseUser.id },
-          }),
-          // Migrar productos creados (si aplica)
-          prisma.product.updateMany({
-            where: { created_by: guestProfile.id },
-            data: { created_by: supabaseUser.id },
-          }),
-          // Migrar reseñas
-          prisma.review.updateMany({
-            where: { buyer_id: guestProfile.id },
-            data: { buyer_id: supabaseUser.id },
-          }),
-          // Migrar favoritos
-          prisma.favorite.updateMany({
-            where: { user_id: guestProfile.id },
-            data: { user_id: supabaseUser.id },
-          }),
-          // Migrar membresías de empresa (si aplica)
-          prisma.companyMember.updateMany({
-            where: { user_id: guestProfile.id },
-            data: { user_id: supabaseUser.id },
-          }),
-          // Eliminar perfil guest
-          prisma.profile.delete({
-            where: { id: guestProfile.id },
-          }),
-        ]);
-      }
-
       profile = await prisma.profile.create({
         data: {
           id: supabaseUser.id,

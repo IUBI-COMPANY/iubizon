@@ -242,7 +242,7 @@ export async function getOrCreateBuyerProfile(params: {
   const phone = params.phone?.trim() || null;
 
   let profile = await client.profile.findFirst({
-    where: { email },
+    where: { email: { equals: email, mode: "insensitive" } },
     select: { id: true },
   });
 
@@ -260,4 +260,114 @@ export async function getOrCreateBuyerProfile(params: {
   }
 
   return profile.id;
+}
+
+export async function migrateGuestDataToUser(userId: string, email: string) {
+  if (!userId || !email?.trim()) return 0;
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  try {
+    const guestProfiles = await prisma.profile.findMany({
+      where: {
+        email: { equals: normalizedEmail, mode: "insensitive" },
+        id: { not: userId },
+      },
+      select: { id: true },
+    });
+
+    const guestIds = guestProfiles.map((p) => p.id);
+
+    const matchingOrders = await prisma.order.findMany({
+      where: {
+        buyer_id: { not: userId },
+        OR: [
+          ...(guestIds.length > 0 ? [{ buyer_id: { in: guestIds } }] : []),
+          {
+            shipping: {
+              email: { equals: normalizedEmail, mode: "insensitive" },
+            },
+          },
+          {
+            buyer: {
+              email: { equals: normalizedEmail, mode: "insensitive" },
+            },
+          },
+        ],
+      },
+      select: { id: true, buyer_id: true },
+    });
+
+    const orderBuyerIdsToMigrate = Array.from(
+      new Set([
+        ...guestIds,
+        ...matchingOrders.map((o) => o.buyer_id).filter(Boolean),
+      ]),
+    ).filter((id) => id !== userId);
+
+    if (orderBuyerIdsToMigrate.length === 0 && matchingOrders.length === 0) {
+      return 0;
+    }
+
+    let migratedCount = 0;
+
+    await prisma.$transaction(async (tx) => {
+      const orderUpdate = await tx.order.updateMany({
+        where: {
+          OR: [
+            ...(orderBuyerIdsToMigrate.length > 0
+              ? [{ buyer_id: { in: orderBuyerIdsToMigrate } }]
+              : []),
+            {
+              shipping: {
+                email: { equals: normalizedEmail, mode: "insensitive" },
+              },
+            },
+          ],
+        },
+        data: { buyer_id: userId },
+      });
+      migratedCount = orderUpdate.count;
+
+      if (orderBuyerIdsToMigrate.length > 0) {
+        await tx.product.updateMany({
+          where: { created_by: { in: orderBuyerIdsToMigrate } },
+          data: { created_by: userId },
+        });
+
+        await tx.review.updateMany({
+          where: { buyer_id: { in: orderBuyerIdsToMigrate } },
+          data: { buyer_id: userId },
+        });
+
+        await tx.favorite.updateMany({
+          where: { user_id: { in: orderBuyerIdsToMigrate } },
+          data: { user_id: userId },
+        });
+
+        await tx.companyMember.updateMany({
+          where: { user_id: { in: orderBuyerIdsToMigrate } },
+          data: { user_id: userId },
+        });
+
+        await tx.profile.deleteMany({
+          where: { id: { in: orderBuyerIdsToMigrate } },
+        });
+      }
+    });
+
+    if (migratedCount > 0) {
+      console.log(
+        `[GuestMigration] Migradas ${migratedCount} órdenes de ${normalizedEmail} -> usuario ${userId}`,
+      );
+    }
+
+    return migratedCount;
+  } catch (err) {
+    console.error(
+      `[GuestMigration] Error migrando datos de guest para ${email}:`,
+      err,
+    );
+    return 0;
+  }
 }
