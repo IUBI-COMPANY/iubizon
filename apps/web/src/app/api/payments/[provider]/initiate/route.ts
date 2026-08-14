@@ -1,17 +1,35 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { createNiubizSession } from "@/lib/services/niubiz";
+import { getPaymentProvider } from "@/lib/payments/registry";
 import { generateOrderCode } from "@/lib/utils/orderCode";
 
-export async function POST(req: Request) {
+/**
+ * Inicia el pago con un proveedor (Niubiz, Culqi, ...).
+ * POST /api/payments/[provider]/initiate
+ */
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ provider: string }> },
+) {
+  const { provider: providerId } = await params;
+
   try {
+    const provider = getPaymentProvider(providerId);
+    if (!provider) {
+      return NextResponse.json(
+        { error: "Proveedor de pago no soportado." },
+        { status: 400 },
+      );
+    }
+
     const supabase = await createServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { amount, cartItems, shipping, invoiceDetails } = await req.json();
+    const { amount, currency, cartItems, shipping, invoiceDetails, customer } =
+      await req.json();
 
     if (!amount || Number(amount) <= 0) {
       return NextResponse.json(
@@ -32,6 +50,7 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
     const shippingDocType = String(shipping?.documentType || "").trim();
     const shippingDocNumber = String(shipping?.documentNumber || "").trim();
     const isValidDni =
@@ -48,9 +67,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const customerEmail = guestEmail || user?.email || "cliente@iubizon.com";
-    const numericAmount = Number(amount);
-
+    // Evitar que un usuario compre sus propias publicaciones
     if (user && Array.isArray(cartItems) && cartItems.length > 0) {
       const productIds = cartItems
         .map((i: { id?: string; product_id?: string }) => i.product_id || i.id)
@@ -76,6 +93,10 @@ export async function POST(req: Request) {
       }
     }
 
+    const customerEmail = guestEmail || user?.email || "cliente@iubizon.com";
+    const numericAmount = Number(amount);
+    const currencyValue = currency || "PEN";
+
     let purchaseNumber = generateOrderCode();
     while (
       await prisma.paymentTransaction.findUnique({
@@ -90,30 +111,36 @@ export async function POST(req: Request) {
       req.headers.get("x-real-ip") ||
       "127.0.0.1";
 
-    const { sessionKey, merchantId, environment } = await createNiubizSession({
+    // Datos del cliente derivados del formulario de envío (requeridos por el
+    // antifraude y el dataMap del proveedor).
+    const customerData = customer || {
+      email: customerEmail,
+      documentNumber: shipping?.documentNumber,
+      phone: shipping?.phone,
+      address: shipping?.address,
+      city: shipping?.district || shipping?.province,
+      state: shipping?.department,
+      country: "PE",
+      registered: Boolean(user),
+    };
+
+    const result = await provider.initiate({
       amount: numericAmount,
+      currency: currencyValue,
       purchaseNumber,
+      customer: customerData,
       customerIp: clientIp,
-      customer: {
-        email: customerEmail,
-        documentNumber: shipping?.documentNumber,
-        phone: shipping?.phone,
-        address: shipping?.address,
-        city: shipping?.district || shipping?.province,
-        state: shipping?.department,
-        country: "PE",
-        registered: Boolean(user),
-      },
+      context: { cartItems, shipping, invoiceDetails },
     });
 
     await prisma.paymentTransaction.create({
       data: {
-        provider: "niubiz",
+        provider: providerId,
         transaction_type: "authorization",
         status: "pending",
         purchase_number: purchaseNumber,
         amount: numericAmount,
-        currency: "PEN",
+        currency: currencyValue,
         customer_ip: clientIp,
         raw_response: {
           cartItems: cartItems || [],
@@ -126,18 +153,14 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
-      sessionKey,
-      merchantId,
+      ...result,
       purchaseNumber,
       amount: numericAmount,
-      environment,
     });
   } catch (err: unknown) {
     const msg =
-      err instanceof Error
-        ? err.message
-        : "Error al iniciar sesión de pago Niubiz";
-    console.error("Error en API /api/payments/niubiz/session:", err);
+      err instanceof Error ? err.message : "Error al iniciar el pago.";
+    console.error(`Error en API /api/payments/${providerId}/initiate:`, err);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

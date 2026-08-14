@@ -1,0 +1,1 @@
+export { niubizProvider } from "./provider";

@@ -89,11 +89,7 @@ export async function authorizeNiubizTransaction(
     (status === "Authorized" || ["000", "00", "0"].includes(actionCode));
 
   if (!isApproved) {
-    const errorMsg =
-      responseData.dataMap?.ACTION_DESCRIPTION ||
-      responseData.data?.DESC ||
-      responseData.errorMessage ||
-      "La tarjeta fue denegada por el banco emisor.";
+    const errorMsg = extractErrorDescription(responseData, actionCode);
 
     return {
       success: false,
@@ -112,4 +108,30 @@ export async function authorizeNiubizTransaction(
     cardLast4: responseData.dataMap?.CARD?.slice(-4),
     rawResponse: responseData,
   };
+}
+
+/**
+ * Extrae la descripción de la denegación probando múltiples campos de la
+ * respuesta de Niubiz (la estructura varía entre sandbox/producción y v2/v3).
+ */
+function extractErrorDescription(
+  responseData: any,
+  actionCode: string,
+): string {
+  const candidates = [
+    responseData.dataMap?.ACTION_DESCRIPTION,
+    responseData.dataMap?.ACTION_DESC,
+    responseData.data?.DESC,
+    responseData.data?.ACTION_DESCRIPTION,
+    responseData.errorMessage,
+  ];
+
+  const found = candidates.find(
+    (c) => typeof c === "string" && c.trim().length > 0,
+  );
+  if (found) return found.trim();
+
+  return actionCode
+    ? `La tarjeta fue denegada por el banco emisor (código ${actionCode}).`
+    : "La tarjeta fue denegada por el banco emisor.";
 }

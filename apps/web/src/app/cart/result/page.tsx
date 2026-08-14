@@ -16,6 +16,7 @@ import {
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { useCart } from "@/hooks/useCart";
+import { formatDateTime } from "@/lib/utils";
 
 interface OrderPackageSummary {
   packageId: string;
@@ -35,22 +36,6 @@ interface OrderSummary {
   createdAt: string;
   totalAmount: number;
   paymentDetails: PaymentDetails | null;
-}
-
-function formatFullDate(isoString: string) {
-  try {
-    const d = new Date(isoString);
-    return new Intl.DateTimeFormat("es-PE", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    }).format(d);
-  } catch {
-    return isoString;
-  }
 }
 
 function PackageCard({
@@ -110,10 +95,16 @@ function ResultContent() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // En venta denegada NO limpiar el carrito ni el formulario, para que el
+    // usuario pueda reintentar el pago sin perder su avance.
+    if (isDenied) return;
+
     clearCart();
     localStorage.removeItem("iubizon_checkout_step");
     localStorage.removeItem("iubizon_checkout_form");
     localStorage.removeItem("iubizon_checkout_invoice");
+    localStorage.removeItem("iubizon_checkout_terms");
 
     try {
       const raw = sessionStorage.getItem("iubizon_order_packages");
@@ -122,7 +113,7 @@ function ResultContent() {
         sessionStorage.removeItem("iubizon_order_packages");
       }
     } catch {}
-  }, [clearCart]);
+  }, [clearCart, isDenied]);
 
   useEffect(() => {
     if (isDenied || !orderCode) return;
@@ -191,7 +182,7 @@ function ResultContent() {
                 Fecha y hora del pedido
               </span>
               <span className="font-semibold text-[#112237]">
-                {formatFullDate(deniedTransactionDate)}
+                {formatDateTime(deniedTransactionDate)}
               </span>
             </div>
             <div className="p-4 flex items-start justify-between gap-4 text-xs">
@@ -280,7 +271,7 @@ function ResultContent() {
               Fecha y hora del pedido
             </span>
             <span className="font-semibold text-[#112237]">
-              {order ? formatFullDate(order.createdAt) : "—"}
+              {order ? formatDateTime(order.createdAt) : "—"}
             </span>
           </div>
         </div>

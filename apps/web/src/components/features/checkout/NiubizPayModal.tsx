@@ -82,7 +82,7 @@ export function NiubizPayModal({
       setLoadingMsg("Conectando con la pasarela de pagos segura Niubiz...");
       setLoadingSession(true);
 
-      const res = await fetch("/api/payments/niubiz/session", {
+      const res = await fetch("/api/payments/niubiz/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -120,7 +120,7 @@ export function NiubizPayModal({
         timeouturl: `${window.location.origin}/cart?error=timeout`,
         merchantlogo: `${window.location.origin}/images/logo.png`,
         formbuttoncolor: "#f25c05",
-        action: `${window.location.origin}/api/payments/niubiz/authorize?purchaseNumber=${data.purchaseNumber}&amount=${amount}`,
+        action: `${window.location.origin}/api/payments/niubiz/confirm?purchaseNumber=${data.purchaseNumber}&amount=${amount}`,
         complete: async (response: any) => {
           if (response && response.transactionToken) {
             await processAuthorization(
@@ -159,7 +159,7 @@ export function NiubizPayModal({
     try {
       setLoadingMsg("Verificando tarjeta y registrando tu pedido...");
       setLoadingSession(true);
-      const res = await fetch("/api/payments/niubiz/authorize", {
+      const res = await fetch("/api/payments/niubiz/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

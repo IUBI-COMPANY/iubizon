@@ -130,6 +130,16 @@ async function main() {
       category: "payment_gateway",
     },
     {
+      key: "PAYMENT_PROVIDERS",
+      value: {
+        enabled: ["niubiz"],
+        providers: {},
+      },
+      description:
+        "Proveedores de pago habilitados y sus credenciales (niubiz, culqi, pago_efectivo, paypal, ...)",
+      category: "payment_gateway",
+    },
+    {
       key: "BUYER_PROTECTION_DAYS",
       value: { days: 7 },
       description:

@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CreditCard, ShieldCheck, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { Checkbox } from "@/components/ui/Checkbox";
 import {
   InvoiceSelector,
@@ -10,7 +11,11 @@ import {
   type DocType,
 } from "@/components/features/cart/InvoiceSelector";
 import { CartSummarySidebar } from "@/components/features/cart/CartSummarySidebar";
-import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
+import { PaymentMethods } from "@/components/features/checkout/PaymentMethods";
+import {
+  PAYMENT_METHODS,
+  getPaymentMethod,
+} from "@/components/features/checkout/paymentWidgets";
 import type { CartItem } from "@/hooks/useCart";
 import type { ShippingFormState } from "./checkout-schema";
 
@@ -63,6 +68,63 @@ export function CheckoutStepPayment({
   onSuccess,
   onError,
 }: CheckoutStepPaymentProps) {
+  const [enabledIds, setEnabledIds] = useState<string[]>(
+    PAYMENT_METHODS.map((m) => m.id),
+  );
+  const [selectedId, setSelectedId] = useState<string>(
+    PAYMENT_METHODS[0]?.id || "",
+  );
+
+  useEffect(() => {
+    fetch("/api/payments/methods")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.enabled)) {
+          setEnabledIds(data.enabled);
+          setSelectedId((prev) => {
+            if (prev && data.enabled.includes(prev)) return prev;
+            const first = PAYMENT_METHODS.find((m) =>
+              data.enabled.includes(m.id),
+            );
+            return first?.id || "";
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const availableMethods = useMemo(
+    () => PAYMENT_METHODS.filter((m) => enabledIds.includes(m.id)),
+    [enabledIds],
+  );
+
+  const selectedMethod = getPaymentMethod(selectedId) || availableMethods[0];
+  const Widget = selectedMethod?.Widget;
+
+  const invoiceDetails = useMemo(
+    () => ({
+      doc_type: invoiceType,
+      identity_type: invoiceType === "factura" ? "ruc" : docType,
+      identity_number: invoiceType === "factura" ? invoiceRuc : invoiceDni,
+      legal_name:
+        invoiceType === "factura" ? invoiceCompanyName : shippingForm.name,
+      tax_address: shippingForm.address,
+      shipping_document_type: shippingForm.documentType,
+      shipping_document_number: shippingForm.documentNumber,
+    }),
+    [
+      invoiceType,
+      docType,
+      invoiceRuc,
+      invoiceDni,
+      invoiceCompanyName,
+      shippingForm.name,
+      shippingForm.address,
+      shippingForm.documentType,
+      shippingForm.documentNumber,
+    ],
+  );
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       <div className="lg:col-span-8 space-y-6">
@@ -79,41 +141,11 @@ export function CheckoutStepPayment({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Método 1: Tarjeta Niubiz (ACTIVO) */}
-            <div className="border-2 border-[#f25c05] bg-orange-50/50 p-4 rounded-2xl flex flex-col justify-between shadow-sm cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <CreditCard className="w-6 h-6 text-[#f25c05]" />
-                <span className="bg-[#f25c05] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
-                  OFICIAL / ACTIVO
-                </span>
-              </div>
-              <div>
-                <p className="font-bold text-sm text-[#112237]">
-                  Tarjeta Crédito / Débito (Niubiz)
-                </p>
-                <p className="text-[11px] text-[#64748b] mt-0.5">
-                  Visa, Mastercard, American Express. Pago 100% seguro.
-                </p>
-              </div>
-            </div>
-
-            {/* Método 2: PayPal (Próximamente) */}
-            <div className="border border-slate-200 bg-slate-50 p-4 rounded-2xl flex flex-col justify-between opacity-60 cursor-not-allowed">
-              <div className="flex items-center justify-between mb-3">
-                <ShieldCheck className="w-6 h-6 text-slate-400" />
-                <span className="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  Próximamente
-                </span>
-              </div>
-              <div>
-                <p className="font-bold text-sm text-slate-700">PayPal</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Pagos internacionales rápidos y seguros.
-                </p>
-              </div>
-            </div>
-          </div>
+          <PaymentMethods
+            methods={availableMethods}
+            selectedId={selectedMethod?.id || ""}
+            onSelect={setSelectedId}
+          />
 
           <InvoiceSelector
             invoiceType={invoiceType}
@@ -179,7 +211,7 @@ export function CheckoutStepPayment({
               <span className="text-xs text-[#64748b] leading-relaxed font-normal">
                 Acepto los{" "}
                 <Link
-                  href="/terms"
+                  href="/help?tab=terminos"
                   target="_blank"
                   className="text-[#f25c05] hover:underline font-medium"
                 >
@@ -187,7 +219,7 @@ export function CheckoutStepPayment({
                 </Link>{" "}
                 y la{" "}
                 <Link
-                  href="/privacy"
+                  href="/help?tab=terminosprivacy"
                   target="_blank"
                   className="text-[#f25c05] hover:underline font-medium"
                 >
@@ -207,29 +239,19 @@ export function CheckoutStepPayment({
             </Checkbox>
           </div>
 
-          <div className="pt-4 w-full">
-            <NiubizPayModal
-              amount={grandTotal}
-              cartItems={items}
-              shippingForm={shippingForm}
-              onValidate={onValidate}
-              invoiceDetails={{
-                doc_type: invoiceType,
-                identity_type: invoiceType === "factura" ? "ruc" : docType,
-                identity_number:
-                  invoiceType === "factura" ? invoiceRuc : invoiceDni,
-                legal_name:
-                  invoiceType === "factura"
-                    ? invoiceCompanyName
-                    : shippingForm.name,
-                tax_address: shippingForm.address,
-                shipping_document_type: shippingForm.documentType,
-                shipping_document_number: shippingForm.documentNumber,
-              }}
-              onSuccess={onSuccess}
-              onError={onError}
-            />
-          </div>
+          {Widget && (
+            <div className="pt-4 w-full">
+              <Widget
+                amount={grandTotal}
+                cartItems={items}
+                shippingForm={shippingForm}
+                invoiceDetails={invoiceDetails}
+                onValidate={onValidate}
+                onSuccess={onSuccess}
+                onError={onError}
+              />
+            </div>
+          )}
         </div>
       </div>
 

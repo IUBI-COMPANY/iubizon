@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@iubizon/db";
-import { processNiubizRefund } from "@/lib/niubiz";
+import { getRefundProvider } from "@/lib/refund-providers";
 
 function triggerRefundEmail(
   refundId: string,
@@ -327,14 +327,16 @@ async function handleProcessRefund(
         { error: "No se encontró la transacción de pago" },
         { status: 400 },
       );
-    if (tx.provider !== "niubiz")
-      return NextResponse.json(
-        { error: "Solo reembolsos Niubiz" },
-        { status: 400 },
-      );
     if (!tx.transaction_id)
       return NextResponse.json(
         { error: "Faltan datos de la transacción" },
+        { status: 400 },
+      );
+
+    const provider = getRefundProvider(tx.provider);
+    if (!provider)
+      return NextResponse.json(
+        { error: `Proveedor de reembolso no soportado (${tx.provider})` },
         { status: 400 },
       );
 
@@ -353,12 +355,13 @@ async function handleProcessRefund(
     }
 
     try {
-      const result = await processNiubizRefund(
-        tx.transaction_id,
-        companyRuc,
-        Number(refund.refund_amount),
-        refundId,
-      );
+      const result = await provider.refund({
+        transactionId: tx.transaction_id,
+        amount: Number(refund.refund_amount),
+        purchaseNumber: refund.order.id,
+        ruc: companyRuc,
+        externalReferenceId: refundId,
+      });
       await applyRefundDbUpdates(
         refund,
         tx.id,
