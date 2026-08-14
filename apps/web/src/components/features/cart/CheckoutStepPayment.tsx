@@ -220,7 +220,7 @@ export function CheckoutStepPayment({
                 </Link>{" "}
                 y la{" "}
                 <Link
-                  href="/help?tab=terminosprivacy"
+                  href="/help?tab=privacidad"
                   target="_blank"
                   className="text-[#f25c05] hover:underline font-medium"
                 >

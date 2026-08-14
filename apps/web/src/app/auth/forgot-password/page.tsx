@@ -1,22 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import {Suspense, useState} from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Mail, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/Card";
-import { createClient } from "@/lib/supabase/client";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {ArrowLeft, Mail} from "lucide-react";
+import {Button} from "@/components/ui/Button";
+import {Input} from "@/components/ui/Input";
+import {Label} from "@/components/ui/Label";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/Card";
+import {createClient} from "@/lib/supabase/client";
+import {AuthBackButton} from "@/components/features/auth/AuthBackButton";
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -67,13 +62,16 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] p-4">
       <div className="w-full max-w-md mb-4 flex items-center justify-between">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] hover:text-[#f25c05] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm transition-all hover:shadow-md"
+        <Suspense
+          fallback={
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm opacity-60">
+              <ArrowLeft className="w-4 h-4 text-[#f25c05]" />
+              <span>Volver al Inicio</span>
+            </div>
+          }
         >
-          <ArrowLeft className="w-4 h-4 text-[#f25c05]" />
-          <span>Volver al Inicio</span>
-        </Link>
+          <AuthBackButton />
+        </Suspense>
       </div>
 
       <Card className="w-full max-w-md">

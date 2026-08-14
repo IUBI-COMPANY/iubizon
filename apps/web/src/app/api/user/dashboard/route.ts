@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
-import { migrateGuestDataToUser } from "@/lib/services/orders";
-
 export async function GET(req: Request) {
   try {
     const supabase = await createServerClient();
@@ -13,10 +11,6 @@ export async function GET(req: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    if (user.email) {
-      await migrateGuestDataToUser(user.id, user.email);
     }
 
     const { searchParams } = new URL(req.url);

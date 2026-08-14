@@ -174,15 +174,16 @@ export function CheckoutStepShipping({
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#f25c05] shrink-0" />
                 <span>
-                  <strong>Compra como Invitado activa:</strong> No necesitas
-                  registrarte ni crear contraseña para comprar.
+                  Puedes ingresar tus datos de envío ahora. Al hacer clic en{" "}
+                  <strong>Continuar al Pago</strong>, te solicitaremos iniciar
+                  sesión o crear tu cuenta para proteger tu pedido.
                 </span>
               </div>
               <Link
                 href="/auth/login?redirect=/cart"
                 className="text-[#f25c05] font-bold hover:underline shrink-0 text-[11px]"
               >
-                ¿Ya tienes cuenta? Iniciar sesión
+                Iniciar sesión / Registrarse
               </Link>
             </div>
           )}

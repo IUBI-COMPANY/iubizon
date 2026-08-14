@@ -67,8 +67,6 @@ export interface BuyerOrderSession {
   packages: BuyerPackage[];
 }
 
-import { migrateGuestDataToUser } from "@/lib/services/orders";
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -81,10 +79,6 @@ export async function GET(req: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    if (user.email) {
-      await migrateGuestDataToUser(user.id, user.email);
     }
 
     const where: any = { buyer_id: user.id };

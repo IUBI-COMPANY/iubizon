@@ -205,13 +205,34 @@ export default function CartCheckoutPage() {
     }
   }, [user, getValues, setValue]);
 
-  // Persistir paso activo en LocalStorage
+  // Persistir paso activo en LocalStorage (requiere sesión para el Paso 3)
   const handleStepChange = (newStep: number) => {
+    if (newStep === 3 && !user) {
+      toast.info(
+        "Para continuar con tu compra, por favor inicia sesión o regístrate.",
+        "Inicio de Sesión Requerido",
+      );
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STEP_STORAGE_KEY, "2");
+      }
+      router.push("/auth/login?redirect=/cart");
+      return;
+    }
     setStep(newStep);
     if (typeof window !== "undefined") {
       localStorage.setItem(STEP_STORAGE_KEY, newStep.toString());
     }
   };
+
+  // Si intenta estar en el paso 3 sin sesión (ej: recarga de página), regresar al paso 2
+  useEffect(() => {
+    if (step === 3 && !user) {
+      setStep(2);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STEP_STORAGE_KEY, "2");
+      }
+    }
+  }, [step, user]);
 
   // Provincias/distritos disponibles según el departamento/provincia seleccionados (ubigeo)
   const provincesForDepartment = useMemo(
@@ -325,7 +346,24 @@ export default function CartCheckoutPage() {
 
   // Validación del formulario de envío (Zod + RHF) para avanzar al paso 3
   const handleProceedToStep3 = handleSubmit(
-    () => {
+    (formData) => {
+      // 1. Guardar los datos ingresados en LocalStorage para no perder la información
+      if (typeof window !== "undefined") {
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+        localStorage.setItem(STEP_STORAGE_KEY, "2");
+      }
+
+      // 2. Si el usuario NO ha iniciado sesión, solicitamos que se registre o inicie sesión
+      if (!user) {
+        toast.info(
+          "Para continuar con tu compra, por favor inicia sesión o regístrate.",
+          "Inicio de Sesión Requerido",
+        );
+        router.push("/auth/login?redirect=/cart");
+        return;
+      }
+
+      // 3. Si ya inició sesión, avanzamos al paso 3 (Pago)
       handleStepChange(3);
     },
     (formErrors) => {

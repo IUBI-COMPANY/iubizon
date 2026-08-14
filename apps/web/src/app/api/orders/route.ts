@@ -17,6 +17,10 @@ export async function POST(req: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       items,
@@ -31,8 +35,8 @@ export async function POST(req: Request) {
     } = body;
 
     const buyerId = await getOrCreateBuyerProfile({
-      userId: user?.id,
-      email: shipping?.email,
+      userId: user.id,
+      email: shipping?.email || user.email,
       name: shipping?.name,
       phone: shipping?.phone,
     });

@@ -28,7 +28,7 @@ export interface CompleteOrderInput {
   providerId: string;
   purchaseNumber: string;
   effectiveEmail: string;
-  buyerUserId?: string | null;
+  buyerUserId: string;
   cartItems: any[];
   shipping: Record<string, any>;
   invoiceDetails: Record<string, any>;

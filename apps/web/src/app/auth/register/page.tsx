@@ -3,13 +3,14 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Mail, User, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Card,
   CardContent,
@@ -74,6 +75,7 @@ function RegisterForm() {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -133,10 +135,19 @@ function RegisterForm() {
     setIsGoogleLoading(true);
     setError(null);
 
+    const handleFocus = () => {
+      setTimeout(() => {
+        setIsGoogleLoading(false);
+        window.removeEventListener("focus", handleFocus);
+      }, 1000);
+    };
+    window.addEventListener("focus", handleFocus);
+
     const { error: googleError } = await signInWithGoogle(redirectTarget);
     if (googleError) {
       setError("Error al conectar con Google. Intenta nuevamente.");
       setIsGoogleLoading(false);
+      window.removeEventListener("focus", handleFocus);
     }
   };
 
@@ -226,39 +237,41 @@ function RegisterForm() {
             )}
           </div>
 
-          <div className="flex items-start gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="terms"
-              className="mt-0.5 w-4 h-4 rounded border-[#e2e8f0] text-[#f25c05] focus:ring-[#f25c05]"
-              disabled={isLoading}
-              {...register("agreedToTerms")}
+          <div className="pt-1">
+            <Controller
+              name="agreedToTerms"
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  name="agreedToTerms"
+                  checked={field.value}
+                  onChange={field.onChange}
+                  disabled={isLoading}
+                  error={!!errors.agreedToTerms}
+                  helperText={errors.agreedToTerms?.message}
+                >
+                  <span className="text-xs text-[#64748b] leading-tight font-normal">
+                    Acepto los{" "}
+                    <Link
+                      href="/help?tab=terminos"
+                      target="_blank"
+                      className="text-[#f25c05] hover:underline font-medium"
+                    >
+                      Términos y condiciones
+                    </Link>{" "}
+                    y la{" "}
+                    <Link
+                      href="/help?tab=privacidad"
+                      target="_blank"
+                      className="text-[#f25c05] hover:underline font-medium"
+                    >
+                      Política de privacidad
+                    </Link>
+                  </span>
+                </Checkbox>
+              )}
             />
-            <label
-              htmlFor="terms"
-              className="text-xs text-[#64748b] leading-tight"
-            >
-              Acepto los{" "}
-              <Link
-                href="/terms"
-                className="text-[#f25c05] hover:underline font-medium"
-              >
-                Términos y condiciones
-              </Link>{" "}
-              y la{" "}
-              <Link
-                href="/privacy"
-                className="text-[#f25c05] hover:underline font-medium"
-              >
-                Política de privacidad
-              </Link>
-            </label>
           </div>
-          {errors.agreedToTerms && (
-            <p className="text-xs text-red-500 font-medium -mt-2">
-              {errors.agreedToTerms.message}
-            </p>
-          )}
 
           <Button
             type="submit"
@@ -329,17 +342,22 @@ function RegisterForm() {
   );
 }
 
+import { AuthBackButton } from "@/components/features/auth/AuthBackButton";
+
 export default function RegisterPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] p-4">
       <div className="w-full max-w-md mb-4 flex items-center justify-between">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] hover:text-[#f25c05] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm transition-all hover:shadow-md"
+        <Suspense
+          fallback={
+            <div className="inline-flex items-center gap-2 text-xs font-bold text-[#475569] bg-white border border-[#e2e8f0] px-3.5 py-2 rounded-2xl shadow-sm opacity-60">
+              <ArrowLeft className="w-4 h-4 text-[#f25c05]" />
+              <span>Volver al Inicio</span>
+            </div>
+          }
         >
-          <ArrowLeft className="w-4 h-4 text-[#f25c05]" />
-          <span>Volver al Inicio</span>
-        </Link>
+          <AuthBackButton />
+        </Suspense>
       </div>
 
       <Suspense

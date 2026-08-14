@@ -41,13 +41,13 @@ export async function POST(
     const guestEmail = shipping?.email?.trim();
     const guestName = shipping?.name?.trim();
 
-    if (!user && (!guestEmail || !guestName)) {
+    if (!user) {
       return NextResponse.json(
         {
           error:
-            "Por favor completa tu Nombre y Correo electrónico para proceder con tu compra como invitado.",
+            "Debes iniciar sesión o registrarte para realizar una compra.",
         },
-        { status: 400 },
+        { status: 401 },
       );
     }
 

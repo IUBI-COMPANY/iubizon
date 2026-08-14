@@ -1,13 +1,17 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { migrateGuestDataToUser } from "@/lib/services/orders";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as
-    "signup" | "recovery" | "invite" | "magiclink" | "email_change" | null;
+    | "signup"
+    | "recovery"
+    | "invite"
+    | "magiclink"
+    | "email_change"
+    | null;
   const next = searchParams.get("next") ?? "/";
 
   let supabaseResponse = NextResponse.next({ request });
@@ -43,11 +47,6 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.email) {
-        await migrateGuestDataToUser(userData.user.id, userData.user.email);
-      }
-
       const redirectResponse = NextResponse.redirect(`${origin}${next}`);
       supabaseResponse.cookies.getAll().forEach((cookie) => {
         redirectResponse.cookies.set(cookie.name, cookie.value);
@@ -63,10 +62,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.email) {
-        await migrateGuestDataToUser(userData.user.id, userData.user.email);
-      }
 
       const redirectTo = type === "recovery" ? "/auth/reset-password" : next;
       const redirectUrl = next.startsWith("http")

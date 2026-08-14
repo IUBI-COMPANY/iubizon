@@ -15,11 +15,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (supabaseUser.email) {
-      const { migrateGuestDataToUser } = await import("@/lib/services/orders");
-      await migrateGuestDataToUser(supabaseUser.id, supabaseUser.email);
-    }
-
     const googleAvatar =
       supabaseUser.user_metadata?.avatar_url ??
       supabaseUser.user_metadata?.picture ??

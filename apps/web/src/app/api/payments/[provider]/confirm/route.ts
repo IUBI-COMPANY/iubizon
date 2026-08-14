@@ -225,7 +225,7 @@ export async function POST(
       providerId,
       purchaseNumber,
       effectiveEmail,
-      buyerUserId: storedBuyerId || user?.id,
+      buyerUserId: (storedBuyerId || user?.id)!,
       cartItems,
       shipping,
       invoiceDetails,
