@@ -1,6 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Instagram, Phone, Mail, MapPin, Landmark } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Phone,
+  Mail,
+  MapPin,
+  Landmark,
+} from "lucide-react";
 import type { Category } from "@/types";
 
 interface FooterProps {
