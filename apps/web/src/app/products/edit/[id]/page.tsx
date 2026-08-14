@@ -559,7 +559,10 @@ export default function EditProductPage({ params }: Props) {
                 </select>
                 {isCompanyUnverified && (
                   <p className="text-[11px] text-amber-800 font-medium mt-1.5 p-2 bg-amber-50 rounded-lg border border-amber-200 leading-relaxed">
-                    ⚠️ Tu empresa se encuentra en revisión por el equipo de iubizon. Las publicaciones de la empresa permanecerán en estado <strong>Inactivo</strong> hasta que un administrador verifique y apruebe tu empresa.
+                    Tu empresa se encuentra en revisión por el equipo de
+                    iubizon. Las publicaciones de la empresa permanecerán en
+                    estado <strong>Inactivo</strong> hasta que un administrador
+                    verifique y apruebe tu empresa.
                   </p>
                 )}
               </div>

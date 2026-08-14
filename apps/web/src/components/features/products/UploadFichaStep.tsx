@@ -186,7 +186,8 @@ export const UploadFichaStep = ({ onNext }: UploadFichaStepProps) => {
               onClick={handleSkip}
               className="w-full py-3 px-4 text-xs font-bold text-[#64748b] hover:text-[#112237] bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 transition-all flex items-center justify-center gap-1.5 shadow-sm"
             >
-              ¿No tienes tu Ficha RUC a la mano? Omitir paso y registrar empresa manualmente →
+              ¿No tienes tu Ficha RUC a la mano? Omitir paso y registrar empresa
+              manualmente →
             </button>
           )}
 
