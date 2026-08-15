@@ -1,11 +1,14 @@
+export { getCommissionConfig } from "@/lib/services/commission";
 export {
-  getCommissionConfig,
   calculateCommission,
   itemSubtotal,
   itemCommission,
   computePackageFinancials,
   computeItemFinancials,
   aggregateOrderFinancials,
+  normalizeCommissionRate,
+  formatCommissionRateLabel,
+  resolveCompanyCommissionConfig,
 } from "./financials";
 
 export type {

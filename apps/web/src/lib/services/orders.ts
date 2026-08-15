@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { getCommissionConfig } from "@/lib/services/commission";
 import {
-  getCommissionConfig,
   computePackageFinancials,
   computeItemFinancials,
-} from "@/lib/utils/commission";
+  resolveCompanyCommissionConfig,
+} from "@/lib/utils/financials";
 import type { Prisma } from "@prisma/client";
 
 export async function getUserOrdersAsBuyer(userId: string) {
@@ -127,6 +128,19 @@ export async function createFullOrder(params: {
     0,
   );
 
+  const companyIds = [...new Set(params.packages.map((p) => p.companyId))];
+  const companies = await client.company.findMany({
+    where: { id: { in: companyIds } },
+    select: {
+      id: true,
+      tax_id: true,
+      name: true,
+      custom_commission_rate: true,
+      custom_commission_until: true,
+    },
+  });
+  const companyMap = new Map(companies.map((c) => [c.id, c]));
+
   const order = await client.order.create({
     data: {
       order_code: params.orderCode,
@@ -167,9 +181,15 @@ export async function createFullOrder(params: {
           : undefined,
       packages: {
         create: params.packages.map((pkg) => {
+          const comp = companyMap.get(pkg.companyId);
+          const effectiveConfig = resolveCompanyCommissionConfig(
+            comp,
+            commissionConfig,
+          );
+
           const financials = computePackageFinancials(
             pkg.items,
-            commissionConfig,
+            effectiveConfig,
           );
 
           return {

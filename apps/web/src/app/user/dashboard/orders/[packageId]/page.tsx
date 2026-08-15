@@ -23,6 +23,10 @@ import {
   Truck,
   Wallet,
 } from "lucide-react";
+import {
+  formatCommissionRateLabel,
+  normalizeCommissionRate,
+} from "@/lib/utils/financials";
 
 interface SellerPackageItem {
   id: string;
@@ -456,14 +460,13 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
               <span className="font-medium">
                 Cargo por servicio de plataforma (
-                {(() => {
-                  const rate =
+                {formatCommissionRateLabel(
+                  normalizeCommissionRate(
                     typeof pkg.commissionRate === "number"
                       ? pkg.commissionRate
-                      : commissionRate;
-                  const pct = rate > 1 ? rate : rate * 100;
-                  return pct === 0 ? "0% Promoción" : `${pct.toFixed(0)}%`;
-                })()}
+                      : commissionRate,
+                  ) ?? 0,
+                )}
                 ):
               </span>
               <span className="font-semibold text-red-600">

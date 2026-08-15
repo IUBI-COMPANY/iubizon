@@ -58,10 +58,12 @@ model Company {
   latitude     Float?
   longitude    Float?
   tax_id_document_url String?
-  is_verified  Boolean?  @default(false)
-  is_personal  Boolean?  @default(false)
-  created_at   DateTime? @default(now()) @db.Timestamptz
-  updated_at   DateTime? @default(now()) @updatedAt @db.Timestamptz
+  is_verified             Boolean?  @default(false)
+  is_personal             Boolean?  @default(false)
+  custom_commission_rate  Decimal?  @db.Decimal(5, 4)
+  custom_commission_until DateTime? @db.Timestamptz
+  created_at              DateTime? @default(now()) @db.Timestamptz
+  updated_at              DateTime? @default(now()) @updatedAt @db.Timestamptz
 
   companyMembers CompanyMember[]
   products       Product[]
@@ -200,6 +202,7 @@ model Order {
   subtotal               Decimal   @default(0) @db.Decimal(10, 2)
   shipping_cost          Decimal   @default(0) @db.Decimal(10, 2)
   tax_amount             Decimal   @default(0) @db.Decimal(10, 2)
+  commission_rate        Decimal?  @db.Decimal(5, 4)
   total_amount           Decimal   @default(0) @db.Decimal(10, 2)
   created_at             DateTime? @default(now()) @db.Timestamptz
   updated_at             DateTime? @default(now()) @updatedAt @db.Timestamptz
@@ -278,6 +281,7 @@ model OrderPackage {
   estimated_delivery  DateTime? @db.Timestamptz
   destination_address String?
   subtotal            Decimal   @default(0) @db.Decimal(10, 2)
+  commission_rate     Decimal?  @db.Decimal(5, 4)
   commission_total    Decimal   @default(0) @db.Decimal(10, 2)
   net_earnings        Decimal   @default(0) @db.Decimal(10, 2)
   created_at          DateTime? @default(now()) @db.Timestamptz

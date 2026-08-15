@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import {
-  getCommissionConfig,
-  calculateCommission,
-} from "@/lib/utils/financials";
+import { getCommissionConfig } from "@/lib/services/commission";
+import { calculateCommission } from "@/lib/utils/financials";
 import { getProtectionDays } from "@/lib/services/platformSettings";
 
 /**

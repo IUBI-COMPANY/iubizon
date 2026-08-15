@@ -11,6 +11,7 @@ import {
   IconPhone,
   IconMapPin,
   IconInfoCircle,
+  IconPercentage,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,258 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { toast } from "sonner";
+
+function formatDateForInput(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  } catch {
+    return "";
+  }
+}
+
+function CompanyCommissionForm({
+  company,
+  onUpdated,
+}: {
+  company: any;
+  onUpdated: () => void;
+}) {
+  const [rate, setRate] = useState<string>(() => {
+    if (
+      company.custom_commission_rate !== null &&
+      company.custom_commission_rate !== undefined
+    ) {
+      const raw = Number(company.custom_commission_rate);
+      const dec = raw > 1 ? raw / 100 : raw;
+      return dec.toFixed(4);
+    }
+    return "";
+  });
+
+  const [untilDate, setUntilDate] = useState<string>(() =>
+    formatDateForInput(company.custom_commission_until),
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const finalUntil =
+        untilDate.trim() !== "" ? `${untilDate.trim()}T23:59:59` : null;
+
+      const res = await fetch("/api/companies", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: company.id,
+          update_commission_only: true,
+          custom_commission_rate: rate.trim() === "" ? null : Number(rate),
+          custom_commission_until: finalUntil,
+        }),
+      });
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(
+          `Error en respuesta del servidor (${res.status}): ${text || "Respuesta vacía"}`,
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al actualizar la comisión");
+      }
+      toast.success(`Comisión de "${company.name}" actualizada con éxito.`);
+      onUpdated();
+    } catch (err: any) {
+      toast.error(err.message || "Error al guardar comisión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setRate("");
+    setUntilDate("");
+    try {
+      setLoading(true);
+      const res = await fetch("/api/companies", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: company.id,
+          update_commission_only: true,
+          custom_commission_rate: null,
+          custom_commission_until: null,
+        }),
+      });
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(
+          `Error en respuesta del servidor (${res.status}): ${text || "Respuesta vacía"}`,
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al restablecer la comisión");
+      }
+      toast.info(
+        `Comisión de "${company.name}" restablecida a tarifa estándar global.`,
+      );
+      onUpdated();
+    } catch (err: any) {
+      toast.error(err.message || "Error al restablecer comisión.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3.5 w-full max-w-full overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-1 border-b border-slate-100 pb-2">
+        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+          <IconPercentage className="w-4 h-4 text-indigo-600 shrink-0" />
+          Comisión Preferencial
+        </h4>
+        <span className="text-[10px] text-slate-400 font-medium">
+          Vacío = Estándar global
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="text-[11px] font-bold text-slate-600 block">
+            Tasa Preferencial
+          </label>
+          <Input
+            type="text"
+            placeholder="Ej: 0.0500 o 5"
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
+            className="text-xs font-mono font-bold text-slate-800 w-full"
+          />
+          <p className="text-[10px] text-slate-400">
+            Formato: 0.0500 (5%), 0.0000 (0%)
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-[11px] font-bold text-slate-600 block">
+            Válido Hasta
+          </label>
+          <Input
+            type="date"
+            value={untilDate}
+            onChange={(e) => setUntilDate(e.target.value)}
+            className="text-xs text-slate-700 font-medium w-full"
+          />
+          <p className="text-[10px] text-slate-400">
+            Vacío = Indefinido / Permanente
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          disabled={loading}
+          className="text-xs font-medium"
+        >
+          Usar Estándar
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={handleSave}
+          disabled={loading}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
+        >
+          {loading ? "Guardando..." : "Guardar Comisión"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function renderCommissionBadge(c: any) {
+  const isIubizon =
+    c.tax_id === "20614600374" || c.name?.toLowerCase().includes("iubizon");
+
+  if (
+    c.custom_commission_rate !== null &&
+    c.custom_commission_rate !== undefined
+  ) {
+    const rawRate = Number(c.custom_commission_rate);
+    const dec = rawRate > 1 ? rawRate / 100 : rawRate;
+    const formatted = dec.toFixed(4);
+    const pct = (dec * 100).toFixed(0);
+
+    const until = c.custom_commission_until
+      ? new Date(c.custom_commission_until)
+      : null;
+    const isExpired = until && until < new Date();
+
+    if (isExpired) {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-slate-50 text-slate-600 border-slate-300"
+        >
+          Estándar (Vencido)
+        </Badge>
+      );
+    }
+
+    if (dec === 0) {
+      return (
+        <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-300">
+          {until
+            ? `Preferencial 0.0000 (${until.toLocaleDateString()})`
+            : "Preferencial 0.0000 (Indefinido)"}
+        </Badge>
+      );
+    }
+
+    return (
+      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-300">
+        {until
+          ? `Preferencial ${formatted} (${pct}%)`
+          : `Preferencial ${formatted} (${pct}%)`}
+      </Badge>
+    );
+  }
+
+  if (isIubizon) {
+    return (
+      <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-300">
+        Exento 0.0000 (IUBIZON)
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge
+      variant="outline"
+      className="bg-slate-50 text-slate-600 border-slate-200"
+    >
+      Estándar Global
+    </Badge>
+  );
+}
 
 export default function CompaniesPage() {
   const [companies, setCompanies] = useState<any[]>([]);
@@ -148,6 +401,7 @@ export default function CompaniesPage() {
                 <TableHead>Empresa / Marca</TableHead>
                 <TableHead>Razón Social / RUC</TableHead>
                 <TableHead className="text-center">Productos</TableHead>
+                <TableHead className="text-center">Comisión</TableHead>
                 <TableHead className="text-center">
                   Estado Verificación
                 </TableHead>
@@ -157,14 +411,14 @@ export default function CompaniesPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">
+                  <TableCell colSpan={7} className="text-center h-24">
                     Cargando empresas...
                   </TableCell>
                 </TableRow>
               ) : companies.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center h-24 text-muted-foreground"
                   >
                     No se encontraron empresas registradas.
@@ -211,6 +465,9 @@ export default function CompaniesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-center">
+                          {renderCommissionBadge(c)}
+                        </TableCell>
+                        <TableCell className="text-center">
                           {c.is_verified ? (
                             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-300">
                               <IconCheck className="h-3.5 w-3.5 mr-1 text-emerald-600 inline" />
@@ -254,7 +511,7 @@ export default function CompaniesPage() {
                       {isExpanded && (
                         <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
                           <TableCell
-                            colSpan={6}
+                            colSpan={7}
                             className="p-0 border-t border-slate-100"
                           >
                             <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -293,14 +550,20 @@ export default function CompaniesPage() {
                                   {c.description && (
                                     <div className="pt-2 border-t border-slate-100">
                                       <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
-                                        Descripción Sugerida por IA
+                                        Descripción
                                       </p>
-                                      <p className="text-xs text-slate-600 leading-relaxed italic bg-slate-50 p-2.5 rounded-lg border border-slate-150">
+                                      <p className="text-xs text-slate-600 leading-relaxed italic bg-slate-50 p-2.5 rounded-lg border border-slate-150 text-wrap">
                                         &ldquo;{c.description}&rdquo;
                                       </p>
                                     </div>
                                   )}
                                 </div>
+
+                                {/* Formulario para configurar comisión preferencial */}
+                                <CompanyCommissionForm
+                                  company={c}
+                                  onUpdated={fetchCompanies}
+                                />
 
                                 <div className="flex gap-3">
                                   {c.tax_id_document_url && (

@@ -23,15 +23,18 @@ export function SellerSaleEmail(data: SellerEmailData) {
   const formattedCommission = `S/ ${data.commissionAmount.toFixed(2)}`;
   const formattedNetPayout = `S/ ${data.netPayoutEstimate.toFixed(2)}`;
 
-  const rate =
+  const rawRate =
     typeof data.commissionRate === "number"
       ? data.commissionRate
       : data.packageSubtotal > 0
         ? data.commissionAmount / data.packageSubtotal
         : 0;
 
-  const pct = rate > 1 ? rate : rate * 100;
-  const rateLabel = pct === 0 ? "0% Promoción" : `${pct.toFixed(0)}%`;
+  const rate = Number((rawRate > 1 ? rawRate / 100 : rawRate).toFixed(4));
+  const rateLabel =
+    rate === 0
+      ? "0.0000 (0% Promoción)"
+      : `${rate.toFixed(4)} (${(rate * 100).toFixed(0)}%)`;
 
   return (
     <BaseLayout

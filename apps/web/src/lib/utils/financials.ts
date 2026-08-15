@@ -1,13 +1,18 @@
-import { prisma } from "@/lib/prisma";
-
 // ═══════════════════════════════════════════════════════════════════════
-// TYPES
+// TYPES (PURE - SAFE FOR CLIENT & SERVER)
 // ═══════════════════════════════════════════════════════════════════════
 
 export interface CommissionConfig {
   base_rate: number;
   fixed_fee: number;
   threshold_amount: number;
+}
+
+export interface CompanyCommissionInput {
+  tax_id?: string | null;
+  name?: string | null;
+  custom_commission_rate?: number | string | unknown;
+  custom_commission_until?: Date | string | null;
 }
 
 export interface PackageItemsInput {
@@ -35,57 +40,99 @@ export interface OrderFinancials {
   totalAmount: number;
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// CONFIG — Caché de 1 minuto desde platform_settings
-// ═══════════════════════════════════════════════════════════════════════
-
-const DEFAULT_COMMISSION_CONFIG: CommissionConfig = {
+export const DEFAULT_COMMISSION_CONFIG: CommissionConfig = {
   base_rate: 0.09,
   fixed_fee: 2.5,
   threshold_amount: 40.0,
 };
 
-let cachedConfig: CommissionConfig | null = null;
-let cacheTimestamp = 0;
-const CACHE_TTL = 60_000;
-
-export async function getCommissionConfig(): Promise<CommissionConfig> {
-  if (cachedConfig && Date.now() - cacheTimestamp < CACHE_TTL) {
-    return cachedConfig;
+/**
+ * Resuelve de forma modular, pura y aislada la regla de comisión aplicable a una empresa,
+ * evaluando beneficios preferenciales por tiempo limitado o indefinidos, la exención propia de IUBIZON
+ * y fallback seguro a la regla estándar del marketplace.
+ */
+export function resolveCompanyCommissionConfig(
+  company: CompanyCommissionInput | null | undefined,
+  globalConfig: CommissionConfig = DEFAULT_COMMISSION_CONFIG,
+  nowDate: Date = new Date(),
+): CommissionConfig {
+  if (!company) {
+    return globalConfig;
   }
 
-  try {
-    const setting = await prisma.platformSetting.findUnique({
-      where: { key: "COMMISSION_CONFIG" },
-    });
+  // 1. Evaluación de comisión preferencial/personalizada asignada por el Administrador
+  const parsedRate = normalizeCommissionRate(company.custom_commission_rate);
+  if (parsedRate !== null) {
+    const untilDate = company.custom_commission_until
+      ? new Date(company.custom_commission_until)
+      : null;
 
-    if (
-      setting &&
-      typeof setting.value === "object" &&
-      setting.value !== null
-    ) {
-      const val = setting.value as Record<string, unknown>;
-      const rawRate = typeof val.base_rate === "number" ? val.base_rate : 0.09;
-      cachedConfig = {
-        base_rate: rawRate > 1 ? rawRate / 100 : rawRate,
-        fixed_fee: typeof val.fixed_fee === "number" ? val.fixed_fee : 2.5,
-        threshold_amount:
-          typeof val.threshold_amount === "number"
-            ? val.threshold_amount
-            : 40.0,
+    // Si es indefinido (null) o si la fecha actual es anterior a la fecha de vencimiento
+    if (!untilDate || isNaN(untilDate.getTime()) || untilDate > nowDate) {
+      return {
+        ...globalConfig,
+        base_rate: parsedRate,
+        fixed_fee: parsedRate === 0 ? 0 : globalConfig.fixed_fee,
       };
-      cacheTimestamp = Date.now();
-      return cachedConfig;
     }
-  } catch (err) {
-    console.error("Error al leer COMMISSION_CONFIG:", err);
   }
 
-  return DEFAULT_COMMISSION_CONFIG;
+  // 2. Exención para la empresa matriz IUBIZON (RUC 20614600374 o razón social IUBIZON)
+  const isIubizon =
+    company.tax_id === "20614600374" ||
+    (typeof company.name === "string" &&
+      company.name.toLowerCase().includes("iubizon"));
+
+  if (isIubizon) {
+    return {
+      ...globalConfig,
+      base_rate: 0,
+      fixed_fee: 0,
+    };
+  }
+
+  // 3. Regla global predeterminada de la plataforma
+  return globalConfig;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// CÁLCULOS BÁSICOS
+// NORMALIZACIÓN Y FORMATO UNIFICADO DE TASAS (ESTÁNDAR 0.0500)
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Normaliza cualquier valor de tasa a formato decimal estándar de 4 decimales (ej: 0.0500 para 5%).
+ */
+export function normalizeCommissionRate(
+  rawRate: number | string | null | undefined | unknown,
+): number | null {
+  if (
+    rawRate === null ||
+    rawRate === undefined ||
+    String(rawRate).trim() === ""
+  ) {
+    return null;
+  }
+  const num = Number(rawRate);
+  if (isNaN(num) || num < 0) return null;
+  const rate = num > 1 ? num / 100 : num;
+  return Number(rate.toFixed(4));
+}
+
+/**
+ * Formatea una tasa decimal (ej: 0.0500) para mostrar en etiquetas uniformes en Web, Admin y Correos.
+ * Ejemplo: 0.0500 -> "0.0500 (5%)" | 0.0000 -> "0.0000 (0% Promoción)"
+ */
+export function formatCommissionRateLabel(rate: number): string {
+  const normalized = Number(rate.toFixed(4));
+  if (normalized === 0) {
+    return "0.0000 (0% Promoción)";
+  }
+  const pct = (normalized * 100).toFixed(0);
+  return `${normalized.toFixed(4)} (${pct}%)`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN DINÁMICA DE LA PLATAFORMA
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Comisión de la plataforma según regla dinámica */
