@@ -208,6 +208,18 @@ function SearchContent() {
   // Cargar categorías desde BD
   useEffect(() => {
     const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.categories) && json.categories.length > 0) {
+            setCategories(json.categories);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Error al cargar /api/categories:", e);
+      }
       const supabase = createClient();
       const { data } = await supabase
         .from("categories")
@@ -398,7 +410,6 @@ function SearchContent() {
     resolutionSpecs.length > 0,
     lumensSpecs.length > 0,
     technologySpecs.length > 0,
-    brandSpecs.length > 0,
   ].filter(Boolean).length;
 
   // Componente Reutilizable de Filtros (Sidebar Desktop & Mobile Drawer)
@@ -560,30 +571,6 @@ function SearchContent() {
           </div>
         </>
       )}
-
-      {/* 5. Marcas */}
-      <div className="pt-4 border-t border-[#f1f5f9]">
-        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-3">
-          Marca
-        </h4>
-        <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin pr-1">
-          {projectorBrandOptions.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#f8fafc]"
-            >
-              <Checkbox
-                checked={brandSpecs.includes(opt.value)}
-                onCheckedChange={() => handleSpecToggle("brand", opt.value)}
-                className="data-[state=checked]:bg-[#f25c05] data-[state=checked]:border-[#f25c05]"
-              />
-              <span className="text-xs font-medium text-[#334155]">
-                {opt.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
     </div>
   );
 
@@ -735,25 +722,6 @@ function SearchContent() {
                 </span>
                 <button
                   onClick={() => handleSpecToggle("resolution", res)}
-                  className="hover:bg-slate-200 rounded-full p-0.5"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ))}
-
-            {brandSpecs.map((brand) => (
-              <Badge
-                key={brand}
-                className="bg-slate-100 text-[#112237] border border-slate-200 text-xs font-bold py-1 px-2.5 rounded-xl flex items-center gap-1.5"
-              >
-                <span>
-                  Marca:{" "}
-                  {projectorBrandOptions.find((b) => b.value === brand)
-                    ?.label || brand}
-                </span>
-                <button
-                  onClick={() => handleSpecToggle("brand", brand)}
                   className="hover:bg-slate-200 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />
