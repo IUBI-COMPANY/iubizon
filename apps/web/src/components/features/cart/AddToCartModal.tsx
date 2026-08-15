@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import { generateQuotationPdf } from "@/lib/pdf/generateQuotationPdf";
+import { getCategoryIcon } from "@/lib/utils/categoryIcons";
 
 interface AddedProductInfo {
   id: string;
@@ -44,58 +45,35 @@ interface AddedProductInfo {
   quantity: number;
 }
 
-const CATEGORY_CAROUSEL_ITEMS = [
-  {
-    id: "proyectores",
-    name: "Proyectores y Ecrams",
-    slug: "proyectores",
-    icon: Projector,
-  },
-  {
-    id: "laptops",
-    name: "Laptops y Computadoras",
-    slug: "laptops",
-    icon: Laptop,
-  },
+interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+const FALLBACK_CATEGORIES: CategoryItem[] = [
+  { id: "proyectores", name: "Proyectores y Ecrams", slug: "proyectores" },
+  { id: "laptops", name: "Laptops y Computadoras", slug: "laptops" },
   {
     id: "pantallas-interactivas",
     name: "Pantallas Interactivas",
     slug: "pantallas-interactivas",
-    icon: Laptop,
   },
-  {
-    id: "moviles",
-    name: "Celulares y Tablets",
-    slug: "moviles",
-    icon: Smartphone,
-  },
-  { id: "audio", name: "Audio y Conferencia", slug: "audio", icon: Volume2 },
+  { id: "moviles", name: "Celulares y Tablets", slug: "moviles" },
+  { id: "audio", name: "Audio y Conferencia", slug: "audio" },
   {
     id: "mobiliario",
     name: "Mobiliario Escolar y Oficina",
     slug: "mobiliario",
-    icon: Armchair,
   },
-  { id: "redes", name: "Redes y Conectividad", slug: "redes", icon: Wifi },
-  {
-    id: "electronica",
-    name: "Electrónica e Impresión",
-    slug: "electronica",
-    icon: Cpu,
-  },
-  {
-    id: "accesorios",
-    name: "Accesorios y Periféricos",
-    slug: "accesorios",
-    icon: Smartphone,
-  },
+  { id: "redes", name: "Redes y Conectividad", slug: "redes" },
+  { id: "electronica", name: "Electrónica e Impresión", slug: "electronica" },
+  { id: "accesorios", name: "Accesorios y Periféricos", slug: "accesorios" },
   {
     id: "utiles-suministros",
     name: "Útiles y Suministros",
     slug: "utiles-suministros",
-    icon: Pencil,
   },
-  { id: "otros", name: "Otros", slug: "otros", icon: MoreHorizontal },
 ];
 
 interface AddToCartModalProps {
@@ -115,10 +93,48 @@ export function AddToCartModal({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [categories, setCategories] =
+    useState<CategoryItem[]>(FALLBACK_CATEGORIES);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isSubscribed = true;
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (
+            isSubscribed &&
+            Array.isArray(data.categories) &&
+            data.categories.length > 0
+          ) {
+            setCategories(
+              data.categories.map(
+                (c: { id: string; name: string; slug: string }) => ({
+                  id: c.id,
+                  name: c.name,
+                  slug: c.slug,
+                }),
+              ),
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error al obtener categorías de la BD en modal:", err);
+      }
+    };
+
+    fetchCategories();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [isOpen]);
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -132,7 +148,7 @@ export function AddToCartModal({
     if (isOpen) {
       checkScroll();
     }
-  }, [isOpen]);
+  }, [isOpen, categories]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -151,9 +167,13 @@ export function AddToCartModal({
     router.push("/cart");
   };
 
-  const handleCategoryClick = (categorySlug: string) => {
+  const handleCategoryClick = (cat: CategoryItem) => {
     onClose();
-    router.push(`/search?category=${categorySlug}`);
+    if (cat.id && !isNaN(Number(cat.id)) === false && cat.id.length > 10) {
+      router.push(`/search?category_id=${cat.id}`);
+    } else {
+      router.push(`/search?category=${cat.slug}`);
+    }
   };
 
   const handleSearchMore = () => {
@@ -345,17 +365,21 @@ export function AddToCartModal({
                 className="flex gap-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-1.5 px-0.5"
                 style={{ scrollSnapType: "x mandatory" }}
               >
-                {CATEGORY_CAROUSEL_ITEMS.map((cat) => {
-                  const IconComponent = cat.icon;
+                {categories.map((cat) => {
+                  const IconComponent = getCategoryIcon(cat.slug);
                   return (
                     <button
                       key={cat.id}
-                      onClick={() => handleCategoryClick(cat.slug)}
+                      onClick={() => handleCategoryClick(cat)}
                       style={{ scrollSnapAlign: "start" }}
-                      className="flex items-center gap-2 px-3.5 py-2 rounded-full whitespace-nowrap bg-white border border-slate-200 text-[#112237] hover:border-[#f25c05] hover:text-[#f25c05] hover:shadow-xs transition-all text-xs font-medium cursor-pointer shrink-0"
+                      className="flex flex-col items-center gap-2 px-1 py-2 rounded-full whitespace-nowrap text-[#112237] hover:text-[#f25c05] transition-all text-xs font-medium cursor-pointer shrink-0"
                     >
-                      <IconComponent className="w-3.5 h-3.5 shrink-0 text-[#64748b]" />
-                      <span>{cat.name}</span>
+                      <div className="flex flex-col items-center gap-2 w-[4em]">
+                        <IconComponent className="w-5 h-5 shrink-0 text-[#64748b]" />
+                        <span className="text-[.7em] font-medium text-wrap text-center leading-2">
+                          {cat.name}
+                        </span>
+                      </div>
                     </button>
                   );
                 })}
