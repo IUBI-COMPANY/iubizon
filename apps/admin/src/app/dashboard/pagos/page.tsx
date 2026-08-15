@@ -543,7 +543,7 @@ export default function PagosPage() {
                             <span>S/ {formatMoney(p.subtotal)}</span>
                           </div>
                           <div className="flex justify-between text-sm text-destructive">
-                            <span>Comisión iubizon</span>
+                            <span>Cargo por servicio de plataforma</span>
                             <span>- S/ {formatMoney(p.commission)}</span>
                           </div>
                           <div className="flex justify-between text-sm font-bold pt-1.5 border-t">

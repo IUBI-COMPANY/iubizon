@@ -23,6 +23,16 @@ export function SellerSaleEmail(data: SellerEmailData) {
   const formattedCommission = `S/ ${data.commissionAmount.toFixed(2)}`;
   const formattedNetPayout = `S/ ${data.netPayoutEstimate.toFixed(2)}`;
 
+  const rate =
+    typeof data.commissionRate === "number"
+      ? data.commissionRate
+      : data.packageSubtotal > 0
+        ? data.commissionAmount / data.packageSubtotal
+        : 0;
+
+  const pct = rate > 1 ? rate : rate * 100;
+  const rateLabel = pct === 0 ? "0% Promoción" : `${pct.toFixed(0)}%`;
+
   return (
     <BaseLayout
       previewText={`¡Nueva venta por despachar! Pedido ${data.orderCode}`}
@@ -162,7 +172,9 @@ export function SellerSaleEmail(data: SellerEmailData) {
         </Row>
         <Row style={totalRowStyle}>
           <Column>
-            <Text style={totalLabelStyle}>Comisión iubizon:</Text>
+            <Text style={totalLabelStyle}>
+              Cargo por servicio de plataforma ({rateLabel}):
+            </Text>
           </Column>
           <Column style={{ textAlign: "right" }}>
             <Text style={commissionTextStyle}>- {formattedCommission}</Text>
@@ -171,9 +183,7 @@ export function SellerSaleEmail(data: SellerEmailData) {
         <Hr style={lightHrStyle} />
         <Row style={{ marginTop: "8px" }}>
           <Column>
-            <Text style={grandTotalLabelStyle}>
-              ABONO NETO ESTIMADO A TU CUENTA:
-            </Text>
+            <Text style={grandTotalLabelStyle}>MONTO NETO A TRANSFERIR:</Text>
           </Column>
           <Column style={{ textAlign: "right" }}>
             <Text style={grandTotalValueStyle}>{formattedNetPayout}</Text>

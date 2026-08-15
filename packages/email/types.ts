@@ -50,6 +50,7 @@ export interface SellerEmailData {
   items: EmailOrderItem[];
   packageSubtotal: number;
   commissionAmount: number;
+  commissionRate?: number;
   netPayoutEstimate: number;
   buyerInfo: BuyerShippingForm;
 }

@@ -440,7 +440,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
         <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4">
           <h2 className="text-sm font-extrabold text-[#112237] flex items-center gap-2">
             <Receipt className="w-4 h-4 text-[#f25c05]" />
-            <span>Desglose de Retribución por iubizon</span>
+            <span>Resumen de Liquidación de Venta</span>
           </h2>
 
           <div className="bg-[#f8fafc] rounded-2xl p-5 border border-[#e2e8f0] space-y-3 text-xs">
@@ -455,14 +455,14 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
               <span className="font-medium">
-                Comisión iubizon (
+                Cargo por servicio de plataforma (
                 {(() => {
                   const rate =
                     typeof pkg.commissionRate === "number"
                       ? pkg.commissionRate
                       : commissionRate;
                   const pct = rate > 1 ? rate : rate * 100;
-                  return `${pct.toFixed(0)}%`;
+                  return pct === 0 ? "0% Promoción" : `${pct.toFixed(0)}%`;
                 })()}
                 ):
               </span>
@@ -474,10 +474,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             <div className="flex items-center justify-between pt-1">
               <div>
                 <span className="text-xs font-black text-[#112237]">
-                  Monto Neto a Recibir por iubizon:
+                  Monto Neto a Transferir:
                 </span>
                 <p className="text-[10px] text-[#64748b]">
-                  Depositado después de pasar los 7 días de seguro del
+                  Depositado al vendedor al cumplir los 7 días del seguro del
                   comprador.
                 </p>
               </div>

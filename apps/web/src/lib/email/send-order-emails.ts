@@ -168,6 +168,15 @@ export async function sendOrderConfirmationEmails(orderId: string) {
           })),
           packageSubtotal: Number(pkg.subtotal),
           commissionAmount: Number(pkg.commission_total),
+          commissionRate:
+            Number(pkg.subtotal || 0) > 0
+              ? Number(
+                  (
+                    Number(pkg.commission_total || 0) /
+                    Number(pkg.subtotal || 1)
+                  ).toFixed(4),
+                )
+              : 0,
           netPayoutEstimate: Number(pkg.net_earnings),
           buyerInfo: shippingForm,
         };
