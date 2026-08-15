@@ -27,6 +27,9 @@ import { FavoriteButton } from "./FavoriteButton";
 import { getCategoryIcon } from "@/lib/utils/categoryIcons";
 import { stockLabel } from "@/lib/utils/stockLabel";
 
+import { recordProductView } from "@/lib/services/metrics";
+import { createServerClient } from "@/lib/supabase/server";
+
 export const revalidate = 60;
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.iubizon.com";
@@ -134,6 +137,20 @@ const conditionConfig: Record<
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
+  let currentUserId: string | null = null;
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id || null;
+  } catch {
+    // anónimo
+  }
+
+  // Registrar vista excluyendo miembros de la empresa vendedora
+  recordProductView(id, currentUserId).catch(() => {});
+
   const product = await getProduct(id);
 
   if (!product) {

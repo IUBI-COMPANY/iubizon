@@ -40,12 +40,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import { recordCompanyStorefrontView } from "@/lib/services/metrics";
+import { createServerClient } from "@/lib/supabase/server";
+
 export default async function PublicCompanyPage({ params }: Props) {
   const { slug } = await params;
+  let currentUserId: string | null = null;
+  try {
+    const supabase = await createServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUserId = user?.id || null;
+  } catch {
+    // anónimo
+  }
+
   const [company, categories] = await Promise.all([
     getPublicCompanyBySlugOrId(slug),
     getCategories(),
   ]);
+
+  if (company?.id) {
+    recordCompanyStorefrontView(company.id, currentUserId).catch(() => {});
+  }
 
   if (!company) {
     return (
