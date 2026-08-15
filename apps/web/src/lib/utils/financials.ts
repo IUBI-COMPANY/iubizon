@@ -65,8 +65,9 @@ export async function getCommissionConfig(): Promise<CommissionConfig> {
       setting.value !== null
     ) {
       const val = setting.value as Record<string, unknown>;
+      const rawRate = typeof val.base_rate === "number" ? val.base_rate : 0.09;
       cachedConfig = {
-        base_rate: typeof val.base_rate === "number" ? val.base_rate : 0.09,
+        base_rate: rawRate > 1 ? rawRate / 100 : rawRate,
         fixed_fee: typeof val.fixed_fee === "number" ? val.fixed_fee : 2.5,
         threshold_amount:
           typeof val.threshold_amount === "number"

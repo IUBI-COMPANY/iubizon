@@ -57,6 +57,7 @@ interface SellerPackage {
   destinationReference: string | null;
   subtotal: number;
   platformCommission: number;
+  commissionRate?: number;
   netEarnings: number;
   orderIds: string[];
   items: SellerPackageItem[];
@@ -455,7 +456,15 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
             <div className="flex justify-between border-b border-slate-200 pb-2 text-[#64748b]">
               <span className="font-medium">
                 Comisión iubizon (
-                {commissionRate > 0 ? `${commissionRate * 100}%` : "9%"}):
+                {(() => {
+                  const rate =
+                    typeof pkg.commissionRate === "number"
+                      ? pkg.commissionRate
+                      : commissionRate;
+                  const pct = rate > 1 ? rate : rate * 100;
+                  return `${pct.toFixed(0)}%`;
+                })()}
+                ):
               </span>
               <span className="font-semibold text-red-600">
                 - S/ {formatMoney(pkg.platformCommission)}

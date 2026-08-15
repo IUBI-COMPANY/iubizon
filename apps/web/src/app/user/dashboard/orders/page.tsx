@@ -134,7 +134,7 @@ function OrdersContent() {
       setError(null);
       const url = activeCompany?.id
         ? `/api/seller/orders?company_id=${activeCompany.id}`
-        : `/api/seller/orders?company_id=personal`;
+        : `/api/seller/orders`;
 
       const res = await fetch(url);
       const data = await res.json();

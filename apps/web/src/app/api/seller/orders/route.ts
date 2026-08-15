@@ -45,6 +45,7 @@ export interface DashboardPackage {
   identityNumber: string | null;
   subtotal: number;
   platformCommission: number;
+  commissionRate?: number;
   netEarnings: number;
   items: DashboardOrderItem[];
   hasPendingRefund: boolean;
@@ -63,25 +64,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    let companyIdParam = searchParams.get("company_id");
-
-    if (!companyIdParam) {
-      const profile = await prisma.profile.findUnique({
-        where: { id: user.id },
-        select: { last_active_company_id: true },
-      });
-      if (profile?.last_active_company_id) {
-        companyIdParam = profile.last_active_company_id;
-      } else {
-        const firstMembership = await prisma.companyMember.findFirst({
-          where: { user_id: user.id },
-          select: { company_id: true },
-        });
-        if (firstMembership?.company_id) {
-          companyIdParam = firstMembership.company_id;
-        }
-      }
-    }
+    const companyIdParam = searchParams.get("company_id");
 
     let companyId: string | null = null;
 
@@ -93,13 +76,38 @@ export async function GET(request: Request) {
       const membership = await prisma.companyMember.findFirst({
         where: { company_id: companyIdParam, user_id: user.id },
       });
-      if (!membership) {
-        return NextResponse.json(
-          { error: "No tienes permisos para ver las ventas de esta empresa." },
-          { status: 403 },
-        );
+      if (membership) {
+        companyId = companyIdParam;
       }
-      companyId = companyIdParam;
+    }
+
+    if (!companyId) {
+      const profile = await prisma.profile.findUnique({
+        where: { id: user.id },
+        select: { last_active_company_id: true },
+      });
+
+      if (profile?.last_active_company_id) {
+        const isMember = await prisma.companyMember.findFirst({
+          where: {
+            company_id: profile.last_active_company_id,
+            user_id: user.id,
+          },
+        });
+        if (isMember) {
+          companyId = profile.last_active_company_id;
+        }
+      }
+
+      if (!companyId) {
+        const firstMembership = await prisma.companyMember.findFirst({
+          where: { user_id: user.id },
+          select: { company_id: true },
+        });
+        if (firstMembership?.company_id) {
+          companyId = firstMembership.company_id;
+        }
+      }
     }
 
     // Seguridad: un usuario sin empresa (ni membresía) no debe ver ninguna venta.
@@ -162,6 +170,8 @@ export async function GET(request: Request) {
       },
     });
 
+    const commissionConfig = await getCommissionConfig();
+
     const orderIds = [...new Set(packages.map((p) => p.order_id))];
     const pendingRefunds =
       orderIds.length > 0
@@ -182,8 +192,21 @@ export async function GET(request: Request) {
         : [];
 
     const result: DashboardPackage[] = packages.map((pkg) => {
-      const order = pkg.order;
-      const buyer = order.buyer;
+      const order = pkg.order || ({} as any);
+      const buyer: any = order.buyer || {};
+      const shipping: any = order.shipping || {};
+      const paymentTransaction: any = order.paymentTransaction || {};
+      const invoice: any = order.invoice || {};
+
+      const pkgSubtotal = Number(pkg.subtotal || 0);
+      const pkgCommissionTotal = Number(pkg.commission_total || 0);
+
+      const rawRate =
+        pkgSubtotal > 0
+          ? Number((pkgCommissionTotal / pkgSubtotal).toFixed(4))
+          : commissionConfig.base_rate;
+
+      const pkgCommissionRate = rawRate > 1 ? rawRate / 100 : rawRate;
 
       return {
         packageId: pkg.id,
@@ -194,36 +217,41 @@ export async function GET(request: Request) {
         courier: pkg.courier,
         trackingUrl: pkg.tracking_url,
         carrierPhone: pkg.carrier_phone,
-        estimatedDelivery: pkg.estimated_delivery?.toISOString() || null,
-        createdAt: pkg.created_at?.toISOString() || new Date().toISOString(),
+        estimatedDelivery: pkg.estimated_delivery
+          ? new Date(pkg.estimated_delivery).toISOString()
+          : null,
+        createdAt: pkg.created_at
+          ? new Date(pkg.created_at).toISOString()
+          : new Date().toISOString(),
         status: pkg.status,
         deliveryType: pkg.delivery_type,
-        buyerName: order.shipping?.name || buyer?.name || "Comprador",
-        buyerPhone: order.shipping?.phone || buyer?.phone || null,
-        buyerEmail: order.shipping?.email || buyer?.email || null,
-        buyerDocumentType: order.shipping?.document_type || null,
-        buyerDocumentNumber: order.shipping?.document_number || null,
+        buyerName: shipping.name || buyer.name || "Comprador",
+        buyerPhone: shipping.phone || buyer.phone || null,
+        buyerEmail: shipping.email || buyer.email || null,
+        buyerDocumentType: shipping.document_type || null,
+        buyerDocumentNumber: shipping.document_number || null,
         destinationAddress: pkg.destination_address,
-        destinationDepartment: order.shipping?.department || null,
-        destinationProvince: order.shipping?.province || null,
-        destinationDistrict: order.shipping?.district || null,
-        destinationReference: order.shipping?.reference || null,
+        destinationDepartment: shipping.department || null,
+        destinationProvince: shipping.province || null,
+        destinationDistrict: shipping.district || null,
+        destinationReference: shipping.reference || null,
         paymentMethod: order.payment_method || "cash_on_delivery",
-        cardBrand: order.paymentTransaction?.card_brand || null,
-        cardLast4: order.paymentTransaction?.card_last4 || null,
-        docType: order.invoice?.doc_type || null,
-        identityNumber: order.invoice?.number || null,
-        subtotal: Number(pkg.subtotal),
-        platformCommission: Number(pkg.commission_total),
-        netEarnings: Number(pkg.net_earnings),
-        items: pkg.items.map((item) => ({
+        cardBrand: paymentTransaction.card_brand || null,
+        cardLast4: paymentTransaction.card_last4 || null,
+        docType: invoice.doc_type || null,
+        identityNumber: invoice.number || null,
+        subtotal: Number(pkg.subtotal || 0),
+        platformCommission: Number(pkg.commission_total || 0),
+        commissionRate: pkgCommissionRate,
+        netEarnings: Number(pkg.net_earnings || 0),
+        items: (pkg.items || []).map((item) => ({
           id: item.id,
           productId: item.product_id,
-          title: item.product.title,
-          price: Number(item.unit_price),
-          quantity: item.quantity,
-          subtotal: Number(item.subtotal),
-          image: item.product.images[0]?.url || null,
+          title: item.product?.title || "Producto",
+          price: Number(item.unit_price || 0),
+          quantity: item.quantity || 1,
+          subtotal: Number(item.subtotal || 0),
+          image: item.product?.images?.[0]?.url || null,
           status: item.status,
         })),
         hasPendingRefund: pendingRefunds.some(
@@ -233,8 +261,6 @@ export async function GET(request: Request) {
           pendingRefunds.find((r) => r.order_id === pkg.order_id)?.type ?? null,
       };
     });
-
-    const commissionConfig = await getCommissionConfig();
 
     return NextResponse.json({
       packages: result,
@@ -246,9 +272,10 @@ export async function GET(request: Request) {
       },
     });
   } catch (err: unknown) {
-    console.error("Error al obtener ventas del vendedor:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[API seller/orders GET] Error:", msg, err);
     return NextResponse.json(
-      { error: "Error al obtener ventas" },
+      { error: `Error al obtener ventas: ${msg}` },
       { status: 500 },
     );
   }

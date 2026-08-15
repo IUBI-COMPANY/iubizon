@@ -237,7 +237,7 @@ export default function ProductsManagementPage() {
             </span>
             {searchQuery && (
               <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-medium border border-amber-200 text-[11px]">
-                Filtrado por: "{searchQuery}"
+                Filtrado por: &quot;{searchQuery}&quot;
               </span>
             )}
           </div>

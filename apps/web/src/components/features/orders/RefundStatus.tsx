@@ -233,7 +233,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
 
               <div className="space-y-3 text-xs text-[#334155]">
                 <p className="text-[11px] text-[#64748b] italic">
-                  Motivo: "{req.reason}"
+                  Motivo: &quot;{req.reason}&quot;
                 </p>
 
                 {/* Lista de Productos del Reembolso con Imagen Principal */}
