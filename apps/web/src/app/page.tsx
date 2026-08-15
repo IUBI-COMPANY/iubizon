@@ -49,7 +49,7 @@ export default async function MarketplaceHomePage() {
           <section className="py-6">
             <div className="container">
               <h2 className="text-lg font-bold text-[#112237] mb-4">
-                Categorías populares
+                Categorías
               </h2>
               <CategoryCarousel categories={popularCategories} />
             </div>

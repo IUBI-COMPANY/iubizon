@@ -109,12 +109,16 @@ export function CategoryCarousel({
                 href={linkHref}
                 className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 ${
                   isActive
-                    ? "bg-[#f25c05] text-white shadow-md shadow-[#f25c05]/25"
-                    : "bg-white border border-[#e2e8f0] text-[#112237] hover:border-[#f25c05]/40 hover:shadow-sm"
+                    ? "text-primary"
+                    : "text-[#112237] hover:text-primary"
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="text-sm font-medium">{category.name}</span>
+                <div className="flex flex-col items-center gap-2">
+                  <Icon className="w-7 h-7 shrink-0" />
+                  <span className="text-xs font-medium text-wrap text-center leading-3.5">
+                    {category.name}
+                  </span>
+                </div>
               </Link>
             </motion.div>
           );
