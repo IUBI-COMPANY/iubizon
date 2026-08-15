@@ -39,7 +39,6 @@ export async function POST(
     }
 
     const guestEmail = shipping?.email?.trim();
-    const guestName = shipping?.name?.trim();
 
     if (!user) {
       return NextResponse.json(

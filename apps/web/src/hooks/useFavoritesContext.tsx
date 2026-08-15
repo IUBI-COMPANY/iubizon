@@ -11,6 +11,7 @@ import { useAuth } from "./useAuth";
 
 interface FavoritesContextType {
   favoriteIds: Set<string>;
+  favoritesCount: number;
   isLoading: boolean;
   toggleFavorite: (productId: string) => Promise<boolean>;
   isFavorite: (productId: string) => boolean;
@@ -102,7 +103,13 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <FavoritesContext.Provider
-      value={{ favoriteIds, isLoading, toggleFavorite, isFavorite }}
+      value={{
+        favoriteIds,
+        favoritesCount: favoriteIds.size,
+        isLoading,
+        toggleFavorite,
+        isFavorite,
+      }}
     >
       {children}
     </FavoritesContext.Provider>

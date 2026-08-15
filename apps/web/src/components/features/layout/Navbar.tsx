@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/Input";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { useFavoritesContext } from "@/hooks/useFavoritesContext";
 import { useCompany } from "@/context/CompanyContext";
 import { CompanySwitcher } from "@/components/features/companies/CompanySwitcher";
 
@@ -29,6 +30,7 @@ export const Navbar = () => {
   const router = useRouter();
   const { user, isLoading, signOut } = useAuth();
   const { itemCount } = useCart();
+  const { favoritesCount } = useFavoritesContext();
   const { companies, activeCompany, setActiveCompanyId } = useCompany();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -139,12 +141,25 @@ export const Navbar = () => {
 
           {/* Actions (Cart, Publicar, CompanySwitcher, User Avatar - Right) */}
           <div className="flex items-center gap-1 sm:gap-2">
-            <Link href="/favorites" className="hidden sm:flex">
+            {/* Favorites Icon with Badge */}
+            <Link href="/favorites" className="relative flex">
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/10 p-2"
+                className="text-white hover:bg-white/10 p-1.5 sm:p-2"
+                aria-label="Mis Favoritos"
               >
-                <Heart className="w-5 h-5" />
+                <Heart
+                  className={`w-5 h-5 sm:w-5.5 sm:h-5.5 transition-all ${
+                    favoritesCount > 0
+                      ? "fill-red-500 text-red-500"
+                      : "text-white"
+                  }`}
+                />
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-0 -right-1 bg-[#f25c05] text-white text-[10px] font-extrabold w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full flex items-center justify-center border-1 border-[#112237] animate-in zoom-in-75">
+                    {favoritesCount}
+                  </span>
+                )}
               </Button>
             </Link>
 
@@ -156,7 +171,7 @@ export const Navbar = () => {
               >
                 <ShoppingCart className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#f25c05] text-white text-[10px] font-bold w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full flex items-center justify-center border-2 border-[#112237]">
+                  <span className="absolute -top-0 -right-1 bg-[#f25c05] text-white text-[10px] font-bold w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full flex items-center justify-center border-2 border-[#112237]">
                     {itemCount}
                   </span>
                 )}
@@ -396,11 +411,24 @@ export const Navbar = () => {
                     </Link>
                     <Link
                       href="/favorites"
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 font-semibold text-sm text-white transition-colors"
+                      className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/10 font-semibold text-sm text-white transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <Heart className="w-5 h-5 text-[#f25c05]" />
-                      Mis Favoritos
+                      <div className="flex items-center gap-3">
+                        <Heart
+                          className={`w-5 h-5 ${
+                            favoritesCount > 0
+                              ? "fill-[#f25c05] text-[#f25c05]"
+                              : "text-[#f25c05]"
+                          }`}
+                        />
+                        <span>Mis Favoritos</span>
+                      </div>
+                      {favoritesCount > 0 && (
+                        <span className="bg-[#f25c05] text-white text-xs font-extrabold px-2 py-0.5 rounded-full">
+                          {favoritesCount}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       href="/user/companies/new"
