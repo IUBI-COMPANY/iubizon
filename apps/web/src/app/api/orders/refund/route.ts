@@ -303,9 +303,10 @@ export async function GET(req: Request) {
 
       const firstOi =
         allOrderItems.find(
-          (oi) =>
-            itemsList.length > 0 && oi.id === itemsList[0].order_item_id,
-        ) || allOrderItems[0] || null;
+          (oi) => itemsList.length > 0 && oi.id === itemsList[0].order_item_id,
+        ) ||
+        allOrderItems[0] ||
+        null;
 
       const company = firstOi?.package?.company;
 
