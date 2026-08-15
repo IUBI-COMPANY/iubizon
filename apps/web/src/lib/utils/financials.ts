@@ -132,6 +132,58 @@ export function formatCommissionRateLabel(rate: number): string {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// MANEJO GENÉRICO Y GLOBAL DE FECHAS EN UTC (100% TIMEZONE INVARIANT)
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Convierte una fecha YYYY-MM-DD al timestamp UTC exacto de fin de día (23:59:59.999Z).
+ * Totalmente agnóstico e independiente de la zona horaria del cliente o servidor.
+ */
+export function parseDateToUTCEndOfDay(dateStr?: string | null): string | null {
+  if (!dateStr || !dateStr.trim()) return null;
+  const parts = dateStr.trim().split("-");
+  if (parts.length !== 3) return null;
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+  const utcDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+  return utcDate.toISOString();
+}
+
+/**
+ * Formatea cualquier marca de tiempo a YYYY-MM-DD en UTC universal.
+ */
+export function formatUTCDateToInput(dateInput?: Date | string | null): string {
+  if (!dateInput) return "";
+  try {
+    const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Formatea cualquier marca de tiempo a DD/MM/YYYY en UTC universal.
+ */
+export function formatUTCDateToDisplay(
+  dateInput?: Date | string | null,
+): string {
+  if (!dateInput) return "";
+  try {
+    const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+  } catch {
+    return "";
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DINÁMICA DE LA PLATAFORMA
 // ═══════════════════════════════════════════════════════════════════════
 

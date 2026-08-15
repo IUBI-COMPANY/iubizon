@@ -34,10 +34,34 @@ function formatDateForInput(dateStr?: string | null): string {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return "";
     const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
   } catch {
     return "";
   }
+}
+
+function formatDateLabel(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+  } catch {
+    return "";
+  }
+}
+
+function parseDateToUTCEndOfDay(dateStr?: string | null): string | null {
+  if (!dateStr || !dateStr.trim()) return null;
+  const parts = dateStr.trim().split("-");
+  if (parts.length !== 3) return null;
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+  const utcDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+  return utcDate.toISOString();
 }
 
 function CompanyCommissionForm({
@@ -68,8 +92,7 @@ function CompanyCommissionForm({
   const handleSave = async () => {
     try {
       setLoading(true);
-      const finalUntil =
-        untilDate.trim() !== "" ? `${untilDate.trim()}T23:59:59` : null;
+      const finalUntil = parseDateToUTCEndOfDay(untilDate);
 
       const res = await fetch("/api/companies", {
         method: "PATCH",
@@ -231,6 +254,9 @@ function renderCommissionBadge(c: any) {
       ? new Date(c.custom_commission_until)
       : null;
     const isExpired = until && until < new Date();
+    const dateFormatted = c.custom_commission_until
+      ? formatDateLabel(c.custom_commission_until)
+      : null;
 
     if (isExpired) {
       return (
@@ -246,17 +272,17 @@ function renderCommissionBadge(c: any) {
     if (dec === 0) {
       return (
         <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-300">
-          {until
-            ? `Preferencial 0.0000 (${until.toLocaleDateString()})`
-            : "Preferencial 0.0000 (Indefinido)"}
+          {dateFormatted
+            ? `Preferencial 0.0000 (0% Promoción) - Hasta ${dateFormatted}`
+            : "Preferencial 0.0000 (0% Promoción)"}
         </Badge>
       );
     }
 
     return (
       <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-300">
-        {until
-          ? `Preferencial ${formatted} (${pct}%)`
+        {dateFormatted
+          ? `Preferencial ${formatted} (${pct}%) - Hasta ${dateFormatted}`
           : `Preferencial ${formatted} (${pct}%)`}
       </Badge>
     );
