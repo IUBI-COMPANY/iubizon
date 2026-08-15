@@ -40,12 +40,13 @@ const categoryIconImages: Record<string, string> = {
   "audio": "/icons/categories/audio.webp",
   "mobiliario": "/icons/categories/furniture.webp",
   "redes": "/icons/categories/network.webp",
-  "electronica": "/icons/categories/robot.webp",
+  "electronica": "/icons/categories/printer.webp",
   "accesorios": "/icons/categories/usb.webp",
   "utiles-suministros": "/icons/categories/supplies.webp",
   "otros": "/icons/categories/others.webp",
   "impresoras": "/icons/categories/printer.webp",
   "conectividad": "/icons/categories/network.webp",
+  "robot": "/icons/categories/robot.webp",
 };
 
 export function getCategoryIcon(slug: string): LucideIcon {
