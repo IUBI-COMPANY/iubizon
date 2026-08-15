@@ -117,10 +117,10 @@ export function CategoryCarousel({
             >
               <Link
                 href={linkHref}
-                className={`flex flex-col items-center justify-center gap-1.5 sm:w-46 w-32 px-3 py-3 h-full rounded-2xl text-center transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center gap-1.5 sm:w-46 w-32 px-3 py-3 h-full text-center transition-all duration-200 ${
                   isActive
-                    ? "bg-[#f25c05] text-white shadow-md shadow-[#f25c05]/25"
-                    : "bg-white border border-[#e2e8f0] text-[#112237] hover:border-[#f25c05]/40 hover:shadow-sm"
+                    ? "text-[#f25c05] font-semibold"
+                    : "text-[#112237] hover:text-[#f25c05]"
                 }`}
               >
                 {iconImage ? (
