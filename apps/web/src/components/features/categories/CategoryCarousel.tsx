@@ -4,7 +4,10 @@ import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
-import { getCategoryIcon } from "@/lib/utils/categoryIcons";
+import {
+  getCategoryIcon,
+  getCategoryIconImage,
+} from "@/lib/utils/categoryIcons";
 
 interface Category {
   id: string;
@@ -42,9 +45,11 @@ export function CategoryCarousel({
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = 200;
+      const firstCard = scrollRef.current
+        .firstElementChild as HTMLElement | null;
+      const step = (firstCard?.offsetWidth ?? 200) + 12;
       scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
+        left: direction === "left" ? -step : step,
         behavior: "smooth",
       });
     }
@@ -57,7 +62,7 @@ export function CategoryCarousel({
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex transition-colors"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex pointer-coarse:flex transition-colors"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-4 h-4 text-[#112237]" />
@@ -67,7 +72,7 @@ export function CategoryCarousel({
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex transition-colors"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex pointer-coarse:flex transition-colors"
           aria-label="Siguiente"
         >
           <ChevronRight className="w-4 h-4 text-[#112237]" />
@@ -77,7 +82,7 @@ export function CategoryCarousel({
       <div
         ref={scrollRef}
         onScroll={checkScroll}
-        className="flex gap-3 overflow-x-auto scrollbar-hide py-3 px-4"
+        className="flex gap-3 overflow-x-auto scrollbar-hide py-3 items-stretch"
         style={{ scrollSnapType: "x mandatory" }}
       >
         {allCategories.map((category, index) => {
@@ -89,6 +94,11 @@ export function CategoryCarousel({
 
           const Icon =
             category.slug === "" ? LayoutGrid : getCategoryIcon(category.slug);
+
+          const iconImage =
+            category.slug === ""
+              ? getCategoryIconImage("robot")
+              : getCategoryIconImage(category.slug);
 
           const linkHref =
             category.id === "all"
@@ -107,14 +117,25 @@ export function CategoryCarousel({
             >
               <Link
                 href={linkHref}
-                className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center gap-1.5 sm:w-46 w-32 px-3 py-3 h-full text-center transition-all duration-200 ${
                   isActive
-                    ? "bg-[#f25c05] text-white shadow-md shadow-[#f25c05]/25"
-                    : "bg-white border border-[#e2e8f0] text-[#112237] hover:border-[#f25c05]/40 hover:shadow-sm"
+                    ? "text-[#f25c05] font-semibold"
+                    : "text-[#112237] hover:text-[#f25c05]"
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="text-sm font-medium">{category.name}</span>
+                {iconImage ? (
+                  <img
+                    src={iconImage}
+                    alt={category.name}
+                    className="lg:w-16 lg:h-16 w-12 h-12 shrink-0 object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <Icon className="lg:w-16 lg:h-16 w-12 h-12 shrink-0" />
+                )}
+                <span className="text-sm font-medium leading-tight">
+                  {category.name}
+                </span>
               </Link>
             </motion.div>
           );

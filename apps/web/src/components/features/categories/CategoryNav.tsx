@@ -19,6 +19,8 @@ const techSlugs = [
   "accesorios",
   "utiles-suministros",
   "otros",
+  "impresoras",
+  "conectividad",
 ];
 
 export const CategoryNav = ({ activeSlug }: CategoryNavProps) => {
