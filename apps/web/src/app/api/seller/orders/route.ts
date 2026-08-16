@@ -18,6 +18,7 @@ export interface DashboardOrderItem {
 export interface DashboardPackage {
   packageId: string;
   orderId: string;
+  orderCode: string;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -211,6 +212,7 @@ export async function GET(request: Request) {
       return {
         packageId: pkg.id,
         orderId: pkg.order_id,
+        orderCode: order.order_code || `#${pkg.order_id.slice(0, 8)}`,
         companyId: pkg.company_id,
         companyName: pkg.company?.name || "Vendedor",
         trackingNumber: pkg.tracking_number,

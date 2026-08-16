@@ -40,6 +40,7 @@ interface SellerPackageItem {
 
 interface SellerPackage {
   packageId: string;
+  orderCode?: string;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -452,6 +453,10 @@ function OrdersContent() {
                       {/* Fila Superior: Identificadores y Estado */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
                         <div className="flex flex-wrap items-center gap-2.5">
+                          <span className="text-xs font-black text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl">
+                            ORDEN #{pkg.orderCode || pkg.packageId.slice(0, 8)}
+                          </span>
+
                           {pkg.trackingNumber ? (
                             <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
                               <Truck className="w-3.5 h-3.5" />
@@ -460,10 +465,7 @@ function OrdersContent() {
                           ) : (
                             <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl flex items-center gap-1.5">
                               <Clock className="w-3.5 h-3.5" />
-                              <span>
-                                Paquete {pkg.companyName} #
-                                {pkg.packageId.slice(0, 8)} (Despacho Pendiente)
-                              </span>
+                              <span>Despacho Pendiente</span>
                             </span>
                           )}
 

@@ -40,6 +40,7 @@ interface SellerPackageItem {
 interface SellerPackage {
   packageId: string;
   orderId: string;
+  orderCode?: string;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -238,8 +239,14 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
         <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl">
+              <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+                <h1 className="text-xl md:text-2xl font-black text-[#112237] tracking-tight">
+                  ORDEN #
+                  {pkg.orderCode ||
+                    pkg.orderId?.slice(0, 8) ||
+                    pkg.packageId.slice(0, 8)}
+                </h1>
+                <span className="text-xs font-bold text-[#64748b] bg-slate-100 border border-slate-200 px-3 py-1 rounded-xl">
                   Paquete {pkg.companyName || `#${pkg.packageId.slice(0, 8)}`}
                 </span>
                 {pkg.trackingNumber && (
@@ -249,7 +256,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[#64748b] mt-2 flex items-center gap-1.5">
+              <p className="text-xs text-[#64748b] mt-1 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
                 <span>Venta realizada el {formatFullDate(pkg.createdAt)}</span>
               </p>
