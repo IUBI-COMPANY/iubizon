@@ -20,18 +20,15 @@ export function DeliveryConfirmedEmail(data: DeliveryConfirmedEmailData) {
   const formattedNet = `S/ ${data.netEarnings.toFixed(2)}`;
 
   return (
-    <BaseLayout
-      previewText={`Entrega confirmada — Pedido #${data.orderCode}`}
-    >
+    <BaseLayout previewText={`Entrega confirmada — Pedido #${data.orderCode}`}>
       <Section style={confirmedBannerStyle}>
         <Text style={badgeStyle}>PRODUCTO RECIBIDO CONFORME</Text>
         <Heading style={mainHeadingStyle}>
           ¡El cliente confirmó la recepción!
         </Heading>
         <Text style={subtitleStyle}>
-          <strong>{data.buyerName}</strong> ha confirmado la recepción
-          conforme de los productos de{" "}
-          <strong>{data.companyName}</strong> en la orden{" "}
+          <strong>{data.buyerName}</strong> ha confirmado la recepción conforme
+          de los productos de <strong>{data.companyName}</strong> en la orden{" "}
           <strong>#{data.orderCode}</strong>. La entrega quedó registrada en tu
           panel.
         </Text>
