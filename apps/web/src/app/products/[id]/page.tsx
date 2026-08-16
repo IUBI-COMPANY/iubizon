@@ -27,8 +27,7 @@ import { FavoriteButton } from "./FavoriteButton";
 import { getCategoryIcon } from "@/lib/utils/categoryIcons";
 import { stockLabel } from "@/lib/utils/stockLabel";
 
-import { recordProductView } from "@/lib/services/metrics";
-import { createServerClient } from "@/lib/supabase/server";
+import { ProductViewTracker } from "@/components/features/products/ProductViewTracker";
 
 export const revalidate = 60;
 
@@ -137,20 +136,6 @@ const conditionConfig: Record<
 
 export default async function ProductDetailPage({ params }: Props) {
   const { id } = await params;
-  let currentUserId: string | null = null;
-  try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    currentUserId = user?.id || null;
-  } catch {
-    // anónimo
-  }
-
-  // Registrar vista excluyendo miembros de la empresa vendedora
-  recordProductView(id, currentUserId).catch(() => {});
-
   const product = await getProduct(id);
 
   if (!product) {
@@ -208,6 +193,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ProductViewTracker productId={product.id} />
       <Navbar />
 
       <div className="flex-1 bg-[#f8fafc]">

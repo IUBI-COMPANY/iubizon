@@ -93,6 +93,44 @@ export function useRealtimeOrders({
       },
     );
 
+    // Suscripción a products (para actualizar totalProducts, activeProducts y totalViews en tiempo real)
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "products",
+      },
+      (payload) => {
+        const newRecord = payload.new as { company_id?: string } | null;
+        const oldRecord = payload.old as { company_id?: string } | null;
+
+        if (companyId) {
+          if (
+            newRecord?.company_id === companyId ||
+            oldRecord?.company_id === companyId
+          ) {
+            onUpdateRef.current();
+          }
+        } else {
+          onUpdateRef.current();
+        }
+      },
+    );
+
+    // Suscripción a favorites (para actualizar interacciones en tiempo real)
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "favorites",
+      },
+      () => {
+        onUpdateRef.current();
+      },
+    );
+
     channel.subscribe();
 
     return () => {

@@ -67,38 +67,59 @@ function DashboardContent() {
 
   const userId = user?.id;
 
-  const fetchDashboardData = useCallback(async () => {
-    if (!userId) return;
+  const fetchDashboardData = useCallback(
+    async (isBackground = false) => {
+      if (!userId) return;
 
-    try {
-      startLoading();
-      const url = targetCompanyId
-        ? `/api/user/dashboard?company_id=${targetCompanyId}`
-        : `/api/user/dashboard`;
+      try {
+        if (!isBackground) {
+          startLoading();
+        }
+        const url = targetCompanyId
+          ? `/api/user/dashboard?company_id=${targetCompanyId}`
+          : `/api/user/dashboard`;
 
-      const res = await fetch(url);
-      const json = await res.json();
+        const res = await fetch(url);
+        const json = await res.json();
 
-      if (res.ok) {
-        setData(json);
+        if (res.ok) {
+          setData(json);
+        }
+      } catch (err) {
+        console.error("Error al cargar dashboard:", err);
+      } finally {
+        if (!isBackground) {
+          stopLoading();
+        }
       }
-    } catch (err) {
-      console.error("Error al cargar dashboard:", err);
-    } finally {
-      stopLoading();
-    }
-  }, [userId, targetCompanyId, startLoading, stopLoading]);
+    },
+    [userId, targetCompanyId, startLoading, stopLoading],
+  );
+
+  const handleRealtimeUpdate = useCallback(() => {
+    fetchDashboardData(true);
+  }, [fetchDashboardData]);
 
   useRealtimeOrders({
     companyId: targetCompanyId,
     userId: user?.id,
-    onUpdate: fetchDashboardData,
+    onUpdate: handleRealtimeUpdate,
   });
 
+  // Carga inicial
   useEffect(() => {
     if (userId) {
-      fetchDashboardData();
+      fetchDashboardData(false);
     }
+  }, [userId, targetCompanyId, fetchDashboardData]);
+
+  // Refresco automático rápido de 4 segundos en segundo plano (sin parpadeos)
+  useEffect(() => {
+    if (!userId) return;
+    const interval = setInterval(() => {
+      fetchDashboardData(true);
+    }, 4000);
+    return () => clearInterval(interval);
   }, [userId, targetCompanyId, fetchDashboardData]);
 
   // Procesar confirmación de pago Niubiz al redirigir al Dashboard

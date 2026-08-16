@@ -40,30 +40,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-import { recordCompanyStorefrontView } from "@/lib/services/metrics";
-import { createServerClient } from "@/lib/supabase/server";
+import { CompanyViewTracker } from "@/components/features/companies/CompanyViewTracker";
 
 export default async function PublicCompanyPage({ params }: Props) {
   const { slug } = await params;
-  let currentUserId: string | null = null;
-  try {
-    const supabase = await createServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    currentUserId = user?.id || null;
-  } catch {
-    // anónimo
-  }
 
   const [company, categories] = await Promise.all([
     getPublicCompanyBySlugOrId(slug),
     getCategories(),
   ]);
-
-  if (company?.id) {
-    recordCompanyStorefrontView(company.id, currentUserId).catch(() => {});
-  }
 
   if (!company) {
     return (
@@ -126,6 +111,7 @@ export default async function PublicCompanyPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+      <CompanyViewTracker companyId={company.id} />
       <Navbar />
 
       <PublicCompanyStorefront
