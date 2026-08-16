@@ -9,14 +9,14 @@ export function PaymentMethodsSection() {
       icon: "/svg/visa.svg",
       width: 68,
       height: 22,
-      className: "h-[22px] sm:h-[24px] w-auto",
+      className: "h-[30px] sm:h-[30] w-auto",
     },
     {
       name: "Mastercard",
       icon: "/svg/master-card.svg",
       width: 40,
       height: 30,
-      className: "h-[28px] sm:h-[30px] w-auto",
+      className: "h-[53px] sm:h-[53px] w-auto",
     },
     {
       name: "American Express",
@@ -37,7 +37,7 @@ export function PaymentMethodsSection() {
       icon: "/svg/niubiz.svg",
       width: 120,
       height: 44,
-      className: "h-[63px] sm:h-[63px] w-auto",
+      className: "h-[77px] sm:h-[77px] w-auto",
     },
   ];
 
