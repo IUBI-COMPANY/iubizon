@@ -4,6 +4,7 @@ import { Navbar } from "@/components/features/layout/Navbar";
 import { CategoryCarousel } from "@/components/features/categories/CategoryCarousel";
 import { Footer } from "@/components/features/layout/Footer";
 import { HeroSection } from "@/components/features/home/HeroSection";
+import { PaymentMethodsSection } from "@/components/features/home/PaymentMethodsSection";
 import { FaqSection } from "@/components/features/home/FaqSection";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Alert } from "@/components/ui/Alert";
@@ -81,6 +82,7 @@ export default async function MarketplaceHomePage() {
           </div>
         </section>
 
+        <PaymentMethodsSection />
         <FaqSection />
       </main>
       <Footer categories={popularCategories} />
