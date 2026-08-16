@@ -91,9 +91,9 @@ export default function AboutPage() {
                   Fragmentación & Pérdida de Tiempo
                 </h3>
                 <p className="text-xs text-[#64748b] leading-relaxed">
-                  Buscar proveedores en distintos lugares para comprar un proyector
-                  por un lado, el ecram por otro, los cables y soportes por
-                  separado, duplicando costos y tiempos de gestión.
+                  Buscar proveedores en distintos lugares para comprar un
+                  proyector por un lado, el ecram por otro, los cables y
+                  soportes por separado, duplicando costos y tiempos de gestión.
                 </p>
               </div>
 
@@ -107,8 +107,8 @@ export default function AboutPage() {
                 </h3>
                 <p className="text-xs text-[#64748b] leading-relaxed">
                   Riesgo de tratar con intermediarios sin garantía real, sin RUC
-                  verificado ni emisión formal de boletas y facturas electrónicas
-                  válidas para empresas e instituciones.
+                  verificado ni emisión formal de boletas y facturas
+                  electrónicas válidas para empresas e instituciones.
                 </p>
               </div>
 
@@ -206,8 +206,8 @@ export default function AboutPage() {
                     Protección al Comprador IUBIZON
                   </h3>
                   <p className="text-xs text-[#64748b] leading-relaxed">
-                    Cobertura transparente y acompañamiento ante fallas de fábrica
-                    o inconvenientes de entrega.
+                    Cobertura transparente y acompañamiento ante fallas de
+                    fábrica o inconvenientes de entrega.
                   </p>
                 </div>
               </div>
@@ -220,7 +220,9 @@ export default function AboutPage() {
               <div className="w-12 h-12 bg-orange-500/20 text-[#f25c05] rounded-2xl flex items-center justify-center font-bold">
                 <Building2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-extrabold text-white">Nuestra Misión</h3>
+              <h3 className="text-xl font-extrabold text-white">
+                Nuestra Misión
+              </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Transformar y agilizar la adquisición de tecnología en el Perú,
                 ofreciendo un canal transparente, profesional e innovador donde
@@ -233,11 +235,13 @@ export default function AboutPage() {
               <div className="w-12 h-12 bg-orange-500/20 text-[#f25c05] rounded-2xl flex items-center justify-center font-bold">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-extrabold text-white">Nuestra Visión</h3>
+              <h3 className="text-xl font-extrabold text-white">
+                Nuestra Visión
+              </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Ser el marketplace y plataforma B2B de referencia en el ámbito
-                tecnológico y educativo en Latinoamérica, impulsando la digitalización
-                con seguridad, inteligencia y confianza.
+                tecnológico y educativo en Latinoamérica, impulsando la
+                digitalización con seguridad, inteligencia y confianza.
               </p>
             </div>
           </section>
@@ -252,7 +256,8 @@ export default function AboutPage() {
                 IUBIZON COMPANY S.A.C.
               </h4>
               <p className="text-xs text-[#64748b]">
-                RUC: <strong className="text-[#112237]">20614600374</strong> — Domicilio Fiscal en Lima, Perú.
+                RUC: <strong className="text-[#112237]">20614600374</strong> —
+                Domicilio Fiscal en Lima, Perú.
               </p>
             </div>
             <Link
