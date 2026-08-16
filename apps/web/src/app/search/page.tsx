@@ -199,7 +199,10 @@ function SearchContent() {
   const [products, setProducts] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const page = useMemo(() => {
+    const p = parseInt(searchParams.get("page") || "1", 10);
+    return isNaN(p) || p < 1 ? 1 : p;
+  }, [searchParams]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
@@ -329,9 +332,22 @@ function SearchContent() {
     const params = new URLSearchParams(searchParams);
     updater(params);
     if (resetPage) {
-      setPage(1);
+      params.delete("page");
     }
     router.push(`/search?${params.toString()}`, { scroll: false });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    updateUrlParams((params) => {
+      if (newPage > 1) {
+        params.set("page", newPage.toString());
+      } else {
+        params.delete("page");
+      }
+    }, false);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleCategorySelect = (id: string) => {
@@ -397,7 +413,6 @@ function SearchContent() {
 
   const clearAllFilters = () => {
     setPriceFilterKey((k) => k + 1);
-    setPage(1);
     router.push("/search", { scroll: false });
   };
 
@@ -794,8 +809,8 @@ function SearchContent() {
                   <div className="flex items-center justify-center gap-3 mt-10">
                     <Button
                       variant="outline"
-                      disabled={page === 1}
-                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                      disabled={page <= 1}
+                      onClick={() => handlePageChange(page - 1)}
                       size="sm"
                       className="rounded-xl font-bold text-xs border-[#e2e8f0] text-[#112237]"
                     >
@@ -807,7 +822,7 @@ function SearchContent() {
                     <Button
                       variant="outline"
                       disabled={page >= totalPages}
-                      onClick={() => setPage((p) => p + 1)}
+                      onClick={() => handlePageChange(page + 1)}
                       size="sm"
                       className="rounded-xl font-bold text-xs border-[#e2e8f0] text-[#112237]"
                     >
