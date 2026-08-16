@@ -1,35 +1,34 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Slide {
   id: number;
-  title: string;
-  subtitle: string;
-  bgGradient: string;
+  image: string;
+  alt: string;
+  link?: string;
 }
 
 const slides: Slide[] = [
   {
     id: 1,
-    title: "Tecnología para educar y trabajar",
-    subtitle: "La plataforma de productos para empresas y colegios.",
-    bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
+    image: "/images/banner1.png",
+    alt: "Promoción Banner 1 - Explorar Catálogo",
+    link: "/search",
   },
   {
     id: 2,
-    title: "Proveedores y distribuidores verificados",
-    subtitle:
-      "Conecta con proveedores confiables y encuentra los productos que necesitas.",
-    bgGradient: "from-[#0f172a] via-[#1e293b] to-[#0284c7]",
+    image: "/images/banner2.png",
+    alt: "Promoción Banner 2 - IUBIZON",
   },
   {
     id: 3,
-    title: "Arma tus paquetes de productos",
-    subtitle: "Crea paquetes personalizados de productos específicos.",
-    bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
+    image: "/images/banner3.png",
+    alt: "Promoción Banner 3 - IUBIZON",
   },
 ];
 
@@ -69,10 +68,23 @@ export const HeroSection = () => {
 
   const slide = slides[currentSlideIndex];
 
+  const slideContent = (
+    <div className="relative w-full h-full">
+      <Image
+        src={slide.image}
+        alt={slide.alt}
+        fill
+        priority={currentSlideIndex === 0}
+        sizes="(max-width: 1200px) 100vw, 1200px"
+        className="object-cover w-full h-full"
+      />
+    </div>
+  );
+
   return (
     <div className="container pt-2 sm:pt-4 md:pt-6">
       <section
-        className="relative w-full h-[140px] sm:h-[190px] md:h-[260px] overflow-hidden select-none rounded-xl sm:rounded-2xl shadow-md"
+        className="relative w-full aspect-[896/199] overflow-hidden select-none rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200/80"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -88,28 +100,22 @@ export const HeroSection = () => {
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
             }}
-            className={`absolute inset-0 bg-gradient-to-r ${slide.bgGradient} text-white flex items-center justify-center px-4`}
+            className="absolute inset-0 w-full h-full"
           >
-            {/* Decorative Orbs */}
-            <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-20 -translate-y-20 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-32 translate-y-32 pointer-events-none" />
-            <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-[#f25c05]/20 rounded-full blur-xl pointer-events-none" />
-
-            {/* Content */}
-            <div className="container mx-auto relative z-10 text-center">
-              <div className="max-w-3xl mx-auto px-2">
-                <h1 className="text-sm sm:text-2xl md:text-4xl font-extrabold text-white mb-1 sm:mb-3 tracking-tight drop-shadow-md leading-snug">
-                  {slide.title}
-                </h1>
-                <p className="text-[11px] sm:text-base md:text-lg text-white/90 font-light max-w-2xl mx-auto line-clamp-2">
-                  {slide.subtitle}
-                </p>
-              </div>
-            </div>
+            {slide.link ? (
+              <Link
+                href={slide.link}
+                className="block w-full h-full cursor-pointer"
+              >
+                {slideContent}
+              </Link>
+            ) : (
+              slideContent
+            )}
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Buttons (Desktop/Tablet) */}
+        {/* Navigation Buttons */}
         <button
           onClick={() => paginate(-1)}
           className="hidden sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
@@ -127,18 +133,19 @@ export const HeroSection = () => {
         </button>
 
         {/* Slide Indicators Dots */}
-        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2">
+        <div className="absolute bottom-2.5 sm:bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-2">
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 const newDir = index > currentSlideIndex ? 1 : -1;
                 setPage([index, newDir]);
               }}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                 currentSlideIndex === index
-                  ? "w-6 bg-[#f25c05]"
-                  : "w-2 bg-white/40 hover:bg-white/70"
+                  ? "w-6 sm:w-7 bg-[#f25c05] shadow-sm"
+                  : "w-2 sm:w-2.5 bg-white/70 hover:bg-white shadow-xs"
               }`}
               aria-label={`Ir al slide ${index + 1}`}
             />
