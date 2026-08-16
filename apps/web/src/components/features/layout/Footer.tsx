@@ -83,6 +83,12 @@ export const Footer = ({ categories = [] }: FooterProps) => {
             <p className="text-[#94a3b8] text-sm mb-4">
               Tecnología para educar y trabajar.
             </p>
+            <div className="text-xs mb-3 leading-relaxed">
+              <p className="font-bold text-slate-200">IUBIZON COMPANY S.A.C.</p>
+              <p className="font-semibold text-[#94a3b8] text-[11px] tracking-wide">
+                RUC: 20614600374
+              </p>
+            </div>
             <div className="flex gap-4">
               <a
                 href="https://facebook.com/iubizon"
