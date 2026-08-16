@@ -94,17 +94,15 @@ export async function sendDeliveryConfirmationNotifications(
             sellerName: companyName,
             buyerName: pkg.order.buyer?.name || "Comprador",
             confirmedAt: formatDateTime(pkg.updated_at),
-            items: pkg.items.map(
-              (item): EmailOrderItem => ({
-                id: item.id,
-                title: item.product.title,
-                price: Number(item.unit_price),
-                quantity: item.quantity,
-                imageUrl: item.product.images[0]?.url || null,
-                sellerName: companyName,
-                companyName,
-              }),
-            ),
+            items: pkg.items.map((item): EmailOrderItem => ({
+              id: item.id,
+              title: item.product.title,
+              price: Number(item.unit_price),
+              quantity: item.quantity,
+              imageUrl: item.product.images[0]?.url || null,
+              sellerName: companyName,
+              companyName,
+            })),
             packageSubtotal: Number(pkg.subtotal),
             netEarnings: Number(pkg.net_earnings),
           };
