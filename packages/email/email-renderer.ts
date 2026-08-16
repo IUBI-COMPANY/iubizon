@@ -6,6 +6,7 @@ import { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
 import { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
 import { RefundStatusEmail } from "./templates/RefundStatusEmail";
 import { RefundCompletedEmail } from "./templates/RefundCompletedEmail";
+import { DeliveryConfirmedEmail } from "./templates/DeliveryConfirmedEmail";
 
 const TEMPLATES: Record<string, React.ComponentType<any>> = {
   buyer_order: BuyerOrderEmail,
@@ -15,6 +16,7 @@ const TEMPLATES: Record<string, React.ComponentType<any>> = {
   return_received: ReturnReceivedEmail,
   refund_status: RefundStatusEmail,
   refund_completed: RefundCompletedEmail,
+  delivery_confirmed: DeliveryConfirmedEmail,
 };
 
 export function renderEmail(
