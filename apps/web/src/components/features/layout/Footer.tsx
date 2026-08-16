@@ -49,6 +49,7 @@ export const Footer = ({ categories = [] }: FooterProps) => {
     ],
     vender: [{ label: "Publicar producto", href: "/products/new" }],
     ayuda: [
+      { label: "¿Qué es IUBIZON?", href: "/about" },
       { label: "Centro de ayuda", href: "/help" },
       { label: "Cómo comprar", href: "/help?tab=comprar" },
       { label: "Cómo vender", href: "/help?tab=vender" },
