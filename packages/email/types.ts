@@ -124,3 +124,18 @@ export interface RefundCompletedEmailData {
   cancellationCode: string | null;
   items: EmailOrderItem[];
 }
+
+export interface DeliveryConfirmedEmailData {
+  orderCode: string;
+  packageCode: string;
+  companyName: string;
+  companyLegalName: string | null;
+  companyTaxId: string | null;
+  companyPhone: string | null;
+  sellerName: string;
+  buyerName: string;
+  confirmedAt: string;
+  items: EmailOrderItem[];
+  packageSubtotal: number;
+  netEarnings: number;
+}

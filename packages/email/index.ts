@@ -12,3 +12,4 @@ export { ReturnShippedEmail } from "./templates/ReturnShippedEmail";
 export { ReturnReceivedEmail } from "./templates/ReturnReceivedEmail";
 export { RefundStatusEmail } from "./templates/RefundStatusEmail";
 export { RefundCompletedEmail } from "./templates/RefundCompletedEmail";
+export { DeliveryConfirmedEmail } from "./templates/DeliveryConfirmedEmail";
