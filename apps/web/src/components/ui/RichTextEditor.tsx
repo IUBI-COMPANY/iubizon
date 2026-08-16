@@ -348,7 +348,10 @@ export function RichTextEditor({
         </span>
       </div>
       <div className="flex justify-end px-4 py-1.5 border-t border-[#e2e8f0] bg-[#fafbfc]">
-        <span className="text-xs text-red-500">Recuerda revisar bien la descripción y no tenga datos que no sean coherentes o reales</span>
+        <span className="text-xs text-red-500">
+          Recuerda revisar bien la descripción y no tenga datos que no sean
+          coherentes o reales
+        </span>
       </div>
     </div>
   );

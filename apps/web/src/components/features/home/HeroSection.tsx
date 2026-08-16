@@ -14,9 +14,8 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: "Encuentra todo en un solo lugar",
-    subtitle:
-      "La plataforma de productos y servicios para empresas y colegios.",
+    title: "Tecnología para educar y trabajar",
+    subtitle: "La plataforma de productos para empresas y colegios.",
     bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
   },
   {
@@ -28,9 +27,8 @@ const slides: Slide[] = [
   },
   {
     id: 3,
-    title: "Arma tus kits de productos y servicios",
-    subtitle:
-      "Crea paquetes personalizados de productos y servicios para tus necesidades específicas.",
+    title: "Arma tus paquetes de productos",
+    subtitle: "Crea paquetes personalizados de productos específicos.",
     bgGradient: "from-[#112237] via-[#1c385c] to-[#f25c05]",
   },
 ];
