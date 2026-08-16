@@ -674,7 +674,7 @@ export default function EditProductPage({ params }: Props) {
               onChange={(newDesc) =>
                 setValue("description", newDesc, { shouldValidate: true })
               }
-              placeholder="Describe las características principales, garantía, qué incluye el paquete..."
+              placeholder="Describe tu producto: DESCRIPCIÓN, CARACTERÍSTICAS DESTACADAS, ESPECIFICACIONES TÉCNICAS, ACCESORIOS INCLUIDOS..."
               maxLength={2000}
             />
             <FieldError message={errors.description?.message} />

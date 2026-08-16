@@ -7,6 +7,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import LinkExtension from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { useEffect } from "react";
 import {
   Bold,
   Italic,
@@ -23,6 +24,8 @@ import {
   Redo2,
   Heading2,
   ShieldAlert,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { detectForbiddenContactInfo } from "@/lib/utils/contactDetector";
 
@@ -45,6 +48,8 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   maxLength?: number;
+  onGenerateAiDescription?: () => Promise<void>;
+  isGeneratingAi?: boolean;
 }
 
 export function RichTextEditor({
@@ -52,6 +57,8 @@ export function RichTextEditor({
   onChange,
   placeholder,
   maxLength = 2000,
+  onGenerateAiDescription,
+  isGeneratingAi = false,
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
@@ -124,6 +131,12 @@ export function RichTextEditor({
     },
   });
 
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content || "");
+    }
+  }, [content, editor]);
+
   if (!editor) return null;
 
   const charCount = editor.getText().length;
@@ -159,122 +172,147 @@ export function RichTextEditor({
 
   return (
     <div className="rounded-lg border border-[#e2e8f0] bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#f25c05] focus-within:border-transparent transition-colors">
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-[#e2e8f0] bg-[#fafbfc]">
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          isActive={editor.isActive("bold")}
-          title="Negrita"
-        >
-          <Bold className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          isActive={editor.isActive("italic")}
-          title="Cursiva"
-        >
-          <Italic className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          isActive={editor.isActive("underline")}
-          title="Subrayado"
-        >
-          <UnderlineIcon className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          isActive={editor.isActive("strike")}
-          title="Tachado"
-        >
-          <Strikethrough className="w-4 h-4" />
-        </ToolbarButton>
+      <div className="flex flex-wrap items-center justify-between gap-1 px-2 py-1.5 border-b border-[#e2e8f0] bg-[#fafbfc]">
+        <div className="flex flex-wrap items-center gap-0.5">
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive("bold")}
+            title="Negrita"
+          >
+            <Bold className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive("italic")}
+            title="Cursiva"
+          >
+            <Italic className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            isActive={editor.isActive("underline")}
+            title="Subrayado"
+          >
+            <UnderlineIcon className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            isActive={editor.isActive("strike")}
+            title="Tachado"
+          >
+            <Strikethrough className="w-4 h-4" />
+          </ToolbarButton>
 
-        <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
+          <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
 
-        <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          isActive={editor.isActive("heading", { level: 2 })}
-          title="Título"
-        >
-          <Heading2 className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor.isActive("bulletList")}
-          title="Lista con viñetas"
-        >
-          <List className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor.isActive("orderedList")}
-          title="Lista numerada"
-        >
-          <ListOrdered className="w-4 h-4" />
-        </ToolbarButton>
-
-        <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          isActive={editor.isActive({ textAlign: "left" })}
-          title="Alinear a la izquierda"
-        >
-          <AlignLeft className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          isActive={editor.isActive({ textAlign: "center" })}
-          title="Centrar"
-        >
-          <AlignCenter className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          isActive={editor.isActive({ textAlign: "right" })}
-          title="Alinear a la derecha"
-        >
-          <AlignRight className="w-4 h-4" />
-        </ToolbarButton>
-
-        <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
-
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          isActive={editor.isActive("highlight")}
-          title="Resaltar"
-        >
-          <Highlighter className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => {
-            const url = window.prompt("URL del enlace:");
-            if (url) {
-              editor.chain().focus().setLink({ href: url }).run();
+          <ToolbarButton
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
-          }}
-          isActive={editor.isActive("link")}
-          title="Insertar enlace"
-        >
-          <Link className="w-4 h-4" />
-        </ToolbarButton>
+            isActive={editor.isActive("heading", { level: 2 })}
+            title="Título"
+          >
+            <Heading2 className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive("bulletList")}
+            title="Lista con viñetas"
+          >
+            <List className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive("orderedList")}
+            title="Lista numerada"
+          >
+            <ListOrdered className="w-4 h-4" />
+          </ToolbarButton>
 
-        <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
+          <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
 
-        <ToolbarButton
-          onClick={() => editor.chain().focus().undo().run()}
-          title="Deshacer"
-        >
-          <Undo2 className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().redo().run()}
-          title="Rehacer"
-        >
-          <Redo2 className="w-4 h-4" />
-        </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            isActive={editor.isActive({ textAlign: "left" })}
+            title="Alinear a la izquierda"
+          >
+            <AlignLeft className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            isActive={editor.isActive({ textAlign: "center" })}
+            title="Centrar"
+          >
+            <AlignCenter className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            isActive={editor.isActive({ textAlign: "right" })}
+            title="Alinear a la derecha"
+          >
+            <AlignRight className="w-4 h-4" />
+          </ToolbarButton>
+
+          <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHighlight().run()}
+            isActive={editor.isActive("highlight")}
+            title="Resaltar"
+          >
+            <Highlighter className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => {
+              const url = window.prompt("URL del enlace:");
+              if (url) {
+                editor.chain().focus().setLink({ href: url }).run();
+              }
+            }}
+            isActive={editor.isActive("link")}
+            title="Insertar enlace"
+          >
+            <Link className="w-4 h-4" />
+          </ToolbarButton>
+
+          <div className="w-px h-5 bg-[#e2e8f0] mx-1" />
+
+          <ToolbarButton
+            onClick={() => editor.chain().focus().undo().run()}
+            title="Deshacer"
+          >
+            <Undo2 className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().redo().run()}
+            title="Rehacer"
+          >
+            <Redo2 className="w-4 h-4" />
+          </ToolbarButton>
+        </div>
+
+        {/* Botón de Inteligencia Artificial Gemini */}
+        {onGenerateAiDescription && (
+          <button
+            type="button"
+            onClick={onGenerateAiDescription}
+            disabled={isGeneratingAi}
+            title="Generar una descripción redactada automáticamente con Google Gemini AI"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#f25c05] to-orange-500 hover:from-[#d94d04] hover:to-orange-600 text-white text-xs font-extrabold shadow-sm transition-all disabled:opacity-60 cursor-pointer shrink-0 ml-auto my-0.5"
+          >
+            {isGeneratingAi ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Generando...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                <span>Generar con AI</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <EditorContent editor={editor} />
@@ -308,6 +346,9 @@ export function RichTextEditor({
         >
           {charCount}/{maxLength}
         </span>
+      </div>
+      <div className="flex justify-end px-4 py-1.5 border-t border-[#e2e8f0] bg-[#fafbfc]">
+        <span className="text-xs text-red-500">Recuerda revisar bien la descripción y no tenga datos que no sean coherentes o reales</span>
       </div>
     </div>
   );

@@ -164,6 +164,8 @@ function PublishProductForm() {
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [isGeneratingAiDescription, setIsGeneratingAiDescription] =
+    useState(false);
 
   const {
     register,
@@ -187,6 +189,74 @@ function PublishProductForm() {
       warrantyConditions: "",
     },
   });
+
+  const handleGenerateAiDescription = async () => {
+    const currentTitle = watch("title");
+    if (!currentTitle || currentTitle.trim().length < 3) {
+      toast.error(
+        "Ingresa al menos el título de tu producto para poder redactar la descripción con AI.",
+        "Título requerido",
+      );
+      return;
+    }
+
+    try {
+      setIsGeneratingAiDescription(true);
+
+      const currentCategoryId = watch("category_id");
+      const selectedCategory = categories.find(
+        (c) => c.id === currentCategoryId,
+      );
+
+      const currentCondition = watch("condition");
+      const conditionMeta = conditionOptions[currentCondition];
+
+      const warrantyText = getFormattedWarrantyText(
+        watch("hasWarranty"),
+        watch("warrantyOption"),
+        watch("customWarranty") ?? "",
+        "product",
+      );
+
+      const res = await fetch("/api/ai/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: currentTitle,
+          brand: watch("brand") || undefined,
+          categoryName: selectedCategory?.name || undefined,
+          conditionLabel: conditionMeta?.label || undefined,
+          price: watch("price") || undefined,
+          warrantyText: warrantyText || undefined,
+          companyName: activeCompany?.name || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Error al generar descripción");
+      }
+
+      const data = await res.json();
+      if (data.descriptionHtml) {
+        setValue("description", data.descriptionHtml, {
+          shouldValidate: true,
+        });
+        toast.success(
+          "¡La descripción ha sido redactada automáticamente por Gemini AI!",
+          "Descripción con AI",
+        );
+      }
+    } catch (err: any) {
+      console.error("Error al generar descripción con Gemini AI:", err);
+      toast.error(
+        err?.message || "Ocurrió un error al contactar al asistente de IA.",
+        "Error AI",
+      );
+    } finally {
+      setIsGeneratingAiDescription(false);
+    }
+  };
 
   const formData = watch();
 
@@ -720,7 +790,9 @@ function PublishProductForm() {
                       onChange={(val) => {
                         setValue("description", val, { shouldValidate: true });
                       }}
-                      placeholder="Describe tu producto: estado, accesorios incluidos, razón de venta..."
+                      onGenerateAiDescription={handleGenerateAiDescription}
+                      isGeneratingAi={isGeneratingAiDescription}
+                      placeholder="Describe tu producto: DESCRIPCIÓN, CARACTERÍSTICAS DESTACADAS, ESPECIFICACIONES TÉCNICAS, ACCESORIOS INCLUIDOS..."
                       maxLength={2000}
                     />
                     <FieldError message={errors.description?.message} />
