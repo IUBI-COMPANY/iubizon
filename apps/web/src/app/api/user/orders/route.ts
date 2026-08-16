@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { ensureSellerPayoutForPackages } from "@/lib/payoutService";
+import { sendDeliveryConfirmationNotifications } from "@/lib/email";
 
 export interface BuyerOrderItem {
   id: string;
@@ -340,6 +341,14 @@ export async function PATCH(req: Request) {
     }
 
     await ensureSellerPayoutForPackages(packageIds);
+
+    // Notificar a la empresa que el cliente confirmó la recepción del pedido
+    sendDeliveryConfirmationNotifications(packageIds).catch((err) =>
+      console.error(
+        "[User Orders] Error enviando notificación de entrega:",
+        err,
+      ),
+    );
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
