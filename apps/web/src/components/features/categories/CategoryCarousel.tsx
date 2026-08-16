@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
@@ -10,7 +10,7 @@ interface Category {
   id: string;
   name: string;
   slug: string;
-  icon: string | null;
+  icon?: string | null;
 }
 
 interface CategoryCarouselProps {
@@ -25,20 +25,37 @@ export function CategoryCarousel({
   activeSlug,
 }: CategoryCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const baseCategories = [
+    { id: "all", name: "Todas", slug: "" },
+    ...categories,
+  ];
+
+  // Triplicamos la lista únicamente para permitir el scroll infinito circular sin alterar el diseño original
+  const infiniteCategories = [
+    ...baseCategories.map((c) => ({ ...c, uniqueId: `prev-${c.id}` })),
+    ...baseCategories.map((c) => ({ ...c, uniqueId: `curr-${c.id}` })),
+    ...baseCategories.map((c) => ({ ...c, uniqueId: `next-${c.id}` })),
+  ];
 
   useEffect(() => {
-    checkScroll();
+    if (scrollRef.current) {
+      const thirdWidth = scrollRef.current.scrollWidth / 3;
+      scrollRef.current.scrollLeft = thirdWidth;
+    }
   }, [categories]);
+
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const thirdWidth = scrollWidth / 3;
+
+    if (scrollLeft < 20) {
+      scrollRef.current.scrollLeft = scrollLeft + thirdWidth;
+    } else if (scrollLeft + clientWidth >= scrollWidth - 20) {
+      scrollRef.current.scrollLeft = scrollLeft - thirdWidth;
+    }
+  }, []);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -50,37 +67,31 @@ export function CategoryCarousel({
     }
   };
 
-  const allCategories = [{ id: "all", name: "Todas", slug: "" }, ...categories];
-
   return (
     <div className="relative group">
-      {canScrollLeft && (
-        <button
-          onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex transition-colors"
-          aria-label="Anterior"
-        >
-          <ChevronLeft className="w-4 h-4 text-[#112237]" />
-        </button>
-      )}
+      <button
+        onClick={() => scroll("left")}
+        className="sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/10 hover:bg-black/80 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
+        aria-label="Anterior"
+      >
+        <ChevronLeft className="w-4 h-4 text-[#112237]" />
+      </button>
 
-      {canScrollRight && (
-        <button
-          onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-2 hover:bg-white hidden group-hover:flex transition-colors"
-          aria-label="Siguiente"
-        >
-          <ChevronRight className="w-4 h-4 text-[#112237]" />
-        </button>
-      )}
+      <button
+        onClick={() => scroll("right")}
+        className="sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/10 hover:bg-black/80 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
+        aria-label="Siguiente"
+      >
+        <ChevronRight className="w-4 h-4 text-[#112237]" />
+      </button>
 
       <div
         ref={scrollRef}
-        onScroll={checkScroll}
+        onScroll={handleScroll}
         className="flex gap-3 overflow-x-auto scrollbar-hide py-3 px-4"
         style={{ scrollSnapType: "x mandatory" }}
       >
-        {allCategories.map((category, index) => {
+        {infiniteCategories.map((category, index) => {
           const isActive =
             category.id === "all"
               ? !activeCategoryId && !activeSlug
@@ -97,10 +108,7 @@ export function CategoryCarousel({
 
           return (
             <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              key={`${category.uniqueId}-${index}`}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               style={{ scrollSnapAlign: "start" }}
@@ -109,7 +117,7 @@ export function CategoryCarousel({
                 href={linkHref}
                 className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 ${
                   isActive
-                    ? "text-primary"
+                    ? "text-primary font-bold"
                     : "text-[#112237] hover:text-primary"
                 }`}
               >
