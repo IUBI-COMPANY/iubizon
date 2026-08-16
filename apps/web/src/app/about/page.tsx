@@ -32,7 +32,6 @@ export default function AboutPage() {
 
           <div className="container relative z-10 text-center max-w-4xl mx-auto px-4">
             <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 text-[#f25c05] font-extrabold text-xs px-4 py-1.5 rounded-full mb-6 shadow-sm backdrop-blur-md">
-              <Sparkles className="w-4 h-4" />
               <span>Ecosistema Tecnológico B2B & E-Commerce</span>
             </div>
 
