@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ShoppingCart } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
@@ -12,26 +10,21 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCompany } from "@/context/CompanyContext";
 import { CartStepIndicator } from "@/components/features/cart/CartStepIndicator";
-import type { OrderBump } from "@/components/features/cart/CartOrderBumps";
 import { CheckoutStepCart } from "@/components/features/cart/CheckoutStepCart";
 import { CheckoutStepShipping } from "@/components/features/cart/CheckoutStepShipping";
 import { CheckoutStepPayment } from "@/components/features/cart/CheckoutStepPayment";
-import type {
-  InvoiceType,
-  DocType,
-} from "@/components/features/cart/InvoiceSelector";
-import { peruUbigeo } from "@/data-list/ubigeos";
 import {
   STEP_STORAGE_KEY,
   FORM_STORAGE_KEY,
   INVOICE_STORAGE_KEY,
   TERMS_STORAGE_KEY,
-  buildCityLabel,
-  shippingFormSchema,
-  type ShippingFormState,
   type DeliveryType,
 } from "@/components/features/cart/checkout-schema";
 import type { PaymentSuccessData } from "@/components/features/checkout/paymentWidgets";
+
+import { useCheckoutForm } from "@/components/features/cart/hooks/useCheckoutForm";
+import { useCheckoutInvoice } from "@/components/features/cart/hooks/useCheckoutInvoice";
+import { useCheckoutRecommendations } from "@/components/features/cart/hooks/useCheckoutRecommendations";
 
 export default function CartCheckoutPage() {
   const router = useRouter();
@@ -42,52 +35,61 @@ export default function CartCheckoutPage() {
   const toast = useToast();
 
   const [step, setStep] = useState<number>(1);
-  const [recommendations, setRecommendations] = useState<OrderBump[]>([]);
-  const [loadingRecs, setLoadingRecs] = useState(false);
-  const [recsPage, setRecsPage] = useState<number>(1);
-  const [recsHasMore, setRecsHasMore] = useState<boolean>(false);
   const [deliveryType, setDeliveryType] = useState<DeliveryType>("progressive");
 
-  // Comprobante de pago (Boleta vs Factura)
-  const [invoiceType, setInvoiceType] = useState<InvoiceType>("boleta");
-  const [docType, setDocType] = useState<DocType>("dni");
-  const [invoiceDni, setInvoiceDni] = useState("");
-  const [invoiceRuc, setInvoiceRuc] = useState("");
-  const [invoiceCompanyName, setInvoiceCompanyName] = useState("");
-
-  // Términos y Condiciones + confirmación de mayoría de edad (requeridos por Niubiz)
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [isOver18, setIsOver18] = useState(false);
-
-  // Formulario de envío validado con Zod + React Hook Form, con Auto-Guardado en LocalStorage
+  // Hook 1: Formulario de Envío y Ubigeo
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
-    getValues,
-    reset,
-    formState: { errors },
-  } = useForm<ShippingFormState>({
-    resolver: zodResolver(shippingFormSchema),
-    defaultValues: {
-      name: user?.name || "",
-      phone: "",
-      email: user?.email || "",
-      address: "",
-      department: "Lima",
-      province: "Lima",
-      district: "",
-      documentType: "dni",
-      documentNumber: "",
-      city: "Lima",
-      notes: "",
-    },
-  });
+    errors,
+    shippingForm,
+    provincesForDepartment,
+    districtsForProvince,
+    hasValidProvinceDocument,
+    handleDepartmentChange,
+    handleProvinceChange,
+    handleDistrictChange,
+  } = useCheckoutForm({ user });
 
-  const shippingForm = watch();
+  // Cálculos Financieros Memorizados
+  const subtotal = total;
+  const shippingCost = 0.0;
+  const grandTotal = useMemo(
+    () => subtotal + shippingCost,
+    [subtotal, shippingCost],
+  );
 
-  // Restaurar paso y datos del formulario desde LocalStorage al montar
+  // Hook 2: Comprobante de Pago y Términos
+  const {
+    invoiceType,
+    setInvoiceType,
+    docType,
+    setDocType,
+    invoiceDni,
+    setInvoiceDni,
+    invoiceRuc,
+    setInvoiceRuc,
+    invoiceCompanyName,
+    setInvoiceCompanyName,
+    agreedToTerms,
+    setAgreedToTerms,
+    isOver18,
+    setIsOver18,
+    validateCheckout,
+  } = useCheckoutInvoice({ grandTotal, shippingForm });
+
+  // Hook 3: Recomendaciones y Order Bumps
+  const {
+    recommendations,
+    loadingRecs,
+    recsPage,
+    recsHasMore,
+    fetchRecommendations,
+    handleAddBump,
+  } = useCheckoutRecommendations({ items, companies, addItem });
+
+  // Restaurar paso inicial y procesar respuesta Niubiz si viene por URL
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedStep = localStorage.getItem(STEP_STORAGE_KEY);
@@ -98,43 +100,6 @@ export default function CartCheckoutPage() {
         }
       }
 
-      const savedForm = localStorage.getItem(FORM_STORAGE_KEY);
-      if (savedForm) {
-        try {
-          const parsedForm = JSON.parse(savedForm);
-          reset((prev) => ({ ...prev, ...parsedForm }));
-        } catch (e) {
-          console.error("Error al restaurar formulario de checkout:", e);
-        }
-      }
-
-      const savedInvoice = localStorage.getItem(INVOICE_STORAGE_KEY);
-      if (savedInvoice) {
-        try {
-          const parsed = JSON.parse(savedInvoice);
-          if (parsed.invoiceType) setInvoiceType(parsed.invoiceType);
-          if (parsed.docType) setDocType(parsed.docType);
-          if (parsed.invoiceDni) setInvoiceDni(parsed.invoiceDni);
-          if (parsed.invoiceRuc) setInvoiceRuc(parsed.invoiceRuc);
-          if (parsed.invoiceCompanyName)
-            setInvoiceCompanyName(parsed.invoiceCompanyName);
-        } catch {}
-      }
-
-      const savedTerms = localStorage.getItem(TERMS_STORAGE_KEY);
-      if (savedTerms) {
-        try {
-          const parsed = JSON.parse(savedTerms);
-          if (typeof parsed.agreedToTerms === "boolean") {
-            setAgreedToTerms(parsed.agreedToTerms);
-          }
-          if (typeof parsed.isOver18 === "boolean") {
-            setIsOver18(parsed.isOver18);
-          }
-        } catch {}
-      }
-
-      // Procesar retorno de Niubiz si vino por redirección en URL (success / error)
       const urlParams = new URLSearchParams(window.location.search);
       const isSuccess = urlParams.get("success") === "true";
       const orderCode =
@@ -159,53 +124,9 @@ export default function CartCheckoutPage() {
         );
       }
     }
-  }, []);
+  }, [clearCart, router, toast]);
 
-  // Persistir los campos del formulario en LocalStorage mientras se escribe
-  useEffect(() => {
-    const subscription = watch((value) => {
-      if (typeof window !== "undefined") {
-        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(value));
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
-
-  // Persistir campos de comprobante de pago en LocalStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        INVOICE_STORAGE_KEY,
-        JSON.stringify({
-          invoiceType,
-          docType,
-          invoiceDni,
-          invoiceRuc,
-          invoiceCompanyName,
-        }),
-      );
-    }
-  }, [invoiceType, docType, invoiceDni, invoiceRuc, invoiceCompanyName]);
-
-  // Persistir aceptación de T&C y mayoría de edad en LocalStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        TERMS_STORAGE_KEY,
-        JSON.stringify({ agreedToTerms, isOver18 }),
-      );
-    }
-  }, [agreedToTerms, isOver18]);
-
-  // Sincronizar email/nombre cuando el usuario inicie sesión
-  useEffect(() => {
-    if (user) {
-      if (!getValues("name")) setValue("name", user.name || "");
-      if (!getValues("email")) setValue("email", user.email || "");
-    }
-  }, [user, getValues, setValue]);
-
-  // Persistir paso activo en LocalStorage (requiere sesión para el Paso 3)
+  // Persistir paso activo
   const handleStepChange = (newStep: number) => {
     if (newStep === 3 && !user) {
       toast.info(
@@ -224,7 +145,7 @@ export default function CartCheckoutPage() {
     }
   };
 
-  // Si intenta estar en el paso 3 sin sesión (ej: recarga de página), regresar al paso 2
+  // Regresar al paso 2 si intenta estar en el paso 3 sin sesión
   useEffect(() => {
     if (step === 3 && !user) {
       setStep(2);
@@ -234,126 +155,14 @@ export default function CartCheckoutPage() {
     }
   }, [step, user]);
 
-  // Provincias/distritos disponibles según el departamento/provincia seleccionados (ubigeo)
-  const provincesForDepartment = useMemo(
-    () =>
-      peruUbigeo.find((d) => d.name === shippingForm.department)?.provinces ||
-      [],
-    [shippingForm.department],
-  );
-  const districtsForProvince = useMemo(
-    () =>
-      provincesForDepartment.find((p) => p.name === shippingForm.province)
-        ?.districts || [],
-    [provincesForDepartment, shippingForm.province],
-  );
-  const hasValidProvinceDocument = useMemo(() => {
-    const docTypeValue = shippingForm.documentType;
-    const docNumber = (shippingForm.documentNumber || "").trim();
-    const isDniValid = docTypeValue === "dni" && /^\d{8}$/.test(docNumber);
-    const isRucValid = docTypeValue === "ruc" && /^\d{11}$/.test(docNumber);
-    return isDniValid || isRucValid;
-  }, [shippingForm.documentType, shippingForm.documentNumber]);
-
-  // Selección en cascada Departamento -> Provincia -> Distrito
-  const handleDepartmentChange = (department: string) => {
-    setValue("department", department, { shouldValidate: true });
-    setValue("province", "", { shouldValidate: true });
-    setValue("district", "", { shouldValidate: true });
-    setValue("city", buildCityLabel(department, "", ""));
-  };
-
-  const handleProvinceChange = (province: string) => {
-    setValue("province", province, { shouldValidate: true });
-    setValue("district", "", { shouldValidate: true });
-    setValue("city", buildCityLabel(shippingForm.department, province, ""));
-  };
-
-  const handleDistrictChange = (district: string) => {
-    setValue("district", district, { shouldValidate: true });
-    setValue(
-      "city",
-      buildCityLabel(shippingForm.department, shippingForm.province, district),
-    );
-  };
-
-  // Cargar productos complementarios (Order Bumps) con Paginación
-  const fetchRecommendations = useCallback(
-    async (pageToFetch = 1) => {
-      try {
-        setLoadingRecs(true);
-        const excludeIds = items
-          .map((i) => i.product_id)
-          .filter(Boolean)
-          .join(",");
-        const ownCompanyIds = companies
-          .map((c) => c.id)
-          .filter(Boolean)
-          .join(",");
-        const params = new URLSearchParams({
-          exclude: excludeIds,
-          page: String(pageToFetch),
-          limit: "6",
-        });
-        if (ownCompanyIds) params.set("excludeCompanies", ownCompanyIds);
-        const res = await fetch(
-          `/api/products/recommendations?${params.toString()}`,
-        );
-        const data = await res.json();
-        if (Array.isArray(data.recommendations)) {
-          setRecommendations(data.recommendations);
-          setRecsHasMore(!!data.pagination?.hasMore);
-          setRecsPage(pageToFetch);
-        }
-      } catch (err) {
-        console.error("Error al cargar recomendaciones afines:", err);
-      } finally {
-        setLoadingRecs(false);
-      }
-    },
-    [items, companies],
-  );
-
-  const filteredRecommendations = useMemo(() => {
-    const cartProductIds = new Set(items.map((i) => i.product_id));
-    return recommendations.filter((rec) => !cartProductIds.has(rec.id));
-  }, [recommendations, items]);
-
-  useEffect(() => {
-    fetchRecommendations(1);
-  }, [items, fetchRecommendations]);
-
-  // Cálculos Financieros Memoizados (Envío GRATIS por Promoción de Lanzamiento)
-  const subtotal = total;
-  const shippingCost = 0.0;
-  const grandTotal = useMemo(
-    () => subtotal + shippingCost,
-    [subtotal, shippingCost],
-  );
-
-  // Añadir un Order Bump al carrito de 1 solo clic
-  const handleAddBump = (bump: OrderBump) => {
-    addItem({
-      id: bump.id,
-      title: bump.title,
-      price: bump.price,
-      company_id: bump.company_id,
-      images: bump.image_url ? [{ url: bump.image_url }] : [],
-      stock: typeof bump.stock === "number" ? bump.stock : 10,
-    });
-    toast.success(`"${bump.title}" agregado al paquete`, "¡Producto Añadido!");
-  };
-
-  // Validación del formulario de envío (Zod + RHF) para avanzar al paso 3
+  // Avanzar al Paso 3 (Pago) tras validar formulario de envío
   const handleProceedToStep3 = handleSubmit(
     (formData) => {
-      // 1. Guardar los datos ingresados en LocalStorage para no perder la información
       if (typeof window !== "undefined") {
         localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
         localStorage.setItem(STEP_STORAGE_KEY, "2");
       }
 
-      // 2. Si el usuario NO ha iniciado sesión, solicitamos que se registre o inicie sesión
       if (!user) {
         toast.info(
           "Para continuar con tu compra, por favor inicia sesión o regístrate.",
@@ -363,7 +172,6 @@ export default function CartCheckoutPage() {
         return;
       }
 
-      // 3. Si ya inició sesión, avanzamos al paso 3 (Pago)
       handleStepChange(3);
     },
     (formErrors) => {
@@ -374,73 +182,6 @@ export default function CartCheckoutPage() {
       );
     },
   );
-
-  // Validación de datos de factura/boleta antes de abrir la pasarela Niubiz
-  const validateInvoiceDetails = (): boolean => {
-    const docTypeValue = shippingForm.documentType;
-    const docNumber = (shippingForm.documentNumber || "").trim();
-
-    if (!docTypeValue || !docNumber) {
-      toast.error(
-        "Debes registrar un DNI (8) o RUC (11) válido del destinatario.",
-        "Documento requerido",
-      );
-      return false;
-    }
-
-    if (invoiceType === "factura") {
-      const cleanRuc = invoiceRuc.trim();
-      if (!cleanRuc || cleanRuc.length !== 11) {
-        toast.error(
-          "El número de RUC es obligatorio y debe tener exactamente 11 dígitos para emitir Factura.",
-          "Comprobante Requerido",
-        );
-        return false;
-      }
-      if (!invoiceCompanyName.trim()) {
-        toast.error(
-          "La Razón Social de la empresa es obligatoria para emitir Factura.",
-          "Comprobante Requerido",
-        );
-        return false;
-      }
-    } else if (invoiceType === "boleta") {
-      if (grandTotal > 700) {
-        const cleanDni = invoiceDni.trim();
-        if (!cleanDni || (docType === "dni" && cleanDni.length !== 8)) {
-          toast.error(
-            `El número de ${docType.toUpperCase()} es obligatorio para compras mayores a S/ 700 (Exigencia SUNAT).`,
-            "Comprobante Requerido",
-          );
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
-  // Validación completa antes de abrir la pasarela Niubiz (comprobante + T&C + edad)
-  const validateCheckout = (): boolean => {
-    if (!validateInvoiceDetails()) return false;
-
-    if (!agreedToTerms) {
-      toast.error(
-        "Debes aceptar los Términos y Condiciones para continuar.",
-        "Aceptación requerida",
-      );
-      return false;
-    }
-
-    if (!isOver18) {
-      toast.error(
-        "Debes confirmar que eres mayor de 18 años para continuar.",
-        "Confirmación requerida",
-      );
-      return false;
-    }
-
-    return true;
-  };
 
   // Éxito del pago: limpiar estado y redirigir al comprobante
   const handlePaymentSuccess = (data: PaymentSuccessData) => {
@@ -532,7 +273,7 @@ export default function CartCheckoutPage() {
             total={total}
             shippingCost={shippingCost}
             grandTotal={grandTotal}
-            recommendations={filteredRecommendations}
+            recommendations={recommendations}
             loadingRecs={loadingRecs}
             recsPage={recsPage}
             recsHasMore={recsHasMore}
