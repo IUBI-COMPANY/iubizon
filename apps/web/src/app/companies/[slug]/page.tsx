@@ -118,6 +118,7 @@ export default async function PublicCompanyPage({ params }: Props) {
         company={{
           id: company.id,
           name: company.name,
+          legal_name: company.legal_name,
           slug: company.slug,
           tax_id: company.tax_id,
           logo_url: company.logo_url,

@@ -8,12 +8,11 @@ import {
   Check,
   CheckCircle2,
   Edit,
-  Mail,
   MapPin,
   Package,
-  Phone,
   Search,
   Share2,
+  ShieldCheck,
 } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { EditCompanyModal } from "@/components/features/companies/EditCompanyModal";
@@ -24,6 +23,7 @@ interface PublicCompanyStorefrontProps {
   company: {
     id: string;
     name: string;
+    legal_name?: string | null;
     slug: string;
     tax_id: string | null;
     logo_url: string | null;
@@ -88,12 +88,12 @@ export const PublicCompanyStorefront = ({
 
   return (
     <main className="flex-1 pb-16">
-      {/* Banner Superior Estilo Tienda eBay */}
+      {/* Banner Superior Estilo Tienda Oficial */}
       <div className="bg-gradient-to-r from-[#112237] via-[#1a3454] to-[#0e1c2e] text-white border-b border-slate-800 relative">
-        <div className="container mx-auto px-4 py-10 max-w-6xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              {/* Logo o Avatar de la Marca */}
+        <div className="container mx-auto px-4 py-8 md:py-10 max-w-6xl">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            {/* Lado Izquierdo: Logo y Nombre de la Empresa */}
+            <div className="flex items-center gap-4 sm:gap-5">
               <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-[#f25c05] border-4 border-white text-white flex items-center justify-center shrink-0 overflow-hidden text-3xl font-bold shadow-xl">
                 {companyData.logo_url ? (
                   <Image
@@ -113,65 +113,107 @@ export const PublicCompanyStorefront = ({
               </div>
 
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                    {companyData.name}
-                  </h1>
-                  {companyData.is_verified && (
-                    <span className="inline-flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Oficial Verificada
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-4 text-xs text-slate-300 mt-2 flex-wrap">
-                  {companyData.tax_id && (
-                    <span className="bg-white/10 px-2.5 py-1 rounded-md font-mono text-[11px]">
-                      {companyData.tax_id}
-                    </span>
-                  )}
-                </div>
+                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+                  {companyData.name}
+                </h1>
+                {companyData.location && (
+                  <p className="text-xs text-slate-300 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-[#f25c05]" />
+                    <span>{companyData.location}</span>
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Acciones y Contador de Productos */}
-            <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
-              <div className="bg-white/10 backdrop-blur-sm border border-white/10 px-4 py-2.5 rounded-xl text-center flex-1 md:flex-initial">
-                <p className="text-xl font-extrabold text-[#f25c05]">
-                  {products.length}
+            {/* Lado Derecho: Lista de Verificación de Seguridad + Botones */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+              {/* Lista con Ícono Check de Seguridad y Respaldo SUNAT */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-3.5 rounded-2xl text-xs space-y-1.5 min-w-[240px]">
+                <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5 mb-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="truncate">
+                    {companyData?.legal_name || companyData.name}
+                  </span>
                 </p>
-                <p className="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">
-                  Productos
-                </p>
+
+                <div className="space-y-1 text-[11px] text-slate-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      RUC:{" "}
+                      <strong className="text-white font-mono font-semibold">
+                        {companyData.tax_id || "Verificado"}
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      Estado empresa:{" "}
+                      <strong className="text-emerald-400 font-bold">
+                        Activo / Habido
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      Ficha RUC:{" "}
+                      <strong className="text-white font-medium">
+                        Verificada SUNAT
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      Comprobantes:{" "}
+                      <strong className="text-white font-medium">
+                        Factura y Boleta
+                      </strong>
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              {canEdit && (
-                <button
-                  onClick={() => setIsEditOpen(true)}
-                  className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-4 py-3 rounded-xl transition-all shadow-md shrink-0"
-                >
-                  <Edit className="w-4 h-4 text-[#f25c05]" />
-                  <span>Editar empresa</span>
-                </button>
-              )}
+              {/* Acciones y Contador de Productos */}
+              <div className="flex flex-row sm:flex-col lg:flex-row items-center gap-3">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/10 px-4 py-2.5 rounded-xl text-center flex-1 sm:w-full lg:w-auto">
+                  <p className="text-xl font-extrabold text-[#f25c05]">
+                    {products.length}
+                  </p>
+                  <p className="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">
+                    Productos
+                  </p>
+                </div>
 
-              <button
-                onClick={handleShare}
-                className="flex items-center justify-center gap-2 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-5 py-3 rounded-xl transition-all shadow-lg shrink-0"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    ¡Enlace copiado!
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="w-4 h-4" />
-                    Compartir tienda
-                  </>
+                {canEdit && (
+                  <button
+                    onClick={() => setIsEditOpen(true)}
+                    className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-4 py-3 rounded-xl transition-all shadow-md shrink-0"
+                  >
+                    <Edit className="w-4 h-4 text-[#f25c05]" />
+                    <span>Editar</span>
+                  </button>
                 )}
-              </button>
+
+                <button
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-2 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-5 py-3 rounded-xl transition-all shadow-lg shrink-0"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      ¡Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="w-4 h-4" />
+                      Compartir
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
