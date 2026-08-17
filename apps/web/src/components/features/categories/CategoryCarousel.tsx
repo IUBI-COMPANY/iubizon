@@ -71,7 +71,7 @@ export function CategoryCarousel({
     <div className="relative group">
       <button
         onClick={() => scroll("left")}
-        className="sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/10 hover:bg-black/80 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
+        className="sm:flex absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/6 hover:bg-black/10 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
         aria-label="Anterior"
       >
         <ChevronLeft className="w-4 h-4 text-[#112237]" />
@@ -79,7 +79,7 @@ export function CategoryCarousel({
 
       <button
         onClick={() => scroll("right")}
-        className="sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/10 hover:bg-black/80 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
+        className="sm:flex absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/6 hover:bg-black/10 text-white backdrop-blur-sm border border-white/10 transition-all hover:scale-110 active:scale-95"
         aria-label="Siguiente"
       >
         <ChevronRight className="w-4 h-4 text-[#112237]" />
