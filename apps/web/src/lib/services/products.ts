@@ -208,6 +208,45 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
   })) as unknown as Product[];
 }
 
+export async function getBestSellingProducts(limit = 20): Promise<Product[]> {
+  const { products } = await getProducts({
+    limit,
+    filters: { sortBy: "popular" },
+  });
+  return products.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    is_bundle: false,
+    favorites: p.favorites_count ?? 0,
+    latitude: null,
+    longitude: null,
+    created_at:
+      typeof p.created_at === "string"
+        ? p.created_at
+        : (p.created_at as any)?.toISOString?.() || new Date().toISOString(),
+    updated_at:
+      typeof p.updated_at === "string"
+        ? p.updated_at
+        : (p.updated_at as any)?.toISOString?.() || new Date().toISOString(),
+    category: p.category
+      ? {
+          ...p.category,
+          icon: p.category.icon ?? "",
+          sort_order: p.category.sort_order ?? 0,
+        }
+      : undefined,
+    creator: p.creator
+      ? {
+          ...p.creator,
+          rating: Number(p.creator.rating || 0),
+          is_pro: p.creator.is_pro ?? false,
+          total_sales: p.creator.total_sales ?? 0,
+          positive_reviews: p.creator.positive_reviews ?? 0,
+        }
+      : undefined,
+  })) as unknown as Product[];
+}
+
 export async function getProductById(id: string) {
   return prisma.product.findUnique({
     where: { id },
