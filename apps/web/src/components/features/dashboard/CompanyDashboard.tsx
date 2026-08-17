@@ -79,10 +79,10 @@ export const CompanyDashboard = ({
               <span className="text-[10px] bg-[#f25c05] text-white font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Empresa
               </span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                En vivo
-              </span>
+              {/*<span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">*/}
+              {/*  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />*/}
+              {/*  En vivo*/}
+              {/*</span>*/}
             </div>
             <p className="text-xs text-[#64748b] mt-0.5">
               {activeCompany.tax_id || "Empresa / Marca Registrada"} • Panel de

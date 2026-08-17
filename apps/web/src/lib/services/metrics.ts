@@ -64,8 +64,12 @@ export async function recordProductView(
 }
 
 /**
- * Incrementa exactamente +1 el alcance total de la empresa cuando un comprador externo
- * visita la tienda oficial (/companies/[slug]), evitando sumar +1 por cada producto.
+ * Incrementa exactamente +1 el alcance total de la empresa cuando un comprador o visitante
+ * externo ingresa al perfil (/companies/[slug]).
+ *
+ * Reglas:
+ * 1. Si el usuario es propietario o miembro de la empresa, NO suma (+0).
+ * 2. Si es un visitante/comprador externo, suma EXACTAMENTE +1, tenga o no productos creados.
  */
 export async function recordCompanyStorefrontView(
   companyId: string,
@@ -73,24 +77,48 @@ export async function recordCompanyStorefrontView(
 ): Promise<void> {
   if (!companyId) return;
   try {
-    // Si el usuario actual es miembro/dueño de la empresa, NO sumar alcance propio
+    // 1. EXCLUSIÓN DE MIEMBROS/DUEÑOS: Si el usuario es propietario o miembro, no incrementar
     if (currentUserId) {
       const isInternalUser = await isCompanyMemberOrOwner(
         companyId,
         currentUserId,
       );
       if (isInternalUser) {
-        return; // Ignorar visitas de miembros de la empresa
+        return; // Omitir vistas internas de la propia empresa
       }
     }
 
-    // Buscar un producto activo de la empresa para asignarle +1 vista exacta
-    const targetProduct = await prisma.product.findFirst({
-      where: { company_id: companyId, status: "active" },
+    // 2. Buscar cualquier producto de la empresa para asignarle +1 vista
+    let targetProduct = await prisma.product.findFirst({
+      where: { company_id: companyId },
       select: { id: true },
       orderBy: { created_at: "desc" },
     });
 
+    // 3. Si la empresa aún no tiene productos, crear un contenedor métrico borrador
+    if (!targetProduct) {
+      const firstCategory = await prisma.category.findFirst({
+        select: { id: true },
+      });
+      if (firstCategory) {
+        targetProduct = await prisma.product.create({
+          data: {
+            company_id: companyId,
+            category_id: firstCategory.id,
+            title: "Métricas de Alcance de Tienda",
+            description: "Contador interno de vistas de la empresa",
+            price: 0,
+            status: "draft",
+            condition: "new",
+            views: 1,
+          },
+          select: { id: true },
+        });
+        return;
+      }
+    }
+
+    // 4. Incrementar exactamente +1 las vistas en el producto objetivo de la empresa
     if (targetProduct) {
       await prisma.product.update({
         where: { id: targetProduct.id },
@@ -119,15 +147,16 @@ export async function getCompanyReachMetrics(companyId: string) {
         views: true,
         favorites_count: true,
       },
-      _count: {
-        id: true,
-      },
+    });
+
+    const activeProductsCount = await prisma.product.count({
+      where: { company_id: companyId, status: { not: "draft" } },
     });
 
     return {
       totalViews: aggregate._sum.views || 0,
       totalFavorites: aggregate._sum.favorites_count || 0,
-      totalProductsCount: aggregate._count.id || 0,
+      totalProductsCount: activeProductsCount,
     };
   } catch (err) {
     console.error(
