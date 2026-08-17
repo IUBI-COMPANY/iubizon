@@ -119,9 +119,9 @@ export function NiubizPayModal({
         amount: Number(amount.toFixed(2)),
         expirationminutes: "20",
         timeouturl: `${window.location.origin}/cart?error=timeout`,
-        merchantlogo: `${window.location.origin}/images/logo.png`,
+        merchantlogo: `${window.location.origin}/images/principal-logo.png`,
         formbuttoncolor: "#f25c05",
-        action: `${window.location.origin}/api/payments/niubiz/confirm`,
+        action: `${window.location.origin}/api/payments/niubiz/confirm?purchaseNumber=${data.purchaseNumber}`,
         complete: async (response: any) => {
           if (response && response.transactionToken) {
             await processAuthorization(
