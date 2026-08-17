@@ -109,15 +109,18 @@ export async function POST(
       req.headers.get("x-real-ip") ||
       "127.0.0.1";
 
-    // Datos del cliente derivados del formulario de envío (requeridos por el
-    // antifraude y el dataMap del proveedor).
+    // Datos del cliente derivados del formulario de envío y comprobante
     const customerData = customer || {
       email: customerEmail,
-      documentNumber: shipping?.documentNumber,
-      phone: shipping?.phone,
-      address: shipping?.address,
-      city: shipping?.district || shipping?.province,
-      state: shipping?.department,
+      documentNumber:
+        shipping?.documentNumber ||
+        invoiceDetails?.invoiceDni ||
+        invoiceDetails?.invoiceRuc ||
+        "",
+      phone: shipping?.phone || "",
+      address: shipping?.address || "",
+      city: shipping?.district || shipping?.province || "Lima",
+      state: shipping?.department || "Lima",
       country: "PE",
       registered: Boolean(user),
     };
