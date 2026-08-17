@@ -237,7 +237,7 @@ export const CompanySwitcher = () => {
                 <span>Panel de {activeCompany.name}</span>
               </div>
               {pendingCount > 0 && (
-                <span className="bg-[#f25c05] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <span className="bg-[#2b7fff] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-1">
                   <ShoppingBag className="w-3 h-3" />
                   {pendingCount}
                 </span>
