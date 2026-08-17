@@ -26,7 +26,7 @@ export default async function MarketplaceHomePage() {
   const [productsRes, popularProductsRes, categoriesRes] =
     await Promise.allSettled([
       getActiveProducts(10),
-      getBestSellingProducts(10),
+      getBestSellingProducts(5),
       getPopularCategories(),
     ]);
 
