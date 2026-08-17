@@ -137,8 +137,8 @@ export const CompanySwitcher = () => {
       {/* BADGE DE VENTAS NUEVAS RECIBIDAS (REAL-TIME) */}
       {pendingCount > 0 && (
         <span
-          className="absolute -top-1.5 -right-1.5 bg-[#f25c05] text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#112237] shadow-md z-20 pointer-events-none animate-in zoom-in-75"
-          title={`${pendingCount} nueva(s) venta(s) recibida(s)`}
+          className="absolute -top-1.5 -right-1.5 bg-[#2b7fff] text-white text-[10px] font-extrabold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#112237] shadow-md z-20 pointer-events-none animate-in zoom-in-75"
+          title={`${pendingCount} nuevas ventas recibidas`}
         >
           {pendingCount > 99 ? "99+" : pendingCount}
         </span>

@@ -141,13 +141,42 @@ export const CompanyDashboard = ({
 
         <Link
           href="/user/dashboard/orders"
-          className="bg-white rounded-2xl p-6 border border-[#e2e8f0] shadow-sm hover:shadow-md transition-all group"
+          className={`bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group relative ${
+            stats.pendingOrders > 0
+              ? "border-2 border-[#2b7fff] shadow-[0_0_18px_rgba(43,127,255,0.25)]"
+              : "border border-[#e2e8f0]"
+          }`}
         >
+          {stats.pendingOrders > 0 && (
+            <span className="absolute top-3.5 right-3.5 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2b7fff] opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#2b7fff]" />
+            </span>
+          )}
+
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-blue-500/10 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-colors">
-              <ShoppingCart className="w-5 h-5 text-blue-500 group-hover:text-white transition-colors" />
+            <div
+              className={`p-2.5 rounded-xl transition-colors ${
+                stats.pendingOrders > 0
+                  ? "bg-[#2b7fff]/10 text-[#2b7fff] group-hover:bg-[#2b7fff] group-hover:text-white"
+                  : "bg-blue-500/10 text-blue-500 group-hover:bg-blue-500 group-hover:text-white"
+              }`}
+            >
+              <ShoppingCart
+                className={`w-5 h-5 transition-colors ${
+                  stats.pendingOrders > 0
+                    ? "text-[#2b7fff] group-hover:text-white"
+                    : "text-blue-500 group-hover:text-white"
+                }`}
+              />
             </div>
-            <span className="text-xs font-semibold text-[#64748b] uppercase tracking-wider group-hover:text-blue-500 transition-colors">
+            <span
+              className={`text-xs font-semibold uppercase tracking-wider transition-colors ${
+                stats.pendingOrders > 0
+                  ? "text-[#2b7fff] font-extrabold"
+                  : "text-[#64748b] group-hover:text-blue-500"
+              }`}
+            >
               Ventas / Pedidos
             </span>
           </div>
