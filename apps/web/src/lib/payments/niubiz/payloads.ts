@@ -96,7 +96,9 @@ export function buildServiceLocationDataMap(
 ): Record<string, string> {
   const urlAddress = (location.urlAddress || "https://www.iubizon.com").trim();
   const cityName = (location.cityName || "Lima").trim() || "Lima";
-  const stateCode = normalizeStateCode(location.countrySubdivisionCode || "LMA");
+  const stateCode = normalizeStateCode(
+    location.countrySubdivisionCode || "LMA",
+  );
   const postalCode = (location.postalCode || "15023").trim() || "15023";
 
   return {

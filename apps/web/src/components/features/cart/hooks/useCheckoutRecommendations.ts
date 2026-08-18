@@ -5,7 +5,12 @@ import type { OrderBump } from "../CartOrderBumps";
 import { useToast } from "@/context/ToastContext";
 
 interface UseCheckoutRecommendationsOptions {
-  items: Array<{ id: string; product_id?: string; quantity: number; title: string }>;
+  items: Array<{
+    id: string;
+    product_id?: string;
+    quantity: number;
+    title: string;
+  }>;
   companies: Array<{ id: string }>;
   addItem: (item: any) => void;
 }
@@ -59,9 +64,7 @@ export function useCheckoutRecommendations({
   );
 
   const filteredRecommendations = useMemo(() => {
-    const cartProductIds = new Set(
-      items.map((i) => i.product_id || i.id),
-    );
+    const cartProductIds = new Set(items.map((i) => i.product_id || i.id));
     return recommendations.filter((rec) => !cartProductIds.has(rec.id));
   }, [recommendations, items]);
 
