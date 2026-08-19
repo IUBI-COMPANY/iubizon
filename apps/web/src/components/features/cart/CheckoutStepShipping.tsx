@@ -89,7 +89,9 @@ export function CheckoutStepShipping({
               type="button"
               onClick={() => {
                 onDeliveryTypeChange("progressive");
-                setValue("deliveryType", "progressive", { shouldValidate: true });
+                setValue("deliveryType", "progressive", {
+                  shouldValidate: true,
+                });
               }}
               className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
                 deliveryType === "progressive"

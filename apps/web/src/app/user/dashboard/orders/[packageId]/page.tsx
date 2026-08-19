@@ -15,6 +15,8 @@ import {
   Building2,
   Calendar,
   Check,
+  ChevronDown,
+  ChevronUp,
   ExternalLink,
   Loader2,
   Mail,
@@ -106,7 +108,20 @@ function formatFullDate(isoString: string) {
   }
 }
 
+function cleanAddressForSeller(
+  address?: string | null,
+  isConsolidated?: boolean,
+): string {
+  if (!address) return "Por coordinar con comprador";
+  if (isConsolidated) {
+    return address.replace(/\s*\(Tel:\s*[^)]+\)/gi, "").trim();
+  }
+  return address.trim();
+}
+
 function DeliveryTimelineCard({ pkg }: { pkg: SellerPackage }) {
+  const [isDetailedOpen, setIsDetailedOpen] = useState(false);
+
   const isConsolidated =
     pkg.deliveryType === "complete" || pkg.deliveryType === "consolidated";
   const isShipped =
@@ -137,153 +152,255 @@ function DeliveryTimelineCard({ pkg }: { pkg: SellerPackage }) {
           </span>
         </div>
 
-        {/* Timeline Vertical Compacto */}
-        <div className="relative pl-6 space-y-5 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-300">
-          {/* NODO 1: Origen Vendedor */}
-          <div className="relative">
-            <div className="absolute -left-[29px] top-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs">
-              <Check className="w-3.5 h-3.5" />
+        {/* Resumen Compacto de la Ruta (Default View) */}
+        <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-2.5">
+          {/* Stepper Horizontal Compacto */}
+          <div className="flex items-center justify-between text-[11px] font-bold">
+            <div className="flex items-center gap-1 text-emerald-700">
+              <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+              <span>Origen</span>
             </div>
-            <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-0.5 text-xs">
-              <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded uppercase">
-                Origen (Tu Tienda)
-              </span>
-              <h4 className="font-bold text-[#112237] text-xs mt-1">
-                {pkg.companyName || "Tu Almacén / Tienda"}
-              </h4>
-              <p className="text-[11px] text-[#64748b]">
-                Producto preparado y listo para enviar.
-              </p>
-            </div>
-          </div>
-
-          {/* NODO 2 (SOLO CONSOLIDADO): Almacén Central IUBIZON */}
-          {isConsolidated && (
-            <div className="relative">
-              <div
-                className={`absolute -left-[29px] top-0 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs ${
-                  isShipped
-                    ? "bg-emerald-500 text-white"
-                    : "bg-[#f25c05] text-white animate-pulse"
-                }`}
-              >
-                {isShipped ? (
-                  <Check className="w-3.5 h-3.5" />
-                ) : (
-                  <Building2 className="w-3.5 h-3.5" />
-                )}
-              </div>
-
-              <div className="bg-slate-900 border border-slate-800 text-white rounded-xl p-3.5 space-y-2 shadow-sm">
-                <span className="text-[9px] font-black text-[#f25c05] bg-[#f25c05]/20 border border-[#f25c05]/40 px-2 py-0.5 rounded uppercase tracking-wider">
-                  ⚠️ Destino Obligatorio de Tu Envío
-                </span>
-
-                <div>
-                  <h4 className="text-xs font-black text-white flex flex-wrap items-center gap-1.5">
-                    <span>IUBIZON COMPANY S.A.C.</span>
-                    <span className="text-[#f25c05] font-bold text-[11px]">
-                      (RUC: 20614600374)
-                    </span>
-                  </h4>
-                  <p className="text-[11px] text-slate-300 font-medium flex items-start gap-1 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#f25c05] shrink-0 mt-0.5" />
-                    <span>
-                      Calle las acacias, Pje. los Jazmines 181, Chorrillos, Lima,
-                      Lima
-                    </span>
-                  </p>
-                  <p className="text-[11px] text-slate-300 flex items-center gap-1.5 mt-1">
-                    <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>WhatsApp / Atención: +51 972 300 301</span>
-                  </p>
-                </div>
-
-                <div className="pt-1.5 flex items-center justify-between border-t border-slate-800 text-[11px]">
-                  <a
-                    href="https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-bold text-sky-400 hover:text-sky-300 hover:underline"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    <span>Ver ubicación en Google Maps ↗</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* NODO FINAL: Domicilio del Comprador */}
-          <div className="relative">
+            <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
             <div
-              className={`absolute -left-[29px] top-0 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs ${
+              className={`flex items-center gap-1 ${
+                isConsolidated
+                  ? isShipped
+                    ? "text-emerald-700 font-bold"
+                    : "text-[#f25c05] font-bold"
+                  : "text-slate-400"
+              }`}
+            >
+              {isConsolidated &&
+                (isShipped ? (
+                  <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+                ) : (
+                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                ))}
+              <span>Almacén iubizon</span>
+            </div>
+            <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+            <div
+              className={`flex items-center gap-1 ${
                 isDelivered
-                  ? "bg-emerald-500 text-white"
-                  : isConsolidated
-                    ? "bg-slate-300 text-slate-600"
-                    : isShipped
-                      ? "bg-[#f25c05] text-white animate-pulse"
-                      : "bg-slate-300 text-slate-600"
+                  ? "text-emerald-700 font-bold"
+                  : isShipped
+                    ? "text-[#f25c05] font-bold"
+                    : "text-slate-400"
               }`}
             >
               {isDelivered ? (
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
               ) : (
-                <MapPin className="w-3.5 h-3.5" />
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
               )}
-            </div>
-
-            <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-1 text-xs">
-              <span className="text-[9px] font-extrabold text-[#64748b] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded uppercase">
-                {isConsolidated
-                  ? "Destino Final del Comprador (iubizon entregará aquí)"
-                  : "Destino Final del Comprador"}
-              </span>
-
-              <div className="space-y-1 text-[#334155] pt-1">
-                <p>
-                  <strong>Comprador:</strong> {pkg.buyerName}
-                </p>
-                {pkg.buyerPhone && (
-                  <p className="flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-emerald-700" />
-                    <strong>Teléfono:</strong> {pkg.buyerPhone}
-                  </p>
-                )}
-                {pkg.buyerEmail && (
-                  <p className="flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-blue-700" />
-                    <strong>Email:</strong> {pkg.buyerEmail}
-                  </p>
-                )}
-                {(pkg.destinationDistrict ||
-                  pkg.destinationProvince ||
-                  pkg.destinationDepartment) && (
-                  <p>
-                    <strong>Ubigeo:</strong>{" "}
-                    {[
-                      pkg.destinationDistrict,
-                      pkg.destinationProvince,
-                      pkg.destinationDepartment,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </p>
-                )}
-                <p className="leading-relaxed">
-                  <strong>Dirección Comprador:</strong>{" "}
-                  {pkg.destinationAddress || "Por coordinar con comprador"}
-                </p>
-                {pkg.destinationReference && (
-                  <p className="leading-relaxed">
-                    <strong>Referencia:</strong> {pkg.destinationReference}
-                  </p>
-                )}
-              </div>
+              <span>Destino Cliente</span>
             </div>
           </div>
+
+          {/* Banner de Estado Resumido */}
+          <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[11px] text-[#334155] font-medium flex-1">
+              {isConsolidated ? (
+                <span>
+                  <strong>Destino Obligatorio de Tu Envío:</strong> Almacén
+                  Central iubizon (Calle las acacias 181, Chorrillos)
+                </span>
+              ) : (
+                <span>
+                  <strong>Destino Final:</strong>{" "}
+                  {pkg.destinationAddress || "Dirección del comprador"}
+                </span>
+              )}
+            </p>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsDetailedOpen(!isDetailedOpen)}
+              className="h-7 text-[11px] font-bold text-[#f25c05] hover:text-[#d94d04] hover:bg-orange-50 px-2.5 rounded-lg flex items-center gap-1 shrink-0"
+            >
+              <span>
+                {isDetailedOpen ? "Ocultar detalles" : "Ver timeline detallado"}
+              </span>
+              {isDetailedOpen ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Timeline Vertical Detallado (Desplegable) */}
+        {isDetailedOpen && (
+          <div className="relative pl-6 space-y-5 pt-2 before:absolute before:left-2.5 before:top-5 before:bottom-3 before:w-0.5 before:bg-slate-300">
+            {/* NODO 1: Origen Vendedor */}
+            <div className="relative">
+              <div className="absolute -left-[29px] top-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs">
+                <Check className="w-3.5 h-3.5" />
+              </div>
+              <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-0.5 text-xs">
+                <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded uppercase">
+                  Origen (Tu Tienda)
+                </span>
+                <h4 className="font-bold text-[#112237] text-xs mt-1">
+                  {pkg.companyName || "Tu Almacén / Tienda"}
+                </h4>
+                <p className="text-[11px] text-[#64748b]">
+                  Producto preparado y listo para enviar.
+                </p>
+              </div>
+            </div>
+
+            {/* NODO 2 (SOLO CONSOLIDADO): Almacén Central IUBIZON */}
+            {isConsolidated && (
+              <div className="relative">
+                <div
+                  className={`absolute -left-[29px] top-0 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs ${
+                    isShipped
+                      ? "bg-emerald-500 text-white"
+                      : "bg-[#f25c05] text-white animate-pulse"
+                  }`}
+                >
+                  {isShipped ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    <Building2 className="w-3.5 h-3.5" />
+                  )}
+                </div>
+
+                <div className="bg-orange-50/60 border border-orange-200 rounded-xl p-3.5 space-y-2">
+                  <span className="text-[9px] font-black text-[#f25c05] bg-orange-100/80 border border-orange-200 px-2 py-0.5 rounded uppercase tracking-wider">
+                    Destino Obligatorio de Tu Envío
+                  </span>
+
+                  <div>
+                    <h4 className="text-xs font-black text-[#112237] flex flex-wrap items-center gap-1.5">
+                      <span>IUBIZON COMPANY S.A.C.</span>
+                      <span className="text-[#f25c05] font-bold text-[11px]">
+                        (RUC: 20614600374)
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-600 font-medium flex items-start gap-1 mt-1">
+                      <MapPin className="w-3.5 h-3.5 text-[#f25c05] shrink-0 mt-0.5" />
+                      <span>
+                        Calle las acacias, Pje. los Jazmines 181, Chorrillos,
+                        Lima, Lima
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-slate-600 flex items-center gap-1.5 mt-1">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>WhatsApp / Atención: +51 972 300 301</span>
+                    </p>
+                  </div>
+
+                  <div className="pt-1.5 flex items-center justify-between border-t border-orange-200/60 text-[11px]">
+                    <a
+                      href="https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-bold text-[#f25c05] hover:underline"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Ver ubicación en Google Maps ↗</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* NODO FINAL: Domicilio del Comprador */}
+            {!isConsolidated || isShipped ? (
+              <div className="relative">
+                <div
+                  className={`absolute -left-[29px] top-0 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs ${
+                    isDelivered
+                      ? "bg-emerald-500 text-white"
+                      : isShipped
+                        ? "bg-[#f25c05] text-white animate-pulse"
+                        : "bg-slate-300 text-slate-600"
+                  }`}
+                >
+                  {isDelivered ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : isShipped ? (
+                    <Truck className="w-3.5 h-3.5" />
+                  ) : (
+                    <MapPin className="w-3.5 h-3.5" />
+                  )}
+                </div>
+
+                <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-1 text-xs">
+                  <span className="text-[9px] font-extrabold text-[#64748b] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded uppercase">
+                    {isConsolidated
+                      ? "Destino Final del Comprador (iubizon entregará aquí)"
+                      : "Destino Final del Comprador"}
+                  </span>
+
+                  <div className="space-y-1 text-[#334155] pt-1">
+                    <p>
+                      <strong>Comprador:</strong> {pkg.buyerName}
+                    </p>
+                    {!isConsolidated && pkg.buyerPhone && (
+                      <p className="flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                        <strong>Teléfono:</strong> {pkg.buyerPhone}
+                      </p>
+                    )}
+                    {!isConsolidated && pkg.buyerEmail && (
+                      <p className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-blue-700" />
+                        <strong>Email:</strong> {pkg.buyerEmail}
+                      </p>
+                    )}
+                    {(pkg.destinationDistrict ||
+                      pkg.destinationProvince ||
+                      pkg.destinationDepartment) && (
+                      <p>
+                        <strong>Ubigeo:</strong>{" "}
+                        {[
+                          pkg.destinationDistrict,
+                          pkg.destinationProvince,
+                          pkg.destinationDepartment,
+                        ]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                    )}
+                    <p className="leading-relaxed">
+                      <strong>Dirección Comprador:</strong>{" "}
+                      {cleanAddressForSeller(
+                        pkg.destinationAddress,
+                        isConsolidated,
+                      )}
+                    </p>
+                    {!isConsolidated && pkg.destinationReference && (
+                      <p className="leading-relaxed">
+                        <strong>Referencia:</strong> {pkg.destinationReference}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="absolute -left-[29px] top-0 w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center ring-4 ring-[#f8fafc] shadow-xs">
+                  <MapPin className="w-3.5 h-3.5" />
+                </div>
+                <div className="bg-white rounded-xl p-3 border border-slate-200 space-y-1 text-xs">
+                  <span className="text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded uppercase">
+                    Destino Final del Comprador
+                  </span>
+                  <p className="text-[11px] text-slate-500 font-medium pt-0.5">
+                    Se activará una vez que despaches tu paquete al Almacén
+                    Central iubizon.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Columna Derecha: Información de Agencia & Seguimiento */}
@@ -329,7 +446,9 @@ function DeliveryTimelineCard({ pkg }: { pkg: SellerPackage }) {
 
         {isConsolidated && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 leading-relaxed font-medium">
-            💡 <strong>Nota para el Vendedor:</strong> En este tipo de envío, debes consignar como dirección de destino de la guía o courier los datos del <strong>Almacén Central iubizon</strong>.
+            💡 <strong>Nota para el Vendedor:</strong> En este tipo de envío,
+            debes consignar como dirección de destino de la guía o courier los
+            datos del <strong>Almacén Central iubizon</strong>.
           </div>
         )}
       </div>

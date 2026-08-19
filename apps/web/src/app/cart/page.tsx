@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { Navbar } from "@/components/features/layout/Navbar";
@@ -89,39 +89,62 @@ export default function CartCheckoutPage() {
     handleAddBump,
   } = useCheckoutRecommendations({ items, companies, addItem });
 
-  // Restaurar paso inicial y procesar respuesta Niubiz si viene por URL
+  const hasProcessedUrlParams = useRef(false);
+
+  // Restaurar paso inicial y procesar respuesta Niubiz si viene por URL (ej. timeout o error de pasarela)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedStep = localStorage.getItem(STEP_STORAGE_KEY);
-      if (savedStep) {
-        const parsedStep = parseInt(savedStep, 10);
-        if (parsedStep >= 1 && parsedStep <= 3) {
-          setStep(parsedStep);
-        }
+    if (typeof window === "undefined" || hasProcessedUrlParams.current) return;
+    hasProcessedUrlParams.current = true;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const isSuccess = urlParams.get("success") === "true";
+    const orderCode =
+      urlParams.get("sessionCode") || urlParams.get("order_code");
+    const rawError = urlParams.get("error");
+
+    // Limpiar los parámetros de la URL inmediatamente para evitar ejecuciones repetidas al re-renderizar
+    if (isSuccess || rawError) {
+      window.history.replaceState({}, "", "/cart");
+    }
+
+    if (isSuccess && orderCode) {
+      clearCart();
+      localStorage.removeItem(STEP_STORAGE_KEY);
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      localStorage.removeItem(INVOICE_STORAGE_KEY);
+      localStorage.removeItem(TERMS_STORAGE_KEY);
+      toast.success(
+        `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
+        "Pago Confirmado",
+      );
+      router.push(`/cart/result?order_code=${orderCode}`);
+      return;
+    }
+
+    if (rawError && rawError !== "Accept") {
+      // Extraer únicamente la clave limpia del error (elimina query-strings anidados tipo timeout?timeout=1)
+      const cleanErrorKey = rawError.split("?")[0].split("&")[0].trim();
+
+      let friendlyMsg = `No se pudo completar el pago: ${cleanErrorKey}`;
+      if (cleanErrorKey.toLowerCase().includes("timeout")) {
+        friendlyMsg =
+          "El tiempo para completar la transacción ha expirado (20 minutos). Puedes volver a intentarlo.";
       }
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const isSuccess = urlParams.get("success") === "true";
-      const orderCode =
-        urlParams.get("sessionCode") || urlParams.get("order_code");
-      const errorMsg = urlParams.get("error");
+      // En caso de error o timeout, asegurar volver al paso 2 sin bucles de renderizado
+      setStep(2);
+      localStorage.setItem(STEP_STORAGE_KEY, "2");
 
-      if (isSuccess && orderCode) {
-        clearCart();
-        localStorage.removeItem(STEP_STORAGE_KEY);
-        localStorage.removeItem(FORM_STORAGE_KEY);
-        localStorage.removeItem(INVOICE_STORAGE_KEY);
-        localStorage.removeItem(TERMS_STORAGE_KEY);
-        toast.success(
-          `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
-          "Pago Confirmado",
-        );
-        router.push(`/cart/result?order_code=${orderCode}`);
-      } else if (errorMsg && errorMsg !== "Accept") {
-        toast.error(
-          `No se pudo completar el pago: ${errorMsg}`,
-          "Pago Rechazado",
-        );
+      toast.error(friendlyMsg, "Tiempo Expirado o Pago Cancelado");
+      return;
+    }
+
+    // Si no hubo parámetros de retorno en la URL, restaurar paso guardado normalmente
+    const savedStep = localStorage.getItem(STEP_STORAGE_KEY);
+    if (savedStep) {
+      const parsedStep = parseInt(savedStep, 10);
+      if (parsedStep >= 1 && parsedStep <= 3) {
+        setStep(parsedStep);
       }
     }
   }, [clearCart, router, toast]);

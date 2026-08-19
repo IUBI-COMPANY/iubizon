@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
+  Check,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -25,6 +26,7 @@ import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
 import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
 import { RefundStatus } from "@/components/features/orders/RefundStatus";
+import { BuyerDeliveryTimeline } from "@/components/features/orders/BuyerDeliveryTimeline";
 import { useAuth } from "@/hooks/useAuth";
 
 interface PackageItem {
@@ -50,6 +52,7 @@ interface TrackingPackage {
   courier: string | null;
   trackingUrl: string | null;
   estimatedDelivery: string | null;
+  deliveryType?: string | null;
   status: string;
   paymentMethod: string;
   cardBrand: string | null;
@@ -402,6 +405,9 @@ export default function OrderDetailPage({
                         : "Pendiente de Despacho"}
                   </span>
                 </div>
+
+                {/* Timeline Detallado de Flujo de Entrega del Comprador */}
+                <BuyerDeliveryTimeline pkg={pkg} />
 
                 {/* Info de Seguimiento de la Agencia (Si fue despachado) */}
                 {pkg.trackingNumber && (

@@ -66,8 +66,12 @@ export async function getIubizonSettings() {
         department: String(val.department || "Lima"),
         province: String(val.province || "Lima"),
         district: String(val.district || "Chorrillos"),
-        address: String(val.address || "Calle las acacias, Pje. los Jazmines 181"),
-        google_maps_url: String(val.google_maps_url || "https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9"),
+        address: String(
+          val.address || "Calle las acacias, Pje. los Jazmines 181",
+        ),
+        google_maps_url: String(
+          val.google_maps_url || "https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9",
+        ),
         phone: String(val.phone || "972300301"),
       };
     }

@@ -12,10 +12,9 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconUser,
-  IconMapPin,
   IconReceipt,
   IconAlertTriangle,
-  IconExternalLink,
+  IconBuildingWarehouse,
 } from "@tabler/icons-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +30,11 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { AdminDispatchModal } from "@/components/AdminDispatchModal";
+import {
+  AdminDeliveryTimeline,
+  AdminOrder,
+} from "@/components/AdminDeliveryTimeline";
 
 type OrderStatus =
   "pending" | "paid" | "shipped" | "delivered" | "completed" | "cancelled";
@@ -78,24 +82,14 @@ function formatMoney(v: unknown): string {
     : n.toLocaleString("es-PE", { minimumFractionDigits: 2 });
 }
 
-function formatFullDate(iso: string | null) {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  return d.toLocaleDateString("es-PE", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "">("");
+  const [onlyConsolidated, setOnlyConsolidated] = useState(false);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const [confirm, setConfirm] = useState<{
     action: string;
     id: string;
@@ -103,65 +97,166 @@ export default function OrdersPage() {
     newStatus?: OrderStatus;
   } | null>(null);
 
+  const [confirmModalData, setConfirmModalData] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    variant?: "default" | "destructive";
+    onConfirm: () => void;
+  } | null>(null);
+
+  const [dispatchModalData, setDispatchModalData] = useState<{
+    open: boolean;
+    packageId: string;
+    orderCode?: string;
+    companyName?: string;
+    buyerName?: string;
+    destinationAddress?: string;
+    courier?: string | null;
+    trackingNumber?: string | null;
+    trackingUrl?: string | null;
+    carrierPhone?: string | null;
+    estimatedDelivery?: string | null;
+  } | null>(null);
+
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (statusFilter) params.set("status", statusFilter);
+    if (onlyConsolidated) params.set("deliveryType", "complete");
     if (search) params.set("search", search);
     const res = await fetch(`/api/orders?${params}`);
     const data = await res.json();
     setOrders(data.orders || []);
     setLoading(false);
-  }, [statusFilter, search]);
+  }, [statusFilter, onlyConsolidated, search]);
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter, fetchOrders]);
+  }, [fetchOrders]);
 
   const executeAction = async () => {
     if (!confirm) return;
-    const status =
-      confirm.action === "cancel" ? "cancelled" : confirm.newStatus;
-    if (!status) return;
-    await fetch("/api/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: confirm.id, status }),
-    });
-    setConfirm(null);
-    fetchOrders();
+    try {
+      if (confirm.action === "cancel") {
+        await fetch(`/api/orders?id=${confirm.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "cancel" }),
+        });
+      } else if (confirm.action === "advance" && confirm.newStatus) {
+        await fetch(`/api/orders?id=${confirm.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "force_status",
+            status: confirm.newStatus,
+          }),
+        });
+      }
+      await fetchOrders();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setConfirm(null);
+    }
   };
 
-  const statusCounts = orders.reduce((acc: Record<string, number>, o) => {
-    acc[o.status] = (acc[o.status] || 0) + 1;
-    return acc;
-  }, {});
+  const promptMarkPackageReceived = (
+    packageId: string,
+    companyName: string,
+  ) => {
+    setConfirmModalData({
+      open: true,
+      title: "Confirmar Recepción en Almacén",
+      description: `¿Estás seguro de marcar el paquete de "${companyName}" como recepcionado físicamente en el Almacén Central iubizon (Chorrillos)?`,
+      confirmLabel: "Sí, marcar recepcionado",
+      variant: "default",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/orders", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "mark_received_in_warehouse",
+              packageId,
+            }),
+          });
+          if (!res.ok) throw new Error("Error al recepcionar paquete");
+          await fetchOrders();
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setConfirmModalData(null);
+        }
+      },
+    });
+  };
+
+  const statusCounts = orders.reduce(
+    (acc, o) => {
+      acc[o.status] = (acc[o.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  const consolidatedCount = orders.filter((o) =>
+    o.packages?.some((p: any) => p.delivery_type === "complete"),
+  ).length;
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 w-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Órdenes</h1>
-          <p className="text-muted-foreground text-sm">
-            Monitoreo y soporte de órdenes
+          <h1 className="text-2xl font-bold tracking-tight text-[#112237]">
+            Gestión de Órdenes & Despachos
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Monitoreo y administración centralizada de pedidos, almacén y
+            envíos.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchOrders}>
-          <IconRefresh className="w-4 h-4 mr-1" />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={fetchOrders}
+          className="h-9 font-semibold"
+        >
+          <IconRefresh className="w-4 h-4 mr-2" />
           Actualizar
         </Button>
       </div>
 
-      <div className="flex gap-2 flex-wrap items-center">
-        <Input
-          placeholder="Buscar por código o comprador..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && fetchOrders()}
-          className="max-w-xs"
-        />
-        <Button variant="outline" size="sm" onClick={fetchOrders}>
-          <IconSearch className="w-4 h-4" />
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="relative flex-1 max-w-md">
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por código de orden, cliente..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-9 text-xs"
+          />
+        </div>
+
+        <Button
+          variant={onlyConsolidated ? "default" : "outline"}
+          size="sm"
+          onClick={() => setOnlyConsolidated(!onlyConsolidated)}
+          className={`gap-1.5 font-bold transition-all text-xs h-9 ${
+            onlyConsolidated
+              ? "bg-slate-900 text-white hover:bg-slate-800"
+              : "border-slate-800 text-slate-800 hover:bg-slate-100"
+          }`}
+        >
+          <IconBuildingWarehouse className="w-4 h-4 text-[#f25c05]" />
+          <span>Consolidados iubizon</span>
+          {consolidatedCount > 0 && (
+            <Badge className="ml-1 bg-[#f25c05] text-white text-[10px] px-1.5 py-0">
+              {consolidatedCount}
+            </Badge>
+          )}
         </Button>
       </div>
 
@@ -174,11 +269,7 @@ export default function OrdersPage() {
             Todas
             {orders.length > 0 && (
               <span
-                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
-                  statusFilter === ""
-                    ? "bg-[#f25c05] text-white"
-                    : "bg-slate-200 text-slate-700"
-                }`}
+                className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${statusFilter === "" ? "bg-[#f25c05] text-white" : "bg-slate-200 text-slate-700"}`}
               >
                 {orders.length}
               </span>
@@ -192,11 +283,7 @@ export default function OrdersPage() {
                 {v.label}
                 {count > 0 && (
                   <span
-                    className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${
-                      statusFilter === k
-                        ? "bg-[#f25c05] text-white"
-                        : "bg-slate-200 text-slate-700"
-                    }`}
+                    className={`ml-1.5 inline-flex items-center justify-center min-w-[18px] h-4.5 text-[10px] font-extrabold px-1.5 rounded-full ${statusFilter === k ? "bg-[#f25c05] text-white" : "bg-slate-200 text-slate-700"}`}
                   >
                     {count}
                   </span>
@@ -226,12 +313,20 @@ export default function OrdersPage() {
               order.packages?.flatMap((p: any) =>
                 p.items?.map((i: any) => ({ ...i, company: p.company?.name })),
               ) || [];
-            const hasTracking = order.packages?.some(
-              (p: any) => p.tracking_number,
+
+            const isConsolidated = order.packages?.some(
+              (p: any) => p.delivery_type === "complete",
             );
 
             return (
-              <Card key={order.id} className="overflow-hidden">
+              <Card
+                key={order.id}
+                className={`overflow-hidden transition-all ${
+                  isConsolidated
+                    ? "border-2 border-orange-200 bg-orange-50/20 shadow-xs"
+                    : ""
+                }`}
+              >
                 <div
                   className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 cursor-pointer"
                   onClick={() => setExpandedId(isExpanded ? null : order.id)}
@@ -243,6 +338,13 @@ export default function OrdersPage() {
                     >
                       #{order.order_code}
                     </Badge>
+
+                    {isConsolidated && (
+                      <Badge className="bg-orange-50 text-[#f25c05] font-extrabold text-[10px] uppercase tracking-wider px-2 py-0.5 border border-orange-200 shrink-0">
+                        Recepción & Despacho iubizon
+                      </Badge>
+                    )}
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <IconUser className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -253,21 +355,26 @@ export default function OrdersPage() {
                           {order.buyer?.email}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-sm font-bold">
+                      <div className="flex items-center gap-2 mt-0.5 text-xs">
+                        <span className="font-bold text-[#112237]">
                           S/ {formatMoney(order.total_amount)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-slate-500">
                           · {items.length} producto(s)
                         </span>
-                        {hasTracking && (
-                          <span className="text-xs text-emerald-600 font-medium">
-                            · Con tracking
+                        {isConsolidated ? (
+                          <span className="text-[#f25c05] font-bold">
+                            · Almacén iubizon
+                          </span>
+                        ) : (
+                          <span className="text-emerald-600 font-medium">
+                            · Envío Directo
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge className={sc.color}>
                       <sc.icon className="w-3 h-3 mr-1" />
@@ -283,67 +390,31 @@ export default function OrdersPage() {
 
                 {isExpanded && (
                   <CardContent className="border-t bg-muted/30 px-4 py-3 space-y-4">
-                    {/* Tracking / envío */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      {order.shipping?.address && (
-                        <div>
-                          <p className="font-semibold text-muted-foreground uppercase mb-1">
-                            Dirección de envío
-                          </p>
-                          <p className="flex items-start gap-1">
-                            <IconMapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                            {order.shipping.address}
-                          </p>
-                          {order.shipping.department && (
-                            <p className="text-muted-foreground ml-4">
-                              {order.shipping.department}
-                              {order.shipping.province
-                                ? `, ${order.shipping.province}`
-                                : ""}
-                              {order.shipping.district
-                                ? `, ${order.shipping.district}`
-                                : ""}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                    {/* Componente AdminDeliveryTimeline con Summary Compacto + Modal Detallado */}
+                    <AdminDeliveryTimeline
+                      order={order}
+                      onMarkReceived={promptMarkPackageReceived}
+                      onOpenDispatchModal={(pkg) => {
+                        setDispatchModalData({
+                          open: true,
+                          packageId: pkg.id,
+                          orderCode: order.order_code,
+                          companyName: pkg.company?.name || undefined,
+                          buyerName:
+                            order.shipping?.name ||
+                            order.buyer?.name ||
+                            undefined,
+                          destinationAddress:
+                            order.shipping?.address || undefined,
+                          courier: pkg.courier,
+                          trackingNumber: pkg.tracking_number,
+                          trackingUrl: pkg.tracking_url,
+                          carrierPhone: pkg.carrier_phone,
+                          estimatedDelivery: pkg.estimated_delivery,
+                        });
+                      }}
+                    />
 
-                      <div>
-                        <p className="font-semibold text-muted-foreground uppercase mb-1">
-                          Tracking
-                        </p>
-                        {order.packages
-                          ?.filter((p: any) => p.tracking_number)
-                          .map((p: any, i: number) => (
-                            <div key={i} className="mb-1">
-                              <p className="font-medium">
-                                {p.company?.name || "Proveedor"} —{" "}
-                                {p.courier || "Sin courier"}
-                              </p>
-                              <p className="text-muted-foreground">
-                                #{p.tracking_number} · Est.{" "}
-                                {formatFullDate(p.estimated_delivery)}
-                              </p>
-                              {p.tracking_url && (
-                                <a
-                                  href={p.tracking_url}
-                                  target="_blank"
-                                  className="text-primary hover:underline inline-flex items-center gap-0.5"
-                                >
-                                  <IconExternalLink className="w-3 h-3" />
-                                  Ver
-                                </a>
-                              )}
-                            </div>
-                          )) || (
-                          <p className="text-muted-foreground">
-                            Sin tracking registrado
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Factura */}
                     {order.invoice?.type && (
                       <div className="text-xs">
                         <p className="font-semibold text-muted-foreground uppercase mb-1">
@@ -357,7 +428,6 @@ export default function OrdersPage() {
                       </div>
                     )}
 
-                    {/* Productos */}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         Productos ({items.length})
@@ -390,7 +460,6 @@ export default function OrdersPage() {
                       </div>
                     </div>
 
-                    {/* Soporte — acciones excepcionales */}
                     {order.status !== "cancelled" &&
                       order.status !== "completed" && (
                         <>
@@ -480,6 +549,37 @@ export default function OrdersPage() {
         variant={confirm?.action === "cancel" ? "destructive" : "default"}
         onConfirm={executeAction}
       />
+
+      {confirmModalData && (
+        <ConfirmModal
+          open={confirmModalData.open}
+          onOpenChange={(open) =>
+            setConfirmModalData(open ? confirmModalData : null)
+          }
+          title={confirmModalData.title}
+          description={confirmModalData.description}
+          confirmLabel={confirmModalData.confirmLabel}
+          variant={confirmModalData.variant}
+          onConfirm={confirmModalData.onConfirm}
+        />
+      )}
+
+      {dispatchModalData && (
+        <AdminDispatchModal
+          isOpen={dispatchModalData.open}
+          onClose={() => setDispatchModalData(null)}
+          packageId={dispatchModalData.packageId}
+          orderCode={dispatchModalData.orderCode}
+          buyerName={dispatchModalData.buyerName}
+          destinationAddress={dispatchModalData.destinationAddress}
+          currentCarrierName={dispatchModalData.courier}
+          currentTrackingNumber={dispatchModalData.trackingNumber}
+          currentEstimatedDelivery={dispatchModalData.estimatedDelivery}
+          currentCarrierPhone={dispatchModalData.carrierPhone}
+          currentTrackingUrl={dispatchModalData.trackingUrl}
+          onSuccess={() => fetchOrders()}
+        />
+      )}
     </div>
   );
 }
