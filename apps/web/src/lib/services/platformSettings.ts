@@ -52,3 +52,36 @@ export async function getProtectionDays(): Promise<number> {
   } catch {}
   return 7;
 }
+
+export async function getIubizonSettings() {
+  try {
+    const setting = await prisma.platformSetting.findUnique({
+      where: { key: "IUBIZON_SETTINGS" },
+    });
+    if (setting && setting.value && typeof setting.value === "object") {
+      const val = setting.value as Record<string, any>;
+      return {
+        company_name: String(val.company_name || "IUBIZON COMPANY S.A.C."),
+        ruc: String(val.ruc || "20614600374"),
+        department: String(val.department || "Lima"),
+        province: String(val.province || "Lima"),
+        district: String(val.district || "Chorrillos"),
+        address: String(val.address || "Calle las acacias, Pje. los Jazmines 181"),
+        google_maps_url: String(val.google_maps_url || "https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9"),
+        phone: String(val.phone || "972300301"),
+      };
+    }
+  } catch (err) {
+    console.error("Error al obtener IUBIZON_SETTINGS:", err);
+  }
+  return {
+    company_name: "IUBIZON COMPANY S.A.C.",
+    ruc: "20614600374",
+    department: "Lima",
+    province: "Lima",
+    district: "Chorrillos",
+    address: "Calle las acacias, Pje. los Jazmines 181",
+    google_maps_url: "https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9",
+    phone: "972300301",
+  };
+}

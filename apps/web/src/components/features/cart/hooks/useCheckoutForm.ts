@@ -39,6 +39,7 @@ export function useCheckoutForm({ user }: UseCheckoutFormOptions = {}) {
       documentNumber: "",
       city: "Lima",
       notes: "",
+      deliveryType: "progressive",
     },
   });
 

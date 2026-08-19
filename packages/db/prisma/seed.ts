@@ -170,6 +170,22 @@ async function main() {
         "Configuración de país: zona horaria, locale, moneda. Agregar un registro por país al expandir.",
       category: "general",
     },
+    {
+      key: "IUBIZON_SETTINGS",
+      value: {
+        company_name: "IUBIZON COMPANY S.A.C.",
+        ruc: "20614600374",
+        department: "Lima",
+        province: "Lima",
+        district: "Chorrillos",
+        address: "Calle las acacias, Pje. los Jazmines 181",
+        google_maps_url: "https://maps.app.goo.gl/fd4ujCZW7B7WQc5X9",
+        phone: "972300301",
+      },
+      description:
+        "Datos de envío y dirección del almacén central de iubizon para envíos consolidados",
+      category: "shipping",
+    },
   ];
 
   for (const set of defaultSettings) {

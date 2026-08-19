@@ -6,7 +6,16 @@ import type {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form";
-import { ArrowLeft, ArrowRight, ShieldCheck, Truck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  ExternalLink,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/TextArea";
@@ -78,7 +87,10 @@ export function CheckoutStepShipping({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => onDeliveryTypeChange("progressive")}
+              onClick={() => {
+                onDeliveryTypeChange("progressive");
+                setValue("deliveryType", "progressive", { shouldValidate: true });
+              }}
               className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
                 deliveryType === "progressive"
                   ? "border-[#f25c05] bg-orange-50"
@@ -121,7 +133,10 @@ export function CheckoutStepShipping({
 
             <button
               type="button"
-              onClick={() => onDeliveryTypeChange("complete")}
+              onClick={() => {
+                onDeliveryTypeChange("complete");
+                setValue("deliveryType", "complete", { shouldValidate: true });
+              }}
               className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
                 deliveryType === "complete"
                   ? "border-[#112237] bg-slate-50"

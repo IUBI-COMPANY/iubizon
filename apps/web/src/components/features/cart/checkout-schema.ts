@@ -46,6 +46,7 @@ export const shippingFormSchema = z
      * con la construcción de destination_address y las plantillas de correo. */
     city: z.string(),
     notes: z.string().optional(),
+    deliveryType: z.enum(["progressive", "complete"]),
   })
   .superRefine((data, ctx) => {
     const docNumber = (data.documentNumber || "").trim();
