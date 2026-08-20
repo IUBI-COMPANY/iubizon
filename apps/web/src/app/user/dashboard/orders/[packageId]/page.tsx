@@ -32,21 +32,24 @@ import {
   normalizeCommissionRate,
 } from "@/lib/utils/financials";
 
-interface SellerPackageItem {
+import { DeliveryType } from "@/components/features/cart/checkout-schema";
+
+export interface SellerPackageItem {
   id: string;
   title: string;
-  price: number;
   quantity: number;
+  unitPrice: number;
+  price?: number;
   subtotal: number;
-  image: string | null;
+  image?: string | null;
 }
 
-interface SellerPackage {
+export interface SellerPackage {
   packageId: string;
-  orderId: string;
-  orderCode?: string;
-  companyId: string;
-  companyName: string;
+  orderId?: string;
+  orderCode: string;
+  statusText: string;
+  companyName: string | null;
   trackingNumber: string | null;
   courier: string | null;
   trackingUrl: string | null;
@@ -54,7 +57,7 @@ interface SellerPackage {
   estimatedDelivery: string | null;
   status: string;
   createdAt: string;
-  deliveryType?: string | null;
+  deliveryType?: DeliveryType | string | null;
   buyerName: string;
   buyerPhone: string | null;
   buyerEmail: string | null;
@@ -122,8 +125,7 @@ function cleanAddressForSeller(
 function DeliveryTimelineCard({ pkg }: { pkg: SellerPackage }) {
   const [isDetailedOpen, setIsDetailedOpen] = useState(false);
 
-  const isConsolidated =
-    pkg.deliveryType === "complete" || pkg.deliveryType === "consolidated";
+  const isConsolidated = pkg.deliveryType === "complete";
   const isShipped =
     pkg.status === "shipped" ||
     pkg.status === "delivered" ||
@@ -685,7 +687,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   <span className="text-xs font-black text-[#112237]">
                     S/{" "}
                     {formatMoney(
-                      item.subtotal ?? item.price * (item.quantity || 1),
+                      item.subtotal ?? (item.price || item.unitPrice || 0) * (item.quantity || 1),
                     )}
                   </span>
                 </div>
@@ -745,7 +747,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
           </div>
         </div>
 
-        <RefundStatus orderId={pkg.orderId} isSeller />
+        <RefundStatus orderId={pkg.orderId || pkg.orderIds?.[0] || ""} isSeller />
       </main>
 
       {/* Modal de Despacho Reutilizable */}

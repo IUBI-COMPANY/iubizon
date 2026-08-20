@@ -352,11 +352,11 @@ export async function PATCH(req: Request) {
         { status: 400 },
       );
 
-    if (action === "register_return") {
+    if (action === "register_return" || action === "dispatch_return") {
       return await handleRegisterReturn(refundId, user.id, body);
     }
 
-    if (action === "confirm_return") {
+    if (action === "confirm_return" || action === "confirm_return_receipt") {
       return await handleConfirmReturn(refundId, user.id);
     }
 
@@ -399,7 +399,7 @@ async function handleRegisterReturn(
     );
   if (refund.buyer_id !== userId)
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  if (refund.status !== "approved") {
+  if (refund.status !== "approved" && refund.status !== "approved_for_return") {
     return NextResponse.json(
       { error: "La solicitud debe estar aprobada para registrar el envío" },
       { status: 400 },

@@ -47,6 +47,7 @@ export async function GET(req: Request) {
             buyer: { select: { name: true, email: true } },
             packages: {
               select: {
+                delivery_type: true,
                 company: {
                   select: {
                     name: true,
@@ -114,6 +115,7 @@ export async function GET(req: Request) {
       buyer_email: r.order.buyer?.email || null,
       type: r.type,
       status: r.status,
+      delivery_type: r.order.packages[0]?.delivery_type || "progressive",
       reason: r.reason,
       refund_amount: Number(r.refund_amount),
       return_shipping_cost: r.return_shipping_cost

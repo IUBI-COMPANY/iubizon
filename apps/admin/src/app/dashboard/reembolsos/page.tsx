@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { AdminRefundDeliveryTimeline } from "@/components/AdminRefundDeliveryTimeline";
 
 interface RefundItem {
   order_item_id: string;
@@ -44,6 +45,7 @@ interface Refund {
   buyer_email: string | null;
   type: string;
   status: string;
+  delivery_type?: string | null;
   reason: string;
   refund_amount: number;
   return_shipping_cost: number | null;
@@ -78,7 +80,17 @@ const STATUS_CONFIG: Record<
     color: "bg-emerald-100 text-emerald-800 border-emerald-200",
     icon: IconCheck,
   },
+  approved_for_return: {
+    label: "Aprobado p/ Retorno",
+    color: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    icon: IconCheck,
+  },
   return_in_transit: {
+    label: "En camino",
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    icon: IconTruck,
+  },
+  return_shipped: {
     label: "En camino",
     color: "bg-blue-100 text-blue-800 border-blue-200",
     icon: IconTruck,
@@ -89,6 +101,11 @@ const STATUS_CONFIG: Record<
     icon: IconCheck,
   },
   refunded: {
+    label: "Reembolsado",
+    color: "bg-violet-100 text-violet-800 border-violet-200",
+    icon: IconCash,
+  },
+  completed: {
     label: "Reembolsado",
     color: "bg-violet-100 text-violet-800 border-violet-200",
     icon: IconCash,
@@ -518,6 +535,24 @@ export default function ReembolsosPage() {
 
                 {isExpanded && (
                   <CardContent className="border-t bg-muted/30 px-4 py-4 space-y-4">
+                    {/* Componente Timeline de Devolución por Reembolso */}
+                    <AdminRefundDeliveryTimeline
+                      refund={{
+                        id: r.id,
+                        order_code: r.order_code,
+                        status: r.status,
+                        delivery_type: r.delivery_type || "progressive",
+                        buyer_name: r.buyer_name,
+                        buyer_return_tracking: r.buyer_return_tracking,
+                        return_courier: r.return_courier,
+                        return_carrier_phone: null,
+                        return_tracking_url: r.return_tracking_url,
+                        return_estimated_delivery: r.return_estimated_delivery,
+                        return_address: r.return_address,
+                        company_name: r.company_name,
+                      }}
+                    />
+
                     {/* Buyer & order info */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div>

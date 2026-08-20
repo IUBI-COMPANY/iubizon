@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { formatShortDateTime, formatShortDateWithPeriod } from "@/lib/utils";
 import { ReturnShipmentModal } from "./ReturnShipmentModal";
+import { RefundReturnTimeline } from "./RefundReturnTimeline";
 
 interface RefundItemData {
   id: string;
@@ -235,6 +236,24 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                 <p className="text-[11px] text-[#64748b] italic">
                   Motivo: &quot;{req.reason}&quot;
                 </p>
+
+                {/* Timeline de Devolución por Reembolso */}
+                <RefundReturnTimeline
+                  refund={{
+                    id: req.id,
+                    status: req.status,
+                    deliveryType: req.items?.[0] ? "complete" : "progressive",
+                    buyerReturnTracking: req.buyer_return_tracking,
+                    returnCourier: req.return_courier,
+                    returnCarrierPhone: req.return_carrier_phone,
+                    returnTrackingUrl: req.return_tracking_url,
+                    returnEstimatedDelivery: req.return_estimated_delivery,
+                    returnAddress: req.return_address,
+                  }}
+                  isBuyer={!isSeller}
+                  isSeller={isSeller}
+                  onRefresh={fetchRequests}
+                />
 
                 {/* Lista de Productos del Reembolso con Imagen Principal */}
                 {req.items && req.items.length > 0 && (
