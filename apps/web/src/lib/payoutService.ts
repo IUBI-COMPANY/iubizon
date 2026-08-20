@@ -97,7 +97,10 @@ export async function syncAndRecalculateSellerPayout(
     const isProtectionExpired = now >= protectionEndDate;
 
     const hasActivePendingRefund = (pkg.order?.refundRequests || []).some(
-      (r: any) => r.status === "pending" || r.status === "return_received",
+      (r: any) =>
+        r.status !== "rejected" &&
+        r.status !== "completed" &&
+        r.status !== "refunded",
     );
 
     let targetStatus = "in_hold";
@@ -109,7 +112,25 @@ export async function syncAndRecalculateSellerPayout(
       netAmount = 0;
       targetStatus = "refunded";
     } else {
-      commission = calculateCommission(effectiveSubtotal, config);
+      // Determinar la tasa de comisión congelada asignada al crear la orden
+      const originalPkgSubtotal = Number(pkg.subtotal || 0);
+      const originalPkgCommission = Number(pkg.commission_total || 0);
+
+      const frozenRate =
+        pkg.commission_rate !== null && pkg.commission_rate !== undefined
+          ? Number(pkg.commission_rate)
+          : originalPkgSubtotal > 0
+            ? originalPkgCommission / originalPkgSubtotal
+            : config.base_rate;
+
+      // Configuración congelada para la orden (aplica < 40 soles => + S/ 2.50)
+      const effectivePkgConfig = {
+        base_rate: frozenRate,
+        fixed_fee: frozenRate === 0 ? 0 : config.fixed_fee,
+        threshold_amount: config.threshold_amount,
+      };
+
+      commission = calculateCommission(effectiveSubtotal, effectivePkgConfig);
       netAmount = Math.max(
         0,
         Number((effectiveSubtotal - commission).toFixed(2)),

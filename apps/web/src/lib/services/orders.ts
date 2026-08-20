@@ -141,6 +141,12 @@ export async function createFullOrder(params: {
   });
   const companyMap = new Map(companies.map((c) => [c.id, c]));
 
+  const firstComp = params.packages[0] ? companyMap.get(params.packages[0].companyId) : null;
+  const firstPkgCommissionConfig = resolveCompanyCommissionConfig(
+    firstComp,
+    commissionConfig,
+  );
+
   const order = await client.order.create({
     data: {
       order_code: params.orderCode,
@@ -151,6 +157,7 @@ export async function createFullOrder(params: {
       subtotal,
       shipping_cost: params.shippingCost ?? 0,
       tax_amount: params.taxAmount ?? 0,
+      commission_rate: firstPkgCommissionConfig.base_rate,
       total_amount:
         subtotal + (params.shippingCost ?? 0) + (params.taxAmount ?? 0),
       shipping: {
@@ -198,6 +205,7 @@ export async function createFullOrder(params: {
             delivery_type: pkg.deliveryType || null,
             destination_address: pkg.destinationAddress,
             subtotal: financials.subtotal,
+            commission_rate: effectiveConfig.base_rate,
             commission_total: financials.commission,
             net_earnings: financials.netEarnings,
             items: {
