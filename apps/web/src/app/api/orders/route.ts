@@ -5,7 +5,10 @@ import {
   getOrCreateBuyerProfile,
   createFullOrder,
 } from "@/lib/services/orders";
-import { getShippingConfig } from "@/lib/services/platformSettings";
+import {
+  getShippingConfig,
+  getIubizonSettings,
+} from "@/lib/services/platformSettings";
 import { generateOrderCode } from "@/lib/utils/orderCode";
 import { sendOrderConfirmationEmails } from "@/lib/email";
 import { aggregateOrderFinancials } from "@/lib/utils/commission";
@@ -158,7 +161,8 @@ export async function POST(req: Request) {
     }
 
     // Agrupar por company_id (cada empresa = un paquete)
-    const IUBIZON_WAREHOUSE = "Almacén iubizon – Av. Industrial 2340, Lima 15";
+    const iubizonSettings = await getIubizonSettings();
+    const warehouseAddress = `${iubizonSettings.address}, ${iubizonSettings.district}, ${iubizonSettings.department}`;
     const isCompleteDelivery = delivery_type === "complete";
     const destinationUbigeo = [
       String(shipping.district || "").trim(),
@@ -168,7 +172,7 @@ export async function POST(req: Request) {
       .filter(Boolean)
       .join(", ");
     const supplierDestination = isCompleteDelivery
-      ? IUBIZON_WAREHOUSE
+      ? warehouseAddress
       : `${shipping.address}, ${destinationUbigeo || shipping.city || "Lima"} (Ref: ${shipping.notes || "Sin ref"})`;
 
     const groupMap = new Map<string, typeof validItems>();

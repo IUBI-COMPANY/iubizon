@@ -2,6 +2,28 @@ import { NextResponse } from "next/server";
 import { db } from "@iubizon/db";
 import { getRefundProvider } from "@/lib/refund-providers";
 
+async function getCommissionConfig() {
+  const setting = await db.platformSetting.findUnique({
+    where: { key: "COMMISSION_CONFIG" },
+  });
+  const val = setting?.value as Record<string, unknown> | undefined;
+  const rawRate = typeof val?.base_rate === "number" ? val.base_rate : 0.09;
+  return {
+    base_rate: rawRate > 1 ? rawRate / 100 : rawRate,
+    fixed_fee: typeof val?.fixed_fee === "number" ? val.fixed_fee : 2.5,
+    threshold_amount:
+      typeof val?.threshold_amount === "number" ? val.threshold_amount : 40.0,
+  };
+}
+
+async function getProtectionDays() {
+  const setting = await db.platformSetting.findUnique({
+    where: { key: "BUYER_PROTECTION_DAYS" },
+  });
+  const val = setting?.value as Record<string, unknown> | undefined;
+  return typeof val?.days === "number" ? val.days : 7;
+}
+
 function triggerRefundEmail(
   refundId: string,
   approved: boolean,
@@ -555,6 +577,9 @@ async function recalculatePackagePayoutInTransaction(
 
   const effectiveSubtotal = Math.max(0, originalSubtotal - refundedSubtotal);
 
+  const config = await getCommissionConfig();
+  const protectionDays = await getProtectionDays();
+
   let commission = 0;
   let netAmount = 0;
   let targetStatus = "in_hold";
@@ -564,11 +589,29 @@ async function recalculatePackagePayoutInTransaction(
     netAmount = 0;
     targetStatus = "refunded";
   } else {
-    if (effectiveSubtotal < 40) {
-      commission = Number((effectiveSubtotal * 0.09 + 2.5).toFixed(2));
-    } else {
-      commission = Number((effectiveSubtotal * 0.09).toFixed(2));
-    }
+    const originalPkgSubtotal = Number(pkg.subtotal || 0);
+    const originalPkgCommission = Number(pkg.commission_total || 0);
+    const frozenRate =
+      pkg.commission_rate !== null && pkg.commission_rate !== undefined
+        ? Number(pkg.commission_rate)
+        : originalPkgSubtotal > 0
+          ? originalPkgCommission / originalPkgSubtotal
+          : config.base_rate;
+    const effectivePkgConfig = {
+      base_rate: frozenRate,
+      fixed_fee: frozenRate === 0 ? 0 : config.fixed_fee,
+      threshold_amount: config.threshold_amount,
+    };
+
+    commission =
+      effectiveSubtotal < effectivePkgConfig.threshold_amount
+        ? Number(
+            (
+              effectiveSubtotal * effectivePkgConfig.base_rate +
+              effectivePkgConfig.fixed_fee
+            ).toFixed(2),
+          )
+        : Number((effectiveSubtotal * effectivePkgConfig.base_rate).toFixed(2));
     netAmount = Math.max(
       0,
       Number((effectiveSubtotal - commission).toFixed(2)),
@@ -578,7 +621,7 @@ async function recalculatePackagePayoutInTransaction(
       ? new Date(pkg.updated_at)
       : new Date(pkg.created_at || Date.now());
     const protectionEndDate = new Date(
-      deliveryDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+      deliveryDate.getTime() + protectionDays * 24 * 60 * 60 * 1000,
     );
     const hasPendingRefund = (pkg.order?.refundRequests || []).some(
       (r: any) => r.status === "pending" || r.status === "return_received",
