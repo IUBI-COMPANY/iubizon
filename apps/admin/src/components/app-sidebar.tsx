@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  IconBuildingStore,
   IconDashboard,
   IconFolders,
   IconMail,
@@ -10,11 +11,10 @@ import {
   IconShield,
   IconShoppingCart,
   IconWallet,
-  IconBuildingStore,
 } from "@tabler/icons-react";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
+import {NavMain} from "@/components/nav-main";
+import {NavSecondary} from "@/components/nav-secondary";
+import {NavUser} from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +24,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useTheme } from "@/components/theme-provider.tsx";
+import {useTheme} from "@/components/theme-provider.tsx";
+import Link from "next/link";
 
 const data = {
   navMain: [
@@ -63,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="dashboard">
+              <Link href="/">
                 <img
                   src={
                     isDarkTheme ? "/images/logo-light.png" : "/images/logo.png"
@@ -73,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="w-[7em] h-auto"
                   alt="iubizon logo"
                 />
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

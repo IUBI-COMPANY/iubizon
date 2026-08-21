@@ -83,7 +83,7 @@ export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
             icon: isWarehouseReceived ? (
               <Check className="w-3.5 h-3.5" />
             ) : (
-              <Building2 className="w-3.5 h-3.5 text-[#f25c05]" />
+              <Building2 className="w-3.5 h-3.5" />
             ),
             badgeLabel: "2. Almacén Central iubizon",
             badgeColor: "orange" as const,
