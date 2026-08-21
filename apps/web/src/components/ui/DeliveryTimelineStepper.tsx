@@ -91,7 +91,9 @@ export function DeliveryTimelineStepper({
 
         return (
           <React.Fragment key={step.id}>
-            {idx > 0 && <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />}
+            {idx > 0 && (
+              <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+            )}
             <div className={`flex items-center gap-1 ${textColorClass}`}>
               <div
                 className={`flex items-center justify-center shrink-0 ${

@@ -49,7 +49,8 @@ const returnDispatchFormSchema = z
       .string()
       .optional()
       .refine((val) => !val || /^https?:\/\//.test(val), {
-        message: "Ingresa una URL válida (debe iniciar con http:// o https://).",
+        message:
+          "Ingresa una URL válida (debe iniciar con http:// o https://).",
       }),
   })
   .superRefine((data, ctx) => {
@@ -192,14 +193,18 @@ export function BuyerReturnDispatchModal({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Error al registrar el despacho de devolución");
+        throw new Error(
+          data.error || "Error al registrar el despacho de devolución",
+        );
       }
 
       onSuccess();
       onClose();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Error al guardar despacho de devolución",
+        err instanceof Error
+          ? err.message
+          : "Error al guardar despacho de devolución",
       );
     }
   };
@@ -209,7 +214,8 @@ export function BuyerReturnDispatchModal({
       <DialogContent className="max-w-md bg-white rounded-3xl p-6 border border-[#e2e8f0]">
         <DialogHeader>
           <DialogTitle className="text-base font-extrabold text-[#112237]">
-            Registrar Despacho de Devolución {orderCode ? `— #${orderCode}` : ""}
+            Registrar Despacho de Devolución{" "}
+            {orderCode ? `— #${orderCode}` : ""}
           </DialogTitle>
         </DialogHeader>
 
@@ -223,7 +229,9 @@ export function BuyerReturnDispatchModal({
           {destinationAddress && (
             <div className="bg-orange-50/70 border border-orange-200 rounded-2xl p-3 space-y-1">
               <span className="text-[9px] font-black text-[#f25c05] uppercase tracking-wider">
-                {isConsolidated ? "Destino: Almacén Central iubizon" : "Destino: Dirección del Vendedor"}
+                {isConsolidated
+                  ? "Destino: Almacén Central iubizon"
+                  : "Destino: Dirección del Vendedor"}
               </span>
               <p className="text-slate-700 font-medium">{destinationAddress}</p>
             </div>

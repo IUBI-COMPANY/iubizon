@@ -687,7 +687,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   <span className="text-xs font-black text-[#112237]">
                     S/{" "}
                     {formatMoney(
-                      item.subtotal ?? (item.price || item.unitPrice || 0) * (item.quantity || 1),
+                      item.subtotal ??
+                        (item.price || item.unitPrice || 0) *
+                          (item.quantity || 1),
                     )}
                   </span>
                 </div>
@@ -747,7 +749,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
           </div>
         </div>
 
-        <RefundStatus orderId={pkg.orderId || pkg.orderIds?.[0] || ""} isSeller />
+        <RefundStatus
+          orderId={pkg.orderId || pkg.orderIds?.[0] || ""}
+          isSeller
+        />
       </main>
 
       {/* Modal de Despacho Reutilizable */}

@@ -141,7 +141,9 @@ export async function createFullOrder(params: {
   });
   const companyMap = new Map(companies.map((c) => [c.id, c]));
 
-  const firstComp = params.packages[0] ? companyMap.get(params.packages[0].companyId) : null;
+  const firstComp = params.packages[0]
+    ? companyMap.get(params.packages[0].companyId)
+    : null;
   const firstPkgCommissionConfig = resolveCompanyCommissionConfig(
     firstComp,
     commissionConfig,

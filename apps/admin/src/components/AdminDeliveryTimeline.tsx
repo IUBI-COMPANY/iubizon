@@ -132,9 +132,7 @@ export function AdminDeliveryTimeline({
           {
             id: "warehouse",
             label: "Almacén iubizon",
-            status: allReceived
-              ? ("completed" as const)
-              : ("current" as const),
+            status: allReceived ? ("completed" as const) : ("current" as const),
             icon: allReceived ? (
               <IconCheck className="w-3.5 h-3.5" />
             ) : (

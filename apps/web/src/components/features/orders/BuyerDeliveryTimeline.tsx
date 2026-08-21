@@ -39,7 +39,10 @@ function formatDate(isoString: string | null): string {
   }
 }
 
-import { DeliveryTimelineStepper, TimelineStepNode } from "@/components/ui/DeliveryTimelineStepper";
+import {
+  DeliveryTimelineStepper,
+  TimelineStepNode,
+} from "@/components/ui/DeliveryTimelineStepper";
 
 export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
   const isConsolidated = pkg.deliveryType === "complete";
@@ -74,7 +77,9 @@ export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
           {
             id: "warehouse",
             label: "Almacén iubizon",
-            status: isWarehouseReceived ? ("completed" as const) : ("current" as const),
+            status: isWarehouseReceived
+              ? ("completed" as const)
+              : ("current" as const),
             icon: isWarehouseReceived ? (
               <Check className="w-3.5 h-3.5" />
             ) : (

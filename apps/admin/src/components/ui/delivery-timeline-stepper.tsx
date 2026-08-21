@@ -95,7 +95,9 @@ export function DeliveryTimelineStepper({
 
         return (
           <React.Fragment key={step.id}>
-            {idx > 0 && <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />}
+            {idx > 0 && (
+              <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+            )}
             <div className={`flex items-center gap-1 ${textColorClass}`}>
               <div
                 className={`flex items-center justify-center shrink-0 ${
@@ -244,7 +246,9 @@ export function DeliveryTimelineStepper({
             <DialogHeader className="border-b border-slate-100 pb-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <DialogTitle className="text-base font-black text-[#112237] flex items-center gap-2">
-                  {titleIcon || <IconTruck className="w-5 h-5 text-[#f25c05]" />}
+                  {titleIcon || (
+                    <IconTruck className="w-5 h-5 text-[#f25c05]" />
+                  )}
                   <span>{modalTitle || title}</span>
                 </DialogTitle>
                 {badgeLabel && (

@@ -1,10 +1,20 @@
 "use client";
 
-import {useState} from "react";
-import {Building2, Check, ExternalLink, MapPin, RotateCcw, Truck,} from "lucide-react";
-import {Button} from "@/components/ui/Button";
-import {BuyerReturnDispatchModal} from "./BuyerReturnDispatchModal";
-import {DeliveryTimelineStepper, TimelineStepNode,} from "@/components/ui/DeliveryTimelineStepper";
+import { useState } from "react";
+import {
+  Building2,
+  Check,
+  ExternalLink,
+  MapPin,
+  RotateCcw,
+  Truck,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { BuyerReturnDispatchModal } from "./BuyerReturnDispatchModal";
+import {
+  DeliveryTimelineStepper,
+  TimelineStepNode,
+} from "@/components/ui/DeliveryTimelineStepper";
 
 export interface RefundReturnData {
   id: string;
@@ -53,9 +63,7 @@ export function getRefundStatusFlags(status?: string | null) {
     s === "completed";
 
   const isReceived =
-    s === "return_received" ||
-    s === "refunded" ||
-    s === "completed";
+    s === "return_received" || s === "refunded" || s === "completed";
 
   const isCompleted = s === "refunded" || s === "completed";
 
@@ -148,7 +156,8 @@ export function RefundReturnTimeline({
             </div>
           ) : (
             <p className="text-slate-500 pt-0.5">
-              Esperando que el comprador despache el producto y registre su número de guía.
+              Esperando que el comprador despache el producto y registre su
+              número de guía.
             </p>
           )}
         </div>
@@ -264,18 +273,20 @@ export function RefundReturnTimeline({
               </Button>
             )}
 
-            {isSeller && !isConsolidated && refund.status === "return_shipped" && (
-              <Button
-                type="button"
-                size="sm"
-                disabled={isConfirmingReceipt}
-                onClick={handleConfirmSellerReceipt}
-                className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-lg flex items-center gap-1 shadow-xs"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Confirmar Recepción en Tienda</span>
-              </Button>
-            )}
+            {isSeller &&
+              !isConsolidated &&
+              refund.status === "return_shipped" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isConfirmingReceipt}
+                  onClick={handleConfirmSellerReceipt}
+                  className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-lg flex items-center gap-1 shadow-xs"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Confirmar Recepción en Tienda</span>
+                </Button>
+              )}
           </>
         )}
       />

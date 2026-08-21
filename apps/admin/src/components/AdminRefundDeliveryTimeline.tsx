@@ -59,9 +59,7 @@ export function getRefundStatusFlags(status?: string | null) {
     s === "completed";
 
   const isReceived =
-    s === "return_received" ||
-    s === "refunded" ||
-    s === "completed";
+    s === "return_received" || s === "refunded" || s === "completed";
 
   const isCompleted = s === "refunded" || s === "completed";
 
@@ -81,9 +79,7 @@ export function AdminRefundDeliveryTimeline({
     {
       id: "buyer_return",
       label: "1. Comprador",
-      status: isShipped
-        ? ("completed" as const)
-        : ("current" as const),
+      status: isShipped ? ("completed" as const) : ("current" as const),
       icon: isShipped ? (
         <IconCheck className="w-3.5 h-3.5" />
       ) : (
@@ -176,25 +172,23 @@ export function AdminRefundDeliveryTimeline({
                     </p>
                   </div>
 
-                  {!isReceived &&
-                    isShipped &&
-                    onMarkReceivedInWarehouse && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-[10px] font-bold border-amber-400 text-amber-900 bg-amber-50 hover:bg-amber-100"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onMarkReceivedInWarehouse(
-                            refund.id,
-                            refund.company_name || "Vendedor",
-                          );
-                        }}
-                      >
-                        <IconBuildingWarehouse className="w-3.5 h-3.5 mr-1 text-amber-700" />
-                        <span>Marcar Recepcionado en Almacén</span>
-                      </Button>
-                    )}
+                  {!isReceived && isShipped && onMarkReceivedInWarehouse && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[10px] font-bold border-amber-400 text-amber-900 bg-amber-50 hover:bg-amber-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMarkReceivedInWarehouse(
+                          refund.id,
+                          refund.company_name || "Vendedor",
+                        );
+                      }}
+                    >
+                      <IconBuildingWarehouse className="w-3.5 h-3.5 mr-1 text-amber-700" />
+                      <span>Marcar Recepcionado en Almacén</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             ),
