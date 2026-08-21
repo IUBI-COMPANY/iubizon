@@ -132,18 +132,20 @@ export function CheckoutStepShipping({
                 )}
               </div>
             </button>
-            {(itemCount > 1) &&
+            {itemCount > 1 && (
               <button
-                  type="button"
-                  onClick={() => {
-                    onDeliveryTypeChange("complete");
-                    setValue("deliveryType", "complete", {shouldValidate: true});
-                  }}
-                  className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
-                      deliveryType === "complete"
-                          ? "border-[#112237] bg-slate-50"
-                          : "border-[#e2e8f0] hover:border-[#112237]/40"
-                  }`}
+                type="button"
+                onClick={() => {
+                  onDeliveryTypeChange("complete");
+                  setValue("deliveryType", "complete", {
+                    shouldValidate: true,
+                  });
+                }}
+                className={`flex-1 flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                  deliveryType === "complete"
+                    ? "border-[#112237] bg-slate-50"
+                    : "border-[#e2e8f0] hover:border-[#112237]/40"
+                }`}
               >
                 <div>
                   <p className="text-sm font-bold text-[#112237]">
@@ -153,34 +155,35 @@ export function CheckoutStepShipping({
                     Todo en una sola entrega
                   </p>
                   <p className="text-[11px] text-[#94a3b8] mt-0.5">
-                    Los proveedores envían a iubizon, nosotros te entregamos todo
-                    junto
+                    Los proveedores envían a iubizon, nosotros te entregamos
+                    todo junto
                   </p>
                 </div>
                 <div
-                    className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                        deliveryType === "complete"
-                            ? "border-[#112237] bg-[#112237]"
-                            : "border-[#cbd5e1]"
-                    }`}
+                  className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
+                    deliveryType === "complete"
+                      ? "border-[#112237] bg-[#112237]"
+                      : "border-[#cbd5e1]"
+                  }`}
                 >
                   {deliveryType === "complete" && (
-                      <svg
-                          className="w-2.5 h-2.5 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                      >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                        />
-                      </svg>
+                    <svg
+                      className="w-2.5 h-2.5 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   )}
                 </div>
-              </button>}
+              </button>
+            )}
           </div>
         </div>
 
