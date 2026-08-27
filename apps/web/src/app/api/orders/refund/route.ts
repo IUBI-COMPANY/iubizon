@@ -249,6 +249,7 @@ export async function GET(req: Request) {
         },
         package: {
           select: {
+            delivery_type: true,
             company: {
               select: {
                 name: true,
@@ -309,9 +310,11 @@ export async function GET(req: Request) {
         null;
 
       const company = firstOi?.package?.company;
+      const deliveryType = firstOi?.package?.delivery_type || "progressive";
 
       return {
         ...r,
+        delivery_type: deliveryType,
         company: company
           ? {
               name: company.name,

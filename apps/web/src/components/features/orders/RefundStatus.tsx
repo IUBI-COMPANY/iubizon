@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { formatShortDateTime, formatShortDateWithPeriod } from "@/lib/utils";
 import { ReturnShipmentModal } from "./ReturnShipmentModal";
 import { RefundReturnTimeline } from "./RefundReturnTimeline";
@@ -37,6 +38,7 @@ interface RefundRequestData {
   return_shipping_cost: number | null;
   return_shipping_paid_by: string | null;
   return_address: string | null;
+  delivery_type?: string | null;
   buyer_return_tracking: string | null;
   return_courier: string | null;
   return_carrier_phone: string | null;
@@ -76,28 +78,26 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
   const [confirmingReceipt, setConfirmingReceipt] = useState<string | null>(
     null,
   );
+  const [refundToConfirm, setRefundToConfirm] = useState<string | null>(null);
   const [confirmError, setConfirmError] = useState("");
 
   const fetchRequests = useCallback(async () => {
+    if (!orderId) return;
     try {
-      setLoading(true);
-      setError("");
-      const res = await fetch(
-        `/api/orders/refund?orderId=${encodeURIComponent(orderId)}`,
-      );
+      const res = await fetch(`/api/orders/refund?orderId=${encodeURIComponent(orderId)}`);
+      if (!res.ok) throw new Error("Error al obtener reembolsos");
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al consultar");
-      setRequests(data.requests || []);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Error al cargar");
+      setRequests(data.requests || data.refundRequests || []);
+    } catch {
+      // Sencillamente no muestra solicitudes si falla
     } finally {
       setLoading(false);
     }
-  }, [orderId, refetchKey]);
+  }, [orderId]);
 
   useEffect(() => {
     fetchRequests();
-  }, [fetchRequests]);
+  }, [fetchRequests, refetchKey]);
 
   useEffect(() => {
     if (!orderId) return;
@@ -108,12 +108,6 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
   }, [orderId, fetchRequests]);
 
   const handleConfirmReceipt = async (refundId: string) => {
-    if (
-      !confirm(
-        "¿Confirmas que has recibido el producto devuelto a satisfacción?",
-      )
-    )
-      return;
     setConfirmingReceipt(refundId);
     setConfirmError("");
     try {
@@ -132,6 +126,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
       );
     } finally {
       setConfirmingReceipt(null);
+      setRefundToConfirm(null);
     }
   };
 
@@ -242,7 +237,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                   refund={{
                     id: req.id,
                     status: req.status,
-                    deliveryType: req.items?.[0] ? "complete" : "progressive",
+                    deliveryType: req.delivery_type || "progressive",
                     buyerReturnTracking: req.buyer_return_tracking,
                     returnCourier: req.return_courier,
                     returnCarrierPhone: req.return_carrier_phone,
@@ -529,8 +524,8 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                       {isSeller && req.status === "return_in_transit" && (
                         <div className="space-y-1.5">
                           <Button
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-2 rounded-lg"
-                            onClick={() => handleConfirmReceipt(req.id)}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-2 rounded-lg cursor-pointer"
+                            onClick={() => setRefundToConfirm(req.id)}
                             disabled={confirmingReceipt === req.id}
                           >
                             {confirmingReceipt === req.id ? (
@@ -648,6 +643,24 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
           );
         })}
       </div>
+
+      <ConfirmModal
+        open={Boolean(refundToConfirm)}
+        onOpenChange={(open) => {
+          if (!open && !confirmingReceipt) setRefundToConfirm(null);
+        }}
+        title="Confirmar Recepción del Producto"
+        description="¿Confirmas que has recibido físicamente el producto devuelto a entera satisfacción? Tras confirmar, iubizon procederá a revisar y liquidar el reembolso."
+        confirmLabel="Sí, Confirmar Recepción"
+        cancelLabel="Cancelar"
+        variant="success"
+        isLoading={Boolean(confirmingReceipt)}
+        onConfirm={async () => {
+          if (refundToConfirm) {
+            await handleConfirmReceipt(refundToConfirm);
+          }
+        }}
+      />
 
       <ReturnShipmentModal
         isOpen={returnShipmentModal.isOpen}

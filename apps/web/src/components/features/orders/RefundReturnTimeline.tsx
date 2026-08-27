@@ -10,6 +10,7 @@ import {
   Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { BuyerReturnDispatchModal } from "./BuyerReturnDispatchModal";
 import {
   DeliveryTimelineStepper,
@@ -78,6 +79,7 @@ export function RefundReturnTimeline({
 }: RefundReturnTimelineProps) {
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const isConsolidated = refund.deliveryType === "complete";
   const { isShipped, isReceived, isCompleted } = getRefundStatusFlags(
@@ -101,10 +103,10 @@ export function RefundReturnTimeline({
         throw new Error(data.error || "Error al confirmar recepción");
       }
 
+      setShowConfirmModal(false);
       if (onRefresh) onRefresh();
     } catch (e) {
       console.error(e);
-      alert(e instanceof Error ? e.message : "Error al confirmar recepción");
     } finally {
       setIsConfirmingReceipt(false);
     }
@@ -280,8 +282,8 @@ export function RefundReturnTimeline({
                   type="button"
                   size="sm"
                   disabled={isConfirmingReceipt}
-                  onClick={handleConfirmSellerReceipt}
-                  className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-lg flex items-center gap-1 shadow-xs"
+                  onClick={() => setShowConfirmModal(true)}
+                  className="h-7 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 rounded-lg flex items-center gap-1 shadow-xs cursor-pointer"
                 >
                   <Check className="w-3.5 h-3.5" />
                   <span>Confirmar Recepción en Tienda</span>
@@ -289,6 +291,20 @@ export function RefundReturnTimeline({
               )}
           </>
         )}
+      />
+
+      <ConfirmModal
+        open={showConfirmModal}
+        onOpenChange={(open) => {
+          if (!open && !isConfirmingReceipt) setShowConfirmModal(false);
+        }}
+        title="Confirmar Recepción en Tienda"
+        description="¿Confirmas que has recibido el paquete de devolución en tu tienda a conformidad? Tras confirmar, iubizon revisará el caso y liquidará el reembolso correspondiente."
+        confirmLabel="Sí, Confirmar Recepción"
+        cancelLabel="Cancelar"
+        variant="success"
+        isLoading={isConfirmingReceipt}
+        onConfirm={handleConfirmSellerReceipt}
       />
 
       {isDispatchModalOpen && (

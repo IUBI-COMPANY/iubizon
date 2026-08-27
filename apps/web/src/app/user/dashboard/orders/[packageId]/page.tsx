@@ -162,24 +162,25 @@ function DeliveryTimelineCard({ pkg }: { pkg: SellerPackage }) {
               <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
               <span>Origen</span>
             </div>
-            <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
-            <div
-              className={`flex items-center gap-1 ${
-                isConsolidated
-                  ? isShipped
-                    ? "text-emerald-700 font-bold"
-                    : "text-[#f25c05] font-bold"
-                  : "text-slate-400"
-              }`}
-            >
-              {isConsolidated &&
-                (isShipped ? (
-                  <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
-                ) : (
-                  <Building2 className="w-3.5 h-3.5 shrink-0" />
-                ))}
-              <span>Almacén iubizon</span>
-            </div>
+            {isConsolidated && (
+              <>
+                <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+                <div
+                  className={`flex items-center gap-1 ${
+                    isShipped
+                      ? "text-emerald-700 font-bold"
+                      : "text-[#f25c05] font-bold"
+                  }`}
+                >
+                  {isShipped ? (
+                    <Check className="w-3.5 h-3.5 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+                  ) : (
+                    <Building2 className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  <span>Almacén iubizon</span>
+                </div>
+              </>
+            )}
             <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
             <div
               className={`flex items-center gap-1 ${

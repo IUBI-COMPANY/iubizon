@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, use } from "react";
+import {use, useCallback, useEffect, useState} from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 import {
   ArrowLeft,
   Building2,
   Calendar,
-  Check,
   CheckCircle,
   Clock,
   ExternalLink,
@@ -17,17 +16,17 @@ import {
   Package,
   Receipt,
   ShieldCheck,
-  ShoppingBag,
   Truck,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
-import { Navbar } from "@/components/features/layout/Navbar";
-import { Footer } from "@/components/features/layout/Footer";
-import { Button } from "@/components/ui/Button";
-import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
-import { RefundStatus } from "@/components/features/orders/RefundStatus";
-import { BuyerDeliveryTimeline } from "@/components/features/orders/BuyerDeliveryTimeline";
-import { useAuth } from "@/hooks/useAuth";
+import {Navbar} from "@/components/features/layout/Navbar";
+import {Footer} from "@/components/features/layout/Footer";
+import {Button} from "@/components/ui/Button";
+import {ConfirmModal} from "@/components/ui/ConfirmModal";
+import {WarrantyModal} from "@/components/features/orders/WarrantyModal";
+import {RefundStatus} from "@/components/features/orders/RefundStatus";
+import {BuyerDeliveryTimeline} from "@/components/features/orders/BuyerDeliveryTimeline";
+import {useAuth} from "@/hooks/useAuth";
 
 interface PackageItem {
   id: string;
@@ -143,6 +142,9 @@ export default function OrderDetailPage({
     isOpen: false,
   });
   const [refundTrigger, setRefundTrigger] = useState(0);
+  const [packageToConfirm, setPackageToConfirm] = useState<TrackingPackage | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -190,9 +192,6 @@ export default function OrderDetailPage({
   }, [userId, fetchOrderDetail]);
 
   const handleConfirmReceipt = async (pkg: TrackingPackage) => {
-    if (!confirm("¿Confirmas que has recibido este paquete a satisfacción?"))
-      return;
-
     const pkgKey = pkg.trackingNumber || pkg.packageId;
     setConfirmingPackageKey(pkgKey);
 
@@ -212,6 +211,7 @@ export default function OrderDetailPage({
       console.error("Error al confirmar recepción:", err);
     } finally {
       setConfirmingPackageKey(null);
+      setPackageToConfirm(null);
     }
   };
 
@@ -499,22 +499,25 @@ export default function OrderDetailPage({
                   </span>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setWarrantyModalData({ isOpen: true })}
-                      className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0"
-                    >
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>Garantía & Cobertura</span>
-                    </Button>
+                    {(pkg.status === "delivered" ||
+                      pkg.status === "completed") && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setWarrantyModalData({ isOpen: true })}
+                        className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Garantía & Cobertura</span>
+                      </Button>
+                    )}
 
                     {(pkg.status === "shipped" || pkg.status === "paid") && (
                       <Button
                         size="sm"
-                        onClick={() => handleConfirmReceipt(pkg)}
+                        onClick={() => setPackageToConfirm(pkg)}
                         disabled={isConfirming}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0 cursor-pointer"
                       >
                         {isConfirming ? (
                           <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
@@ -611,6 +614,52 @@ export default function OrderDetailPage({
         )}
       </main>
 
+      <ConfirmModal
+        open={Boolean(packageToConfirm)}
+        onOpenChange={(open) => {
+          if (!open && !confirmingPackageKey) setPackageToConfirm(null);
+        }}
+        title="Confirmar Recepción del Paquete"
+        description={
+          packageToConfirm ? (
+            <div className="space-y-2 text-xs">
+              <p className="text-slate-600">
+                ¿Confirmas que has recibido todos los productos de este paquete a entera satisfacción en tu domicilio?
+              </p>
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-[11px] text-slate-700 space-y-1">
+                <p>
+                  <strong className="text-[#112237]">Vendedor:</strong>{" "}
+                  {packageToConfirm.companyName || "Tienda Oficial"}
+                </p>
+                {packageToConfirm.trackingNumber && (
+                  <p>
+                    <strong className="text-[#112237]">N° de Seguimiento:</strong>{" "}
+                    <span className="font-mono">{packageToConfirm.trackingNumber}</span>
+                  </p>
+                )}
+                {packageToConfirm.items && packageToConfirm.items.length > 0 && (
+                  <p className="text-slate-500 pt-0.5">
+                    Contiene {packageToConfirm.items.length}{" "}
+                    {packageToConfirm.items.length === 1 ? "producto" : "productos"}.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            ""
+          )
+        }
+        confirmLabel="Sí, Confirmar Recepción"
+        cancelLabel="Cancelar"
+        variant="success"
+        isLoading={Boolean(confirmingPackageKey)}
+        onConfirm={async () => {
+          if (packageToConfirm) {
+            await handleConfirmReceipt(packageToConfirm);
+          }
+        }}
+      />
+
       <WarrantyModal
         isOpen={warrantyModalData.isOpen}
         onClose={() => setWarrantyModalData({ isOpen: false })}
@@ -620,15 +669,17 @@ export default function OrderDetailPage({
         deliveredAt={session.deliveredAt}
         orderTotal={session.totalAmount}
         onRefundCreated={() => setRefundTrigger((prev) => prev + 1)}
-        items={session.packages.flatMap((pkg) =>
-          pkg.items.map((item) => ({
-            orderItemId: item.id,
-            title: item.title,
-            price: item.price,
-            quantity: item.quantity,
-            companyName: pkg.companyName || undefined,
-          })),
-        )}
+        items={session.packages
+          .filter((pkg) => pkg.status === "delivered" || pkg.status === "completed")
+          .flatMap((pkg) =>
+            pkg.items.map((item) => ({
+              orderItemId: item.id,
+              title: item.title,
+              price: item.price,
+              quantity: item.quantity,
+              companyName: pkg.companyName || undefined,
+            })),
+          )}
       />
 
       <Footer />

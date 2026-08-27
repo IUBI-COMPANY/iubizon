@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 
 interface Member {
   id: string;
@@ -68,6 +69,15 @@ export default function CompanyMembersPage({ params }: Props) {
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
+  } | null>(null);
+
+  const [confirmModalData, setConfirmModalData] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmLabel?: string;
+    variant?: "default" | "destructive" | "success";
+    onConfirm: () => Promise<void>;
   } | null>(null);
 
   const loadTeamData = useCallback(async () => {
@@ -133,17 +143,10 @@ export default function CompanyMembersPage({ params }: Props) {
     }
   };
 
-  const handleRoleChange = async (
+  const executeRoleChange = async (
     targetUserId: string,
     selectedRole: string,
   ) => {
-    if (selectedRole === "owner") {
-      const confirmTransfer = confirm(
-        "⚠️ ADVERTENCIA: Al asignar el rol de Dueño (owner), transferirás la propiedad total de la empresa a este usuario. Tú pasarás a ser Administrador. ¿Deseas continuar?",
-      );
-      if (!confirmTransfer) return;
-    }
-
     try {
       setUpdatingUserId(targetUserId);
       setMessage(null);
@@ -171,18 +174,30 @@ export default function CompanyMembersPage({ params }: Props) {
       });
     } finally {
       setUpdatingUserId(null);
+      setConfirmModalData(null);
     }
   };
 
-  const handleRemoveMember = async (
+  const handleRoleChange = async (
     targetUserId: string,
-    targetName: string,
+    selectedRole: string,
   ) => {
-    const confirmDelete = confirm(
-      `¿Seguro que deseas desvincular a "${targetName}" de la empresa?`,
-    );
-    if (!confirmDelete) return;
+    if (selectedRole === "owner") {
+      setConfirmModalData({
+        isOpen: true,
+        title: "Transferir Propiedad de la Empresa",
+        description:
+          "Al asignar el rol de Dueño (owner), transferirás la propiedad total de la empresa a este usuario. Tú pasarás a ser Administrador. ¿Deseas continuar?",
+        confirmLabel: "Sí, Transferir Propiedad",
+        variant: "destructive",
+        onConfirm: () => executeRoleChange(targetUserId, selectedRole),
+      });
+      return;
+    }
+    await executeRoleChange(targetUserId, selectedRole);
+  };
 
+  const executeRemoveMember = async (targetUserId: string) => {
     try {
       setUpdatingUserId(targetUserId);
       setMessage(null);
@@ -212,7 +227,19 @@ export default function CompanyMembersPage({ params }: Props) {
       });
     } finally {
       setUpdatingUserId(null);
+      setConfirmModalData(null);
     }
+  };
+
+  const handleRemoveMember = (targetUserId: string, targetName: string) => {
+    setConfirmModalData({
+      isOpen: true,
+      title: "Desvincular Colaborador",
+      description: `¿Estás seguro de que deseas desvincular a "${targetName}" de la empresa? Perderá el acceso a la gestión de productos, órdenes e información de la tienda.`,
+      confirmLabel: "Desvincular",
+      variant: "destructive",
+      onConfirm: () => executeRemoveMember(targetUserId),
+    });
   };
 
   const canManageTeam =
@@ -461,6 +488,21 @@ export default function CompanyMembersPage({ params }: Props) {
           </Card>
         </div>
       </main>
+
+      {confirmModalData && (
+        <ConfirmModal
+          open={confirmModalData.isOpen}
+          onOpenChange={(open) => {
+            if (!open && !updatingUserId) setConfirmModalData(null);
+          }}
+          title={confirmModalData.title}
+          description={confirmModalData.description}
+          confirmLabel={confirmModalData.confirmLabel || "Confirmar"}
+          variant={confirmModalData.variant || "default"}
+          isLoading={Boolean(updatingUserId)}
+          onConfirm={confirmModalData.onConfirm}
+        />
+      )}
 
       <Footer />
     </div>
