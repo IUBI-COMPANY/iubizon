@@ -84,7 +84,7 @@ export async function GET(req: Request) {
 
     const where: any = { buyer_id: user.id };
     if (orderCodeParam) {
-      where.order_code = orderCodeParam;
+      where.order_code = orderCodeParam.replace(/^#/, "").trim();
     }
 
     const orders = await prisma.order.findMany({

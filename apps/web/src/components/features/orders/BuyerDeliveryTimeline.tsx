@@ -136,37 +136,6 @@ export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
                 ? "¡Tus productos están en camino a tu domicilio!"
                 : "Pendiente de despacho a tu domicilio"}
           </p>
-
-          {isShipped && pkg.courier && (
-            <div className="pt-1 text-[#334155] space-y-1 font-medium bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-              <p>
-                <strong>Empresa / Transporte:</strong> {pkg.courier}
-              </p>
-              <p>
-                <strong>Tracking ID / Guía:</strong>{" "}
-                {pkg.trackingNumber || "Sin guía"}
-              </p>
-              {pkg.estimatedDelivery && (
-                <p>
-                  <strong>Llegada Estimada:</strong>{" "}
-                  {formatDate(pkg.estimatedDelivery)}
-                </p>
-              )}
-              {pkg.trackingUrl && (
-                <p className="pt-0.5">
-                  <a
-                    href={pkg.trackingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#f25c05] font-extrabold hover:underline inline-flex items-center gap-1"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Rastrear en la web de la agencia ➔</span>
-                  </a>
-                </p>
-              )}
-            </div>
-          )}
         </div>
       ),
     },
