@@ -54,6 +54,11 @@ export const PublicCompanyStorefront = ({
     : ["owner", "admin"].includes(membership.role) &&
       companyData?.id === activeCompany?.id;
 
+  const cleanTaxId = useMemo(() => {
+    if (!companyData.tax_id) return null;
+    return companyData.tax_id.replace(/^(RUC\s*:\s*|RUC\s*)+/i, "").trim();
+  }, [companyData.tax_id]);
+
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
     const q = searchQuery.toLowerCase().trim();
@@ -125,31 +130,36 @@ export const PublicCompanyStorefront = ({
               </div>
             </div>
 
-            {/* Lado Derecho: Lista de Verificación de Seguridad + Botones */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
-              {/* Lista con Ícono Check de Seguridad y Respaldo SUNAT */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 p-3.5 rounded-2xl text-xs space-y-1.5 min-w-[240px]">
-                <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5 mb-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span className="truncate">
-                    {companyData?.legal_name || companyData.name}
+            {/* Lado Derecho: Tarjeta de Verificación SUNAT y Barra de Acciones */}
+            <div className="flex flex-col gap-3.5 w-full lg:w-auto">
+              {/* Tarjeta de Verificación de Seguridad y Respaldo SUNAT */}
+              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-xs space-y-2.5 w-full lg:w-[380px] shadow-lg">
+                <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-xs font-bold uppercase text-emerald-400 tracking-wider truncate">
+                      {companyData?.legal_name || companyData.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full shrink-0">
+                    Verificada SUNAT
                   </span>
-                </p>
+                </div>
 
-                <div className="space-y-1 text-[11px] text-slate-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-200">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>
+                    <span className="truncate">
                       RUC:{" "}
                       <strong className="text-white font-mono font-semibold">
-                        {companyData.tax_id || "Verificado"}
+                        {cleanTaxId || "Verificado"}
                       </strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>
-                      Estado empresa:{" "}
+                      Estado:{" "}
                       <strong className="text-emerald-400 font-bold">
                         Activo / Habido
                       </strong>
@@ -160,7 +170,7 @@ export const PublicCompanyStorefront = ({
                     <span>
                       Ficha RUC:{" "}
                       <strong className="text-white font-medium">
-                        Verificada SUNAT
+                        Verificada
                       </strong>
                     </span>
                   </div>
@@ -169,47 +179,51 @@ export const PublicCompanyStorefront = ({
                     <span>
                       Comprobantes:{" "}
                       <strong className="text-white font-medium">
-                        Factura y Boleta
+                        Factura / Boleta
                       </strong>
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Acciones y Contador de Productos */}
-              <div className="flex flex-row sm:flex-col lg:flex-row items-center gap-3">
-                <div className="bg-white/10 backdrop-blur-sm border border-white/10 px-4 py-2.5 rounded-xl text-center flex-1 sm:w-full lg:w-auto">
-                  <p className="text-xl font-extrabold text-[#f25c05]">
+              {/* Barra de Acciones y Stats con Altura Uniforme */}
+              <div className="flex items-center justify-start lg:justify-end gap-2.5 w-full">
+                {/* Contador de Productos */}
+                <div className="h-11 bg-white/10 backdrop-blur-md border border-white/15 px-4 rounded-xl flex items-center gap-2 text-xs font-bold shrink-0">
+                  <Package className="w-4 h-4 text-[#f25c05]" />
+                  <span className="text-base font-extrabold text-white">
                     {products.length}
-                  </p>
-                  <p className="text-[10px] text-slate-300 font-semibold uppercase tracking-wider">
-                    Productos
-                  </p>
+                  </span>
+                  <span className="text-slate-300 font-semibold text-xs">
+                    {products.length === 1 ? "Producto" : "Productos"}
+                  </span>
                 </div>
 
+                {/* Botón Editar (Owner / Admin) */}
                 {canEdit && (
                   <button
                     onClick={() => setIsEditOpen(true)}
-                    className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-4 py-3 rounded-xl transition-all shadow-md shrink-0"
+                    className="h-11 px-4 bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer"
                   >
                     <Edit className="w-4 h-4 text-[#f25c05]" />
                     <span>Editar</span>
                   </button>
                 )}
 
+                {/* Botón Compartir */}
                 <button
                   onClick={handleShare}
-                  className="flex items-center justify-center gap-2 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-5 py-3 rounded-xl transition-all shadow-lg shrink-0"
+                  className="h-11 px-5 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-orange-950/30 flex items-center gap-2 shrink-0 cursor-pointer"
                 >
                   {copied ? (
                     <>
                       <Check className="w-4 h-4" />
-                      ¡Copiado!
+                      <span>¡Copiado!</span>
                     </>
                   ) : (
                     <>
                       <Share2 className="w-4 h-4" />
-                      Compartir
+                      <span>Compartir</span>
                     </>
                   )}
                 </button>
