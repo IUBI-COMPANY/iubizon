@@ -82,6 +82,7 @@ Este skill es la **referencia central e inalterable** para el desarrollo de func
 ## 📌 Guía de Uso en el Desarrollo
 - **Al Planificar:** Consultar los skills de negocio relevantes para la tarea.
 - **Al Implementar:** Seguir obligatoriamente el protocolo de `iubizon-engineering-standards`.
+- **Al Auto-Auditar:** Inspeccionar el `git diff` línea por línea, cotejar contratos de API frontend ↔ backend y validar casos de borde multi-tienda.
 - **Al Validar:** Verificar con `npx tsc --noEmit` y `npm run lint`.
 
 ---
@@ -89,7 +90,7 @@ Este skill es la **referencia central e inalterable** para el desarrollo de func
 ## ⚙️ Estándar de Ingeniería Transversal
 
 **`iubizon-engineering-standards`:**
-- Flujo obligatorio de 7 fases: Investigación → Análisis → Reutilización → Implementación → Integridad → Limpieza → Verificación.
-- Principios DRY, Single Responsibility, Composición, Fail-Safe y Consistencia con BD.
-- Prohibiciones explícitas: no inventar columnas, no duplicar tipos, no hardcodear valores, no ignorar errores.
+- Flujo obligatorio de 8 fases: Investigación → Análisis → Reutilización → Implementación → Integridad → Limpieza / Cero Diálogos Nativos → Auto-Auditoría Activa (Línea por Línea) → Verificación Automatizada.
+- Principios DRY, Single Responsibility, Composición, Fail-Safe, Consistencia con BD y Auto-Auditoría Activa.
+- Prohibiciones explícitas: cero `alert()`/`confirm()` nativos, no inventar columnas, no duplicar tipos, no hardcodear valores, no ignorar errores.
 

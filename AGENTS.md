@@ -10,7 +10,7 @@ Antes de realizar cualquier investigación, refactorización, creación o modifi
 
 1. **Protocolo Maestro:**
    - [`iubizon-business-rules`](.agents/skills/iubizon-business-rules/SKILL.md): Protocolo de Guardia Inalterable y listado maestro de dominios.
-   - [`iubizon-engineering-standards`](.agents/skills/iubizon-engineering-standards/SKILL.md): Estándar de desarrollo de 7 fases, código limpio, reutilización y verificación.
+   - [`iubizon-engineering-standards`](.agents/skills/iubizon-engineering-standards/SKILL.md): Estándar de desarrollo de 8 fases, auto-auditoría exhaustiva, código limpio, reutilización y verificación.
 
 2. **Skills de Dominio de Negocio:**
    - [`iubizon-business-logistics`](.agents/skills/iubizon-business-logistics/SKILL.md): Logística de Envíos (2 o 3 Pasos, Almacén Chorrillos).
