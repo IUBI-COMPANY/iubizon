@@ -46,6 +46,8 @@ export interface BuyerOrderSession {
   taxAmount: number;
   totalAmount: number;
   shippingName: string | null;
+  shippingPhone?: string | null;
+  shippingEmail?: string | null;
   shippingAddress: string | null;
   shippingDepartment: string | null;
   shippingProvince: string | null;
@@ -201,6 +203,8 @@ export async function GET(req: Request) {
       taxAmount: Number(order.tax_amount),
       totalAmount: Number(order.total_amount),
       shippingName: order.shipping?.name ?? null,
+      shippingPhone: order.shipping?.phone ?? null,
+      shippingEmail: order.shipping?.email ?? null,
       shippingAddress: order.shipping?.address ?? null,
       shippingDepartment: order.shipping?.department ?? null,
       shippingProvince: order.shipping?.province ?? null,

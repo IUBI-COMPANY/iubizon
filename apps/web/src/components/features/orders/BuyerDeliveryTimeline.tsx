@@ -1,17 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Building2,
-  Check,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  MapPin,
-  Truck,
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
-
+import { Building2, Check, CheckCircle, MapPin, Truck } from "lucide-react";
 import { DeliveryType } from "@/components/features/cart/checkout-schema";
 
 export interface BuyerTrackingPackage {
@@ -25,25 +14,6 @@ export interface BuyerTrackingPackage {
   status: string;
 }
 
-function formatDate(isoString: string | null): string {
-  if (!isoString) return "-";
-  try {
-    const d = new Date(isoString);
-    return new Intl.DateTimeFormat("es-PE", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(d);
-  } catch {
-    return isoString;
-  }
-}
-
-import {
-  DeliveryTimelineStepper,
-  TimelineStepNode,
-} from "@/components/ui/DeliveryTimelineStepper";
-
 export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
   const isConsolidated = pkg.deliveryType === "complete";
   const isShipped =
@@ -54,116 +24,79 @@ export function BuyerDeliveryTimeline({ pkg }: { pkg: BuyerTrackingPackage }) {
   const isWarehouseReceived =
     pkg.status === "received_in_warehouse" || isShipped;
 
-  const steps: TimelineStepNode[] = [
-    {
-      id: "origin",
-      label: "Origen",
-      status: "completed",
-      badgeLabel: "1. Origen (Proveedor / Vendedor)",
-      badgeColor: "emerald",
-      content: (
-        <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-0.5 text-xs">
-          <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded uppercase">
-            1. Origen (Proveedor / Vendedor)
-          </span>
-          <p className="font-bold text-[#112237] text-xs mt-0.5">
-            {pkg.companyName || "Vendedor"} preparó tu paquete
-          </p>
-        </div>
-      ),
-    },
-    ...(isConsolidated
-      ? [
-          {
-            id: "warehouse",
-            label: "Almacén iubizon",
-            status: isWarehouseReceived
-              ? ("completed" as const)
-              : ("current" as const),
-            icon: isWarehouseReceived ? (
-              <Check className="w-3.5 h-3.5" />
-            ) : (
-              <Building2 className="w-3.5 h-3.5" />
-            ),
-            badgeLabel: "2. Almacén Central iubizon",
-            badgeColor: "orange" as const,
-            content: (
-              <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-1 text-xs">
-                <span className="text-[9px] font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-2 py-0.5 rounded uppercase">
-                  2. Almacén Central iubizon
-                </span>
-                <p className="font-bold text-[#112237] text-xs">
-                  {isWarehouseReceived
-                    ? "✓ Paquete recepcionado y consolidado en el Almacén Central iubizon (Chorrillos)"
-                    : "Tu paquete va camino al Almacén iubizon para ser unificado con tus otros productos"}
-                </p>
-              </div>
-            ),
-          },
-        ]
-      : []),
-    {
-      id: "destination",
-      label: "Tu Domicilio",
-      status: isDelivered
-        ? ("completed" as const)
-        : isShipped
-          ? ("current" as const)
-          : ("pending" as const),
-      icon: isDelivered ? (
-        <Check className="w-3.5 h-3.5" />
-      ) : isShipped ? (
-        <Truck className="w-3.5 h-3.5 text-[#f25c05]" />
-      ) : (
-        <MapPin className="w-3.5 h-3.5 text-slate-500" />
-      ),
-      badgeLabel: isConsolidated
-        ? "3. Despacho iubizon a tu Puerta"
-        : "2. En Camino a Tu Domicilio",
-      badgeColor: "slate",
-      content: (
-        <div className="bg-white rounded-xl p-3 border border-[#e2e8f0] space-y-1 text-xs">
-          <span className="text-[9px] font-extrabold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded uppercase">
-            {isConsolidated
-              ? "3. Despacho iubizon a tu Puerta"
-              : "2. En Camino a Tu Domicilio"}
-          </span>
-
-          <p className="font-bold text-[#112237] text-xs">
-            {isDelivered
-              ? "¡Producto Entregado a Satisfacción!"
-              : isShipped
-                ? "¡Tus productos están en camino a tu domicilio!"
-                : "Pendiente de despacho a tu domicilio"}
-          </p>
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <DeliveryTimelineStepper
-      title="Estado y Progreso de tu Envío"
-      badgeLabel={
-        isConsolidated
-          ? "Envío Consolidado por iubizon"
-          : "Envío Directo del Proveedor"
-      }
-      badgeVariant={isConsolidated ? "slate" : "orange"}
-      steps={steps}
-      mode="collapsible"
-      summaryContent={
-        <span>
-          <strong>Estado:</strong>{" "}
-          {isDelivered
-            ? "¡Producto Entregado a Satisfacción!"
-            : isShipped
-              ? "¡Tus productos están en camino a tu domicilio!"
-              : isWarehouseReceived
-                ? "Paquete recepcionado y preparado en Almacén iubizon"
-                : "El vendedor preparó tu paquete y va camino al Almacén iubizon"}
-        </span>
-      }
-    />
+    <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] space-y-3">
+      {/* Stepper Horizontal Limpio */}
+      <div className="flex items-center justify-between text-xs font-bold">
+        <div className="flex items-center gap-1.5 text-emerald-700">
+          <Check className="w-4 h-4 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+          <span>Origen</span>
+        </div>
+
+        {isConsolidated && (
+          <>
+            <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+            <div
+              className={`flex items-center gap-1.5 ${
+                isWarehouseReceived
+                  ? "text-emerald-700 font-bold"
+                  : "text-[#f25c05] font-bold"
+              }`}
+            >
+              {isWarehouseReceived ? (
+                <Check className="w-4 h-4 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+              ) : (
+                <Building2 className="w-4 h-4 shrink-0" />
+              )}
+              <span>Almacén iubizon</span>
+            </div>
+          </>
+        )}
+
+        <div className="h-0.5 flex-1 mx-2 bg-slate-200 rounded" />
+        <div
+          className={`flex items-center gap-1.5 ${
+            isDelivered
+              ? "text-emerald-700 font-bold"
+              : isShipped
+                ? "text-[#f25c05] font-bold"
+                : "text-slate-400"
+          }`}
+        >
+          {isDelivered ? (
+            <Check className="w-4 h-4 bg-emerald-100 rounded-full p-0.5 shrink-0" />
+          ) : isShipped ? (
+            <Truck className="w-4 h-4 text-[#f25c05] shrink-0" />
+          ) : (
+            <MapPin className="w-4 h-4 shrink-0" />
+          )}
+          <span>Tu Domicilio</span>
+        </div>
+      </div>
+
+      {/* Mensaje de Estado Contextual */}
+      <div className="pt-2 border-t border-slate-200/60 text-xs text-[#475569]">
+        {isDelivered ? (
+          <p className="flex items-center gap-1.5 text-emerald-700 font-bold">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            <span>¡Producto entregado a satisfacción en tu domicilio!</span>
+          </p>
+        ) : isShipped ? (
+          <p className="text-[#334155]">
+            <strong>Estado:</strong> Tus productos están en camino a tu
+            domicilio.
+          </p>
+        ) : isWarehouseReceived ? (
+          <p className="text-[#334155]">
+            <strong>Estado:</strong> Paquete recepcionado y preparado en el
+            Almacén Central iubizon.
+          </p>
+        ) : (
+          <p className="text-amber-800 font-medium">
+            El vendedor está preparando tus productos para el despacho.
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

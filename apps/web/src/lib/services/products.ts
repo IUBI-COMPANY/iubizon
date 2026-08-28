@@ -208,43 +208,93 @@ export async function getActiveProducts(limit = 20): Promise<Product[]> {
   })) as unknown as Product[];
 }
 
-export async function getBestSellingProducts(limit = 20): Promise<Product[]> {
-  const { products } = await getProducts({
-    limit,
-    filters: { sortBy: "popular" },
-  });
-  return products.map((p) => ({
-    ...p,
-    price: Number(p.price),
-    is_bundle: false,
-    favorites: p.favorites_count ?? 0,
-    latitude: null,
-    longitude: null,
-    created_at:
-      typeof p.created_at === "string"
-        ? p.created_at
-        : (p.created_at as any)?.toISOString?.() || new Date().toISOString(),
-    updated_at:
-      typeof p.updated_at === "string"
-        ? p.updated_at
-        : (p.updated_at as any)?.toISOString?.() || new Date().toISOString(),
-    category: p.category
-      ? {
-          ...p.category,
-          icon: p.category.icon ?? "",
-          sort_order: p.category.sort_order ?? 0,
-        }
-      : undefined,
-    creator: p.creator
-      ? {
-          ...p.creator,
-          rating: Number(p.creator.rating || 0),
-          is_pro: p.creator.is_pro ?? false,
-          total_sales: p.creator.total_sales ?? 0,
-          positive_reviews: p.creator.positive_reviews ?? 0,
-        }
-      : undefined,
-  })) as unknown as Product[];
+export async function getBestSellingProducts(
+  limit = 20,
+  minSalesThreshold = 10,
+  minProductsRequired = 4,
+): Promise<Product[]> {
+  try {
+    // Agrupar ventas reales por producto desde order_items
+    const salesGroup = await prisma.orderItem.groupBy({
+      by: ["product_id"],
+      where: {
+        package: {
+          status: { notIn: ["cancelled", "refunded"] },
+        },
+      },
+      _sum: {
+        quantity: true,
+      },
+      having: {
+        quantity: {
+          _sum: {
+            gte: minSalesThreshold,
+          },
+        },
+      },
+      orderBy: {
+        _sum: {
+          quantity: "desc",
+        },
+      },
+      take: limit,
+    });
+
+    if (salesGroup.length < minProductsRequired) {
+      return [];
+    }
+
+    const productIds = salesGroup.map((g) => g.product_id);
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        status: "active",
+        stock: { gt: 0 },
+        company: { is_verified: true },
+      },
+      include: productInclude,
+    });
+
+    const productsMap = new Map(products.map((p) => [p.id, p]));
+    const orderedProducts = productIds
+      .map((id) => productsMap.get(id))
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+    if (orderedProducts.length < minProductsRequired) {
+      return [];
+    }
+
+    return orderedProducts.map((p) => ({
+      ...p,
+      price: Number(p.price),
+      is_bundle: false,
+      favorites: p.favorites_count ?? 0,
+      latitude: null,
+      longitude: null,
+      created_at: p.created_at?.toISOString() || new Date().toISOString(),
+      updated_at: p.updated_at?.toISOString() || new Date().toISOString(),
+      category: p.category
+        ? {
+            ...p.category,
+            icon: p.category.icon ?? "",
+            sort_order: p.category.sort_order ?? 0,
+          }
+        : undefined,
+      creator: p.creator
+        ? {
+            ...p.creator,
+            rating: Number(p.creator.rating || 0),
+            is_pro: p.creator.is_pro ?? false,
+            total_sales: p.creator.total_sales ?? 0,
+            positive_reviews: p.creator.positive_reviews ?? 0,
+          }
+        : undefined,
+    })) as unknown as Product[];
+  } catch (err) {
+    console.error("Error al obtener los más vendidos:", err);
+    return [];
+  }
 }
 
 export async function getProductById(id: string) {

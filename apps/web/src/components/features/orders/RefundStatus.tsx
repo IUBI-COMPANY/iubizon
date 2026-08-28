@@ -84,7 +84,9 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
   const fetchRequests = useCallback(async () => {
     if (!orderId) return;
     try {
-      const res = await fetch(`/api/orders/refund?orderId=${encodeURIComponent(orderId)}`);
+      const res = await fetch(
+        `/api/orders/refund?orderId=${encodeURIComponent(orderId)}`,
+      );
       if (!res.ok) throw new Error("Error al obtener reembolsos");
       const data = await res.json();
       setRequests(data.requests || data.refundRequests || []);
