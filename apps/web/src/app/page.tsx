@@ -110,8 +110,8 @@ export default async function MarketplaceHomePage() {
           </div>
         </section>
 
-        {/* Sección: Los Más Vendidos / Populares */}
-        {bestSellingProducts.length > 0 && (
+        {/* Sección: Los Más Vendidos (solo cuando hay 4 o más productos con 10 o más ventas) */}
+        {bestSellingProducts.length >= 4 && (
           <section className="py-8 bg-[#f8fafc]/70 border-y border-[#e2e8f0]/80">
             <div className="container">
               <div className="flex items-center justify-between mb-6">
@@ -121,7 +121,7 @@ export default async function MarketplaceHomePage() {
                     <span>Los más vendidos</span>
                   </h2>
                   <p className="text-xs text-[#64748b] mt-0.5">
-                    Productos con mayor demanda e interacción
+                    Productos destacados con mayor número de ventas
                   </p>
                 </div>
 
