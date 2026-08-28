@@ -1,15 +1,15 @@
 "use client";
 
-import { use, useCallback, useEffect, useState } from "react";
+import {use, useCallback, useEffect, useState} from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 import {
   ArrowLeft,
-  Building2,
   Calendar,
   Check,
   CheckCircle,
+  CheckCircle2,
   Clock,
   Copy,
   ExternalLink,
@@ -23,14 +23,14 @@ import {
   User,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
-import { Navbar } from "@/components/features/layout/Navbar";
-import { Footer } from "@/components/features/layout/Footer";
-import { Button } from "@/components/ui/Button";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
-import { RefundStatus } from "@/components/features/orders/RefundStatus";
-import { BuyerDeliveryTimeline } from "@/components/features/orders/BuyerDeliveryTimeline";
-import { useAuth } from "@/hooks/useAuth";
+import {Navbar} from "@/components/features/layout/Navbar";
+import {Footer} from "@/components/features/layout/Footer";
+import {Button} from "@/components/ui/Button";
+import {ConfirmModal} from "@/components/ui/ConfirmModal";
+import {WarrantyModal} from "@/components/features/orders/WarrantyModal";
+import {RefundStatus} from "@/components/features/orders/RefundStatus";
+import {BuyerDeliveryTimeline} from "@/components/features/orders/BuyerDeliveryTimeline";
+import {useAuth} from "@/hooks/useAuth";
 
 interface PackageItem {
   id: string;
@@ -50,6 +50,8 @@ interface PackageItem {
 
 interface TrackingPackage {
   packageId: string;
+  packageNumber?: number;
+  totalPackages?: number;
   companyName: string | null;
   trackingNumber: string | null;
   courier: string | null;
@@ -181,11 +183,19 @@ export default function OrderDetailPage({ params }: PageProps) {
         `/api/user/orders?code=${encodeURIComponent(cleanCode)}`,
       );
       if (!res.ok) {
+        if (res.status === 401) {
+          router.push(`/auth/login?redirect=/user/orders/${orderCode}`);
+          return;
+        }
         if (res.status === 404) {
           setError("No se encontró la orden especificada.");
           return;
         }
-        throw new Error("Error al consultar el detalle de la compra");
+        const errJson = await res.json().catch(() => null);
+        setError(
+          errJson?.error || "No se pudo cargar la información de la orden.",
+        );
+        return;
       }
       const data = await res.json();
       if (data.session) {
@@ -201,7 +211,7 @@ export default function OrderDetailPage({ params }: PageProps) {
     } finally {
       setLoading(false);
     }
-  }, [orderCode]);
+  }, [orderCode, router]);
 
   useEffect(() => {
     if (userId) {
@@ -426,102 +436,107 @@ export default function OrderDetailPage({ params }: PageProps) {
                   key={pkg.trackingNumber || `pkg_${idx}`}
                   className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-5"
                 >
-                  {/* 1. Cabecera del Paquete (Limpia y sin redundancias) */}
+                  {/* 1. Cabecera del Bulto / Paquete (Estilo eBay) */}
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {!isSinglePackage && (
-                        <span className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-[#f25c05] font-black text-xs shrink-0">
-                          {idx + 1}
+                    <div>
+                      <div className="flex items-center gap-2 text-sm font-extrabold text-[#112237]">
+                        <span>
+                          {pkg?.totalPackages && pkg.totalPackages > 1
+                            ? `Información de Envío (${pkg.packageNumber || idx + 1} de ${pkg.totalPackages})`
+                            : !isSinglePackage
+                              ? `Información de Envío (${idx + 1} de ${session.packages.length})`
+                              : "Información de Envío"}
                         </span>
-                      )}
-                      <div className="flex items-center gap-2 flex-wrap text-xs">
-                        {!isSinglePackage && (
-                          <span className="font-bold text-[#64748b]">
-                            Paquete {idx + 1} de {session.packages.length}
+                        {pkg?.companyName && (
+                          <span className="text-xs font-semibold text-slate-500">
+                            · {pkg.companyName}
                           </span>
                         )}
-                        {pkg.companyName && (
-                          <>
-                            {!isSinglePackage && (
-                              <span className="text-slate-300">•</span>
-                            )}
-                            <span className="font-extrabold text-[#112237] flex items-center gap-1.5">
-                              <Building2 className="w-4 h-4 text-[#f25c05]" />
-                              <span>Tienda: {pkg.companyName}</span>
-                            </span>
-                          </>
-                        )}
                       </div>
+
+                      {/* Subtítulo de Estado estilo eBay */}
+                      <p className="text-xs mt-1">
+                        {isPkgDelivered ? (
+                          <span className="text-emerald-700 font-bold">
+                            Entregado{" "}
+                            {pkg.estimatedDelivery
+                              ? `el ${formatDate(pkg.estimatedDelivery)}`
+                              : "a satisfacción"}
+                          </span>
+                        ) : isPkgShipped ? (
+                          <span className="text-blue-700 font-bold">
+                            En camino
+                            {pkg.estimatedDelivery
+                              ? ` · Llegada estimada: ${formatDate(pkg.estimatedDelivery)}`
+                              : ""}
+                          </span>
+                        ) : (
+                          <span className="text-amber-700 font-semibold">
+                            En preparación por el vendedor
+                          </span>
+                        )}
+                      </p>
                     </div>
 
-                    {/* Mostrar badge individual solo si es una orden multi-paquete */}
-                    {!isSinglePackage && (
-                      <span
-                        className={`px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase border ${
-                          isPkgDelivered
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-200"
-                            : isPkgShipped
-                              ? "bg-blue-100 text-blue-800 border-blue-200"
-                              : "bg-amber-100 text-amber-800 border-amber-200"
-                        }`}
+                    {/* Botón de Confirmación de Recepción por Bulto */}
+                    {isPkgShipped && !isPkgDelivered && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isConfirming}
+                        onClick={() => setPackageToConfirm(pkg)}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
                       >
-                        {isPkgDelivered
-                          ? "Entregado"
-                          : isPkgShipped
-                            ? "En Camino"
-                            : "En Preparación"}
-                      </span>
+                        {isConfirming ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Confirmando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Confirmar que lo recibí</span>
+                          </>
+                        )}
+                      </Button>
                     )}
                   </div>
 
-                  {/* 2. Ruta y Progreso (Stepper horizontal limpio) */}
-                  <BuyerDeliveryTimeline pkg={pkg} />
+                  {/* 2. Ruta y Progreso (Stepper horizontal estilo eBay) */}
+                  <BuyerDeliveryTimeline
+                    pkg={pkg}
+                    orderCreatedAt={session.createdAt}
+                    orderDeliveredAt={session.deliveredAt}
+                  />
 
-                  {/* 3. Barra Unificada de Transporte & Tracking */}
+                  {/* 3. Detalles de Seguimiento */}
                   {pkg.trackingNumber ? (
                     <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 flex-1">
-                        <div>
-                          <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
-                            Transporte / Courier
+                      <div>
+                        <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
+                          Detalles de seguimiento
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-slate-600 font-medium">
+                            {pkg.courier || "Transporte"}:
                           </span>
-                          <span className="font-extrabold text-[#112237] mt-0.5 block text-xs">
-                            {pkg.courier || "Movilidad Propia"}
+                          <span className="font-mono font-bold text-[#112237] bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs select-all">
+                            {pkg.trackingNumber}
                           </span>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
-                            N° de Guía / Tracking
-                          </span>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="font-mono font-bold text-[#112237] bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-[11px] select-all">
-                              {pkg.trackingNumber}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleCopyTracking(pkg.trackingNumber!)
-                              }
-                              title="Copiar N° de Guía"
-                              className="p-1 text-slate-400 hover:text-[#f25c05] transition-colors rounded hover:bg-slate-200/60 cursor-pointer"
-                            >
-                              {copiedTracking === pkg.trackingNumber ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
-                            Llegada Estimada
-                          </span>
-                          <span className="font-semibold text-[#112237] mt-0.5 block">
-                            {formatDate(pkg.estimatedDelivery)}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleCopyTracking(pkg.trackingNumber!)
+                            }
+                            title="Copiar N° de Guía"
+                            className="p-1 text-slate-400 hover:text-[#f25c05] transition-colors rounded hover:bg-slate-200/60 cursor-pointer"
+                          >
+                            {copiedTracking === pkg.trackingNumber ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                         </div>
                       </div>
 
@@ -541,9 +556,8 @@ export default function OrderDetailPage({ params }: PageProps) {
                     <div className="bg-amber-50/80 rounded-2xl p-3.5 border border-amber-200/80 flex items-center gap-2.5 text-xs text-amber-800">
                       <Clock className="w-4 h-4 text-amber-600 shrink-0" />
                       <span>
-                        El vendedor está preparando tus productos para el
-                        despacho. Tan pronto sea enviado, verás aquí los datos
-                        de transporte.
+                        El vendedor está preparando este bulto para el despacho.
+                        Tan pronto sea enviado, verás aquí la guía de transporte.
                       </span>
                     </div>
                   )}

@@ -37,6 +37,8 @@ interface PackageItem {
 
 interface TrackingPackage {
   packageId: string;
+  packageNumber?: number;
+  totalPackages?: number;
   companyName: string | null;
   trackingNumber: string | null;
   courier: string | null;

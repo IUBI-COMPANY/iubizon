@@ -23,6 +23,7 @@ export async function syncAndRecalculateSellerPayout(
           select: {
             id: true,
             status: true,
+            delivered_at: true,
             refundRequests: {
               select: {
                 id: true,
@@ -82,13 +83,15 @@ export async function syncAndRecalculateSellerPayout(
 
     const effectiveSubtotal = Math.max(0, originalSubtotal - refundedSubtotal);
 
-    // 3. Reglas de comisión y periodo de garantía
+    // 3. Reglas de comisión y periodo de garantía (inicia desde la entrega de la orden completa)
     const config = await getCommissionConfig();
     const protectionDays = await getProtectionDays();
 
-    const deliveryDate = pkg.updated_at
-      ? new Date(pkg.updated_at)
-      : new Date(pkg.created_at || Date.now());
+    const deliveryDate = pkg.order?.delivered_at
+      ? new Date(pkg.order.delivered_at)
+      : pkg.updated_at
+        ? new Date(pkg.updated_at)
+        : new Date(pkg.created_at || Date.now());
 
     const protectionEndDate = new Date(
       deliveryDate.getTime() + protectionDays * 24 * 60 * 60 * 1000,

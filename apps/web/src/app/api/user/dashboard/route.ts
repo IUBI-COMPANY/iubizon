@@ -93,7 +93,21 @@ export async function GET(req: Request) {
     const totalViews = productSums._sum.views || 0;
     const companyFavorites = productSums._sum.favorites_count || 0;
 
-    // Conteo de paquetes pendientes
+    // Conteo de compras del usuario (modo comprador)
+    const [buyerPurchasesCount, buyerPendingDeliveriesCount] =
+      await Promise.all([
+        prisma.order.count({
+          where: { buyer_id: user.id },
+        }),
+        prisma.orderPackage.count({
+          where: {
+            order: { buyer_id: user.id },
+            status: { in: ["pending", "shipped", "paid"] },
+          },
+        }),
+      ]);
+
+    // Conteo de paquetes pendientes del vendedor (modo empresa)
     let pendingOrders = 0;
     let totalPackages = 0;
     if (companyId) {
@@ -122,8 +136,10 @@ export async function GET(req: Request) {
         totalProducts,
         activeProducts,
         totalOrders: totalPackages,
-        totalPurchases: 0,
-        pendingDeliveries: pendingOrders,
+        totalPurchases: buyerPurchasesCount,
+        pendingDeliveries: companyId
+          ? pendingOrders
+          : buyerPendingDeliveriesCount,
         pendingOrders,
         favoritesCount: companyId ? companyFavorites : totalFavorites,
         totalViews,

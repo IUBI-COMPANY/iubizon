@@ -101,7 +101,7 @@ export async function POST(
           orderBy: { created_at: "desc" },
         });
 
-    let storedBuyerId: string | null = user?.id || null;
+    let storedBuyerId: string | null = null;
 
     if (existingTx) {
       if (!purchaseNumber) purchaseNumber = existingTx.purchase_number;
@@ -125,8 +125,12 @@ export async function POST(
           meta.invoiceDetails
         )
           invoiceDetails = meta.invoiceDetails;
-        if (!storedBuyerId && meta.buyer_id) storedBuyerId = meta.buyer_id;
+        if (meta.buyer_id) storedBuyerId = meta.buyer_id;
       }
+    }
+
+    if (!storedBuyerId && user?.id) {
+      storedBuyerId = user.id;
     }
 
     if ((!transactionToken && !chargeToken) || !purchaseNumber) {

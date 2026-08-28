@@ -47,6 +47,8 @@ export interface SellerPackageItem {
 
 export interface SellerPackage {
   packageId: string;
+  packageNumber?: number;
+  totalPackages?: number;
   orderId?: string;
   orderCode: string;
   statusText: string;
@@ -798,6 +800,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
           isOpen={isDispatchModalOpen}
           onClose={() => setIsDispatchModalOpen(false)}
           packageId={pkg.packageId}
+          items={pkg.items}
           currentCarrierName={pkg.courier}
           currentTrackingNumber={pkg.trackingNumber}
           currentEstimatedDelivery={pkg.estimatedDelivery}

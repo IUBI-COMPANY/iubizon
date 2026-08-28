@@ -22,11 +22,14 @@ export interface BuyerOrderItem {
 
 export interface BuyerPackage {
   packageId: string;
+  packageNumber: number;
+  totalPackages: number;
   companyName: string | null;
   trackingNumber: string | null;
   courier: string | null;
   trackingUrl: string | null;
   estimatedDelivery: string | null;
+  deliveryType?: string | null;
   status: string;
   paymentMethod: string;
   cardBrand: string | null;
@@ -97,6 +100,7 @@ export async function GET(req: Request) {
         order_code: true,
         created_at: true,
         updated_at: true,
+        delivered_at: true,
         status: true,
         subtotal: true,
         shipping_cost: true,
@@ -129,8 +133,11 @@ export async function GET(req: Request) {
           },
         },
         packages: {
+          orderBy: [{ package_number: "asc" }, { created_at: "asc" }],
           select: {
             id: true,
+            package_number: true,
+            total_packages: true,
             tracking_number: true,
             courier: true,
             tracking_url: true,
@@ -194,14 +201,15 @@ export async function GET(req: Request) {
       orderCode: order.order_code,
       createdAt: order.created_at?.toISOString() || new Date().toISOString(),
       deliveredAt:
-        order.status === "delivered" || order.status === "completed"
+        order.delivered_at?.toISOString() ||
+        (order.status === "delivered" || order.status === "completed"
           ? order.updated_at?.toISOString() || null
-          : null,
+          : null),
       status: order.status,
-      subtotal: Number(order.subtotal),
-      shippingCost: Number(order.shipping_cost),
-      taxAmount: Number(order.tax_amount),
-      totalAmount: Number(order.total_amount),
+      subtotal: Number(order.subtotal || 0),
+      shippingCost: Number(order.shipping_cost || 0),
+      taxAmount: Number(order.tax_amount || 0),
+      totalAmount: Number(order.total_amount || 0),
       shippingName: order.shipping?.name ?? null,
       shippingPhone: order.shipping?.phone ?? null,
       shippingEmail: order.shipping?.email ?? null,
@@ -212,8 +220,9 @@ export async function GET(req: Request) {
       destinationAddress: order.shipping?.address ?? null,
       invoiceType: order.invoice?.type ?? null,
       invoiceNumber: order.invoice?.number ?? null,
-      totalItems: order.packages.reduce(
-        (sum, pkg) => sum + pkg.items.reduce((s, i) => s + i.quantity, 0),
+      totalItems: (order.packages || []).reduce(
+        (sum, pkg) =>
+          sum + (pkg.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
         0,
       ),
       hasRefund: refundByOrder.has(order.id),
@@ -237,8 +246,10 @@ export async function GET(req: Request) {
               identityNumber: order.invoice?.number || null,
             }
           : null,
-      packages: order.packages.map((pkg) => ({
+      packages: (order.packages || []).map((pkg) => ({
         packageId: pkg.id,
+        packageNumber: pkg.package_number ?? 1,
+        totalPackages: pkg.total_packages ?? order.packages.length,
         companyName: pkg.company?.name || "Vendedor",
         trackingNumber: pkg.tracking_number,
         courier: pkg.courier,
@@ -249,16 +260,16 @@ export async function GET(req: Request) {
         paymentMethod: order.payment_method || "cash_on_delivery",
         cardBrand: order.paymentTransaction?.card_brand || null,
         cardLast4: order.paymentTransaction?.card_last4 || null,
-        subtotal: Number(pkg.subtotal),
-        netEarnings: Number(pkg.net_earnings),
-        items: pkg.items.map((item) => ({
+        subtotal: Number(pkg.subtotal || 0),
+        netEarnings: Number(pkg.net_earnings || 0),
+        items: (pkg.items || []).map((item) => ({
           id: item.id,
           productId: item.product_id,
-          title: item.product.title,
-          price: Number(item.unit_price),
-          quantity: item.quantity,
-          subtotal: Number(item.subtotal),
-          image: item.product.images[0]?.url || null,
+          title: item.product?.title || "Producto",
+          price: Number(item.unit_price || 0),
+          quantity: item.quantity || 1,
+          subtotal: Number(item.subtotal || 0),
+          image: item.product?.images?.[0]?.url || null,
           company: pkg.company
             ? {
                 id: pkg.company.id,
@@ -278,8 +289,9 @@ export async function GET(req: Request) {
     });
   } catch (err: unknown) {
     console.error("Error al obtener compras del usuario:", err);
+    const message = err instanceof Error ? err.message : "Error al cargar historial de compras";
     return NextResponse.json(
-      { error: "Error al cargar historial de compras" },
+      { error: message },
       { status: 500 },
     );
   }
@@ -339,14 +351,20 @@ export async function PATCH(req: Request) {
       });
 
       if (deliveredPackages >= totalPackages) {
+        const now = new Date();
         await prisma.order.update({
           where: { id: orderId },
-          data: { status: "delivered", updated_at: new Date() },
+          data: { status: "delivered", delivered_at: now, updated_at: now },
         });
+
+        // Solo generar los payouts cuando TODA la orden está 100% entregada
+        const allOrderPackages = await prisma.orderPackage.findMany({
+          where: { order_id: orderId },
+          select: { id: true },
+        });
+        await ensureSellerPayoutForPackages(allOrderPackages.map((p) => p.id));
       }
     }
-
-    await ensureSellerPayoutForPackages(packageIds);
 
     // Notificar a la empresa que el cliente confirmó la recepción del pedido
     sendDeliveryConfirmationNotifications(packageIds).catch((err) =>

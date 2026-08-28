@@ -615,6 +615,7 @@ function OrdersContent() {
           isOpen={!!selectedPackageForDispatch}
           onClose={() => setSelectedPackageForDispatch(null)}
           packageId={selectedPackageForDispatch.packageId}
+          items={selectedPackageForDispatch.items}
           currentCarrierName={selectedPackageForDispatch.courier}
           currentTrackingNumber={selectedPackageForDispatch.trackingNumber}
           currentEstimatedDelivery={

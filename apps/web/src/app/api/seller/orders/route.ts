@@ -19,6 +19,8 @@ export interface DashboardPackage {
   packageId: string;
   orderId: string;
   orderCode: string;
+  packageNumber: number;
+  totalPackages: number;
   companyId: string;
   companyName: string;
   trackingNumber: string | null;
@@ -213,6 +215,8 @@ export async function GET(request: Request) {
         packageId: pkg.id,
         orderId: pkg.order_id,
         orderCode: order.order_code || `#${pkg.order_id.slice(0, 8)}`,
+        packageNumber: pkg.package_number ?? 1,
+        totalPackages: pkg.total_packages ?? 1,
         companyId: pkg.company_id,
         companyName: pkg.company?.name || "Vendedor",
         trackingNumber: pkg.tracking_number,
@@ -410,6 +414,203 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "mark_shipped") {
+      const shipments: Array<{
+        courier: string;
+        trackingNumber: string;
+        trackingUrl?: string | null;
+        carrierPhone?: string | null;
+        estimatedDelivery: string;
+        items: Array<{
+          id?: string;
+          productId?: string;
+          quantity: number;
+        }>;
+      }> = body.shipments;
+
+      if (shipments && Array.isArray(shipments) && shipments.length > 1) {
+        const existingItems = await prisma.orderItem.findMany({
+          where: { package_id: packageId },
+          include: { product: true },
+        });
+
+        const totalPackages = shipments.length;
+
+        await prisma.$transaction(async (tx) => {
+          // Bulto 1: Actualiza el paquete original
+          const s1 = shipments[0];
+          const estDate1 = new Date(s1.estimatedDelivery);
+
+          let s1Subtotal = 0;
+          let s1Commission = 0;
+
+          await tx.orderItem.deleteMany({
+            where: { package_id: packageId },
+          });
+
+          for (const itemInput of s1.items) {
+            const orig = existingItems.find(
+              (i) =>
+                i.id === itemInput.id ||
+                i.product_id === itemInput.productId ||
+                i.product_id === itemInput.id,
+            );
+            if (orig && itemInput.quantity > 0) {
+              const uPrice = Number(orig.unit_price);
+              const qty = Number(itemInput.quantity);
+              const itemSub = uPrice * qty;
+              const commissionRate =
+                pkg.commission_rate !== null &&
+                pkg.commission_rate !== undefined
+                  ? Number(pkg.commission_rate)
+                  : 0.1;
+              const itemCom = itemSub * commissionRate;
+
+              s1Subtotal += itemSub;
+              s1Commission += itemCom;
+
+              await tx.orderItem.create({
+                data: {
+                  package_id: packageId,
+                  product_id: orig.product_id,
+                  quantity: qty,
+                  unit_price: uPrice,
+                  subtotal: itemSub,
+                  commission: itemCom,
+                  status: "shipped",
+                  tracking_number: s1.trackingNumber.trim(),
+                },
+              });
+            }
+          }
+
+          const s1Net = Math.max(0, s1Subtotal - s1Commission);
+
+          await tx.orderPackage.update({
+            where: { id: packageId },
+            data: {
+              package_number: 1,
+              total_packages: totalPackages,
+              status: "shipped",
+              courier: s1.courier,
+              tracking_number: s1.trackingNumber.trim(),
+              tracking_url: s1.trackingUrl || null,
+              carrier_phone: s1.carrierPhone || null,
+              estimated_delivery: estDate1,
+              subtotal: s1Subtotal,
+              commission_total: s1Commission,
+              net_earnings: s1Net,
+              updated_at: new Date(),
+            },
+          });
+
+          // Bultos 2..N: Crear nuevos paquetes vinculados a la misma orden y tienda
+          for (let i = 1; i < shipments.length; i++) {
+            const si = shipments[i];
+            const estDateI = new Date(si.estimatedDelivery);
+
+            let siSubtotal = 0;
+            let siCommission = 0;
+
+            const newPkg = await tx.orderPackage.create({
+              data: {
+                order_id: pkg.order_id,
+                company_id: pkg.company_id,
+                package_number: i + 1,
+                total_packages: totalPackages,
+                status: "shipped",
+                delivery_type: pkg.delivery_type,
+                destination_address: pkg.destination_address,
+                courier: si.courier,
+                tracking_number: si.trackingNumber.trim(),
+                tracking_url: si.trackingUrl || null,
+                carrier_phone: si.carrierPhone || null,
+                estimated_delivery: estDateI,
+                commission_rate: pkg.commission_rate,
+                subtotal: 0,
+                commission_total: 0,
+                net_earnings: 0,
+              },
+            });
+
+            for (const itemInput of si.items) {
+              const orig = existingItems.find(
+                (item) =>
+                  item.id === itemInput.id ||
+                  item.product_id === itemInput.productId ||
+                  item.product_id === itemInput.id,
+              );
+              if (orig && itemInput.quantity > 0) {
+                const uPrice = Number(orig.unit_price);
+                const qty = Number(itemInput.quantity);
+                const itemSub = uPrice * qty;
+                const commissionRate =
+                  pkg.commission_rate !== null &&
+                  pkg.commission_rate !== undefined
+                    ? Number(pkg.commission_rate)
+                    : 0.1;
+                const itemCom = itemSub * commissionRate;
+
+                siSubtotal += itemSub;
+                siCommission += itemCom;
+
+                await tx.orderItem.create({
+                  data: {
+                    package_id: newPkg.id,
+                    product_id: orig.product_id,
+                    quantity: qty,
+                    unit_price: uPrice,
+                    subtotal: itemSub,
+                    commission: itemCom,
+                    status: "shipped",
+                    tracking_number: si.trackingNumber.trim(),
+                  },
+                });
+              }
+            }
+
+            const siNet = Math.max(0, siSubtotal - siCommission);
+            await tx.orderPackage.update({
+              where: { id: newPkg.id },
+              data: {
+                subtotal: siSubtotal,
+                commission_total: siCommission,
+                net_earnings: siNet,
+              },
+            });
+          }
+
+          // Actualizar estado de la orden global si todos los paquetes están despachados
+          const remainingNonShipped = await tx.orderPackage.count({
+            where: {
+              order_id: pkg.order_id,
+              status: { notIn: ["shipped", "delivered", "completed"] },
+            },
+          });
+          if (remainingNonShipped === 0) {
+            await tx.order.update({
+              where: { id: pkg.order_id },
+              data: { status: "shipped", updated_at: new Date() },
+            });
+          }
+        });
+
+        sendDispatchNotification(
+          packageId,
+          shipments[0].courier,
+          shipments[0].trackingNumber.trim(),
+          shipments[0].trackingUrl || null,
+          new Date(shipments[0].estimatedDelivery),
+        ).catch((err) =>
+          console.error(
+            "[Seller Orders] Error enviando notificación de despacho fraccionado:",
+            err,
+          ),
+        );
+
+        return NextResponse.json({ success: true, totalPackages });
+      }
+
+      // Despacho estándar de 1 bulto
       if (!carrierName) {
         return NextResponse.json(
           { error: "La empresa de transporte es requerida" },
@@ -434,6 +635,8 @@ export async function PATCH(req: Request) {
       await prisma.orderPackage.update({
         where: { id: packageId },
         data: {
+          package_number: 1,
+          total_packages: 1,
           status: "shipped",
           courier: carrierName,
           tracking_number: trackingNumber.trim(),
@@ -448,6 +651,19 @@ export async function PATCH(req: Request) {
         where: { package_id: packageId },
         data: { status: "shipped", updated_at: new Date() },
       });
+
+      const remainingNonShipped = await prisma.orderPackage.count({
+        where: {
+          order_id: pkg.order_id,
+          status: { notIn: ["shipped", "delivered", "completed"] },
+        },
+      });
+      if (remainingNonShipped === 0) {
+        await prisma.order.update({
+          where: { id: pkg.order_id },
+          data: { status: "shipped", updated_at: new Date() },
+        });
+      }
 
       // Notificar al comprador que su pedido fue despachado
       sendDispatchNotification(
