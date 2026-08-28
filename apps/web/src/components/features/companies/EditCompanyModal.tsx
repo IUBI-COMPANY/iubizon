@@ -1,30 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  AlertTriangle,
-  Building2,
-  Camera,
-  CheckCircle2,
-  ExternalLink,
-  FileText,
-  Loader2,
-  Lock,
-  Trash2,
-  Upload,
-  X,
-} from "lucide-react";
-import { useCompany } from "@/context/CompanyContext";
-import { useToast } from "@/context/ToastContext";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { FichaRucUploader } from "@/components/ui/FichaRucUploader";
-import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
+import {useRouter} from "next/navigation";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {AlertTriangle, Building2, Camera, Loader2, Lock, Trash2, X,} from "lucide-react";
+import {useCompany} from "@/context/CompanyContext";
+import {useToast} from "@/context/ToastContext";
+import {Button} from "@/components/ui/Button";
+import {Input} from "@/components/ui/Input";
+import {FichaRucUploader} from "@/components/ui/FichaRucUploader";
+import type {ExtractedCompanyData} from "@/lib/services/documentExtractor";
 
 const editCompanySchema = z.object({
   name: z
@@ -267,15 +255,26 @@ export const EditCompanyModal = ({
       }
 
       const payload = {
-        name: values.name.trim(),
-        legal_name: values.legal_name?.trim() || null,
+        name: typeof values.name === "string" ? values.name.trim() : "",
+        legal_name:
+          typeof values.legal_name === "string"
+            ? values.legal_name.trim() || null
+            : null,
         tax_id: finalTaxId,
         tax_id_document_url: values.tax_id_document_url || null,
         logo_url: values.logo_url || null,
-        phone: values.phone.trim(),
-        email: values.email.trim(),
-        location: values.location.trim(),
-        description: values.description ? values.description.trim() : null,
+        phone:
+          typeof values.phone === "string" ? values.phone.trim() || null : null,
+        email:
+          typeof values.email === "string" ? values.email.trim() || null : null,
+        location:
+          typeof values.location === "string"
+            ? values.location.trim() || null
+            : null,
+        description:
+          typeof values.description === "string"
+            ? values.description.trim() || null
+            : null,
       };
 
       const res = await fetch(`/api/companies/${freshCompany.id}`, {
