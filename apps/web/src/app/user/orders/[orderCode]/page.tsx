@@ -26,6 +26,7 @@ import Skeleton from "react-loading-skeleton";
 import {Navbar} from "@/components/features/layout/Navbar";
 import {Footer} from "@/components/features/layout/Footer";
 import {Button} from "@/components/ui/Button";
+import {Badge} from "@/components/ui/Badge";
 import {ConfirmModal} from "@/components/ui/ConfirmModal";
 import {WarrantyModal} from "@/components/features/orders/WarrantyModal";
 import {RefundStatus} from "@/components/features/orders/RefundStatus";
@@ -433,7 +434,7 @@ export default function OrderDetailPage({ params }: PageProps) {
 
               return (
                 <div
-                  key={pkg.trackingNumber || `pkg_${idx}`}
+                  key={pkg.packageId || pkg.trackingNumber || `pkg_${idx}`}
                   className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-5"
                 >
                   {/* 1. Cabecera del Bulto / Paquete (Estilo eBay) */}
@@ -454,7 +455,7 @@ export default function OrderDetailPage({ params }: PageProps) {
                         )}
                       </div>
 
-                      {/* Subtítulo de Estado estilo eBay */}
+                      {/* Subtítulo de Estado */}
                       <p className="text-xs mt-1">
                         {isPkgDelivered ? (
                           <span className="text-emerald-700 font-bold">
@@ -478,28 +479,31 @@ export default function OrderDetailPage({ params }: PageProps) {
                       </p>
                     </div>
 
-                    {/* Botón de Confirmación de Recepción por Bulto */}
-                    {isPkgShipped && !isPkgDelivered && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={isConfirming}
-                        onClick={() => setPackageToConfirm(pkg)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
-                      >
-                        {isConfirming ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Confirmando...</span>
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Confirmar que lo recibí</span>
-                          </>
-                        )}
-                      </Button>
-                    )}
+                    {/* Badge de Estado del Bulto */}
+                    <div>
+                      {isPkgDelivered ? (
+                        <Badge
+                          variant="success"
+                          className="font-bold text-xs px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        >
+                          Entregado
+                        </Badge>
+                      ) : isPkgShipped ? (
+                        <Badge
+                          variant="pro"
+                          className="font-bold text-xs px-3 py-1 shadow-xs"
+                        >
+                          En camino
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="warning"
+                          className="font-bold text-xs px-3 py-1"
+                        >
+                          En preparación
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {/* 2. Ruta y Progreso (Stepper horizontal estilo eBay) */}
@@ -516,9 +520,11 @@ export default function OrderDetailPage({ params }: PageProps) {
                         <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
                           Detalles de seguimiento
                         </span>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className="text-slate-600 font-medium">
-                            {pkg.courier || "Transporte"}:
+                            {pkg.courier?.toLowerCase().includes("propia")
+                              ? "Modalidad:"
+                              : `${pkg.courier || "Transporte"}:`}
                           </span>
                           <span className="font-mono font-bold text-[#112237] bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs select-all">
                             {pkg.trackingNumber}
@@ -640,7 +646,7 @@ export default function OrderDetailPage({ params }: PageProps) {
                       {isPkgDelivered
                         ? "Paquete recibido a entera satisfacción."
                         : isPkgShipped
-                          ? "Presiona el botón cuando recibas el paquete en tu domicilio."
+                          ? "¿Ya recibiste este paquete? Confirma la recepción para activar tu garantía de 7 días."
                           : "Tu paquete será despachado por el vendedor a la brevedad."}
                     </span>
 
@@ -653,7 +659,7 @@ export default function OrderDetailPage({ params }: PageProps) {
                           className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0 cursor-pointer"
                         >
                           <ShieldCheck className="w-4 h-4" />
-                          <span>Garantía & Cobertura</span>
+                          <span>Garantía de 7 días</span>
                         </Button>
                       )}
 
@@ -663,14 +669,19 @@ export default function OrderDetailPage({ params }: PageProps) {
                             size="sm"
                             onClick={() => setPackageToConfirm(pkg)}
                             disabled={isConfirming}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0 cursor-pointer"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
                           >
                             {isConfirming ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                <span>Confirmando...</span>
+                              </>
                             ) : (
-                              <CheckCircle className="w-4 h-4 mr-1.5" />
+                              <>
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                <span>Confirmar Recepción</span>
+                              </>
                             )}
-                            Confirmar Recepción
                           </Button>
                         )}
                     </div>
