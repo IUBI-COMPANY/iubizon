@@ -485,7 +485,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                       href={pkg.trackingUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 bg-[#f25c05] hover:bg-[#d94d04] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#f25c05] hover:text-[#d94d04] hover:underline transition-colors shrink-0 cursor-pointer"
                     >
                       <span>Rastrear en Agencia</span>
                       <ExternalLink className="w-3.5 h-3.5" />

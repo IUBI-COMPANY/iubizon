@@ -84,8 +84,11 @@ export function ConfirmModal({
               {title}
             </DialogTitle>
           </div>
-          <DialogDescription className="pt-2 text-xs text-[#64748b] leading-relaxed">
-            {description}
+          <DialogDescription
+            asChild
+            className="pt-2 text-xs text-[#64748b] leading-relaxed"
+          >
+            <div>{description}</div>
           </DialogDescription>
         </DialogHeader>
 
