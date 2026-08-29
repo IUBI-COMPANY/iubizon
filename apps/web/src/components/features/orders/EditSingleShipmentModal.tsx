@@ -29,6 +29,7 @@ import {
   formatMovilidadPropiaTracking,
   formatDateForDatetimeInput,
 } from "@/lib/utils/tracking";
+import { notifyOrderSync } from "@/hooks/useRealtimeOrders";
 
 export interface EditSingleShipmentData {
   packageId: string;
@@ -74,15 +75,23 @@ export function EditSingleShipmentModal({
   const [estimatedDelivery, setEstimatedDelivery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isInitializedRef = React.useRef(false);
 
   useEffect(() => {
-    if (shipment && isOpen) {
+    if (!isOpen) {
+      isInitializedRef.current = false;
+      setError(null);
+      return;
+    }
+
+    if (shipment && isOpen && !isInitializedRef.current) {
+      isInitializedRef.current = true;
       const isPropia =
         isOwnMobilityCourier(shipment.courier) ||
         isOwnMobilityCourier(shipment.trackingNumber);
 
       setIsOwnTransport(isPropia);
-      setCourier(isPropia ? "Movilidad Propia" : shipment.courier || "Shalom");
+      setCourier(isPropia ? "Movilidad Propia" : shipment.courier || "");
 
       const { driverName: parsedDriver, vehiclePlate: parsedPlate } =
         parseDriverAndPlate(shipment.trackingNumber);
@@ -171,6 +180,7 @@ export function EditSingleShipmentModal({
         throw new Error(data.error || "Error al actualizar la guía de envío");
       }
 
+      notifyOrderSync();
       onSuccess();
       onClose();
     } catch (err) {
@@ -421,10 +431,10 @@ export function EditSingleShipmentModal({
 
                   <div className="space-y-1">
                     <Label className="text-[11px] font-bold text-[#112237]">
-                      Tracking ID / Número de Guía *
+                      Número de Guía / Tracking Courier *
                     </Label>
                     <Input
-                      placeholder="Ej: SHA-123"
+                      placeholder="Ej: 74829104, SHA-123"
                       value={trackingNumber}
                       onChange={(e) => setTrackingNumber(e.target.value)}
                       className="text-xs font-mono font-bold h-9 bg-white"

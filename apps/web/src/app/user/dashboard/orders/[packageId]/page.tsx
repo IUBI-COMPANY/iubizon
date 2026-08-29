@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/context/CompanyContext";
+import { useRealtimeOrders } from "@/hooks/useRealtimeOrders";
 import { Navbar } from "@/components/features/layout/Navbar";
 import { Footer } from "@/components/features/layout/Footer";
 import { Button } from "@/components/ui/Button";
@@ -93,6 +95,7 @@ function formatFullDate(isoString: string) {
 
 function SellerOrderDetailContent({ packageId }: { packageId: string }) {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeCompany, isLoadingCompanies } = useCompany();
   const router = useRouter();
 
   const [order, setOrder] = useState<SellerOrder | null>(null);
@@ -179,11 +182,16 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
     }
   }, [user, packageId]);
 
+  useRealtimeOrders({
+    companyId: activeCompany?.id,
+    onUpdate: fetchPackageDetail,
+  });
+
   useEffect(() => {
-    if (user) {
+    if (user && !isLoadingCompanies) {
       fetchPackageDetail();
     }
-  }, [user, fetchPackageDetail]);
+  }, [user, isLoadingCompanies, activeCompany?.id, fetchPackageDetail]);
 
   if (authLoading || (loading && !isRefreshing)) {
     return (

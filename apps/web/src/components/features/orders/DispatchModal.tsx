@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,7 @@ import {
   formatDateForDatetimeInput,
   formatMovilidadPropiaTracking,
 } from "@/lib/utils/tracking";
+import { notifyOrderSync } from "@/hooks/useRealtimeOrders";
 
 export interface DispatchItem {
   id: string;
@@ -95,11 +96,20 @@ export function DispatchModal({
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shipments, setShipments] = useState<BultoShipmentState[]>([]);
+  const isInitializedRef = useRef(false);
 
   const totalUnits = items.reduce((acc, i) => acc + (i.quantity || 1), 0);
 
   useEffect(() => {
-    if (isOpen && items.length > 0) {
+    if (!isOpen) {
+      isInitializedRef.current = false;
+      setError(null);
+      return;
+    }
+
+    if (isOpen && items.length > 0 && !isInitializedRef.current) {
+      isInitializedRef.current = true;
+
       if (initialShipments && initialShipments.length > 0) {
         const mapped: BultoShipmentState[] = initialShipments.map((sh, idx) => {
           const isPropia = isOwnMobilityCourier(sh.courier);
@@ -124,7 +134,7 @@ export function DispatchModal({
           return {
             id: `bulto-${idx + 1}`,
             isOwnTransport: isPropia,
-            courier: isPropia ? "Movilidad Propia" : sh.courier || "Shalom",
+            courier: isPropia ? "Movilidad Propia" : sh.courier || "",
             trackingNumber: sh.trackingNumber || "",
             driverName: "",
             vehiclePlate: "",
@@ -151,7 +161,7 @@ export function DispatchModal({
             isOwnTransport: isPropia,
             courier: isPropia
               ? "Movilidad Propia"
-              : currentCarrierName || "Shalom",
+              : currentCarrierName || "",
             trackingNumber: currentTrackingNumber || "",
             driverName: "",
             vehiclePlate: "",
@@ -393,6 +403,7 @@ export function DispatchModal({
         );
       }
 
+      notifyOrderSync();
       onSuccess();
       onClose();
     } catch (err) {
@@ -923,10 +934,10 @@ export function DispatchModal({
 
                         <div className="space-y-1">
                           <Label className="text-[11px] font-bold text-[#112237]">
-                            Tracking ID / Número de Guía *
+                            Número de Guía / Tracking Courier *
                           </Label>
                           <Input
-                            placeholder="Ej: SHA-9842104"
+                            placeholder="Ej: 74829104, SHA-9842104"
                             value={sh.trackingNumber}
                             onChange={(e) =>
                               handleUpdateShipmentField(

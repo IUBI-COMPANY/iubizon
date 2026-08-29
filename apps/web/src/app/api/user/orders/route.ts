@@ -246,10 +246,10 @@ export async function GET(req: Request) {
               identityNumber: order.invoice?.number || null,
             }
           : null,
-      packages: (order.packages || []).map((pkg) => ({
+      packages: (order.packages || []).map((pkg, pIdx) => ({
         packageId: pkg.id,
-        packageNumber: pkg.package_number ?? 1,
-        totalPackages: pkg.total_packages ?? order.packages.length,
+        packageNumber: pIdx + 1,
+        totalPackages: order.packages.length,
         companyName: pkg.company?.name || "Vendedor",
         trackingNumber: pkg.tracking_number,
         courier: pkg.courier,

@@ -189,7 +189,7 @@ export async function createFullOrder(params: {
             }
           : undefined,
       packages: {
-        create: params.packages.map((pkg) => {
+        create: params.packages.map((pkg, idx) => {
           const comp = companyMap.get(pkg.companyId);
           const effectiveConfig = resolveCompanyCommissionConfig(
             comp,
@@ -203,6 +203,8 @@ export async function createFullOrder(params: {
 
           return {
             company_id: pkg.companyId,
+            package_number: idx + 1,
+            total_packages: params.packages.length,
             status: params.initialStatus,
             delivery_type: pkg.deliveryType || null,
             destination_address: pkg.destinationAddress,

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { getCommissionConfig } from "@/lib/utils/commission";
 import { sendDispatchNotification } from "@/lib/email";
 import { formatTrackingId } from "@/lib/utils/tracking";
@@ -177,7 +178,12 @@ export async function getSellerOrders(companyId: string): Promise<{
       },
       order: {
         select: {
+          id: true,
           order_code: true,
+          packages: {
+            select: { id: true },
+            orderBy: [{ created_at: "asc" }, { id: "asc" }],
+          },
           buyer: { select: { name: true, email: true, phone: true } },
           shipping: {
             select: {
@@ -257,14 +263,21 @@ export async function getSellerOrders(companyId: string): Promise<{
 
     const pkgCommissionRate = rawRate > 1 ? rawRate / 100 : rawRate;
 
-    const pkgNum = pkg.package_number ?? 1;
+    const allOrderPkgs: Array<{ id: string }> = order.packages || [];
+    const globalIndex = allOrderPkgs.findIndex((p) => p.id === pkg.id);
+    const pkgNum =
+      globalIndex >= 0 ? globalIndex + 1 : (pkg.package_number ?? 1);
+    const totalPkgs =
+      allOrderPkgs.length > 0
+        ? allOrderPkgs.length
+        : (pkg.total_packages ?? 1);
     const orderCode = order.order_code || `#${pkg.order_id.slice(0, 8)}`;
     const trackingId = formatTrackingId(orderCode, pkgNum);
 
     const shipment: SellerOrderShipment = {
       packageId: pkg.id,
       packageNumber: pkgNum,
-      totalPackages: pkg.total_packages ?? 1,
+      totalPackages: totalPkgs,
       trackingId,
       companyId: pkg.company_id,
       companyName: pkg.company?.name || "Vendedor",
@@ -272,7 +285,7 @@ export async function getSellerOrders(companyId: string): Promise<{
       companyTaxId: pkg.company?.tax_id || null,
       companyPhone: pkg.company?.phone || null,
       companyLocation: pkg.company?.location || null,
-      trackingNumber: pkg.tracking_number || trackingId,
+      trackingNumber: pkg.tracking_number || null,
       courier: pkg.courier,
       trackingUrl: pkg.tracking_url,
       carrierPhone: pkg.carrier_phone,
@@ -478,6 +491,35 @@ export async function updateSellerShipment(
 }
 
 /**
+ * Re-secuencia todos los paquetes de una orden para garantizar unicidad global,
+ * orden cronológico estricto y total exacto de bultos (1..N).
+ */
+export async function resequenceOrderPackages(
+  orderId: string,
+  txClient: Prisma.TransactionClient | typeof prisma = prisma,
+) {
+  const allOrderPackages = await txClient.orderPackage.findMany({
+    where: { order_id: orderId },
+    orderBy: [{ created_at: "asc" }, { id: "asc" }],
+  });
+
+  const total = allOrderPackages.length;
+  for (let idx = 0; idx < allOrderPackages.length; idx++) {
+    const p = allOrderPackages[idx];
+    const newPkgNum = idx + 1;
+    if (p.package_number !== newPkgNum || p.total_packages !== total) {
+      await txClient.orderPackage.update({
+        where: { id: p.id },
+        data: {
+          package_number: newPkgNum,
+          total_packages: total,
+        },
+      });
+    }
+  }
+}
+
+/**
  * Despacha uno o múltiples bultos de una orden.
  */
 export async function markSellerOrdersShipped(
@@ -676,6 +718,8 @@ export async function markSellerOrdersShipped(
         });
       }
 
+      await resequenceOrderPackages(pkg.order_id, tx);
+
       const remainingNonShipped = await tx.orderPackage.count({
         where: {
           order_id: pkg.order_id,
@@ -707,10 +751,13 @@ export async function markSellerOrdersShipped(
   }
 
   // Despacho de bulto único
-  if (!payload.carrierName || !String(payload.carrierName).trim()) {
+  const carrierName = payload.carrierName ? String(payload.carrierName).trim() : "";
+  const trackingNumber = payload.trackingNumber ? String(payload.trackingNumber).trim() : "";
+
+  if (!carrierName) {
     throw new Error("La empresa de transporte es requerida");
   }
-  if (!payload.trackingNumber || !String(payload.trackingNumber).trim()) {
+  if (!trackingNumber) {
     throw new Error("El Código de Tracking / Guía es requerido");
   }
   if (!payload.estimatedDelivery) {
@@ -719,43 +766,45 @@ export async function markSellerOrdersShipped(
 
   const estDeliveryDate = new Date(payload.estimatedDelivery);
 
-  await prisma.orderPackage.update({
-    where: { id: packageId },
-    data: {
-      package_number: 1,
-      total_packages: 1,
-      status: "shipped",
-      courier: payload.carrierName.trim(),
-      tracking_number: payload.trackingNumber.trim(),
-      tracking_url: payload.trackingUrl?.trim() || null,
-      carrier_phone: payload.carrierPhone?.trim() || null,
-      estimated_delivery: estDeliveryDate,
-      updated_at: new Date(),
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.orderPackage.update({
+      where: { id: packageId },
+      data: {
+        status: "shipped",
+        courier: carrierName,
+        tracking_number: trackingNumber,
+        tracking_url: payload.trackingUrl?.trim() || null,
+        carrier_phone: payload.carrierPhone?.trim() || null,
+        estimated_delivery: estDeliveryDate,
+        updated_at: new Date(),
+      },
+    });
 
-  await prisma.orderItem.updateMany({
-    where: { package_id: packageId },
-    data: { status: "shipped", updated_at: new Date() },
-  });
-
-  const remainingNonShipped = await prisma.orderPackage.count({
-    where: {
-      order_id: pkg.order_id,
-      status: { notIn: ["shipped", "delivered", "completed"] },
-    },
-  });
-  if (remainingNonShipped === 0) {
-    await prisma.order.update({
-      where: { id: pkg.order_id },
+    await tx.orderItem.updateMany({
+      where: { package_id: packageId },
       data: { status: "shipped", updated_at: new Date() },
     });
-  }
+
+    await resequenceOrderPackages(pkg.order_id, tx);
+
+    const remainingNonShipped = await tx.orderPackage.count({
+      where: {
+        order_id: pkg.order_id,
+        status: { notIn: ["shipped", "delivered", "completed"] },
+      },
+    });
+    if (remainingNonShipped === 0) {
+      await tx.order.update({
+        where: { id: pkg.order_id },
+        data: { status: "shipped", updated_at: new Date() },
+      });
+    }
+  });
 
   sendDispatchNotification(
     packageId,
-    payload.carrierName.trim(),
-    payload.trackingNumber.trim(),
+    carrierName,
+    trackingNumber,
     payload.trackingUrl?.trim() || null,
     estDeliveryDate,
   ).catch((err) =>
