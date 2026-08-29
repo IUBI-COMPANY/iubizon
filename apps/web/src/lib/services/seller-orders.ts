@@ -357,7 +357,15 @@ export async function getSellerOrders(companyId: string): Promise<{
 
     for (const item of shipment.items) {
       sellerOrd.totalItems += item.quantity;
-      sellerOrd.items.push(item);
+      const existing = sellerOrd.items.find(
+        (i) => i.productId === item.productId,
+      );
+      if (existing) {
+        existing.quantity += item.quantity;
+        existing.subtotal += item.subtotal;
+      } else {
+        sellerOrd.items.push({ ...item });
+      }
     }
   }
 
@@ -413,6 +421,10 @@ export async function updateSellerShipment(
 
   if (!pkg) {
     throw new Error("Guía de despacho no encontrada o no pertenece a tu empresa");
+  }
+
+  if (pkg.status === "delivered" || pkg.status === "completed") {
+    throw new Error("No se puede editar una guía de despacho que ya ha sido entregada");
   }
 
   if (!payload.courier || !String(payload.courier).trim()) {

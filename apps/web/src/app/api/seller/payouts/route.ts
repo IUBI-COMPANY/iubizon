@@ -6,7 +6,10 @@ import { getProtectionDays } from "@/lib/services/platformSettings";
 
 export interface SellerPayoutItem {
   id: string;
+  orderId?: string | null;
+  orderCode?: string | null;
   packageId: string;
+  packagesCount?: number;
   subtotal: number;
   commission: number;
   netAmount: number;
@@ -18,7 +21,6 @@ export interface SellerPayoutItem {
   createdAt: string;
   availableAt?: string | null;
   trackingNumber?: string | null;
-  orderCode?: string | null;
 }
 
 export async function GET() {
@@ -72,7 +74,8 @@ export async function GET() {
             tracking_number: true,
             updated_at: true,
             created_at: true,
-            order: { select: { order_code: true } },
+            order_id: true,
+            order: { select: { id: true, order_code: true } },
           },
         },
       },
@@ -81,24 +84,22 @@ export async function GET() {
 
     const protectionDays = await getProtectionDays();
 
-    let inHoldTotal = 0;
-    let pendingTotal = 0;
-    let paidTotal = 0;
-    let accumulatedTotal = 0;
+    // Consolidar pagos por orden de compra
+    const orderPayoutsMap = new Map<string, SellerPayoutItem>();
 
-    const payoutsList: SellerPayoutItem[] = rawPayouts.map((p) => {
+    for (const p of rawPayouts) {
       const net = Number(p.net_amount || 0);
       const sub = Number(p.subtotal || 0);
       const comm = Number(p.commission || 0);
 
-      if (p.status === "in_hold") {
-        inHoldTotal += net;
-      } else if (p.status === "pending" || p.status === "processing") {
-        pendingTotal += net;
-      } else if (p.status === "paid") {
-        paidTotal += net;
-      }
-      accumulatedTotal += net;
+      const orderKey =
+        p.package?.order?.order_code ||
+        p.package?.order_id ||
+        p.package_id ||
+        p.id;
+      const orderCode =
+        p.package?.order?.order_code ||
+        (p.package?.order_id ? `#${p.package.order_id.slice(0, 8)}` : null);
 
       const deliveryDate = p.package?.updated_at
         ? new Date(p.package.updated_at)
@@ -110,25 +111,74 @@ export async function GET() {
         deliveryDate.getTime() + protectionDays * 24 * 60 * 60 * 1000,
       );
 
-      return {
-        id: p.id,
-        packageId: p.package_id,
-        subtotal: sub,
-        commission: comm,
-        netAmount: net,
-        status: p.status,
-        paidAt: p.paid_at ? p.paid_at.toISOString() : null,
-        paymentMethod: p.payment_method,
-        referenceCode: p.reference_code,
-        notes: p.notes,
-        createdAt: p.created_at
-          ? p.created_at.toISOString()
-          : new Date().toISOString(),
-        availableAt: availableDate.toISOString(),
-        trackingNumber: p.package?.tracking_number || null,
-        orderCode: p.package?.order?.order_code || null,
-      };
-    });
+      if (!orderPayoutsMap.has(orderKey)) {
+        orderPayoutsMap.set(orderKey, {
+          id: p.id,
+          orderId: p.package?.order_id || p.package?.order?.id || null,
+          orderCode,
+          packageId: p.package_id,
+          packagesCount: 1,
+          subtotal: sub,
+          commission: comm,
+          netAmount: net,
+          status: p.status,
+          paidAt: p.paid_at ? p.paid_at.toISOString() : null,
+          paymentMethod: p.payment_method,
+          referenceCode: p.reference_code,
+          notes: p.notes,
+          createdAt: p.created_at
+            ? p.created_at.toISOString()
+            : new Date().toISOString(),
+          availableAt: availableDate.toISOString(),
+          trackingNumber: p.package?.tracking_number || null,
+        });
+      } else {
+        const existing = orderPayoutsMap.get(orderKey)!;
+        existing.packagesCount = (existing.packagesCount || 1) + 1;
+        existing.subtotal += sub;
+        existing.commission += comm;
+        existing.netAmount += net;
+        existing.trackingNumber = null; // Múltiples bultos asociados a la orden
+
+        // Jerarquía de estados: in_hold > processing > pending > paid > refunded
+        if (p.status === "in_hold" || existing.status === "in_hold") {
+          existing.status = "in_hold";
+        } else if (
+          p.status === "processing" ||
+          existing.status === "processing"
+        ) {
+          existing.status = "processing";
+        } else if (p.status === "pending" || existing.status === "pending") {
+          existing.status = "pending";
+        }
+
+        // Tomar la fecha de liberación más tardía si hay varios bultos
+        if (existing.availableAt) {
+          const prevTime = new Date(existing.availableAt).getTime();
+          if (availableDate.getTime() > prevTime) {
+            existing.availableAt = availableDate.toISOString();
+          }
+        }
+      }
+    }
+
+    const payoutsList = Array.from(orderPayoutsMap.values());
+
+    let inHoldTotal = 0;
+    let pendingTotal = 0;
+    let paidTotal = 0;
+    let accumulatedTotal = 0;
+
+    for (const p of payoutsList) {
+      if (p.status === "in_hold") {
+        inHoldTotal += p.netAmount;
+      } else if (p.status === "pending" || p.status === "processing") {
+        pendingTotal += p.netAmount;
+      } else if (p.status === "paid") {
+        paidTotal += p.netAmount;
+      }
+      accumulatedTotal += p.netAmount;
+    }
 
     return NextResponse.json({
       payouts: payoutsList,

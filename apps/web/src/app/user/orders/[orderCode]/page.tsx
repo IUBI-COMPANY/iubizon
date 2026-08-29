@@ -27,11 +27,16 @@ import {Navbar} from "@/components/features/layout/Navbar";
 import {Footer} from "@/components/features/layout/Footer";
 import {Button} from "@/components/ui/Button";
 import {Badge} from "@/components/ui/Badge";
-import {ConfirmModal} from "@/components/ui/ConfirmModal";
-import {WarrantyModal} from "@/components/features/orders/WarrantyModal";
-import {RefundStatus} from "@/components/features/orders/RefundStatus";
-import {BuyerDeliveryTimeline} from "@/components/features/orders/BuyerDeliveryTimeline";
-import {useAuth} from "@/hooks/useAuth";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
+import { RefundStatus } from "@/components/features/orders/RefundStatus";
+import { BuyerDeliveryTimeline } from "@/components/features/orders/BuyerDeliveryTimeline";
+import {
+  PackageDetailModal,
+  PackageDetailData,
+} from "@/components/features/orders/PackageDetailModal";
+import { formatTrackingId } from "@/lib/utils/tracking";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PackageItem {
   id: string;
@@ -160,6 +165,8 @@ export default function OrderDetailPage({ params }: PageProps) {
   const [refundTrigger, setRefundTrigger] = useState(0);
   const [packageToConfirm, setPackageToConfirm] =
     useState<TrackingPackage | null>(null);
+  const [selectedPackageForDetail, setSelectedPackageForDetail] =
+    useState<PackageDetailData | null>(null);
 
   const handleCopyTracking = (tracking: string) => {
     navigator.clipboard.writeText(tracking);
@@ -432,51 +439,58 @@ export default function OrderDetailPage({ params }: PageProps) {
               const isConfirming =
                 confirmingPackageKey === (pkg.trackingNumber || pkg.packageId);
 
+              const pkgNumber = pkg.packageNumber || idx + 1;
+              const totalPkgs = pkg.totalPackages || session.packages.length;
+              const trackingId = formatTrackingId(session.orderCode, pkgNumber);
+
               return (
                 <div
                   key={pkg.packageId || pkg.trackingNumber || `pkg_${idx}`}
-                  className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-5"
+                  className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-4"
                 >
-                  {/* 1. Cabecera del Bulto / Paquete (Estilo eBay) */}
+                  {/* 1. Cabecera del Bulto / Paquete */}
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-extrabold text-[#112237]">
-                        <span>
-                          {pkg?.totalPackages && pkg.totalPackages > 1
-                            ? `Información de Envío (${pkg.packageNumber || idx + 1} de ${pkg.totalPackages})`
-                            : !isSinglePackage
-                              ? `Información de Envío (${idx + 1} de ${session.packages.length})`
-                              : "Información de Envío"}
-                        </span>
-                        {pkg?.companyName && (
-                          <span className="text-xs font-semibold text-slate-500">
-                            · {pkg.companyName}
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-full bg-[#112237] text-white flex items-center justify-center text-xs font-black shrink-0">
+                        {pkgNumber}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-extrabold text-[#112237]">
+                          <span>
+                            {totalPkgs > 1
+                              ? `Bulto ${pkgNumber} de ${totalPkgs}: ${pkg.courier || "Envío Registrado"}`
+                              : `Información de Envío: ${pkg.courier || "Envío Registrado"}`}
                           </span>
-                        )}
-                      </div>
+                          {pkg?.companyName && (
+                            <span className="text-xs font-semibold text-slate-500">
+                              · {pkg.companyName}
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Subtítulo de Estado */}
-                      <p className="text-xs mt-1">
-                        {isPkgDelivered ? (
-                          <span className="text-emerald-700 font-bold">
-                            Entregado{" "}
-                            {pkg.estimatedDelivery
-                              ? `el ${formatDate(pkg.estimatedDelivery)}`
-                              : "a satisfacción"}
-                          </span>
-                        ) : isPkgShipped ? (
-                          <span className="text-blue-700 font-bold">
-                            En camino
-                            {pkg.estimatedDelivery
-                              ? ` · Llegada estimada: ${formatDate(pkg.estimatedDelivery)}`
-                              : ""}
-                          </span>
-                        ) : (
-                          <span className="text-amber-700 font-semibold">
-                            En preparación por el vendedor
-                          </span>
-                        )}
-                      </p>
+                        {/* Subtítulo de Estado */}
+                        <p className="text-xs mt-0.5">
+                          {isPkgDelivered ? (
+                            <span className="text-emerald-700 font-bold">
+                              Entregado{" "}
+                              {pkg.estimatedDelivery
+                                ? `el ${formatDate(pkg.estimatedDelivery)}`
+                                : "a satisfacción"}
+                            </span>
+                          ) : isPkgShipped ? (
+                            <span className="text-blue-700 font-bold">
+                              En camino
+                              {pkg.estimatedDelivery
+                                ? ` · Llegada estimada: ${formatDate(pkg.estimatedDelivery)}`
+                                : ""}
+                            </span>
+                          ) : (
+                            <span className="text-amber-700 font-semibold">
+                              En preparación por el vendedor
+                            </span>
+                          )}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Badge de Estado del Bulto */}
@@ -506,157 +520,113 @@ export default function OrderDetailPage({ params }: PageProps) {
                     </div>
                   </div>
 
-                  {/* 2. Ruta y Progreso (Stepper horizontal estilo eBay) */}
-                  <BuyerDeliveryTimeline
-                    pkg={pkg}
-                    orderCreatedAt={session.createdAt}
-                    orderDeliveredAt={session.deliveredAt}
-                  />
+                  {/* 2. Timeline Stepper en el Card */}
+                  <div className="bg-[#f8fafc] rounded-2xl p-3.5 border border-slate-200/80">
+                    <BuyerDeliveryTimeline
+                      pkg={pkg}
+                      orderCreatedAt={session.createdAt}
+                      orderDeliveredAt={session.deliveredAt}
+                    />
+                  </div>
 
-                  {/* 3. Detalles de Seguimiento */}
-                  {pkg.trackingNumber ? (
-                    <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-                      <div>
-                        <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
-                          Detalles de seguimiento
-                        </span>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <span className="text-slate-600 font-medium">
-                            {pkg.courier?.toLowerCase().includes("propia")
-                              ? "Modalidad:"
-                              : `${pkg.courier || "Transporte"}:`}
-                          </span>
-                          <span className="font-mono font-bold text-[#112237] bg-white border border-slate-200 px-2 py-0.5 rounded-lg text-xs select-all">
-                            {pkg.trackingNumber}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleCopyTracking(pkg.trackingNumber!)
-                            }
-                            title="Copiar N° de Guía"
-                            className="p-1 text-slate-400 hover:text-[#f25c05] transition-colors rounded hover:bg-slate-200/60 cursor-pointer"
-                          >
-                            {copiedTracking === pkg.trackingNumber ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      {pkg.trackingUrl && (
-                        <a
-                          href={pkg.trackingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-bold text-[#f25c05] hover:text-[#d94d04] hover:underline transition-colors shrink-0 self-start sm:self-center cursor-pointer"
-                        >
-                          <span>Rastrear en Agencia</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-amber-50/80 rounded-2xl p-3.5 border border-amber-200/80 flex items-center gap-2.5 text-xs text-amber-800">
-                      <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>
-                        El vendedor está preparando este bulto para el despacho.
-                        Tan pronto sea enviado, verás aquí la guía de transporte.
-                      </span>
-                    </div>
-                  )}
-
-                  {/* 4. Lista de Productos de este Paquete */}
-                  <div className="bg-[#f8fafc]/60 rounded-2xl p-4 border border-[#e2e8f0] space-y-2.5">
-                    <div className="flex items-center justify-between pb-1">
-                      <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
-                        {pkg.items.length === 1
-                          ? "Producto en este paquete"
-                          : `Productos en este paquete (${pkg.items.length})`}
-                      </span>
-                      <span className="text-xs font-bold text-[#64748b]">
-                        Total Unidades:{" "}
-                        {pkg.items.reduce(
-                          (acc, i) => acc + (i.quantity || 1),
-                          0,
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="divide-y divide-[#e2e8f0]/80">
+                  {/* 3. Productos en este Bulto (Limpio, sin precios duplicados) */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
+                      {pkg.items.length === 1
+                        ? "Producto en este bulto:"
+                        : `Productos en este bulto (${pkg.items.length}):`}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
                       {pkg.items.map((item) => (
                         <div
                           key={item.id}
-                          className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                          className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#112237] flex items-center gap-2 shadow-2xs"
                         >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="relative w-12 h-12 bg-white rounded-xl border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
-                              {item.image ? (
-                                <Image
-                                  src={item.image}
-                                  alt={item.title}
-                                  fill
-                                  sizes="48px"
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              ) : (
-                                <Package className="w-5 h-5 text-[#cbd5e1]" />
-                              )}
+                          {item.image && (
+                            <div className="relative w-6 h-6 rounded-md overflow-hidden shrink-0 border border-slate-100">
+                              <Image
+                                src={item.image}
+                                alt={item.title}
+                                fill
+                                sizes="24px"
+                                className="object-cover"
+                                unoptimized
+                              />
                             </div>
-                            <div className="min-w-0">
-                              <Link
-                                href={`/products/${item.productId}`}
-                                className="font-bold text-xs text-[#112237] hover:text-[#f25c05] transition-colors line-clamp-1"
-                              >
-                                {item.title}
-                              </Link>
-                              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-[#64748b]">
-                                <span className="font-extrabold text-[#112237] bg-white border border-slate-200 px-1.5 py-0.2 rounded">
-                                  x{item.quantity || 1} un.
-                                </span>
-                                <span>·</span>
-                                <span>S/ {item.price.toFixed(2)} c/u</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="text-right shrink-0">
-                            <span className="text-xs font-black text-[#112237] block">
-                              S/{" "}
-                              {(item.price * (item.quantity || 1)).toFixed(2)}
-                            </span>
-                            <Link
-                              href={`/products/${item.productId}`}
-                              className="text-[10px] font-bold text-[#f25c05] hover:underline inline-block mt-0.5"
-                            >
-                              Ver producto ➔
-                            </Link>
-                          </div>
+                          )}
+                          <span className="line-clamp-1 max-w-[200px]">
+                            {item.title}
+                          </span>
+                          <span className="font-extrabold text-[#f25c05] bg-orange-50 px-1.5 py-0.5 rounded-md text-[11px]">
+                            x{item.quantity || 1} un.
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* 5. Barra Inferior de Acciones */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#f1f5f9]">
-                    <span className="text-[11px] text-[#64748b]">
-                      {isPkgDelivered
-                        ? "Paquete recibido a entera satisfacción."
-                        : isPkgShipped
-                          ? "¿Ya recibiste este paquete? Confirma la recepción para activar tu garantía de 7 días."
-                          : "Tu paquete será despachado por el vendedor a la brevedad."}
-                    </span>
+                  {/* 4. Barra Inferior con Tracking ID, Ver Detalle y Acciones */}
+                  <div className="pt-3 border-t border-[#f1f5f9] flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="font-mono font-bold text-[11px] text-[#f25c05] bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
+                        {trackingId}
+                      </span>
+                      {pkg.courier && (
+                        <span className="text-[11px] font-semibold text-[#64748b] truncate uppercase">
+                          · {pkg.courier}
+                        </span>
+                      )}
+                    </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setSelectedPackageForDetail({
+                            packageId: pkg.packageId,
+                            packageNumber: pkgNumber,
+                            totalPackages: totalPkgs,
+                            trackingId,
+                            orderCode: session.orderCode,
+                            companyName: pkg.companyName,
+                            buyerName:
+                              session.shippingName || user?.name || "Comprador",
+                            buyerPhone: session.shippingPhone,
+                            destinationAddress,
+                            destinationDistrict: session.shippingDistrict,
+                            destinationProvince: session.shippingProvince,
+                            destinationDepartment: session.shippingDepartment,
+                            status: pkg.status,
+                            courier: pkg.courier,
+                            trackingNumber: pkg.trackingNumber,
+                            trackingUrl: pkg.trackingUrl,
+                            estimatedDelivery: pkg.estimatedDelivery,
+                            deliveredAt: session.deliveredAt,
+                            createdAt: session.createdAt,
+                            items: pkg.items.map((it) => ({
+                              id: it.id,
+                              productId: it.productId,
+                              title: it.title,
+                              price: it.price,
+                              quantity: it.quantity,
+                              subtotal: it.subtotal,
+                              image: it.image,
+                            })),
+                          })
+                        }
+                        className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer"
+                      >
+                        Ver Detalle del Bulto
+                      </Button>
+
                       {isPkgDelivered && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setWarrantyModalData({ isOpen: true })}
-                          className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          className="border-[#f25c05]/30 hover:border-[#f25c05] bg-orange-50/50 hover:bg-orange-50 text-[#f25c05] text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1 shrink-0 cursor-pointer"
                         >
                           <ShieldCheck className="w-4 h-4" />
                           <span>Garantía de 7 días</span>
@@ -669,16 +639,16 @@ export default function OrderDetailPage({ params }: PageProps) {
                             size="sm"
                             onClick={() => setPackageToConfirm(pkg)}
                             disabled={isConfirming}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-4 py-1.5 rounded-xl shadow-xs shrink-0 cursor-pointer flex items-center gap-1.5"
                           >
                             {isConfirming ? (
                               <>
-                                <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
                                 <span>Confirmando...</span>
                               </>
                             ) : (
                               <>
-                                <CheckCircle className="w-4 h-4 mr-1" />
+                                <CheckCircle className="w-3.5 h-3.5 mr-1" />
                                 <span>Confirmar Recepción</span>
                               </>
                             )}
@@ -941,6 +911,14 @@ export default function OrderDetailPage({ params }: PageProps) {
               companyName: pkg.companyName || undefined,
             })),
           )}
+      />
+
+      {/* Modal de Detalle de Bulto y Seguimiento */}
+      <PackageDetailModal
+        isOpen={!!selectedPackageForDetail}
+        onClose={() => setSelectedPackageForDetail(null)}
+        pkg={selectedPackageForDetail}
+        isSeller={false}
       />
 
       <Footer />

@@ -31,6 +31,7 @@ interface SellerPayoutItem {
   id: string;
   trackingNumber: string | null;
   orderCode: string | null;
+  packagesCount?: number;
   subtotal: number;
   commission: number;
   netAmount: number;
@@ -502,17 +503,22 @@ function PayoutsContent() {
                   {/* Cabecera de la Retribución */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      {p.trackingNumber ? (
-                        <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                      <span className="text-xs font-black text-white bg-[#112237] px-3 py-1.5 rounded-xl tracking-wider flex items-center gap-1.5">
+                        <Receipt className="w-3.5 h-3.5 text-[#f25c05]" />
+                        <span>ORDEN #{p.orderCode?.replace(/^#/, "") || "VENTA"}</span>
+                      </span>
+
+                      {p.packagesCount && p.packagesCount > 1 ? (
+                        <span className="text-xs font-bold text-[#64748b] bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-xl flex items-center gap-1">
+                          <Truck className="w-3.5 h-3.5 text-[#f25c05]" />
+                          <span>{p.packagesCount} despachos</span>
+                        </span>
+                      ) : p.trackingNumber ? (
+                        <span className="text-xs font-extrabold text-[#f25c05] bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl flex items-center gap-1">
                           <Truck className="w-3.5 h-3.5" />
-                          <span>Tracking Id: {p.trackingNumber}</span>
+                          <span>{p.trackingNumber}</span>
                         </span>
-                      ) : (
-                        <span className="text-xs font-bold text-[#112237] bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                          <Receipt className="w-3.5 h-3.5 text-[#64748b]" />
-                          <span>Orden #{p.orderCode || "VENTA"}</span>
-                        </span>
-                      )}
+                      ) : null}
 
                       <div className="flex items-center gap-1 text-xs text-[#64748b]">
                         <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />

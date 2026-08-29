@@ -80,6 +80,7 @@ interface PackageDetailModalProps {
   onClose: () => void;
   pkg: PackageDetailData | null;
   onEditSuccess?: () => void;
+  isSeller?: boolean;
 }
 
 function formatDate(isoString: string | null | undefined) {
@@ -101,6 +102,7 @@ export function PackageDetailModal({
   onClose,
   pkg,
   onEditSuccess,
+  isSeller = true,
 }: PackageDetailModalProps) {
   const [copiedTracking, setCopiedTracking] = useState(false);
   const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
@@ -365,28 +367,30 @@ export function PackageDetailModal({
               Cerrar
             </Button>
 
-            <div className="flex items-center gap-2">
-              {!isDelivered && (
+            {isSeller && (
+              <div className="flex items-center gap-2">
+                {!isDelivered && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditShipmentOpen(true)}
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs px-3.5 py-2 rounded-xl cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-[#f25c05]" />
+                    <span>Editar Guía</span>
+                  </Button>
+                )}
+
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => setIsEditShipmentOpen(true)}
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs px-3.5 py-2 rounded-xl cursor-pointer flex items-center gap-1.5"
+                  onClick={() => setIsLabelModalOpen(true)}
+                  className="bg-[#112237] hover:bg-[#1e293b] text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  <Pencil className="w-3.5 h-3.5 text-[#f25c05]" />
-                  <span>Editar Guía</span>
+                  <Printer className="w-4 h-4 text-[#f25c05]" />
+                  <span>Imprimir Rótulo</span>
                 </Button>
-              )}
-
-              <Button
-                type="button"
-                onClick={() => setIsLabelModalOpen(true)}
-                className="bg-[#112237] hover:bg-[#1e293b] text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Printer className="w-4 h-4 text-[#f25c05]" />
-                <span>Imprimir Rótulo</span>
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

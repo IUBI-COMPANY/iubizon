@@ -51,8 +51,8 @@ export function BuyerDeliveryTimeline({
 
   return (
     <div className="py-2">
-      {/* Stepper horizontal estilo eBay */}
-      <div className="relative flex items-center justify-between">
+      {/* Stepper horizontal alineado al tope para simetría exacta */}
+      <div className="relative flex items-start justify-between">
         {/* Línea conectora 1 (Pagado -> En camino) */}
         <div
           className={`absolute left-[15%] right-[50%] top-3.5 h-1 -translate-y-1/2 transition-all rounded-full ${
@@ -72,11 +72,9 @@ export function BuyerDeliveryTimeline({
             <Check className="w-4 h-4 stroke-[3]" />
           </div>
           <span className="text-xs font-bold text-[#112237] mt-1.5">Pagado</span>
-          {paidDateText && (
-            <span className="text-[10px] text-slate-500 font-medium">
-              {paidDateText}
-            </span>
-          )}
+          <span className="text-[10px] text-slate-500 font-medium min-h-[15px]">
+            {paidDateText || "\u00A0"}
+          </span>
         </div>
 
         {/* Punto 2: Guía disponible / En camino */}
@@ -101,11 +99,11 @@ export function BuyerDeliveryTimeline({
           >
             En camino
           </span>
-          {estDeliveryText && isShipped && !isDelivered && (
-            <span className="text-[10px] text-[#f25c05] font-semibold">
-              Est. {estDeliveryText}
-            </span>
-          )}
+          <span className="text-[10px] text-[#f25c05] font-semibold min-h-[15px]">
+            {estDeliveryText && isShipped && !isDelivered
+              ? `Est. ${estDeliveryText}`
+              : "\u00A0"}
+          </span>
         </div>
 
         {/* Punto 3: Entregado */}
@@ -130,11 +128,9 @@ export function BuyerDeliveryTimeline({
           >
             Entregado
           </span>
-          {deliveredDateText && isDelivered && (
-            <span className="text-[10px] text-emerald-600 font-medium">
-              {deliveredDateText}
-            </span>
-          )}
+          <span className="text-[10px] text-emerald-600 font-medium min-h-[15px]">
+            {deliveredDateText && isDelivered ? deliveredDateText : "\u00A0"}
+          </span>
         </div>
       </div>
     </div>

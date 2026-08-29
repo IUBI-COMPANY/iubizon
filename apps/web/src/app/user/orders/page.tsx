@@ -26,6 +26,7 @@ interface PackageItem {
   productId: string;
   title: string;
   price: number;
+  quantity?: number;
   image: string | null;
   company: {
     id: string;
@@ -319,10 +320,25 @@ export default function UserOrdersPage() {
                 ) : (
                   <div className="space-y-4">
                     {filteredSessions.map((session) => {
-                      // Obtener todos los productos de la compra para la miniatura
-                      const allProducts = session.packages.flatMap(
-                        (p) => p.items,
-                      );
+                      // Obtener todos los productos únicos de la compra agrupados por producto
+                      const uniqueProductsMap = new Map<
+                        string,
+                        PackageItem & { totalQuantity: number }
+                      >();
+                      for (const pkg of session.packages) {
+                        for (const item of pkg.items) {
+                          const existing = uniqueProductsMap.get(item.productId);
+                          if (existing) {
+                            existing.totalQuantity += item.quantity || 1;
+                          } else {
+                            uniqueProductsMap.set(item.productId, {
+                              ...item,
+                              totalQuantity: item.quantity || 1,
+                            });
+                          }
+                        }
+                      }
+                      const allProducts = Array.from(uniqueProductsMap.values());
                       const previewProducts = allProducts.slice(0, 4);
                       const extraCount =
                         allProducts.length - previewProducts.length;
@@ -416,7 +432,10 @@ export default function UserOrdersPage() {
                                       {item.title}
                                     </p>
                                     <p className="text-[11px] font-extrabold text-[#f25c05]">
-                                      S/ {item.price.toFixed(2)}
+                                      S/ {item.price.toFixed(2)}{" "}
+                                      <span className="text-[#64748b] font-normal">
+                                        (x{item.totalQuantity})
+                                      </span>
                                     </p>
                                   </div>
                                 </div>

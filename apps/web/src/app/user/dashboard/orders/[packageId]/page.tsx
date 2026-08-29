@@ -507,7 +507,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0">
-                            {!isDelivered && (
+                            {!isPkgDelivered && (
                               <Button
                                 type="button"
                                 size="sm"
