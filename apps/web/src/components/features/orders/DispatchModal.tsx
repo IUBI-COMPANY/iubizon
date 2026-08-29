@@ -159,9 +159,7 @@ export function DispatchModal({
           {
             id: "bulto-1",
             isOwnTransport: isPropia,
-            courier: isPropia
-              ? "Movilidad Propia"
-              : currentCarrierName || "",
+            courier: isPropia ? "Movilidad Propia" : currentCarrierName || "",
             trackingNumber: currentTrackingNumber || "",
             driverName: "",
             vehiclePlate: "",

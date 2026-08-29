@@ -268,9 +268,7 @@ export async function getSellerOrders(companyId: string): Promise<{
     const pkgNum =
       globalIndex >= 0 ? globalIndex + 1 : (pkg.package_number ?? 1);
     const totalPkgs =
-      allOrderPkgs.length > 0
-        ? allOrderPkgs.length
-        : (pkg.total_packages ?? 1);
+      allOrderPkgs.length > 0 ? allOrderPkgs.length : (pkg.total_packages ?? 1);
     const orderCode = order.order_code || `#${pkg.order_id.slice(0, 8)}`;
     const trackingId = formatTrackingId(orderCode, pkgNum);
 
@@ -751,8 +749,12 @@ export async function markSellerOrdersShipped(
   }
 
   // Despacho de bulto único
-  const carrierName = payload.carrierName ? String(payload.carrierName).trim() : "";
-  const trackingNumber = payload.trackingNumber ? String(payload.trackingNumber).trim() : "";
+  const carrierName = payload.carrierName
+    ? String(payload.carrierName).trim()
+    : "";
+  const trackingNumber = payload.trackingNumber
+    ? String(payload.trackingNumber).trim()
+    : "";
 
   if (!carrierName) {
     throw new Error("La empresa de transporte es requerida");
