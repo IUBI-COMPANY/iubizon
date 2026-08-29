@@ -296,7 +296,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               </div>
               <p className="text-xs text-[#64748b] flex items-center gap-1.5 font-medium mt-1">
                 <Calendar className="w-3.5 h-3.5 text-[#f25c05]" />
-                <span>Venta realizada el {formatFullDate(order.createdAt)}</span>
+                <span>
+                  Venta realizada el {formatFullDate(order.createdAt)}
+                </span>
               </p>
             </div>
           </div>
@@ -432,7 +434,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                                 : "Guía de Envío"}
                             </span>
                             <span className="text-[11px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-md">
-                              {bultoUnits} {bultoUnits === 1 ? "unidad" : "unidades"}
+                              {bultoUnits}{" "}
+                              {bultoUnits === 1 ? "unidad" : "unidades"}
                             </span>
                           </div>
 
@@ -499,7 +502,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                         <div className="pt-2.5 border-t border-slate-200/60 flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="font-mono font-bold text-[11px] text-[#f25c05] bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
-                              {pkg.trackingId || `IBZ-${order.orderCode}-${String(pkg.packageNumber || idx + 1).padStart(2, "0")}`}
+                              {pkg.trackingId ||
+                                `IBZ-${order.orderCode}-${String(pkg.packageNumber || idx + 1).padStart(2, "0")}`}
                             </span>
                             <span className="text-[11px] text-[#64748b] truncate hidden sm:inline">
                               · {pkg.courier || "Transporte registrado"}
@@ -516,7 +520,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                                   setShipmentToEdit({
                                     packageId: pkg.packageId,
                                     packageNumber: pkg.packageNumber || idx + 1,
-                                    totalPackages: pkg.totalPackages || order.packages.length,
+                                    totalPackages:
+                                      pkg.totalPackages ||
+                                      order.packages.length,
                                     orderCode: order.orderCode,
                                     trackingId:
                                       pkg.trackingId ||
@@ -555,7 +561,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                                 setShippingLabelToPrint({
                                   orderCode: order.orderCode,
                                   packageNumber: pkg.packageNumber || idx + 1,
-                                  totalPackages: pkg.totalPackages || order.packages.length,
+                                  totalPackages:
+                                    pkg.totalPackages || order.packages.length,
                                   trackingId:
                                     pkg.trackingId ||
                                     formatTrackingId(
@@ -574,13 +581,18 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                                   companyLocation: order.companyLocation,
                                   buyerName: order.buyerName,
                                   buyerDocumentType: order.buyerDocumentType,
-                                  buyerDocumentNumber: order.buyerDocumentNumber,
+                                  buyerDocumentNumber:
+                                    order.buyerDocumentNumber,
                                   buyerPhone: order.buyerPhone,
                                   destinationAddress: order.destinationAddress,
-                                  destinationDistrict: order.destinationDistrict,
-                                  destinationProvince: order.destinationProvince,
-                                  destinationDepartment: order.destinationDepartment,
-                                  destinationReference: order.destinationReference,
+                                  destinationDistrict:
+                                    order.destinationDistrict,
+                                  destinationProvince:
+                                    order.destinationProvince,
+                                  destinationDepartment:
+                                    order.destinationDepartment,
+                                  destinationReference:
+                                    order.destinationReference,
                                   items: pkg.items.map((it) => ({
                                     id: it.id,
                                     title: it.title,
@@ -613,13 +625,18 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                                   companyLocation: order.companyLocation,
                                   buyerName: order.buyerName,
                                   buyerDocumentType: order.buyerDocumentType,
-                                  buyerDocumentNumber: order.buyerDocumentNumber,
+                                  buyerDocumentNumber:
+                                    order.buyerDocumentNumber,
                                   buyerPhone: order.buyerPhone,
                                   destinationAddress: order.destinationAddress,
-                                  destinationDistrict: order.destinationDistrict,
-                                  destinationProvince: order.destinationProvince,
-                                  destinationDepartment: order.destinationDepartment,
-                                  destinationReference: order.destinationReference,
+                                  destinationDistrict:
+                                    order.destinationDistrict,
+                                  destinationProvince:
+                                    order.destinationProvince,
+                                  destinationDepartment:
+                                    order.destinationDepartment,
+                                  destinationReference:
+                                    order.destinationReference,
                                   status: pkg.status,
                                   courier: pkg.courier,
                                   trackingNumber: pkg.trackingNumber,
@@ -716,7 +733,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                       Dirección de Entrega
                     </span>
                     <p className="font-bold text-[#112237] text-xs mt-0.5">
-                      {order.destinationAddress || "Por coordinar con el comprador"}
+                      {order.destinationAddress ||
+                        "Por coordinar con el comprador"}
                     </p>
                   </div>
 

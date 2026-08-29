@@ -1,7 +1,7 @@
-import {prisma} from "@/lib/prisma";
-import {getCommissionConfig} from "@/lib/utils/commission";
-import {sendDispatchNotification} from "@/lib/email";
-import {formatTrackingId} from "@/lib/utils/tracking";
+import { prisma } from "@/lib/prisma";
+import { getCommissionConfig } from "@/lib/utils/commission";
+import { sendDispatchNotification } from "@/lib/email";
+import { formatTrackingId } from "@/lib/utils/tracking";
 
 export interface DashboardOrderItem {
   id: string;
@@ -369,33 +369,33 @@ export async function getSellerOrders(companyId: string): Promise<{
     }
   }
 
-  const consolidatedOrders: SellerOrder[] = Array.from(
-    ordersMap.values(),
-  ).map((ord) => {
-    ord.packages.sort((a, b) => a.packageNumber - b.packageNumber);
-    const anyShipped = ord.packages.some(
-      (p) =>
-        p.status === "shipped" ||
-        p.status === "delivered" ||
-        p.status === "completed",
-    );
-    const allDelivered = ord.packages.every(
-      (p) => p.status === "delivered" || p.status === "completed",
-    );
-    const allCancelled = ord.packages.every((p) => p.status === "cancelled");
+  const consolidatedOrders: SellerOrder[] = Array.from(ordersMap.values()).map(
+    (ord) => {
+      ord.packages.sort((a, b) => a.packageNumber - b.packageNumber);
+      const anyShipped = ord.packages.some(
+        (p) =>
+          p.status === "shipped" ||
+          p.status === "delivered" ||
+          p.status === "completed",
+      );
+      const allDelivered = ord.packages.every(
+        (p) => p.status === "delivered" || p.status === "completed",
+      );
+      const allCancelled = ord.packages.every((p) => p.status === "cancelled");
 
-    if (allCancelled) {
-      ord.status = "cancelled";
-    } else if (allDelivered) {
-      ord.status = "delivered";
-    } else if (anyShipped) {
-      ord.status = "shipped";
-    } else {
-      ord.status = "pending";
-    }
+      if (allCancelled) {
+        ord.status = "cancelled";
+      } else if (allDelivered) {
+        ord.status = "delivered";
+      } else if (anyShipped) {
+        ord.status = "shipped";
+      } else {
+        ord.status = "pending";
+      }
 
-    return ord;
-  });
+      return ord;
+    },
+  );
 
   return {
     orders: consolidatedOrders,
@@ -420,11 +420,15 @@ export async function updateSellerShipment(
   });
 
   if (!pkg) {
-    throw new Error("Guía de despacho no encontrada o no pertenece a tu empresa");
+    throw new Error(
+      "Guía de despacho no encontrada o no pertenece a tu empresa",
+    );
   }
 
   if (pkg.status === "delivered" || pkg.status === "completed") {
-    throw new Error("No se puede editar una guía de despacho que ya ha sido entregada");
+    throw new Error(
+      "No se puede editar una guía de despacho que ya ha sido entregada",
+    );
   }
 
   if (!payload.courier || !String(payload.courier).trim()) {
@@ -444,8 +448,12 @@ export async function updateSellerShipment(
     data: {
       courier: String(payload.courier).trim(),
       tracking_number: String(payload.trackingNumber).trim(),
-      tracking_url: payload.trackingUrl ? String(payload.trackingUrl).trim() : null,
-      carrier_phone: payload.carrierPhone ? String(payload.carrierPhone).trim() : null,
+      tracking_url: payload.trackingUrl
+        ? String(payload.trackingUrl).trim()
+        : null,
+      carrier_phone: payload.carrierPhone
+        ? String(payload.carrierPhone).trim()
+        : null,
       estimated_delivery: estDeliveryDate,
       status: "shipped",
       updated_at: new Date(),
@@ -689,7 +697,10 @@ export async function markSellerOrdersShipped(
       shipments[0].trackingUrl || null,
       new Date(shipments[0].estimatedDelivery),
     ).catch((err) =>
-      console.error("[Seller Orders Service] Error enviando email de despacho:", err),
+      console.error(
+        "[Seller Orders Service] Error enviando email de despacho:",
+        err,
+      ),
     );
 
     return { totalPackages };
@@ -748,7 +759,10 @@ export async function markSellerOrdersShipped(
     payload.trackingUrl?.trim() || null,
     estDeliveryDate,
   ).catch((err) =>
-    console.error("[Seller Orders Service] Error enviando email de despacho:", err),
+    console.error(
+      "[Seller Orders Service] Error enviando email de despacho:",
+      err,
+    ),
   );
 
   return { totalPackages: 1 };
@@ -757,7 +771,10 @@ export async function markSellerOrdersShipped(
 /**
  * Cancela un paquete de venta, restaurando inventario y creando solicitud de reembolso.
  */
-export async function cancelSellerPackage(packageId: string, companyId: string) {
+export async function cancelSellerPackage(
+  packageId: string,
+  companyId: string,
+) {
   const pkg = await prisma.orderPackage.findFirst({
     where: { id: packageId, company_id: companyId },
     include: {

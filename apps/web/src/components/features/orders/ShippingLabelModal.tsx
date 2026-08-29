@@ -9,12 +9,7 @@ import {
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Barcode } from "@/components/ui/Barcode";
-import {
-  Printer,
-  Building2,
-  Phone,
-  User,
-} from "lucide-react";
+import { Printer, Building2, Phone, User } from "lucide-react";
 
 export interface ShippingLabelData {
   orderCode: string;
@@ -79,10 +74,7 @@ export function ShippingLabelModal({
 
   if (!data) return null;
 
-  const totalUnits = data.items.reduce(
-    (acc, i) => acc + (i.quantity || 1),
-    0,
-  );
+  const totalUnits = data.items.reduce((acc, i) => acc + (i.quantity || 1), 0);
 
   const destinationCity = [
     data.destinationDistrict,
@@ -223,7 +215,10 @@ export function ShippingLabelModal({
                     </span>
                   </div>
                   <div className="mt-1 font-mono text-[11px] font-bold text-slate-700">
-                    ORDEN: <span className="font-black text-black">#{data.orderCode}</span>
+                    ORDEN:{" "}
+                    <span className="font-black text-black">
+                      #{data.orderCode}
+                    </span>
                   </div>
                 </div>
 
@@ -257,7 +252,8 @@ export function ShippingLabelModal({
                 </span>
                 {data.buyerDocumentNumber && (
                   <span className="font-mono font-bold text-xs">
-                    {data.buyerDocumentType || "DOC"}: {data.buyerDocumentNumber}
+                    {data.buyerDocumentType || "DOC"}:{" "}
+                    {data.buyerDocumentNumber}
                   </span>
                 )}
               </div>

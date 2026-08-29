@@ -104,7 +104,7 @@ export function DispatchModal({
         const mapped: BultoShipmentState[] = initialShipments.map((sh, idx) => {
           const isPropia = isOwnMobilityCourier(sh.courier);
           const allocations: Record<string, number> = {};
-          
+
           if (sh.items && Array.isArray(sh.items)) {
             sh.items.forEach((it) => {
               const matchedItem = items.find(
@@ -115,7 +115,8 @@ export function DispatchModal({
                   item.id === it.productId,
               );
               if (matchedItem) {
-                allocations[matchedItem.id] = (allocations[matchedItem.id] || 0) + (it.quantity || 1);
+                allocations[matchedItem.id] =
+                  (allocations[matchedItem.id] || 0) + (it.quantity || 1);
               }
             });
           }
@@ -188,7 +189,8 @@ export function DispatchModal({
     items.every((it) => itemAllocatedTotals[it.id] === (it.quantity || 1));
 
   const bultoValidations = shipments.map((sh, idx) => {
-    const bultoLabel = shipments.length > 1 ? `Bulto ${idx + 1}` : "El despacho";
+    const bultoLabel =
+      shipments.length > 1 ? `Bulto ${idx + 1}` : "El despacho";
     const totalItemsInBulto = Object.values(sh.itemAllocations).reduce(
       (a, b) => a + b,
       0,
@@ -228,7 +230,8 @@ export function DispatchModal({
   });
 
   const hasAnyBultoIssue = bultoValidations.some((v) => !v.isValid);
-  const canSubmit = isAllAllocatedCorrectly && !hasAnyBultoIssue && !isSubmitting;
+  const canSubmit =
+    isAllAllocatedCorrectly && !hasAnyBultoIssue && !isSubmitting;
 
   const handleAddShipment = () => {
     const newAllocations: Record<string, number> = {};
@@ -429,7 +432,8 @@ export function DispatchModal({
               variant="default"
               className="text-xs font-black text-[#f25c05] bg-orange-50 px-3 py-1.5 rounded-full border border-orange-200 shrink-0"
             >
-              {totalUnits} {totalUnits === 1 ? "unidad total" : "unidades totales"}
+              {totalUnits}{" "}
+              {totalUnits === 1 ? "unidad total" : "unidades totales"}
             </Badge>
           </div>
         </DialogHeader>
@@ -459,7 +463,9 @@ export function DispatchModal({
                 ) : (
                   <>
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>Distribuye el total de unidades entre los bultos</span>
+                    <span>
+                      Distribuye el total de unidades entre los bultos
+                    </span>
                   </>
                 )}
               </span>
@@ -585,11 +591,17 @@ export function DispatchModal({
                         .map((it) => {
                           const currentQty = sh.itemAllocations[it.id] ?? 0;
                           const totalOrderQty = it.quantity || 1;
-                          const otherBultosSum = shipments.reduce((sum, s, idx) => {
-                            if (idx === sIdx) return sum;
-                            return sum + (s.itemAllocations[it.id] || 0);
-                          }, 0);
-                          const maxAvailableForThis = Math.max(0, totalOrderQty - otherBultosSum);
+                          const otherBultosSum = shipments.reduce(
+                            (sum, s, idx) => {
+                              if (idx === sIdx) return sum;
+                              return sum + (s.itemAllocations[it.id] || 0);
+                            },
+                            0,
+                          );
+                          const maxAvailableForThis = Math.max(
+                            0,
+                            totalOrderQty - otherBultosSum,
+                          );
 
                           return (
                             <div
@@ -615,7 +627,8 @@ export function DispatchModal({
                                     {it.title}
                                   </p>
                                   <p className="text-[11px] text-slate-500">
-                                    Total orden: {totalOrderQty} un. (Máx. este bulto: {maxAvailableForThis})
+                                    Total orden: {totalOrderQty} un. (Máx. este
+                                    bulto: {maxAvailableForThis})
                                   </p>
                                 </div>
                               </div>
@@ -643,11 +656,7 @@ export function DispatchModal({
                                     value={currentQty}
                                     onChange={(e) => {
                                       const val = parseInt(e.target.value) || 0;
-                                      handleUpdateAllocation(
-                                        sIdx,
-                                        it.id,
-                                        val,
-                                      );
+                                      handleUpdateAllocation(sIdx, it.id, val);
                                     }}
                                     className="w-12 h-7 text-center text-xs font-black border-0 bg-white rounded-none focus:ring-0 p-0"
                                   />
@@ -691,7 +700,8 @@ export function DispatchModal({
                           ⚠️ No has incluido productos en este bulto aún.
                         </p>
                         <p className="text-[11px] text-amber-700 mt-0.5">
-                          Haz clic abajo en los productos disponibles para asignarlos a esta guía.
+                          Haz clic abajo en los productos disponibles para
+                          asignarlos a esta guía.
                         </p>
                       </div>
                     )}
@@ -702,10 +712,13 @@ export function DispatchModal({
                       </span>
                       {items.map((it) => {
                         const currentInThis = sh.itemAllocations[it.id] ?? 0;
-                        const otherBultosSum = shipments.reduce((sum, s, idx) => {
-                          if (idx === sIdx) return sum;
-                          return sum + (s.itemAllocations[it.id] || 0);
-                        }, 0);
+                        const otherBultosSum = shipments.reduce(
+                          (sum, s, idx) => {
+                            if (idx === sIdx) return sum;
+                            return sum + (s.itemAllocations[it.id] || 0);
+                          },
+                          0,
+                        );
                         const availableToAssign = Math.max(
                           0,
                           (it.quantity || 1) - otherBultosSum - currentInThis,
@@ -1003,7 +1016,8 @@ export function DispatchModal({
                 </span>
               ) : hasAnyBultoIssue ? (
                 <span className="text-amber-600 font-bold">
-                  ⚠️ Revisa que todas las guías tengan productos y datos completos
+                  ⚠️ Revisa que todas las guías tengan productos y datos
+                  completos
                 </span>
               ) : (
                 <span className="text-emerald-600 font-bold">

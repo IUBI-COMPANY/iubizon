@@ -1,18 +1,26 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import {useRouter} from "next/navigation";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import {z} from "zod";
-import {AlertTriangle, Building2, Camera, Loader2, Lock, Trash2, X,} from "lucide-react";
-import {useCompany} from "@/context/CompanyContext";
-import {useToast} from "@/context/ToastContext";
-import {Button} from "@/components/ui/Button";
-import {Input} from "@/components/ui/Input";
-import {FichaRucUploader} from "@/components/ui/FichaRucUploader";
-import type {ExtractedCompanyData} from "@/lib/services/documentExtractor";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  AlertTriangle,
+  Building2,
+  Camera,
+  Loader2,
+  Lock,
+  Trash2,
+  X,
+} from "lucide-react";
+import { useCompany } from "@/context/CompanyContext";
+import { useToast } from "@/context/ToastContext";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { FichaRucUploader } from "@/components/ui/FichaRucUploader";
+import type { ExtractedCompanyData } from "@/lib/services/documentExtractor";
 
 const editCompanySchema = z.object({
   name: z

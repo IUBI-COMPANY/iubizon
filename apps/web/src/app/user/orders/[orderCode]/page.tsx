@@ -1,9 +1,9 @@
 "use client";
 
-import {use, useCallback, useEffect, useState} from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
@@ -23,10 +23,10 @@ import {
   User,
 } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
-import {Navbar} from "@/components/features/layout/Navbar";
-import {Footer} from "@/components/features/layout/Footer";
-import {Button} from "@/components/ui/Button";
-import {Badge} from "@/components/ui/Badge";
+import { Navbar } from "@/components/features/layout/Navbar";
+import { Footer } from "@/components/features/layout/Footer";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { WarrantyModal } from "@/components/features/orders/WarrantyModal";
 import { RefundStatus } from "@/components/features/orders/RefundStatus";

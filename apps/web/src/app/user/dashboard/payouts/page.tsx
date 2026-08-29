@@ -505,7 +505,9 @@ function PayoutsContent() {
                     <div className="flex flex-wrap items-center gap-2.5">
                       <span className="text-xs font-black text-white bg-[#112237] px-3 py-1.5 rounded-xl tracking-wider flex items-center gap-1.5">
                         <Receipt className="w-3.5 h-3.5 text-[#f25c05]" />
-                        <span>ORDEN #{p.orderCode?.replace(/^#/, "") || "VENTA"}</span>
+                        <span>
+                          ORDEN #{p.orderCode?.replace(/^#/, "") || "VENTA"}
+                        </span>
                       </span>
 
                       {p.packagesCount && p.packagesCount > 1 ? (

@@ -135,8 +135,7 @@ function OrdersContent() {
   const filteredOrders = orders.filter((ord) => {
     if (statusTab === "all") return true;
     if (statusTab === "pending") return ord.status === "pending";
-    if (statusTab === "shipped")
-      return ord.status === "shipped";
+    if (statusTab === "shipped") return ord.status === "shipped";
     if (statusTab === "completed")
       return ord.status === "delivered" || ord.status === "completed";
     if (statusTab === "refund") return ord.hasPendingRefund;
@@ -281,7 +280,9 @@ function OrdersContent() {
               <p className="text-2xl font-black text-emerald-600">
                 S/ {formatMoney(totalNetEarnings)}
               </p>
-              <p className="text-xs text-[#64748b] mt-0.5">acumulado a recibir</p>
+              <p className="text-xs text-[#64748b] mt-0.5">
+                acumulado a recibir
+              </p>
             </div>
           </div>
         )}
@@ -382,8 +383,7 @@ function OrdersContent() {
                 .map((ord) => {
                   const isDelivered =
                     ord.status === "delivered" || ord.status === "completed";
-                  const isShipped =
-                    ord.status === "shipped";
+                  const isShipped = ord.status === "shipped";
                   const isPending = ord.status === "pending";
 
                   const badgeStyle = isDelivered

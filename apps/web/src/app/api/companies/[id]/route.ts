@@ -139,27 +139,39 @@ export async function PATCH(
           body.logo_url !== undefined ? body.logo_url || null : undefined,
         phone:
           body.phone !== undefined
-            ? (body.phone ? String(body.phone).trim() : null)
+            ? body.phone
+              ? String(body.phone).trim()
+              : null
             : undefined,
         email:
-          body.email !== undefined && body.email !== null && String(body.email).trim() !== ""
+          body.email !== undefined &&
+          body.email !== null &&
+          String(body.email).trim() !== ""
             ? String(body.email).trim()
             : undefined,
         legal_name:
-          body.legal_name !== undefined && body.legal_name !== null && String(body.legal_name).trim() !== ""
+          body.legal_name !== undefined &&
+          body.legal_name !== null &&
+          String(body.legal_name).trim() !== ""
             ? String(body.legal_name).trim()
             : undefined,
         location:
           body.location !== undefined
-            ? (body.location ? String(body.location).trim() : null)
+            ? body.location
+              ? String(body.location).trim()
+              : null
             : undefined,
         bank_account:
           body.bank_account !== undefined
-            ? (body.bank_account ? String(body.bank_account).trim() : null)
+            ? body.bank_account
+              ? String(body.bank_account).trim()
+              : null
             : undefined,
         description:
           body.description !== undefined
-            ? (body.description ? String(body.description).trim() : null)
+            ? body.description
+              ? String(body.description).trim()
+              : null
             : undefined,
       },
     });

@@ -289,11 +289,11 @@ export async function GET(req: Request) {
     });
   } catch (err: unknown) {
     console.error("Error al obtener compras del usuario:", err);
-    const message = err instanceof Error ? err.message : "Error al cargar historial de compras";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error al cargar historial de compras";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

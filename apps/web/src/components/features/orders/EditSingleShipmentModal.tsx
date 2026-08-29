@@ -186,7 +186,10 @@ export function EditSingleShipmentModal({
   const totalPackages = shipment.totalPackages || 1;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && !isSaving && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && !isSaving && onClose()}
+    >
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto p-6 rounded-3xl">
         <DialogHeader className="border-b border-[#f1f5f9] pb-3">
           <div className="flex items-center gap-2.5">

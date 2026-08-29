@@ -47,7 +47,9 @@ export function BuyerDeliveryTimeline({
 
   const paidDateText = formatShortDate(orderCreatedAt || pkg.createdAt);
   const estDeliveryText = formatShortDate(pkg.estimatedDelivery);
-  const deliveredDateText = formatShortDate(orderDeliveredAt || pkg.deliveredAt);
+  const deliveredDateText = formatShortDate(
+    orderDeliveredAt || pkg.deliveredAt,
+  );
 
   return (
     <div className="py-2">
@@ -71,7 +73,9 @@ export function BuyerDeliveryTimeline({
           <div className="w-7 h-7 rounded-full bg-[#f25c05] text-white flex items-center justify-center shadow-xs">
             <Check className="w-4 h-4 stroke-[3]" />
           </div>
-          <span className="text-xs font-bold text-[#112237] mt-1.5">Pagado</span>
+          <span className="text-xs font-bold text-[#112237] mt-1.5">
+            Pagado
+          </span>
           <span className="text-[10px] text-slate-500 font-medium min-h-[15px]">
             {paidDateText || "\u00A0"}
           </span>

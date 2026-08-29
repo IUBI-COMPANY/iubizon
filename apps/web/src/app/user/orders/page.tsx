@@ -327,7 +327,9 @@ export default function UserOrdersPage() {
                       >();
                       for (const pkg of session.packages) {
                         for (const item of pkg.items) {
-                          const existing = uniqueProductsMap.get(item.productId);
+                          const existing = uniqueProductsMap.get(
+                            item.productId,
+                          );
                           if (existing) {
                             existing.totalQuantity += item.quantity || 1;
                           } else {
@@ -338,7 +340,9 @@ export default function UserOrdersPage() {
                           }
                         }
                       }
-                      const allProducts = Array.from(uniqueProductsMap.values());
+                      const allProducts = Array.from(
+                        uniqueProductsMap.values(),
+                      );
                       const previewProducts = allProducts.slice(0, 4);
                       const extraCount =
                         allProducts.length - previewProducts.length;

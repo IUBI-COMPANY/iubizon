@@ -29,10 +29,7 @@ import {
   EditSingleShipmentModal,
   EditSingleShipmentData,
 } from "@/components/features/orders/EditSingleShipmentModal";
-import {
-  formatTrackingId,
-  isOwnMobilityCourier,
-} from "@/lib/utils/tracking";
+import { formatTrackingId, isOwnMobilityCourier } from "@/lib/utils/tracking";
 
 export interface PackageDetailItem {
   id: string;
@@ -185,7 +182,9 @@ export function PackageDetailModal({
               </div>
 
               <Badge
-                variant={isDelivered ? "success" : isShipped ? "pro" : "warning"}
+                variant={
+                  isDelivered ? "success" : isShipped ? "pro" : "warning"
+                }
                 className="font-bold text-xs px-3 py-1 uppercase"
               >
                 {isDelivered
