@@ -27,6 +27,7 @@ export function BuyerDeliveryTimeline({
 }) {
   const isShipped =
     pkg.status === "shipped" ||
+    pkg.status === "received_in_warehouse" ||
     pkg.status === "delivered" ||
     pkg.status === "completed";
   const isDelivered = pkg.status === "delivered" || pkg.status === "completed";

@@ -721,7 +721,14 @@ export async function markSellerOrdersShipped(
       const remainingNonShipped = await tx.orderPackage.count({
         where: {
           order_id: pkg.order_id,
-          status: { notIn: ["shipped", "delivered", "completed"] },
+          status: {
+            notIn: [
+              "shipped",
+              "received_in_warehouse",
+              "delivered",
+              "completed",
+            ],
+          },
         },
       });
       if (remainingNonShipped === 0) {
@@ -792,7 +799,14 @@ export async function markSellerOrdersShipped(
     const remainingNonShipped = await tx.orderPackage.count({
       where: {
         order_id: pkg.order_id,
-        status: { notIn: ["shipped", "delivered", "completed"] },
+        status: {
+          notIn: [
+            "shipped",
+            "received_in_warehouse",
+            "delivered",
+            "completed",
+          ],
+        },
       },
     });
     if (remainingNonShipped === 0) {

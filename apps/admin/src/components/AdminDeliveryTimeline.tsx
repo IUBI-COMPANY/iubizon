@@ -251,34 +251,48 @@ export function AdminDeliveryTimeline({
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
-            {order.packages?.map((pkg: any, idx: number) => (
-              <div
-                key={pkg.id || idx}
-                className="w-full flex flex-wrap items-center justify-between gap-2 bg-orange-50/50 p-2.5 rounded-xl border border-orange-200/60"
-              >
-                <div>
-                  <p className="font-bold text-[#112237] text-xs">
-                    Despacho Final ({pkg.company?.name}):
-                  </p>
-                  <p className="text-[10px] text-slate-600">
-                    {pkg.courier
-                      ? `${pkg.courier} — ${pkg.tracking_number || "Sin guía"}`
-                      : "Pendiente de registrar despacho final"}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  className="h-7 text-[10px] font-bold bg-[#f25c05] hover:bg-[#d94d04] text-white rounded-xl"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenDispatchModal(pkg);
-                  }}
+            {order.packages?.map((pkg: any, idx: number) => {
+              const isPkgDelivered =
+                isDelivered ||
+                pkg.status === "delivered" ||
+                pkg.status === "completed";
+
+              return (
+                <div
+                  key={pkg.id || idx}
+                  className="w-full flex flex-wrap items-center justify-between gap-2 bg-orange-50/50 p-2.5 rounded-xl border border-orange-200/60"
                 >
-                  <IconTruck className="w-3 h-3 mr-1" />
-                  <span>Registrar Despacho iubizon ➔ Cliente</span>
-                </Button>
-              </div>
-            ))}
+                  <div>
+                    <p className="font-bold text-[#112237] text-xs">
+                      Despacho Final ({pkg.company?.name}):
+                    </p>
+                    <p className="text-[10px] text-slate-600">
+                      {pkg.courier
+                        ? `${pkg.courier} — ${pkg.tracking_number || "Sin guía"}`
+                        : "Pendiente de registrar despacho final"}
+                    </p>
+                  </div>
+                  {!isPkgDelivered ? (
+                    <Button
+                      size="sm"
+                      className="h-7 text-[10px] font-bold bg-[#f25c05] hover:bg-[#d94d04] text-white rounded-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenDispatchModal(pkg);
+                      }}
+                    >
+                      <IconTruck className="w-3 h-3 mr-1" />
+                      <span>Registrar Despacho iubizon ➔ Cliente</span>
+                    </Button>
+                  ) : (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                      <IconCheck className="w-3 h-3 text-emerald-600" />
+                      <span>Entregado</span>
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       ),

@@ -324,7 +324,10 @@ export default function OrderDetailPage({ params }: PageProps) {
     (p) => p.status === "delivered" || p.status === "completed",
   );
   const anyShipped = session.packages.some(
-    (p) => p.status === "shipped" || p.status === "paid",
+    (p) =>
+      p.status === "shipped" ||
+      p.status === "received_in_warehouse" ||
+      p.status === "paid",
   );
 
   let generalStatusLabel = "PENDIENTE DE DESPACHO";
@@ -406,6 +409,7 @@ export default function OrderDetailPage({ params }: PageProps) {
     (p) =>
       Boolean(p.trackingNumber) ||
       p.status === "shipped" ||
+      p.status === "received_in_warehouse" ||
       p.status === "delivered" ||
       p.status === "completed",
   );
@@ -413,6 +417,7 @@ export default function OrderDetailPage({ params }: PageProps) {
     (p) =>
       !p.trackingNumber &&
       p.status !== "shipped" &&
+      p.status !== "received_in_warehouse" &&
       p.status !== "delivered" &&
       p.status !== "completed",
   );
@@ -640,6 +645,7 @@ export default function OrderDetailPage({ params }: PageProps) {
                     pkg.status === "delivered" || pkg.status === "completed";
                   const isPkgShipped =
                     pkg.status === "shipped" ||
+                    pkg.status === "received_in_warehouse" ||
                     pkg.status === "delivered" ||
                     pkg.status === "completed";
                   const isConfirming =

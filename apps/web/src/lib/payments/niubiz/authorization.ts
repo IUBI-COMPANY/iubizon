@@ -82,8 +82,15 @@ export async function authorizeNiubizTransaction(
     };
   }
 
-  const status = String(responseData.dataMap?.STATUS || "").trim();
-  const actionCode = String(responseData.dataMap?.ACTION_CODE || "").trim();
+  const dataObj =
+    responseData.dataMap || responseData.data || responseData.order || {};
+  const status = String(dataObj.STATUS || dataObj.status || "").trim();
+  const actionCode = String(
+    dataObj.ACTION_CODE ||
+      dataObj.actionCode ||
+      responseData.errorCode ||
+      "",
+  ).trim();
   const isApproved =
     res.ok &&
     (status === "Authorized" || ["000", "00", "0"].includes(actionCode));
@@ -102,10 +109,11 @@ export async function authorizeNiubizTransaction(
 
   return {
     success: true,
-    transactionId: responseData.dataMap?.TRANSACTION_ID,
-    authorizationCode: responseData.dataMap?.AUTHORIZATION_CODE,
-    cardBrand: responseData.dataMap?.BRAND,
-    cardLast4: responseData.dataMap?.CARD?.slice(-4),
+    transactionId:
+      dataObj.TRANSACTION_ID || dataObj.transactionId || dataObj.ID_UNICO,
+    authorizationCode: dataObj.AUTHORIZATION_CODE || dataObj.authorizationCode,
+    cardBrand: dataObj.BRAND || dataObj.brand || dataObj.BRAND_NAME,
+    cardLast4: (dataObj.CARD || dataObj.cardNumber || "").slice(-4),
     rawResponse: responseData,
   };
 }

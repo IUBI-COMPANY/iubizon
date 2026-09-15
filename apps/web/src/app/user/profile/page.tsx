@@ -182,8 +182,7 @@ export default function UserProfileHubPage() {
                       <strong>Empresa (RUC 20)</strong> o{" "}
                       <strong>Persona Natural con Negocio (RUC 10)</strong>{" "}
                       adjuntando <strong>solo tu ficha RUC</strong>. Publica tus
-                      proyectores, pantallas, audio, impresoras, etc. Con
-                      comisiones bajas del <strong>9%</strong>.
+                      proyectores, pantallas, audio, impresoras, etc.
                     </p>
                   </div>
 

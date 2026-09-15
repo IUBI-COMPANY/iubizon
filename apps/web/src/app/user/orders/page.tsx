@@ -198,7 +198,10 @@ export default function UserOrdersPage() {
             ).length;
             const inTransitCount = sessions.filter((s) =>
               s.packages.some(
-                (p) => p.status === "shipped" || p.status === "paid",
+                (p) =>
+                  p.status === "shipped" ||
+                  p.status === "received_in_warehouse" ||
+                  p.status === "paid",
               ),
             ).length;
             const completedCount = sessions.filter((s) =>
@@ -217,7 +220,10 @@ export default function UserOrdersPage() {
                   : statusTab === "in_transit"
                     ? sessions.filter((s) =>
                         s.packages.some(
-                          (p) => p.status === "shipped" || p.status === "paid",
+                          (p) =>
+                            p.status === "shipped" ||
+                            p.status === "received_in_warehouse" ||
+                            p.status === "paid",
                         ),
                       )
                     : statusTab === "pending"
@@ -353,7 +359,10 @@ export default function UserOrdersPage() {
                           p.status === "delivered" || p.status === "completed",
                       );
                       const anyShipped = session.packages.some(
-                        (p) => p.status === "shipped" || p.status === "paid",
+                        (p) =>
+                          p.status === "shipped" ||
+                          p.status === "received_in_warehouse" ||
+                          p.status === "paid",
                       );
 
                       const generalStatusLabel = allDelivered

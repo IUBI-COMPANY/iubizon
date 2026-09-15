@@ -120,20 +120,46 @@ export default function OrdersPage() {
     estimatedDelivery?: string | null;
   } | null>(null);
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams();
-    if (statusFilter) params.set("status", statusFilter);
-    if (onlyConsolidated) params.set("deliveryType", "complete");
-    if (search) params.set("search", search);
-    const res = await fetch(`/api/orders?${params}`);
-    const data = await res.json();
-    setOrders(data.orders || []);
-    setLoading(false);
+  const fetchOrders = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter) params.set("status", statusFilter);
+      if (onlyConsolidated) params.set("deliveryType", "complete");
+      if (search) params.set("search", search);
+      const res = await fetch(`/api/orders?${params}`);
+      const data = await res.json();
+      setOrders(data.orders || []);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+    } finally {
+      if (!silent) setLoading(false);
+    }
   }, [statusFilter, onlyConsolidated, search]);
 
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(false);
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchOrders(true);
+      }
+    }, 4000);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+    };
   }, [fetchOrders]);
 
   const executeAction = async () => {
