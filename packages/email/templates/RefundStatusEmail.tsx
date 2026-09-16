@@ -53,7 +53,7 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
           <Column style={{ padding: "8px 12px" }}>
             <Text style={metaLabelStyle}>MONTO</Text>
             <Text style={amountValueStyle}>
-              S/ {data.refundAmount.toFixed(2)}
+              S/ {Number(data.refundAmount || 0).toFixed(2)}
             </Text>
           </Column>
           <Column style={{ padding: "8px 12px", textAlign: "right" }}>
@@ -118,7 +118,7 @@ export function RefundStatusEmail(data: RefundStatusEmailData) {
               <Column style={{ paddingLeft: "12px", verticalAlign: "top" }}>
                 <Text style={itemTitleStyle}>{item.title}</Text>
                 <Text style={itemMetaStyle}>
-                  Cant: {item.quantity} × S/ {item.price.toFixed(2)} c/u
+                  Cant: {item.quantity} × S/ {Number(item.price || 0).toFixed(2)} c/u
                 </Text>
               </Column>
             </Row>

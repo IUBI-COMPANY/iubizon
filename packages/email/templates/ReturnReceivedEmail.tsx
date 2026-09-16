@@ -97,7 +97,7 @@ export function ReturnReceivedEmail(data: ReturnReceivedEmailData) {
               <Column style={{ paddingLeft: "12px", verticalAlign: "top" }}>
                 <Text style={itemTitleStyle}>{item.title}</Text>
                 <Text style={itemMetaStyle}>
-                  Cant: {item.quantity} × S/ {item.price.toFixed(2)} c/u
+                  Cant: {item.quantity} × S/ {Number(item.price || 0).toFixed(2)} c/u
                 </Text>
                 <Text style={sellerTagStyle}>
                   Vendido por: {item.companyName || item.sellerName}
@@ -116,7 +116,7 @@ export function ReturnReceivedEmail(data: ReturnReceivedEmailData) {
           </Column>
           <Column style={{ textAlign: "right" }}>
             <Text style={amountValueStyle}>
-              S/ {data.refundAmount.toFixed(2)}
+              S/ {Number(data.refundAmount || 0).toFixed(2)}
             </Text>
           </Column>
         </Row>

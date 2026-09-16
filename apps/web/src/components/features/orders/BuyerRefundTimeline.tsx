@@ -9,7 +9,7 @@ export interface BuyerRefundTimelineProps {
   estimatedDelivery?: string | null;
   deliveredAt?: string | null;
   courier?: string | null;
-  refundAmount?: number;
+  refundAmount?: number | string | null;
 }
 
 export function BuyerRefundTimeline({
@@ -45,6 +45,12 @@ export function BuyerRefundTimeline({
     } catch {
       return "";
     }
+  };
+
+  const formatMoney = (amount?: number | string | null) => {
+    if (amount === undefined || amount === null || amount === "") return "";
+    const num = typeof amount === "number" ? amount : Number(amount);
+    return isNaN(num) ? "" : num.toFixed(2);
   };
 
   const requestedDateText = formatShortDate(createdAt);
@@ -161,7 +167,7 @@ export function BuyerRefundTimeline({
           <span className="text-[10px] text-emerald-600 font-medium min-h-[15px]">
             {isRefunded
               ? completionDateText ||
-                (refundAmount ? `S/ ${refundAmount.toFixed(2)}` : "Liquidado")
+                (formatMoney(refundAmount) ? `S/ ${formatMoney(refundAmount)}` : "Liquidado")
               : isReceived
                 ? "En revisión final"
                 : "\u00A0"}
