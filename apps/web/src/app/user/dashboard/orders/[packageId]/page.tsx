@@ -680,7 +680,11 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
 
             {/* Reclamos y Reembolsos si existen */}
             {order.orderId && isDelivered && (
-              <RefundStatus orderId={order.orderId} />
+              <RefundStatus
+                orderId={order.orderId}
+                orderCode={order.orderCode}
+                isSeller={true}
+              />
             )}
           </div>
 

@@ -3,20 +3,25 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import {
-  Building2,
   CheckCircle2,
   Clock,
+  Eye,
   Loader2,
-  MapPin,
   Package,
+  RotateCcw,
   Truck,
   XCircle,
 } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { formatShortDateTime, formatShortDateWithPeriod } from "@/lib/utils";
+import { formatShortDateTime } from "@/lib/utils";
+import { BuyerRefundTimeline } from "./BuyerRefundTimeline";
+import {
+  RefundDetailModal,
+  RefundDetailData,
+} from "./RefundDetailModal";
 import { ReturnShipmentModal } from "./ReturnShipmentModal";
-import { RefundReturnTimeline } from "./RefundReturnTimeline";
 
 interface RefundItemData {
   id: string;
@@ -59,18 +64,22 @@ interface RefundRequestData {
 
 interface RefundStatusProps {
   orderId: string;
+  orderCode?: string;
   refetchKey?: number;
   isSeller?: boolean;
 }
 
 export const RefundStatus: React.FC<RefundStatusProps> = ({
   orderId,
+  orderCode,
   refetchKey,
   isSeller = false,
 }) => {
   const [requests, setRequests] = useState<RefundRequestData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedRefundForDetail, setSelectedRefundForDetail] =
+    useState<RefundDetailData | null>(null);
   const [returnShipmentModal, setReturnShipmentModal] = useState<{
     isOpen: boolean;
     refundId: string;
@@ -134,7 +143,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-3">
+      <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-3">
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-[#f25c05]" />
           <span className="text-xs text-[#64748b]">
@@ -150,37 +159,41 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
 
   const statusConfig: Record<
     string,
-    { label: string; icon: React.ReactNode; className: string }
+    {
+      label: string;
+      icon: React.ReactNode;
+      badgeVariant: "warning" | "success" | "pro" | "danger" | "secondary";
+    }
   > = {
     pending: {
       label: "En revisión",
-      icon: <Clock className="w-4 h-4" />,
-      className: "bg-amber-100 text-amber-800 border-amber-200",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      badgeVariant: "warning",
     },
     approved: {
       label: "Aprobado",
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      badgeVariant: "success",
     },
     return_in_transit: {
       label: "En camino de vuelta",
-      icon: <Truck className="w-4 h-4" />,
-      className: "bg-blue-100 text-blue-800 border-blue-200",
+      icon: <Truck className="w-3.5 h-3.5" />,
+      badgeVariant: "pro",
     },
     return_received: {
       label: "Devuelto",
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      className: "bg-teal-100 text-teal-800 border-teal-200",
+      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      badgeVariant: "success",
     },
     rejected: {
       label: "Rechazado",
-      icon: <XCircle className="w-4 h-4" />,
-      className: "bg-red-100 text-red-800 border-red-200",
+      icon: <XCircle className="w-3.5 h-3.5" />,
+      badgeVariant: "danger",
     },
     refunded: {
       label: "Reembolsado",
-      icon: <CheckCircle2 className="w-4 h-4" />,
-      className: "bg-emerald-100 text-emerald-800 border-emerald-200",
+      icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+      badgeVariant: "success",
     },
   };
 
@@ -188,10 +201,11 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm space-y-5">
-        <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
-          <h2 className="text-base font-extrabold text-[#112237] flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[#f25c05]" />
+      <div className="space-y-4">
+        {/* Cabecera Principal de la Sección */}
+        <div className="flex items-center justify-between pb-1">
+          <h2 className="text-sm font-extrabold text-[#112237] flex items-center gap-2">
+            <RotateCcw className="w-4 h-4 text-[#f25c05]" />
             <span>
               Estado de Reembolso{requests.length > 1 ? "s" : ""} (
               {requests.length})
@@ -199,453 +213,229 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
           </h2>
         </div>
 
-        {requests.map((req) => {
+        {/* Tarjetas Minimalistas de Reembolso */}
+        {requests.map((req, idx) => {
           const cfg = statusConfig[req.status] || statusConfig.pending;
+          const refCode = `REF-${req.id.slice(0, 8).toUpperCase()}`;
+          const totalUnits = req.items.reduce(
+            (acc, it) => acc + (it.quantity || 1),
+            0,
+          );
+
+          const refundDetailData: RefundDetailData = {
+            id: req.id,
+            orderCode,
+            status: req.status,
+            type: req.type,
+            reason: req.reason,
+            refundAmount: req.refund_amount,
+            returnShippingCost: req.return_shipping_cost,
+            returnShippingPaidBy: req.return_shipping_paid_by,
+            returnAddress: req.return_address,
+            deliveryType: req.delivery_type,
+            buyerReturnTracking: req.buyer_return_tracking,
+            returnCourier: req.return_courier,
+            returnCarrierPhone: req.return_carrier_phone,
+            returnTrackingUrl: req.return_tracking_url,
+            returnEstimatedDelivery: req.return_estimated_delivery,
+            adminNotes: req.admin_notes,
+            refundMethod: req.refund_method,
+            refundReference: req.refund_reference,
+            createdAt: req.created_at,
+            company: req.company,
+            items: req.items.map((it) => ({
+              id: it.id,
+              order_item_id: it.order_item_id,
+              title: it.product_title || "Producto",
+              price: it.unit_price,
+              quantity: it.quantity,
+              subtotal: it.subtotal,
+              image: it.product_image,
+              companyName: it.company_name,
+            })),
+          };
 
           return (
             <div
               key={req.id}
-              className="bg-white rounded-3xl border border-[#e2e8f0] p-5 shadow-sm space-y-3"
+              className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-4"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold text-[#64748b]">
-                    {req.type === "full"
-                      ? "Reembolso Total"
-                      : "Reembolso Parcial"}{" "}
-                    · {formatDate(req.created_at)}
+              {/* 1. Cabecera del Reembolso */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#f1f5f9]">
+                <div className="flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-full bg-[#112237] text-white flex items-center justify-center text-xs font-black shrink-0">
+                    {idx + 1}
                   </span>
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-extrabold text-[#112237]">
+                      <span>
+                        {req.type === "full"
+                          ? "Reembolso Total"
+                          : `Reembolso (${idx + 1} de ${requests.length})`}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500">
+                        · {totalUnits} {totalUnits === 1 ? "unidad" : "unidades"}
+                      </span>
+                    </div>
+
+                    {/* Subtítulo con Monto y Fecha */}
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      <strong className="text-[#f25c05] font-extrabold">
+                        S/ {Number(req.refund_amount).toFixed(2)}
+                      </strong>{" "}
+                      · Solicitado el {formatDate(req.created_at)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-[#f25c05]">
-                    S/ {Number(req.refund_amount).toFixed(2)}
-                  </span>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${cfg.className} flex items-center gap-1`}
+
+                {/* Badge de Estado del Reembolso */}
+                <div>
+                  <Badge
+                    variant={cfg.badgeVariant}
+                    className="font-bold text-xs px-3 py-1 uppercase flex items-center gap-1"
                   >
                     {cfg.icon}
                     {cfg.label}
-                  </span>
+                  </Badge>
                 </div>
               </div>
 
-              <div className="space-y-3 text-xs text-[#334155]">
-                <p className="text-[11px] text-[#64748b] italic">
-                  Motivo: &quot;{req.reason}&quot;
-                </p>
-
-                {/* Timeline de Devolución por Reembolso */}
-                <RefundReturnTimeline
-                  refund={{
-                    id: req.id,
-                    status: req.status,
-                    deliveryType: req.delivery_type || "progressive",
-                    buyerReturnTracking: req.buyer_return_tracking,
-                    returnCourier: req.return_courier,
-                    returnCarrierPhone: req.return_carrier_phone,
-                    returnTrackingUrl: req.return_tracking_url,
-                    returnEstimatedDelivery: req.return_estimated_delivery,
-                    returnAddress: req.return_address,
-                  }}
-                  isBuyer={!isSeller}
-                  isSeller={isSeller}
-                  onRefresh={fetchRequests}
+              {/* 2. Stepper Timeline de Reembolso */}
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <BuyerRefundTimeline
+                  status={req.status}
+                  createdAt={req.created_at}
+                  estimatedDelivery={req.return_estimated_delivery}
+                  courier={req.return_courier}
+                  refundAmount={req.refund_amount}
                 />
+              </div>
 
-                {/* Lista de Productos del Reembolso con Imagen Principal */}
-                {req.items && req.items.length > 0 && (
-                  <div className="bg-[#f8fafc] rounded-2xl p-3 border border-[#e2e8f0] space-y-2">
-                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider flex items-center justify-between">
-                      <span>
-                        {req.type === "full"
-                          ? "Productos de la Orden (Reembolso Completo)"
-                          : req.items.length === 1
-                            ? "Producto Seleccionado (Reembolso Parcial)"
-                            : "Productos Seleccionados (Reembolso Parcial)"}
+              {/* 3. Productos en este Reembolso (Píldoras Compactas) */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block">
+                  {req.items.length === 1
+                    ? "Producto en este reembolso:"
+                    : `Productos en este reembolso (${req.items.length}):`}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {req.items.map((item) => (
+                    <div
+                      key={item.id || item.order_item_id}
+                      className="bg-white border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#112237] flex items-center gap-2 shadow-2xs"
+                    >
+                      {item.product_image ? (
+                        <div className="relative w-6 h-6 rounded-md overflow-hidden shrink-0 border border-slate-100">
+                          <Image
+                            src={item.product_image}
+                            alt={item.product_title || "Producto"}
+                            fill
+                            sizes="24px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                          <Package className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                      <span className="line-clamp-1 max-w-[200px]">
+                        {item.product_title || "Producto"}
                       </span>
-                      <span className="text-[#f25c05] font-semibold lowercase font-sans text-[11px]">
-                        {req.items.length}{" "}
-                        {req.items.length === 1 ? "ítem" : "ítems"}
+                      <span className="font-extrabold text-[#f25c05] bg-orange-50 px-1.5 py-0.5 rounded-md text-[11px]">
+                        x{item.quantity || 1} un.
                       </span>
-                    </p>
-                    <div className="divide-y divide-[#e2e8f0]/60">
-                      {req.items.map((item) => (
-                        <div
-                          key={item.id || item.order_item_id}
-                          className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
-                        >
-                          <div className="w-12 h-12 rounded-xl border border-[#e2e8f0] overflow-hidden relative bg-white flex-shrink-0 shadow-2xs">
-                            {item.product_image ? (
-                              <Image
-                                src={item.product_image}
-                                alt={item.product_title || "Producto"}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-100">
-                                <Package className="w-5 h-5" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-xs text-[#112237] line-clamp-1">
-                              {item.product_title || "Producto"}
-                            </p>
-                            <div className="flex items-center gap-2 text-[11px] text-[#64748b] mt-0.5">
-                              <span>Cant: {item.quantity} un.</span>
-                              <span>·</span>
-                              <span>
-                                S/ {Number(item.unit_price).toFixed(2)} c/u
-                              </span>
-                              {item.company_name && (
-                                <>
-                                  <span>·</span>
-                                  <span className="text-[#f25c05] font-medium">
-                                    {item.company_name}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right font-bold text-xs text-[#112237]">
-                            S/ {Number(item.subtotal).toFixed(2)}
-                          </div>
-                        </div>
-                      ))}
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
+              </div>
 
-                {req.admin_notes && (
-                  <p className="text-[11px] text-[#112237]">
-                    <span className="text-[#64748b]">Notas: </span>
-                    {req.admin_notes}
-                  </p>
-                )}
+              {/* 4. Barra Inferior con Reference ID, Acciones y Ver Detalle */}
+              <div className="pt-3 border-t border-[#f1f5f9] flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="font-mono font-bold text-[11px] text-[#f25c05] bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-md">
+                    {refCode}
+                  </span>
+                  {req.return_courier && (
+                    <span className="text-[11px] font-semibold text-[#64748b] truncate uppercase">
+                      · {req.return_courier}
+                    </span>
+                  )}
+                  {req.buyer_return_tracking && (
+                    <span className="text-[11px] font-mono text-slate-500 truncate">
+                      ({req.buyer_return_tracking})
+                    </span>
+                  )}
+                </div>
 
-                {/* Return instructions — visible when approved, in transit, or received */}
-                {(req.status === "approved" ||
-                  req.status === "return_in_transit" ||
-                  req.status === "return_received") &&
-                  req.return_address && (
-                    <div className="bg-[#f8fafc] rounded-2xl p-3 border border-[#e2e8f0] space-y-2.5">
-                      {/* Company info & return address */}
-                      {req.company && (
-                        <div className="space-y-1.5">
-                          <div className="flex items-start gap-2">
-                            <Building2 className="w-3.5 h-3.5 text-[#f25c05] shrink-0 mt-0.5" />
-                            <div>
-                              <strong className="text-[#112237] block text-[11px]">
-                                {req.company.legal_name || req.company.name}
-                              </strong>
-                              <span className="text-[10px] text-[#64748b]">
-                                {req.company.tax_id &&
-                                  `RUC: ${req.company.tax_id}`}
-                                {req.company.tax_id &&
-                                  req.company.phone &&
-                                  " · "}
-                                {req.company.phone &&
-                                  `Tel: ${req.company.phone}`}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-2">
-                            <MapPin className="w-3.5 h-3.5 text-[#f25c05] shrink-0 mt-0.5" />
-                            <div>
-                              <strong className="text-[#112237] block text-[11px]">
-                                Dirección de Devolución:
-                              </strong>
-                              <span className="text-[11px] text-[#334155]">
-                                {req.return_address}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {!req.company && (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-[#f25c05] shrink-0 mt-0.5" />
-                          <div>
-                            <strong className="text-[#112237] block text-[11px]">
-                              Dirección de Devolución:
-                            </strong>
-                            <span className="text-[11px] text-[#334155]">
-                              {req.return_address}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {req.return_shipping_cost && (
-                        <div className="flex items-center justify-between bg-white rounded-lg px-2.5 py-2 border border-[#e2e8f0]">
-                          <span className="text-[11px] font-semibold text-[#112237]">
-                            Costo de envío
-                          </span>
-                          <span className="text-xs font-black text-[#f25c05]">
-                            S/ {Number(req.return_shipping_cost).toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-
-                      {!isSeller &&
-                        req.return_shipping_paid_by === "seller" && (
-                          <p className="text-[10px] text-emerald-700 bg-emerald-50 rounded-lg p-2 border border-emerald-200">
-                            El proveedor cubre el costo de envío. El monto será
-                            transferido a tu cuenta.
-                          </p>
-                        )}
-                      {!isSeller && req.return_shipping_paid_by === "buyer" && (
-                        <p className="text-[10px] text-amber-700 bg-amber-50 rounded-lg p-2 border border-amber-200">
-                          El envío de devolución corre por tu cuenta.
-                        </p>
-                      )}
-
-                      {/* Buyer: show button to open return shipment modal when approved */}
-                      {!isSeller && req.status === "approved" && (
-                        <div className="flex justify-end">
-                          <Button
-                            size="sm"
-                            className="bg-[#f25c05] hover:bg-[#d94d04] text-white text-[11px] font-bold px-3 py-2 rounded-lg"
-                            onClick={() =>
-                              setReturnShipmentModal({
-                                isOpen: true,
-                                refundId: req.id,
-                              })
-                            }
-                          >
-                            <Truck className="w-3.5 h-3.5 mr-1" />
-                            Registrar Envío
-                          </Button>
-                        </div>
-                      )}
-
-                      {/* Tracking info shown for in-transit and received */}
-                      {(req.status === "return_in_transit" ||
-                        req.status === "return_received") && (
-                        <div
-                          className={`rounded-lg p-3 border space-y-1.5 ${req.status === "return_received" ? "bg-emerald-50 border-emerald-200" : "bg-blue-50 border-blue-200"}`}
-                        >
-                          <span
-                            className={`text-[11px] font-extrabold flex items-center gap-1 ${req.status === "return_received" ? "text-emerald-700" : "text-blue-700"}`}
-                          >
-                            <Truck className="w-3.5 h-3.5" />
-                            {req.status === "return_received"
-                              ? "Producto devuelto exitosamente"
-                              : "Producto en camino de vuelta"}
-                          </span>
-                          <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                            {req.return_courier && (
-                              <div>
-                                <span className="text-[#64748b] block">
-                                  Agencia:
-                                </span>
-                                <span className="font-semibold text-[#112237]">
-                                  {req.return_courier}
-                                </span>
-                              </div>
-                            )}
-                            {req.return_carrier_phone && (
-                              <div>
-                                <span className="text-[#64748b] block">
-                                  Teléfono:
-                                </span>
-                                <span className="font-semibold text-[#112237]">
-                                  {req.return_carrier_phone}
-                                </span>
-                              </div>
-                            )}
-                            <div>
-                              <span className="text-[#64748b] block">
-                                Tracking:
-                              </span>
-                              <span className="font-semibold text-[#112237] font-mono">
-                                {req.buyer_return_tracking}
-                              </span>
-                            </div>
-                            {req.return_estimated_delivery && (
-                              <div>
-                                <span className="text-[#64748b] block">
-                                  Entrega estimada:
-                                </span>
-                                <span className="font-semibold text-[#112237]">
-                                  {formatShortDateWithPeriod(
-                                    req.return_estimated_delivery,
-                                  )}
-                                </span>
-                              </div>
-                            )}
-                            {req.return_tracking_url && (
-                              <div>
-                                <span className="text-[#64748b] block">
-                                  Rastreo:
-                                </span>
-                                <a
-                                  href={req.return_tracking_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-semibold text-[#f25c05] hover:underline"
-                                >
-                                  Ver en agencia ↗
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Buyer context after seller confirmed receipt */}
-                      {!isSeller && req.status === "return_received" && (
-                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-2">
-                          <p className="text-[11px] font-semibold text-emerald-800 flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            El vendedor ha confirmado la recepción del producto
-                          </p>
-                          <div className="text-[10px] text-emerald-700 space-y-1">
-                            <p>
-                              · El equipo de iubizon está revisando tu caso.
-                            </p>
-                            <p>
-                              · El reembolso será procesado en los próximos
-                              días.
-                            </p>
-                            <p>
-                              · Recibirás una notificación por correo cuando se
-                              complete.
-                            </p>
-                            <p>
-                              · También puedes hacer seguimiento desde esta
-                              misma página.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Seller: show Confirm Receipt button when in transit */}
-                      {isSeller && req.status === "return_in_transit" && (
-                        <div className="space-y-1.5">
-                          <Button
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-2 rounded-lg cursor-pointer"
-                            onClick={() => setRefundToConfirm(req.id)}
-                            disabled={confirmingReceipt === req.id}
-                          >
-                            {confirmingReceipt === req.id ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
-                            ) : null}
-                            {confirmingReceipt === req.id
-                              ? "Confirmando..."
-                              : "Confirmar Recepción del Producto"}
-                          </Button>
-                          {confirmError && (
-                            <p className="text-[10px] text-red-500">
-                              {confirmError}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Seller: info when returned */}
-                      {isSeller && req.status === "return_received" && (
-                        <p className="text-[10px] text-emerald-700 bg-emerald-100 rounded-lg p-2 border border-emerald-200 text-center">
-                          Iubizon revisará el caso y procesará el reembolso.
-                        </p>
-                      )}
-                    </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Botón de Comprador para Registrar Envío de Retorno */}
+                  {!isSeller && req.status === "approved" && (
+                    <Button
+                      size="sm"
+                      className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
+                      onClick={() =>
+                        setReturnShipmentModal({
+                          isOpen: true,
+                          refundId: req.id,
+                        })
+                      }
+                    >
+                      <Truck className="w-3.5 h-3.5 mr-1" />
+                      <span>Registrar Envío</span>
+                    </Button>
                   )}
 
-                {/* Refund method display when refunded */}
-                {req.status === "refunded" && (
-                  <div className="bg-violet-50 border border-violet-200 rounded-lg p-2 text-[10px] text-violet-700">
-                    <span className="font-semibold">Reembolso procesado</span>
-                    {req.refund_method && req.refund_method !== "niubiz" && (
-                      <span>
-                        {" "}
-                        ·{" "}
-                        {req.refund_method === "bank_transfer"
-                          ? "Transferencia Bancaria"
-                          : req.refund_method === "yape"
-                            ? "Yape"
-                            : req.refund_method === "plin"
-                              ? "Plin"
-                              : req.refund_method}
-                        {req.refund_reference &&
-                          ` · Ref: ${req.refund_reference}`}
-                      </span>
-                    )}
-                  </div>
-                )}
+                  {/* Botón de Vendedor para Confirmar Recepción Física */}
+                  {isSeller && req.status === "return_in_transit" && (
+                    <Button
+                      size="sm"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1"
+                      onClick={() => setRefundToConfirm(req.id)}
+                      disabled={confirmingReceipt === req.id}
+                    >
+                      {confirmingReceipt === req.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                      )}
+                      <span>Confirmar Recepción</span>
+                    </Button>
+                  )}
 
-                {/* Items in refund — grouped by company */}
-                {req.items.length > 0 &&
-                  (() => {
-                    const grouped = new Map<string, RefundItemData[]>();
-                    req.items.forEach((item) => {
-                      const key = item.company_name || "Proveedor";
-                      if (!grouped.has(key)) grouped.set(key, []);
-                      grouped.get(key)!.push(item);
-                    });
-
-                    return (
-                      <div className="space-y-2">
-                        {Array.from(grouped.entries()).map(
-                          ([companyName, companyItems]) => (
-                            <div key={companyName}>
-                              {grouped.size > 1 && (
-                                <div className="flex items-center gap-1.5 mb-1">
-                                  <Building2 className="w-3 h-3 text-[#f25c05]" />
-                                  <span className="text-[10px] font-semibold text-[#64748b] uppercase tracking-wide">
-                                    {companyName}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="space-y-1">
-                                {companyItems.map((item) => (
-                                  <div
-                                    key={item.id}
-                                    className="flex items-center gap-2.5 bg-[#f8fafc] rounded-lg px-2.5 py-2 border border-[#e2e8f0]"
-                                  >
-                                    <div className="relative w-8 h-8 bg-white rounded-md border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
-                                      {item.product_image ? (
-                                        <Image
-                                          src={item.product_image}
-                                          alt={item.product_title || "Producto"}
-                                          fill
-                                          sizes="32px"
-                                          className="object-cover"
-                                          unoptimized
-                                        />
-                                      ) : (
-                                        <Package className="w-4 h-4 text-[#cbd5e1]" />
-                                      )}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-[11px] font-semibold text-[#112237] truncate">
-                                        {item.product_title || "Producto"}
-                                      </p>
-                                      <p className="text-[10px] text-[#64748b]">
-                                        {item.quantity}u × S/{" "}
-                                        {Number(item.unit_price).toFixed(2)}
-                                      </p>
-                                    </div>
-                                    <span className="text-[11px] font-extrabold text-[#f25c05] shrink-0">
-                                      S/ {Number(item.subtotal).toFixed(2)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Botón Ver Detalle (Abre RefundDetailModal) */}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedRefundForDetail(refundDetailData)}
+                    className="border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Ver Detalle</span>
+                  </Button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Modal de Detalle Completo del Reembolso */}
+      <RefundDetailModal
+        isOpen={Boolean(selectedRefundForDetail)}
+        onClose={() => setSelectedRefundForDetail(null)}
+        refund={selectedRefundForDetail}
+        isBuyer={!isSeller}
+        isSeller={isSeller}
+        onOpenReturnShipment={(refundId) =>
+          setReturnShipmentModal({ isOpen: true, refundId })
+        }
+        onConfirmReceiptPrompt={(refundId) => setRefundToConfirm(refundId)}
+      />
+
+      {/* Modal de Confirmación de Recepción por el Vendedor */}
       <ConfirmModal
         open={Boolean(refundToConfirm)}
         onOpenChange={(open) => {
@@ -664,6 +454,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
         }}
       />
 
+      {/* Modal para Registrar Envío de Devolución */}
       <ReturnShipmentModal
         isOpen={returnShipmentModal.isOpen}
         onClose={() => setReturnShipmentModal({ isOpen: false, refundId: "" })}

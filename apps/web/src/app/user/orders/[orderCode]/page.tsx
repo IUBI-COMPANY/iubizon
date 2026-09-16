@@ -919,6 +919,7 @@ export default function OrderDetailPage({ params }: PageProps) {
             {session.orderId && allDelivered && (
               <RefundStatus
                 orderId={session.orderId}
+                orderCode={session.orderCode}
                 refetchKey={refundTrigger}
               />
             )}
