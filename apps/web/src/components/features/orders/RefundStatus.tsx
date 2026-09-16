@@ -67,6 +67,7 @@ interface RefundStatusProps {
   orderCode?: string;
   refetchKey?: number;
   isSeller?: boolean;
+  onRefundsLoaded?: (hasRefunds: boolean, count: number) => void;
 }
 
 export const RefundStatus: React.FC<RefundStatusProps> = ({
@@ -74,6 +75,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
   orderCode,
   refetchKey,
   isSeller = false,
+  onRefundsLoaded,
 }) => {
   const [requests, setRequests] = useState<RefundRequestData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,13 +100,20 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
       );
       if (!res.ok) throw new Error("Error al obtener reembolsos");
       const data = await res.json();
-      setRequests(data.requests || data.refundRequests || []);
+      const list = data.requests || data.refundRequests || [];
+      setRequests(list);
+      if (onRefundsLoaded) {
+        onRefundsLoaded(list.length > 0, list.length);
+      }
     } catch {
       // Sencillamente no muestra solicitudes si falla
+      if (onRefundsLoaded) {
+        onRefundsLoaded(false, 0);
+      }
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, onRefundsLoaded]);
 
   useEffect(() => {
     fetchRequests();

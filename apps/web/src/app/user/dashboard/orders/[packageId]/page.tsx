@@ -111,6 +111,7 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
   const [shipmentToEdit, setShipmentToEdit] =
     useState<EditSingleShipmentData | null>(null);
   const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
+  const [hasActiveRefunds, setHasActiveRefunds] = useState(false);
   const hasLoadedOnce = useRef(false);
 
   const handleCopy = (text: string, key: string) => {
@@ -385,6 +386,16 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                 ))}
               </div>
             </div>
+
+            {/* Si existen reembolsos activos (evento más reciente), mostrarlos arriba de los despachos */}
+            {order.orderId && hasActiveRefunds && (
+              <RefundStatus
+                orderId={order.orderId}
+                orderCode={order.orderCode}
+                isSeller={true}
+                onRefundsLoaded={(has) => setHasActiveRefunds(has)}
+              />
+            )}
 
             {/* 2. Sección de Envíos y Guías de Despacho (Estilo eBay Delivery Info) */}
             <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-4">
@@ -678,12 +689,13 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               )}
             </div>
 
-            {/* Reclamos y Reembolsos si existen */}
-            {order.orderId && isDelivered && (
+            {/* Si NO hay reembolsos activos, montar RefundStatus abajo para consultar en background */}
+            {order.orderId && !hasActiveRefunds && (
               <RefundStatus
                 orderId={order.orderId}
                 orderCode={order.orderCode}
                 isSeller={true}
+                onRefundsLoaded={(has) => setHasActiveRefunds(has)}
               />
             )}
           </div>

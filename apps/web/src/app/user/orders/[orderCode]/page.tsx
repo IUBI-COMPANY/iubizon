@@ -157,6 +157,7 @@ export default function OrderDetailPage({ params }: PageProps) {
   const [confirmingPackageKey, setConfirmingPackageKey] = useState<
     string | null
   >(null);
+  const [hasActiveRefunds, setHasActiveRefunds] = useState(false);
   const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
 
@@ -576,6 +577,16 @@ export default function OrderDetailPage({ params }: PageProps) {
               </div>
             </div>
 
+            {/* Si existen reembolsos activos (evento más reciente), mostrarlos arriba de los despachos */}
+            {session.orderId && hasActiveRefunds && (
+              <RefundStatus
+                orderId={session.orderId}
+                orderCode={session.orderCode}
+                refetchKey={refundTrigger}
+                onRefundsLoaded={(has) => setHasActiveRefunds(has)}
+              />
+            )}
+
             {/* 2. Sección de Envíos y Guías de Despacho */}
             {dispatchedPackages.length === 0 ? (
               <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-4">
@@ -915,12 +926,13 @@ export default function OrderDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Reclamos y Reembolsos si existen */}
-            {session.orderId && allDelivered && (
+            {/* Si NO hay reembolsos activos, montar RefundStatus abajo para consultar en background */}
+            {session.orderId && !hasActiveRefunds && (
               <RefundStatus
                 orderId={session.orderId}
                 orderCode={session.orderCode}
                 refetchKey={refundTrigger}
+                onRefundsLoaded={(has) => setHasActiveRefunds(has)}
               />
             )}
           </div>
