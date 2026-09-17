@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   IconSearch,
   IconRefresh,
@@ -15,7 +16,11 @@ import {
   IconReceipt,
   IconAlertTriangle,
   IconBuildingWarehouse,
+  IconRotateClockwise,
+  IconExternalLink,
+  IconWallet,
 } from "@tabler/icons-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -371,6 +376,23 @@ export default function OrdersPage() {
                       </Badge>
                     )}
 
+                    {Boolean(order.refundedAmount && order.refundedAmount >= order.total_amount) ? (
+                      <Badge className="bg-red-100 text-red-800 border-red-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
+                        <IconRotateClockwise className="w-3 h-3 text-red-600" />
+                        Reembolso Total
+                      </Badge>
+                    ) : Boolean(order.refundedAmount && order.refundedAmount > 0) ? (
+                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
+                        <IconRotateClockwise className="w-3 h-3 text-emerald-600" />
+                        Reembolso Parcial (S/ {formatMoney(order.refundedAmount)})
+                      </Badge>
+                    ) : Boolean(order.pendingRefundAmount && order.pendingRefundAmount > 0) ? (
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
+                        <IconClock className="w-3 h-3 text-amber-600" />
+                        Reembolso en Revisión
+                      </Badge>
+                    ) : null}
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <IconUser className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -381,10 +403,24 @@ export default function OrdersPage() {
                           {order.buyer?.email}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs">
-                        <span className="font-bold text-[#112237]">
-                          S/ {formatMoney(order.total_amount)}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs">
+                        {Boolean(order.refundedAmount && order.refundedAmount > 0) ? (
+                          <>
+                            <span className="font-bold text-[#112237]">
+                              S/ {formatMoney(order.netPaidAmount)}
+                            </span>
+                            <span className="text-[11px] text-slate-400 line-through">
+                              S/ {formatMoney(order.total_amount)}
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                              -S/ {formatMoney(order.refundedAmount)} extornado
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-[#112237]">
+                            S/ {formatMoney(order.total_amount)}
+                          </span>
+                        )}
                         <span className="text-slate-500">
                           · {items.length} producto(s)
                         </span>
@@ -441,6 +477,91 @@ export default function OrdersPage() {
                       }}
                     />
 
+                    {/* Historial de Reembolsos & Devoluciones si existen */}
+                    {Boolean(order.refundRequests && order.refundRequests.length > 0) && (
+                      <div className="bg-red-50/40 border border-red-200/80 rounded-xl p-3.5 space-y-2.5 text-xs">
+                        <div className="flex items-center justify-between border-b border-red-200/60 pb-2">
+                          <div className="flex items-center gap-1.5 font-bold text-red-900">
+                            <IconRotateClockwise className="w-4 h-4 text-red-600" />
+                            <span>
+                              Historial de Reembolsos & Devoluciones ({order.refundRequests.length})
+                            </span>
+                          </div>
+                          <Link
+                            href="/dashboard/reembolsos"
+                            className="text-[11px] font-extrabold text-[#f25c05] hover:underline inline-flex items-center gap-1"
+                          >
+                            <span>Gestionar en Reembolsos</span>
+                            <IconExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
+
+                        <div className="space-y-2">
+                          {order.refundRequests.map((rf: any) => (
+                            <div
+                              key={rf.id}
+                              className="bg-white rounded-lg p-2.5 border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs"
+                            >
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-bold text-[11px] text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                                    REF-{rf.id.slice(0, 8).toUpperCase()}
+                                  </span>
+                                  <span className="font-bold text-slate-800 text-xs">
+                                    {rf.type === "full" ? "Reembolso Completo" : "Reembolso Parcial"}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[10px] uppercase font-bold ${
+                                      rf.status === "refunded"
+                                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                        : rf.status === "pending"
+                                          ? "bg-amber-50 text-amber-800 border-amber-200"
+                                          : rf.status === "approved"
+                                            ? "bg-blue-50 text-blue-800 border-blue-200"
+                                            : rf.status === "return_in_transit"
+                                              ? "bg-purple-50 text-purple-800 border-purple-200"
+                                              : rf.status === "return_received"
+                                                ? "bg-teal-50 text-teal-800 border-teal-200"
+                                                : "bg-red-50 text-red-800 border-red-200"
+                                    }`}
+                                  >
+                                    {rf.status === "refunded"
+                                      ? "Liquidado"
+                                      : rf.status === "pending"
+                                        ? "En revisión"
+                                        : rf.status === "approved"
+                                          ? "Aprobado"
+                                          : rf.status === "return_in_transit"
+                                            ? "En camino retorno"
+                                            : rf.status === "return_received"
+                                              ? "Devuelto"
+                                              : "Rechazado"}
+                                  </Badge>
+                                </div>
+                                <p className="text-[11px] text-slate-600">
+                                  <strong>Motivo:</strong> &quot;{rf.reason}&quot;
+                                </p>
+                                {rf.refund_method && (
+                                  <p className="text-[10px] text-slate-500">
+                                    Método: {rf.refund_method === "niubiz" ? "Pasarela Niubiz (Extorno Tarjeta)" : rf.refund_method} {rf.refund_reference ? `· Ref: ${rf.refund_reference}` : ""}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="font-black text-red-600 text-sm block">
+                                  - S/ {formatMoney(rf.refund_amount)}
+                                </span>
+                                <span className="text-[10px] text-slate-400">
+                                  {rf.created_at ? new Date(rf.created_at).toLocaleDateString("es-PE") : ""}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {order.invoice?.type && (
                       <div className="text-xs">
                         <p className="font-semibold text-muted-foreground uppercase mb-1">
@@ -454,37 +575,159 @@ export default function OrdersPage() {
                       </div>
                     )}
 
+                    {/* Lista de Productos Comprados */}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                         Productos ({items.length})
                       </p>
                       <div className="space-y-1.5">
-                        {items.map((item: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between text-sm bg-background rounded-md px-3 py-1.5"
-                          >
-                            <span className="truncate flex-1">
-                              {item.product?.title || "Producto"}
-                            </span>
-                            <span className="text-muted-foreground text-xs ml-2">
-                              x{item.quantity}
-                            </span>
-                            <span className="font-medium ml-3">
-                              S/{" "}
-                              {formatMoney(
-                                item.subtotal ||
-                                  item.unit_price * item.quantity,
-                              )}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex justify-between text-sm font-medium pt-2 mt-2 border-t">
-                        <span>Total</span>
-                        <span>S/ {formatMoney(order.total_amount)}</span>
+                        {items.map((item: any, idx: number) => {
+                          const isItemRefunded = item.isRefunded || (order.refundedItemIds && order.refundedItemIds.includes(item.id));
+                          return (
+                            <div
+                              key={idx}
+                              className={`flex items-center justify-between text-sm rounded-md px-3 py-1.5 ${
+                                isItemRefunded ? "bg-red-50/50 border border-red-100" : "bg-background"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate flex-1">
+                                <span className={`truncate ${isItemRefunded ? "text-slate-600 line-through" : ""}`}>
+                                  {item.product?.title || "Producto"}
+                                </span>
+                                {isItemRefunded && (
+                                  <Badge className="bg-red-100 text-red-800 border-red-200 text-[10px] font-extrabold px-1.5 py-0">
+                                    Devuelto
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-muted-foreground text-xs ml-2">
+                                x{item.quantity}
+                              </span>
+                              <span className={`font-medium ml-3 ${isItemRefunded ? "text-red-700" : ""}`}>
+                                S/{" "}
+                                {formatMoney(
+                                  item.subtotal ||
+                                    item.unit_price * item.quantity,
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
+
+                    {/* Desglose Contable e Historial Financiero */}
+                    <div className="bg-white rounded-xl p-4 border border-slate-200 space-y-3 text-xs">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="font-extrabold text-[#112237] uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                          <IconReceipt className="w-4 h-4 text-[#f25c05]" />
+                          <span>Desglose Contable & Conciliación</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500">
+                          Orden #{order.order_code}
+                        </span>
+                      </div>
+
+                      {/* Resumen Cobrado al Comprador */}
+                      <div className="space-y-1.5 border-b pb-2.5">
+                        <div className="flex justify-between text-slate-600">
+                          <span>Subtotal de Productos:</span>
+                          <span className="font-medium text-slate-800">
+                            S/ {formatMoney(order.subtotal || order.total_amount)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-slate-600">
+                          <span>Costo de Envío:</span>
+                          <span className="font-medium text-emerald-700">
+                            {Number(order.shipping_cost || 0) === 0 ? "GRATIS" : `S/ ${formatMoney(order.shipping_cost)}`}
+                          </span>
+                        </div>
+                        {Boolean(order.refundedAmount && order.refundedAmount > 0) && (
+                          <div className="flex justify-between text-emerald-800 bg-emerald-50/70 -mx-2 px-2 py-1 rounded-md font-bold">
+                            <span className="flex items-center gap-1">
+                              <IconRotateClockwise className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>(-) Reembolso Liquidado / Extornado a Tarjeta:</span>
+                            </span>
+                            <span>- S/ {formatMoney(order.refundedAmount)}</span>
+                          </div>
+                        )}
+                        {Boolean(order.pendingRefundAmount && order.pendingRefundAmount > 0) && (
+                          <div className="flex justify-between text-amber-900 bg-amber-50/70 -mx-2 px-2 py-1 rounded-md font-medium">
+                            <span className="flex items-center gap-1">
+                              <IconClock className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Reembolso en Trámite / Revisión:</span>
+                            </span>
+                            <span>S/ {formatMoney(order.pendingRefundAmount)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center text-sm font-extrabold pt-1 text-[#112237]">
+                          <span>Monto Total Cobrado Efectivo (Neto):</span>
+                          <span className="text-base font-black text-[#f25c05]">
+                            S/ {formatMoney(order.netPaidAmount ?? order.total_amount)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Liquidaciones a Vendedores / Payouts */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                            <IconWallet className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Liquidación a Vendedores (Seller Payouts)</span>
+                          </span>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          {(order.packages || []).map((pkg: any, pIdx: number) => (
+                            <div
+                              key={pkg.id || pIdx}
+                              className="bg-slate-50 rounded-lg p-2.5 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                            >
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-[#112237]">
+                                  {pkg.company?.name || `Tienda ${pIdx + 1}`}
+                                </span>
+                                <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                                  <span>Venta: S/ {formatMoney(pkg.effectiveSubtotal)}</span>
+                                  <span>·</span>
+                                  <span className="text-red-600">Comisión: -S/ {formatMoney(pkg.effectiveCommission)}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <span className="text-[10px] text-slate-400 block">Monto a Transferir</span>
+                                  <span className="font-black text-emerald-700 text-xs">
+                                    S/ {formatMoney(pkg.effectiveEarnings)}
+                                  </span>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] font-bold uppercase ${
+                                    pkg.payoutStatus === "paid"
+                                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                      : pkg.payoutStatus === "in_hold"
+                                        ? "bg-blue-50 text-blue-800 border-blue-200"
+                                        : pkg.payoutStatus === "refunded"
+                                          ? "bg-slate-100 text-slate-600 border-slate-200"
+                                          : "bg-amber-50 text-amber-800 border-amber-200"
+                                  }`}
+                                >
+                                  {pkg.payoutStatus === "paid"
+                                    ? "Transferido"
+                                    : pkg.payoutStatus === "in_hold"
+                                      ? "En custodia (7 días)"
+                                      : pkg.payoutStatus === "refunded"
+                                        ? "Reembolsado"
+                                        : "Pendiente"}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
 
                     {order.status !== "cancelled" &&
                       order.status !== "completed" && (

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import { getCommissionConfig } from "@/lib/utils/commission";
+import { computeRecalculatedPackageFinancials } from "@/lib/utils/financials";
 import { sendDispatchNotification } from "@/lib/email";
 import { formatTrackingId } from "@/lib/utils/tracking";
 
@@ -35,10 +36,13 @@ export interface SellerOrderShipment {
   createdAt: string;
   status: string;
   deliveryType: string | null;
+  originalSubtotal: number;
+  refundedSubtotal: number;
   subtotal: number;
   platformCommission: number;
   commissionRate?: number;
   netEarnings: number;
+  payoutStatus?: string;
   items: DashboardOrderItem[];
 }
 
@@ -67,11 +71,17 @@ export interface SellerOrder {
   cardLast4: string | null;
   docType: string | null;
   identityNumber: string | null;
+  originalSubtotal: number;
+  refundedSubtotal: number;
   subtotal: number;
   platformCommission: number;
   commissionRate?: number;
   netEarnings: number;
+  payoutStatus?: string;
   status: string;
+  hasRefund: boolean;
+  refundStatus: string | null;
+  refundType: string | null;
   hasPendingRefund: boolean;
   pendingRefundType: string | null;
   totalItems: number;
@@ -210,6 +220,18 @@ export async function getSellerOrders(companyId: string): Promise<{
           },
         },
       },
+      payouts: {
+        select: {
+          id: true,
+          subtotal: true,
+          commission: true,
+          net_amount: true,
+          status: true,
+          paid_at: true,
+          payment_method: true,
+          reference_code: true,
+        },
+      },
       items: {
         include: {
           product: {
@@ -225,21 +247,12 @@ export async function getSellerOrders(companyId: string): Promise<{
   });
 
   const orderIds = [...new Set(packages.map((p) => p.order_id))];
-  const pendingRefunds =
+  const allRefunds =
     orderIds.length > 0
       ? await prisma.refundRequest.findMany({
-          where: {
-            order_id: { in: orderIds },
-            status: {
-              in: [
-                "pending",
-                "approved",
-                "return_in_transit",
-                "return_received",
-              ],
-            },
-          },
-          select: { order_id: true, type: true, status: true },
+          where: { order_id: { in: orderIds } },
+          include: { items: true },
+          orderBy: { created_at: "desc" },
         })
       : [];
 
@@ -252,16 +265,50 @@ export async function getSellerOrders(companyId: string): Promise<{
     const paymentTransaction: any = order.paymentTransaction || {};
     const invoice: any = order.invoice || {};
 
-    const pkgSubtotal = Number(pkg.subtotal || 0);
-    const pkgCommissionTotal = Number(pkg.commission_total || 0);
-    const pkgNetEarnings = Number(pkg.net_earnings || 0);
+    const pkgOriginalSubtotal = Number(pkg.subtotal || 0);
+    const pkgItemIds = new Set((pkg.items || []).map((i) => i.id));
+    const refundedItemsForPkg = allRefunds
+      .filter((r) => r.status === "refunded")
+      .flatMap((r) => r.items || [])
+      .filter((ri) => pkgItemIds.has(ri.order_item_id));
+
+    const pkgRefundedSubtotal = refundedItemsForPkg.reduce(
+      (sum, ri) => sum + Number(ri.subtotal || 0),
+      0,
+    );
 
     const rawRate =
-      pkgSubtotal > 0
-        ? Number((pkgCommissionTotal / pkgSubtotal).toFixed(4))
+      pkgOriginalSubtotal > 0
+        ? Number(
+            (
+              Number(pkg.commission_total || 0) / pkgOriginalSubtotal
+            ).toFixed(4),
+          )
         : commissionConfig.base_rate;
 
     const pkgCommissionRate = rawRate > 1 ? rawRate / 100 : rawRate;
+
+    const payout = (pkg as any).payouts?.[0];
+    const {
+      subtotal: pkgSubtotal,
+      commission: pkgCommissionTotal,
+      netEarnings: pkgNetEarnings,
+      payoutStatus: pkgPayoutStatus,
+    } = payout
+      ? {
+          subtotal: Number(payout.subtotal || 0),
+          commission: Number(payout.commission || 0),
+          netEarnings: Number(payout.net_amount || 0),
+          payoutStatus: payout.status,
+        }
+      : computeRecalculatedPackageFinancials(
+          pkgOriginalSubtotal,
+          pkgRefundedSubtotal,
+          pkgCommissionRate,
+          commissionConfig,
+          pkg.status,
+        );
+
 
     const allOrderPkgs: Array<{ id: string }> = order.packages || [];
     const globalIndex = allOrderPkgs.findIndex((p) => p.id === pkg.id);
@@ -298,10 +345,13 @@ export async function getSellerOrders(companyId: string): Promise<{
         : new Date().toISOString(),
       status: pkg.status,
       deliveryType: pkg.delivery_type,
+      originalSubtotal: pkgOriginalSubtotal,
+      refundedSubtotal: pkgRefundedSubtotal,
       subtotal: pkgSubtotal,
       platformCommission: pkgCommissionTotal,
       commissionRate: pkgCommissionRate,
       netEarnings: pkgNetEarnings,
+      payoutStatus: pkgPayoutStatus,
       items: (pkg.items || []).map((item) => ({
         id: item.id,
         productId: item.product_id,
@@ -313,6 +363,8 @@ export async function getSellerOrders(companyId: string): Promise<{
         status: item.status,
       })),
     };
+
+    const orderRefunds = allRefunds.filter((r) => r.order_id === pkg.order_id);
 
     if (!ordersMap.has(pkg.order_id)) {
       ordersMap.set(pkg.order_id, {
@@ -344,16 +396,32 @@ export async function getSellerOrders(companyId: string): Promise<{
         cardLast4: paymentTransaction.card_last4 || null,
         docType: invoice.doc_type || null,
         identityNumber: invoice.number || null,
+        originalSubtotal: 0,
+        refundedSubtotal: 0,
         subtotal: 0,
         platformCommission: 0,
         commissionRate: pkgCommissionRate,
         netEarnings: 0,
+        payoutStatus: pkgPayoutStatus,
         status: pkg.status,
-        hasPendingRefund: pendingRefunds.some(
-          (r) => r.order_id === pkg.order_id,
+        hasRefund: orderRefunds.length > 0,
+        refundStatus: orderRefunds[0]?.status ?? null,
+        refundType: orderRefunds[0]?.type ?? null,
+        hasPendingRefund: orderRefunds.some(
+          (r) =>
+            r.status === "pending" ||
+            r.status === "approved" ||
+            r.status === "return_in_transit" ||
+            r.status === "return_received",
         ),
         pendingRefundType:
-          pendingRefunds.find((r) => r.order_id === pkg.order_id)?.type ?? null,
+          orderRefunds.find(
+            (r) =>
+              r.status === "pending" ||
+              r.status === "approved" ||
+              r.status === "return_in_transit" ||
+              r.status === "return_received",
+          )?.type ?? null,
         totalItems: 0,
         items: [],
         packages: [],
@@ -362,9 +430,12 @@ export async function getSellerOrders(companyId: string): Promise<{
 
     const sellerOrd = ordersMap.get(pkg.order_id)!;
     sellerOrd.packages.push(shipment);
+    sellerOrd.originalSubtotal += pkgOriginalSubtotal;
+    sellerOrd.refundedSubtotal += pkgRefundedSubtotal;
     sellerOrd.subtotal += pkgSubtotal;
     sellerOrd.platformCommission += pkgCommissionTotal;
     sellerOrd.netEarnings += pkgNetEarnings;
+    sellerOrd.payoutStatus = pkgPayoutStatus;
 
     for (const item of shipment.items) {
       sellerOrd.totalItems += item.quantity;

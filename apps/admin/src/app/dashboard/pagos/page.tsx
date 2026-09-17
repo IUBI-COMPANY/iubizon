@@ -24,6 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useAuth } from "@/hooks/useAuth";
 
+
 const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; icon: typeof IconClock }
@@ -401,16 +402,24 @@ export default function PagosPage() {
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-semibold">
                               {p.company?.name || "Empresa"}
                             </span>
+                            {p.orderCode && (
+                              <Badge
+                                variant="outline"
+                                className="font-mono text-[10px] text-slate-600 bg-slate-100 border-slate-200"
+                              >
+                                #{p.orderCode}
+                              </Badge>
+                            )}
                             <Badge className={sc.color}>
                               <sc.icon className="w-3 h-3 mr-1" />
                               {sc.label}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             <span className="text-sm font-bold">
                               S/ {formatMoney(p.net_amount)}
                             </span>
@@ -537,6 +546,7 @@ export default function PagosPage() {
                           </div>
                         </div>
 
+                        {/* Desglose Financiero de la Liquidación */}
                         <div className="bg-background rounded-lg p-3 space-y-1.5">
                           <div className="flex justify-between text-sm">
                             <span>Subtotal productos</span>
@@ -553,6 +563,8 @@ export default function PagosPage() {
                             </span>
                           </div>
                         </div>
+
+
 
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <IconCalendar className="w-3.5 h-3.5" />

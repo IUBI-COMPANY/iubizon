@@ -9,16 +9,14 @@ import {
   Calendar,
   Check,
   CheckCircle,
-  CheckCircle2,
   Clock,
-  Copy,
-  ExternalLink,
   Loader2,
   Mail,
   MapPin,
   Package,
   Phone,
   Receipt,
+  RotateCcw,
   ShieldCheck,
   Truck,
   User,
@@ -36,9 +34,11 @@ import {
   PackageDetailModal,
   PackageDetailData,
 } from "@/components/features/orders/PackageDetailModal";
+import { formatMoney } from "@/lib/utils/financials";
 import { formatTrackingId } from "@/lib/utils/tracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtimeOrders, notifyOrderSync } from "@/hooks/useRealtimeOrders";
+
 
 interface PackageItem {
   id: string;
@@ -94,6 +94,9 @@ interface BuyerOrderSession {
   taxAmount: number;
   shippingCost: number;
   totalAmount: number;
+  refundedAmount?: number;
+  pendingRefundAmount?: number;
+  netPaidAmount?: number;
   totalItems: number;
   shippingName?: string | null;
   shippingPhone?: string | null;
@@ -158,7 +161,6 @@ export default function OrderDetailPage({ params }: PageProps) {
     string | null
   >(null);
   const [hasActiveRefunds, setHasActiveRefunds] = useState(false);
-  const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
   const hasLoadedOnce = useRef(false);
 
   const [warrantyModalData, setWarrantyModalData] = useState<{
@@ -172,15 +174,8 @@ export default function OrderDetailPage({ params }: PageProps) {
   const [selectedPackageForDetail, setSelectedPackageForDetail] =
     useState<PackageDetailData | null>(null);
 
-  const handleCopyTracking = (tracking: string) => {
-    navigator.clipboard.writeText(tracking);
-    setCopiedTracking(tracking);
-    setTimeout(() => {
-      setCopiedTracking(null);
-    }, 2000);
-  };
-
   useEffect(() => {
+
     if (!authLoading && !user) {
       router.push(`/auth/login?redirect=/user/orders/${orderCode}`);
     }
@@ -349,9 +344,8 @@ export default function OrderDetailPage({ params }: PageProps) {
     (p) => p.deliveryType === "complete",
   );
 
-  const isSinglePackage = session.packages.length === 1;
-
   const destinationAddress =
+
     session.destinationAddress ||
     session.shippingAddress ||
     "Dirección acordada";
@@ -1016,13 +1010,20 @@ export default function OrderDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* 2. Tarjeta de Resumen Global de Pago */}
+            {/* 2. Tarjeta de Resumen Global de Pago con Historial y Reembolsos */}
             <div className="bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-xs space-y-4">
               <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
                 <h2 className="text-sm font-extrabold text-[#112237] flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-[#f25c05]" />
                   <span>Resumen Global de Pago</span>
                 </h2>
+                {Boolean(session.refundedAmount && session.refundedAmount > 0) && (
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {session.refundedAmount! >= session.totalAmount
+                      ? "Reembolso Total"
+                      : "Reembolso Parcial"}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2.5 text-xs">
@@ -1045,6 +1046,32 @@ export default function OrderDetailPage({ params }: PageProps) {
                       : `S/ ${session.shippingCost.toFixed(2)}`}
                   </strong>
                 </div>
+
+                {/* Desglose de Reembolso Liquidado / Extornado */}
+                {Boolean(session.refundedAmount && session.refundedAmount > 0) && (
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-emerald-50/60 -mx-2 px-2 py-1.5 rounded-xl border border-emerald-100">
+                    <span className="text-emerald-800 font-bold flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Reembolso devuelto a tarjeta:</span>
+                    </span>
+                    <strong className="text-emerald-700 font-black text-xs">
+                      - S/ {session.refundedAmount!.toFixed(2)}
+                    </strong>
+                  </div>
+                )}
+
+                {/* Desglose de Reembolso en Trámite si existe */}
+                {Boolean(session.pendingRefundAmount && session.pendingRefundAmount > 0) && (
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-amber-50/60 -mx-2 px-2 py-1.5 rounded-xl border border-amber-100">
+                    <span className="text-amber-900 font-medium flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Reembolso en revisión:</span>
+                    </span>
+                    <strong className="text-amber-700 font-bold">
+                      S/ {session.pendingRefundAmount!.toFixed(2)}
+                    </strong>
+                  </div>
+                )}
 
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-[#64748b] font-medium">
@@ -1082,18 +1109,40 @@ export default function OrderDetailPage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col justify-center items-end text-right mt-3">
-                  <span className="text-xs text-[#64748b] font-bold block mb-0.5">
-                    Monto Total de la Compra:
-                  </span>
-                  <span className="text-3xl font-black text-[#f25c05]">
-                    S/ {session.totalAmount.toFixed(2)}
-                  </span>
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mt-2 inline-flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Pago Aprobado y Procesado
-                  </span>
-                </div>
+                {/* Totalizador Final */}
+                {Boolean(session.refundedAmount && session.refundedAmount > 0) ? (
+                  <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col justify-center items-end text-right mt-3 space-y-1">
+                    <div className="flex items-center justify-between w-full text-xs text-slate-500 pb-1.5 border-b border-slate-200/80">
+                      <span>Monto Pagado Inicial:</span>
+                      <span className="font-semibold line-through text-slate-400">
+                        S/ {session.totalAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="text-xs text-[#64748b] font-bold block pt-1">
+                      Monto Total Final Cobrado:
+                    </span>
+                    <span className="text-3xl font-black text-[#112237]">
+                      S/ {(session.netPaidAmount ?? Math.max(0, session.totalAmount - session.refundedAmount!)).toFixed(2)}
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mt-2 inline-flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Reembolso de S/ {session.refundedAmount!.toFixed(2)} liquidado a tarjeta
+                    </span>
+                  </div>
+                ) : (
+                  <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col justify-center items-end text-right mt-3">
+                    <span className="text-xs text-[#64748b] font-bold block mb-0.5">
+                      Monto Total de la Compra:
+                    </span>
+                    <span className="text-3xl font-black text-[#f25c05]">
+                      S/ {session.totalAmount.toFixed(2)}
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mt-2 inline-flex items-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Pago Aprobado y Procesado
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

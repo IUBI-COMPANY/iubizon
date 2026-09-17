@@ -55,7 +55,7 @@ export async function GET(req: Request) {
     where.company = { name: { contains: company, mode: "insensitive" } };
   }
 
-  const [payouts, totalPending, totalInHold, totalPaid] = await Promise.all([
+  const [rawPayouts, totalPending, totalInHold, totalPaid] = await Promise.all([
     db.sellerPayout.findMany({
       where,
       orderBy: { created_at: "desc" },
@@ -68,6 +68,29 @@ export async function GET(req: Request) {
             email: true,
             bank_account: true,
             payout_card: true,
+          },
+        },
+        package: {
+          include: {
+            order: {
+              select: {
+                id: true,
+                order_code: true,
+                refundRequests: {
+                  include: {
+                    items: true,
+                  },
+                },
+              },
+            },
+            items: {
+              select: {
+                id: true,
+                unit_price: true,
+                quantity: true,
+                subtotal: true,
+              },
+            },
           },
         },
       },
@@ -85,6 +108,53 @@ export async function GET(req: Request) {
       _sum: { net_amount: true },
     }),
   ]);
+
+  const payouts = rawPayouts.map((p) => {
+    const pkg = p.package;
+    const order = pkg?.order;
+    const pkgItems = pkg?.items || [];
+    const pkgItemIds = new Set(pkgItems.map((i) => i.id));
+    const allRefunds = order?.refundRequests || [];
+
+    const refundedItemsForPkg = allRefunds
+      .filter((r) => r.status === "refunded")
+      .flatMap((r) => r.items || [])
+      .filter((ri) => pkgItemIds.has(ri.order_item_id));
+
+    const refundedAmount = refundedItemsForPkg.reduce(
+      (sum, ri) => sum + Number(ri.subtotal || 0),
+      0,
+    );
+
+    const originalSubtotal = pkgItems.reduce(
+      (sum, i) => sum + Number(i.subtotal || 0),
+      0,
+    );
+
+    const relevantRefunds = allRefunds.filter(
+      (r) =>
+        r.status === "refunded" &&
+        (r.items || []).some((ri) => pkgItemIds.has(ri.order_item_id)),
+    );
+
+    return {
+      ...p,
+      orderCode: order?.order_code || null,
+      orderId: order?.id || null,
+      originalSubtotal: originalSubtotal > 0 ? originalSubtotal : Number(p.subtotal),
+      refundedAmount,
+      hasRefundDeduction: refundedAmount > 0,
+      refundDetails: relevantRefunds.map((r) => ({
+        id: r.id,
+        reason: r.reason,
+        refundAmount: Number(r.refund_amount || 0),
+        status: r.status,
+        type: r.type,
+        createdAt: r.created_at,
+      })),
+    };
+  });
+
 
   const adminIds = [
     ...new Set(payouts.map((p) => p.updated_by).filter(Boolean)),

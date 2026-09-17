@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Check, Circle, X } from "lucide-react";
+import { formatMoney } from "@/lib/utils/financials";
 
 export interface BuyerRefundTimelineProps {
   status: string; // 'pending' | 'approved' | 'return_in_transit' | 'return_received' | 'refunded' | 'rejected'
@@ -47,15 +48,10 @@ export function BuyerRefundTimeline({
     }
   };
 
-  const formatMoney = (amount?: number | string | null) => {
-    if (amount === undefined || amount === null || amount === "") return "";
-    const num = typeof amount === "number" ? amount : Number(amount);
-    return isNaN(num) ? "" : num.toFixed(2);
-  };
-
   const requestedDateText = formatShortDate(createdAt);
   const estDeliveryText = formatShortDate(estimatedDelivery);
   const completionDateText = formatShortDate(deliveredAt);
+
 
   return (
     <div className="py-2">

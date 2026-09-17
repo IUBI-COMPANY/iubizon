@@ -48,6 +48,9 @@ export interface BuyerOrderSession {
   shippingCost: number;
   taxAmount: number;
   totalAmount: number;
+  refundedAmount: number;
+  pendingRefundAmount: number;
+  netPaidAmount: number;
   shippingName: string | null;
   shippingPhone?: string | null;
   shippingEmail?: string | null;
@@ -182,6 +185,7 @@ export async function GET(req: Request) {
               order_id: { in: orderIds },
               status: {
                 in: [
+                  "pending",
                   "approved",
                   "return_in_transit",
                   "return_received",
@@ -189,98 +193,118 @@ export async function GET(req: Request) {
                 ],
               },
             },
-            select: { order_id: true, status: true, type: true },
+            select: {
+              order_id: true,
+              status: true,
+              type: true,
+              refund_amount: true,
+              refund_method: true,
+            },
             orderBy: { created_at: "desc" },
           })
         : [];
 
-    const refundByOrder = new Map(refunds.map((r) => [r.order_id, r]));
+    const sessions: BuyerOrderSession[] = orders.map((order) => {
+      const orderRefunds = refunds.filter((r) => r.order_id === order.id);
+      const refundedAmount = orderRefunds
+        .filter((r) => r.status === "refunded")
+        .reduce((sum, r) => sum + Number(r.refund_amount || 0), 0);
+      const pendingRefundAmount = orderRefunds
+        .filter((r) => r.status !== "refunded" && r.status !== "rejected")
+        .reduce((sum, r) => sum + Number(r.refund_amount || 0), 0);
+      const totalAmount = Number(order.total_amount || 0);
+      const netPaidAmount = Math.max(0, totalAmount - refundedAmount);
 
-    const sessions: BuyerOrderSession[] = orders.map((order) => ({
-      orderId: order.id,
-      orderCode: order.order_code,
-      createdAt: order.created_at?.toISOString() || new Date().toISOString(),
-      deliveredAt:
-        order.delivered_at?.toISOString() ||
-        (order.status === "delivered" || order.status === "completed"
-          ? order.updated_at?.toISOString() || null
-          : null),
-      status: order.status,
-      subtotal: Number(order.subtotal || 0),
-      shippingCost: Number(order.shipping_cost || 0),
-      taxAmount: Number(order.tax_amount || 0),
-      totalAmount: Number(order.total_amount || 0),
-      shippingName: order.shipping?.name ?? null,
-      shippingPhone: order.shipping?.phone ?? null,
-      shippingEmail: order.shipping?.email ?? null,
-      shippingAddress: order.shipping?.address ?? null,
-      shippingDepartment: order.shipping?.department ?? null,
-      shippingProvince: order.shipping?.province ?? null,
-      shippingDistrict: order.shipping?.district ?? null,
-      destinationAddress: order.shipping?.address ?? null,
-      invoiceType: order.invoice?.type ?? null,
-      invoiceNumber: order.invoice?.number ?? null,
-      totalItems: (order.packages || []).reduce(
-        (sum, pkg) =>
-          sum + (pkg.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
-        0,
-      ),
-      hasRefund: refundByOrder.has(order.id),
-      refundStatus: refundByOrder.get(order.id)?.status ?? null,
-      refundType: refundByOrder.get(order.id)?.type ?? null,
-      paymentDetails: order.paymentTransaction
-        ? {
-            cardBrand: order.paymentTransaction.card_brand || null,
-            cardLast4: order.paymentTransaction.card_last4 || null,
-            authorizationCode:
-              order.paymentTransaction.authorization_code || order.order_code,
-            docType: order.invoice?.doc_type || null,
-            identityNumber: order.invoice?.number || null,
-          }
-        : order.payment_method === "niubiz_card"
+      return {
+        orderId: order.id,
+        orderCode: order.order_code,
+        createdAt: order.created_at?.toISOString() || new Date().toISOString(),
+        deliveredAt:
+          order.delivered_at?.toISOString() ||
+          (order.status === "delivered" || order.status === "completed"
+            ? order.updated_at?.toISOString() || null
+            : null),
+        status: order.status,
+        subtotal: Number(order.subtotal || 0),
+        shippingCost: Number(order.shipping_cost || 0),
+        taxAmount: Number(order.tax_amount || 0),
+        totalAmount,
+        refundedAmount,
+        pendingRefundAmount,
+        netPaidAmount,
+        shippingName: order.shipping?.name ?? null,
+        shippingPhone: order.shipping?.phone ?? null,
+        shippingEmail: order.shipping?.email ?? null,
+        shippingAddress: order.shipping?.address ?? null,
+        shippingDepartment: order.shipping?.department ?? null,
+        shippingProvince: order.shipping?.province ?? null,
+        shippingDistrict: order.shipping?.district ?? null,
+        destinationAddress: order.shipping?.address ?? null,
+        invoiceType: order.invoice?.type ?? null,
+        invoiceNumber: order.invoice?.number ?? null,
+        totalItems: (order.packages || []).reduce(
+          (sum, pkg) =>
+            sum + (pkg.items || []).reduce((s, i) => s + (i.quantity || 1), 0),
+          0,
+        ),
+        hasRefund: orderRefunds.length > 0,
+        refundStatus: orderRefunds[0]?.status ?? null,
+        refundType: orderRefunds[0]?.type ?? null,
+        paymentDetails: order.paymentTransaction
           ? {
-              cardBrand: "VISA",
-              cardLast4: null,
-              authorizationCode: order.order_code,
+              cardBrand: order.paymentTransaction.card_brand || null,
+              cardLast4: order.paymentTransaction.card_last4 || null,
+              authorizationCode:
+                order.paymentTransaction.authorization_code || order.order_code,
               docType: order.invoice?.doc_type || null,
               identityNumber: order.invoice?.number || null,
             }
-          : null,
-      packages: (order.packages || []).map((pkg, pIdx) => ({
-        packageId: pkg.id,
-        packageNumber: pIdx + 1,
-        totalPackages: order.packages.length,
-        companyName: pkg.company?.name || "Vendedor",
-        trackingNumber: pkg.tracking_number,
-        courier: pkg.courier,
-        trackingUrl: pkg.tracking_url,
-        estimatedDelivery: pkg.estimated_delivery?.toISOString() || null,
-        deliveryType: pkg.delivery_type,
-        status: pkg.status,
-        paymentMethod: order.payment_method || "cash_on_delivery",
-        cardBrand: order.paymentTransaction?.card_brand || null,
-        cardLast4: order.paymentTransaction?.card_last4 || null,
-        subtotal: Number(pkg.subtotal || 0),
-        netEarnings: Number(pkg.net_earnings || 0),
-        items: (pkg.items || []).map((item) => ({
-          id: item.id,
-          productId: item.product_id,
-          title: item.product?.title || "Producto",
-          price: Number(item.unit_price || 0),
-          quantity: item.quantity || 1,
-          subtotal: Number(item.subtotal || 0),
-          image: item.product?.images?.[0]?.url || null,
-          company: pkg.company
+          : order.payment_method === "niubiz_card"
             ? {
-                id: pkg.company.id,
-                name: pkg.company.name,
-                logoUrl: pkg.company.logo_url,
-                slug: pkg.company.slug,
+                cardBrand: "VISA",
+                cardLast4: null,
+                authorizationCode: order.order_code,
+                docType: order.invoice?.doc_type || null,
+                identityNumber: order.invoice?.number || null,
               }
             : null,
+        packages: (order.packages || []).map((pkg, pIdx) => ({
+          packageId: pkg.id,
+          packageNumber: pIdx + 1,
+          totalPackages: order.packages.length,
+          companyName: pkg.company?.name || "Vendedor",
+          trackingNumber: pkg.tracking_number,
+          courier: pkg.courier,
+          trackingUrl: pkg.tracking_url,
+          estimatedDelivery: pkg.estimated_delivery?.toISOString() || null,
+          deliveryType: pkg.delivery_type,
+          status: pkg.status,
+          paymentMethod: order.payment_method || "cash_on_delivery",
+          cardBrand: order.paymentTransaction?.card_brand || null,
+          cardLast4: order.paymentTransaction?.card_last4 || null,
+          subtotal: Number(pkg.subtotal || 0),
+          netEarnings: Number(pkg.net_earnings || 0),
+          items: (pkg.items || []).map((item) => ({
+            id: item.id,
+            productId: item.product_id,
+            title: item.product?.title || "Producto",
+            price: Number(item.unit_price || 0),
+            quantity: item.quantity || 1,
+            subtotal: Number(item.subtotal || 0),
+            image: item.product?.images?.[0]?.url || null,
+            company: pkg.company
+              ? {
+                  id: pkg.company.id,
+                  name: pkg.company.name,
+                  logoUrl: pkg.company.logo_url,
+                  slug: pkg.company.slug,
+                }
+              : null,
+          })),
         })),
-      })),
-    }));
+      };
+    });
+
 
     return NextResponse.json({
       sessions,

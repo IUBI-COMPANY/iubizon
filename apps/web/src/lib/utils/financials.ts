@@ -289,3 +289,65 @@ export function aggregateOrderFinancials(
     totalAmount: subtotal + shippingCost + taxAmount,
   };
 }
+
+/** Formatea montos con 2 decimales de forma segura para tipos number/string/null/undefined */
+export function formatMoney(
+  value: number | string | null | undefined,
+): string {
+  const num = typeof value === "number" ? value : Number(value || 0);
+  return (isNaN(num) ? 0 : num).toFixed(2);
+}
+
+export interface RecalculatedPackageFinancials {
+  subtotal: number;
+  commission: number;
+  netEarnings: number;
+  payoutStatus: string;
+}
+
+/** Recalcula liquidación de paquete considerando devoluciones y umbrales de comisión */
+export function computeRecalculatedPackageFinancials(
+  originalSubtotal: number,
+  refundedSubtotal: number,
+  commissionRate: number,
+  config: CommissionConfig = DEFAULT_COMMISSION_CONFIG,
+  packageStatus?: string,
+): RecalculatedPackageFinancials {
+  const effectiveSubtotal = Math.max(0, originalSubtotal - refundedSubtotal);
+  if (effectiveSubtotal <= 0 && refundedSubtotal > 0) {
+    return {
+      subtotal: 0,
+      commission: 0,
+      netEarnings: 0,
+      payoutStatus: "refunded",
+    };
+  }
+
+  const commission =
+    effectiveSubtotal < config.threshold_amount
+      ? Number(
+          (
+            effectiveSubtotal * commissionRate +
+            (commissionRate === 0 ? 0 : config.fixed_fee)
+          ).toFixed(2),
+        )
+      : Number((effectiveSubtotal * commissionRate).toFixed(2));
+
+  const netEarnings = Math.max(
+    0,
+    Number((effectiveSubtotal - commission).toFixed(2)),
+  );
+
+  const payoutStatus =
+    packageStatus === "delivered" || packageStatus === "completed"
+      ? "in_hold"
+      : "pending";
+
+  return {
+    subtotal: effectiveSubtotal,
+    commission,
+    netEarnings,
+    payoutStatus,
+  };
+}
+

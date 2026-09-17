@@ -35,6 +35,7 @@ import {
   Phone,
   Printer,
   Receipt,
+  RotateCcw,
   ShieldAlert,
   Truck,
   User,
@@ -50,6 +51,7 @@ import {
 } from "@/components/features/orders/EditSingleShipmentModal";
 import {
   formatCommissionRateLabel,
+  formatMoney,
   normalizeCommissionRate,
 } from "@/lib/utils/financials";
 import { formatTrackingId } from "@/lib/utils/tracking";
@@ -58,10 +60,6 @@ import {
   SellerOrderShipment,
 } from "@/app/api/seller/orders/route";
 
-function formatMoney(value: number | string | undefined | null): string {
-  const num = typeof value === "number" ? value : Number(value || 0);
-  return (isNaN(num) ? 0 : num).toFixed(2);
-}
 
 function formatDate(isoString: string | null | undefined) {
   if (!isoString) return "No asignada";
@@ -810,12 +808,36 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between border-b border-slate-100 pb-2">
                   <span className="text-[#64748b] font-medium">
-                    Valor Total Productos:
+                    Valor Venta Original:
                   </span>
                   <span className="font-bold text-[#112237]">
-                    S/ {formatMoney(order.subtotal)}
+                    S/ {formatMoney(order.originalSubtotal || order.subtotal)}
                   </span>
                 </div>
+
+                {/* Desglose de Devolución / Reembolso si existe */}
+                {Boolean(order.refundedSubtotal && order.refundedSubtotal > 0) && (
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-red-50/50 -mx-2 px-2 py-1.5 rounded-xl border border-red-100">
+                    <span className="text-red-800 font-bold flex items-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5 text-red-600" />
+                      <span>(-) Producto Devuelto / Reembolso:</span>
+                    </span>
+                    <strong className="text-red-700 font-black text-xs">
+                      - S/ {formatMoney(order.refundedSubtotal)}
+                    </strong>
+                  </div>
+                )}
+
+                {Boolean(order.refundedSubtotal && order.refundedSubtotal > 0 && order.subtotal > 0) && (
+                  <div className="flex justify-between border-b border-slate-100 pb-2 text-[#334155]">
+                    <span className="font-semibold text-slate-700">
+                      Venta Neta Efectiva:
+                    </span>
+                    <span className="font-extrabold text-[#112237]">
+                      S/ {formatMoney(order.subtotal)}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex justify-between border-b border-slate-100 pb-2 text-[#64748b]">
                   <span className="font-medium">
@@ -834,18 +856,50 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   </span>
                 </div>
 
-                <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-200/80 space-y-1">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
-                    Monto Neto a Transferir
-                  </span>
-                  <span className="text-2xl font-black text-emerald-700 block">
-                    S/ {formatMoney(order.netEarnings)}
-                  </span>
-                  <p className="text-[10px] text-emerald-900/80 font-medium pt-1">
-                    ✓ Disponible para transferencia al cumplirse los 7 días del
-                    seguro de protección del comprador.
-                  </p>
-                </div>
+                {/* Totalizador Neto */}
+                {Boolean(order.payoutStatus === "refunded" || (order.subtotal <= 0 && order.refundedSubtotal > 0)) ? (
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
+                        Estado de la Liquidación
+                      </span>
+                      <span className="text-[10px] font-extrabold uppercase bg-red-100 text-red-800 border border-red-200 px-2 py-0.5 rounded">
+                        Totalmente Reembolsado
+                      </span>
+                    </div>
+                    <span className="text-2xl font-black text-slate-700 block pt-1">
+                      S/ 0.00
+                    </span>
+                    <p className="text-[10px] text-slate-500 font-medium pt-0.5">
+                      Venta anulada por devolución de producto. No existe saldo pendiente de transferencia.
+                    </p>
+                  </div>
+                ) : Boolean(order.refundedSubtotal && order.refundedSubtotal > 0) ? (
+                  <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/90 space-y-1">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      Monto Neto Ajustado a Transferir
+                    </span>
+                    <span className="text-2xl font-black text-emerald-700 block">
+                      S/ {formatMoney(order.netEarnings)}
+                    </span>
+                    <p className="text-[10px] text-emerald-900/80 font-medium pt-1">
+                      ✓ Monto recalculado tras descuento de S/ {formatMoney(order.refundedSubtotal)} por producto devuelto.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50/60 rounded-2xl p-4 border border-emerald-200/80 space-y-1">
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                      Monto Neto a Transferir
+                    </span>
+                    <span className="text-2xl font-black text-emerald-700 block">
+                      S/ {formatMoney(order.netEarnings)}
+                    </span>
+                    <p className="text-[10px] text-emerald-900/80 font-medium pt-1">
+                      ✓ Disponible para transferencia al cumplirse los 7 días del
+                      seguro de protección del comprador.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

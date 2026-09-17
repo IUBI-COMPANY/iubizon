@@ -26,17 +26,42 @@ export async function GET(req: Request) {
     ];
   }
 
-  const [orders, total] = await Promise.all([
+  const [rawOrders, total] = await Promise.all([
     db.order.findMany({
       where,
       include: {
         buyer: { select: { name: true, email: true, phone: true } },
         shipping: true,
         invoice: true,
+        refundRequests: {
+          include: {
+            items: true,
+          },
+          orderBy: { created_at: "desc" },
+        },
         packages: {
           include: {
-            company: { select: { name: true } },
-            items: { include: { product: { select: { title: true } } } },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                legal_name: true,
+                tax_id: true,
+                phone: true,
+              },
+            },
+            items: {
+              include: {
+                product: {
+                  select: {
+                    id: true,
+                    title: true,
+                    images: { take: 1, select: { url: true } },
+                  },
+                },
+              },
+            },
+            payouts: true,
           },
         },
       },
@@ -46,7 +71,76 @@ export async function GET(req: Request) {
     db.order.count({ where }),
   ]);
 
+  const orders = rawOrders.map((order) => {
+    const refundRequests = order.refundRequests || [];
+    const refundedAmount = refundRequests
+      .filter((r) => r.status === "refunded")
+      .reduce((sum, r) => sum + Number(r.refund_amount || 0), 0);
+    const pendingRefundAmount = refundRequests
+      .filter((r) => r.status !== "refunded" && r.status !== "rejected")
+      .reduce((sum, r) => sum + Number(r.refund_amount || 0), 0);
+    const totalAmount = Number(order.total_amount || 0);
+    const netPaidAmount = Math.max(0, totalAmount - refundedAmount);
+
+    const refundedItemIds = new Set(
+      refundRequests
+        .filter((r) => r.status === "refunded")
+        .flatMap((r) => r.items || [])
+        .map((ri) => ri.order_item_id),
+    );
+
+    let packagesSubtotal = 0;
+    let platformCommissionTotal = 0;
+    let sellerEarningsTotal = 0;
+
+    const enrichedPackages = (order.packages || []).map((pkg) => {
+      const pkgSubtotal = Number(pkg.subtotal || 0);
+      const pkgCommission = Number(pkg.commission_total || 0);
+      const pkgNetEarnings = Number(pkg.net_earnings || 0);
+      const payout = pkg.payouts?.[0];
+
+      const effectiveSubtotal = payout ? Number(payout.subtotal || 0) : pkgSubtotal;
+      const effectiveCommission = payout ? Number(payout.commission || 0) : pkgCommission;
+      const effectiveEarnings = payout ? Number(payout.net_amount || 0) : pkgNetEarnings;
+      const payoutStatus = payout ? payout.status : (pkg.status === "delivered" || pkg.status === "completed" ? "in_hold" : "pending");
+
+      packagesSubtotal += effectiveSubtotal;
+      platformCommissionTotal += effectiveCommission;
+      sellerEarningsTotal += effectiveEarnings;
+
+      const enrichedItems = (pkg.items || []).map((item) => ({
+        ...item,
+        isRefunded: refundedItemIds.has(item.id),
+      }));
+
+      return {
+        ...pkg,
+        effectiveSubtotal,
+        effectiveCommission,
+        effectiveEarnings,
+        payoutStatus,
+        items: enrichedItems,
+      };
+    });
+
+    return {
+      ...order,
+      packages: enrichedPackages,
+      refundedAmount,
+      pendingRefundAmount,
+      netPaidAmount,
+      packagesSubtotal,
+      platformCommissionTotal,
+      sellerEarningsTotal,
+      hasRefund: refundRequests.length > 0,
+      refundStatus: refundRequests[0]?.status || null,
+      refundType: refundRequests[0]?.type || null,
+      refundedItemIds: Array.from(refundedItemIds),
+    };
+  });
+
   return NextResponse.json({ orders, total });
+
 }
 
 export async function PATCH(req: Request) {
