@@ -69,13 +69,13 @@ Este skill es la **referencia central e inalterable** para el desarrollo de func
 
 7. **`iubizon-business-logistics`:**
    - Envío Consolidado (3 Pasos vía Almacén Chorrillos) vs Envío Directo (2 Pasos).
-   - Máquina de estados de la Orden y Paquete (`pending`, `paid`, `processing`, `in_transit_to_warehouse`, `received_in_warehouse`, `shipped`, `delivered`, `completed`, `cancelled`).
+   - Máquina de estados oficiales de Orden y Paquete (`pending`, `shipped`, `received_in_warehouse`, `delivered`, `refunded`, `cancelled`).
 
 8. **`iubizon-business-refunds`:**
    - Período de protección de 7 días al comprador.
    - Ruta de devolución de 2 ó 3 nodos según `delivery_type`.
-   - Máquina de estados de reembolso (`pending`, `approved_for_return`, `return_shipped`, `return_received`, `completed`, `rejected`).
-   - Retención anti-fraude de Payouts en `in_hold` durante reclamos activos.
+   - Máquina de 6 estados canónicos de reembolso (`pending`, `approved`, `return_in_transit`, `return_received`, `refunded`, `rejected`).
+   - Retención anti-fraude de Payouts en `in_hold` durante reclamos activos y ajuste contable a `refunded` (S/ 0.00 neto) en devolución total o recálculo proporcional en parcial.
 
 ---
 

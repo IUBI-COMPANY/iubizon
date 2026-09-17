@@ -49,3 +49,12 @@ Al igual que en los envíos de venta, el retorno de productos sigue la modalidad
 
 ## 4. Retención Anti-Fraude en Liquidación a Vendedores
 - **Regla Inquebrantable:** Mientras exista una solicitud de reembolso activa (estado distinto de `rejected` o `refunded`), el pago al vendedor (`SellerPayout`) **PERMANECE BLOQUEADO EN `in_hold`**, impidiendo cualquier transferencia de fondos al vendedor mientras el producto está en disputa o tránsito de retorno.
+
+---
+
+## 5. Liquidación del Reembolso y Ajuste del Payout
+- **Separación de Módulos:**
+  - Toda la operativa de reclamo, motivos, fotos, logística inversa y extorno al comprador se gestiona en `/dashboard/reembolsos`.
+  - El impacto en el vendedor se refleja en `/dashboard/pagos` de forma estrictamente contable:
+    - **Reembolso Total (100%):** El `SellerPayout` pasa a `refunded` con neto `S/ 0.00` (evitando transferencias indebidas).
+    - **Reembolso Parcial:** Se descuentan los ítems reembolsados del subtotal del paquete y se recalcula la comisión proporcional sobre los ítems efectivos.

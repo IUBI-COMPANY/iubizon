@@ -13,7 +13,7 @@ Este skill define el **protocolo de desarrollo obligatorio** que todo cambio —
 
 ---
 
-## 📋 Flujo de Trabajo Obligatorio (7 Fases)
+## 📋 Flujo de Trabajo Obligatorio (9 Fases)
 
 ### Fase 1 — Investigación
 - Leer y comprender los **Skills de Negocio** aplicables (`iubizon-business-rules`).
@@ -71,8 +71,13 @@ npx tsc --noEmit   # en apps/admin
 npm run lint        # en la raíz del monorepo
 ```
 
+### Fase 9 — Sincronización y Actualización Obligatoria de Skills
+Antes de dar por concluida la sesión o realizar commit:
+1. **Evaluar cambios de lógica o modelo:** Si el cambio extendió o modificó un dominio existente, actualizar su respectivo `.agents/skills/iubizon-business-[dominio]/SKILL.md`.
+2. **Crear nuevos skills de dominio:** Si se implementó un nuevo módulo funcional o de integración, crear su carpeta y `SKILL.md` bajo el estándar oficial y registrarlo en `iubizon-business-rules` y `AGENTS.md`.
+
 > [!WARNING]
-> **No se considera un cambio entregado hasta que las 3 verificaciones pasen con 0 errores y 0 advertencias y la auto-auditoría de la Fase 7 haya sido validada.**
+> **No se considera un cambio entregado hasta que las 9 fases hayan sido validadas.**
 
 ---
 

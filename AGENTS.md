@@ -27,3 +27,16 @@ Antes de realizar cualquier investigación, refactorización, creación o modifi
 ## 🚨 Regla de Guardia Inalterable
 
 Si una solicitud requiere alterar o romper alguna regla de negocio plasmada en los skills anteriores, la IA **NO DEBE APLICAR EL CAMBIO AUTOMÁTICAMENTE**. En su lugar, emitirá una alerta explícita informando el impacto en la lógica de negocio y solicitará confirmación previa al usuario.
+
+---
+
+## 🔄 Protocolo de Sincronización Obligatoria de Skills (Post-Cambio / Commit)
+
+Ninguna tarea o ciclo de desarrollo se considera terminado sin ejecutar la **sincronización de skills**:
+
+1. **Si se modificó o amplió un dominio existente:**
+   - La IA **DEBE** actualizar inmediatamente el archivo `SKILL.md` del dominio correspondiente en `.agents/skills/` reflejando fórmulas, estados o contratos nuevos.
+2. **Si se creó un nuevo dominio de negocio o módulo:**
+   - La IA **DEBE** crear la carpeta `.agents/skills/iubizon-business-[nuevo-dominio]/SKILL.md` con su frontmatter YAML, descripción, reglas inalterables y registrarlo en este `AGENTS.md` y en `iubizon-business-rules/SKILL.md`.
+3. **Si el cambio fue meramente visual / cosmético:**
+   - No se requiere modificar skills.

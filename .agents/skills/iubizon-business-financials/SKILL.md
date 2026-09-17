@@ -49,7 +49,9 @@ El cálculo exacto de la comisión sobre un subtotal se realiza mediante la func
 Las retribuciones netas a vendedores se liquidan basándose en la tasa congelada `pkg.commission_rate` y siguen estrictamente 6 estados.
 
 > [!NOTE]
-> **La liquidación de pagos se gestiona desde el Admin (`/apps/admin`)**: el Administrador es quien procesa los `SellerPayout` (marcar `processing` → `paid`, transferencias Niubiz o manuales) y también gestiona órdenes y reembolsos desde ahí.
+> **Separación de Responsabilidades en el Admin (`/apps/admin`)**:
+> - **Módulo Pagos (`/dashboard/pagos`)**: Gestiona exclusivamente la tesorería y liquidación a vendedores (`SellerPayout`: `in_hold` → `pending` → `processing` → `paid` / `refunded`). No duplica la operativa de reclamos de compradores ni muestra banners rojos de disputas.
+> - **Módulo Reembolsos (`/dashboard/reembolsos`)**: Gestiona exclusivamente los reclamos del comprador, logística inversa y extornos a tarjeta.
 
 1. **`in_hold` (Retenido en Garantía):** Paquete entregado, pero dentro del período de garantía de 7 días o con reembolso activo. **Bloqueado para transferencia.**
 2. **`pending` (Disponible para Pago):** Transcurrieron los 7 días de garantía sin disputas activas. **Listo para desembolso por el Admin.**
@@ -57,3 +59,14 @@ Las retribuciones netas a vendedores se liquidan basándose en la tasa congelada
 4. **`paid` (Abonado / Transferido):** Transferencia efectuada y registrada con `paid_at`, `payment_method`, `reference_code` y comprobante `payment_proof`.
 5. **`refunded` (Reembolsado):** Paquete devuelto al 100%, subtotal neto queda en S/ 0.00. Sin saldo por transferir.
 6. **`cancelled` (Anulado):** Pago cancelado por ajuste interno del Admin.
+
+---
+
+## 5. Reglas de Recálculo Financiero ante Devoluciones
+
+Cuando un paquete experimenta una devolución (aprobada y completada):
+
+1. **Subtotal Efectivo:** `subtotal_efectivo = max(0, subtotal_original - subtotal_reembolsado)`.
+2. **Comisión Recalculada:** Se recalcula la comisión de plataforma sobre el `subtotal_efectivo` utilizando la tasa congelada `pkg.commission_rate` y aplicando la regla del umbral de S/ 40.00 (`fixed_fee` de S/ 2.50 si `subtotal_efectivo < S/ 40.00`).
+3. **Devolución Total (100%):** Si el subtotal efectivo llega a 0, el `SellerPayout` pasa automáticamente al estado `refunded`, con `subtotal = 0.00`, `commission = 0.00` y `net_amount = 0.00`.
+4. **Devolución Parcial:** Si quedan ítems efectivos, el `SellerPayout` ajusta su `subtotal`, `commission` y `net_amount` a los productos retenidos por el comprador, preservando la inmutabilidad de la tasa original.
