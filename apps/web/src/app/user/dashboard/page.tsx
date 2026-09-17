@@ -133,10 +133,7 @@ function DashboardContent() {
         clearCart();
         localStorage.removeItem("iubizon_checkout_step");
         localStorage.removeItem("iubizon_checkout_form");
-        toast.success(
-          `¡Pago exitoso! Orden #${orderCode}`,
-          "Pago Confirmado",
-        );
+        toast.success(`¡Pago exitoso! Orden #${orderCode}`, "Pago Confirmado");
       }
     }
   }, [searchParams, clearCart, toast]);

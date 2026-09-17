@@ -24,7 +24,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { useAuth } from "@/hooks/useAuth";
 
-
 const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; icon: typeof IconClock }
@@ -563,8 +562,6 @@ export default function PagosPage() {
                             </span>
                           </div>
                         </div>
-
-
 
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <IconCalendar className="w-3.5 h-3.5" />

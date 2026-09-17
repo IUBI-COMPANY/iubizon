@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Wallet } from "lucide-react";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -128,7 +128,14 @@ export function CheckoutStepPayment({
   );
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [processingMessage, setProcessingMessage] = useState<string | undefined>(undefined);
+  const [processingMessage, setProcessingMessage] = useState<
+    string | undefined
+  >(undefined);
+
+  const handleLoadingChange = useCallback((loading: boolean, msg?: string) => {
+    setIsProcessingPayment(loading);
+    setProcessingMessage(msg);
+  }, []);
 
   return (
     <>
@@ -257,10 +264,7 @@ export function CheckoutStepPayment({
                   onValidate={onValidate}
                   onSuccess={onSuccess}
                   onError={onError}
-                  onLoadingChange={(loading, msg) => {
-                    setIsProcessingPayment(loading);
-                    setProcessingMessage(msg);
-                  }}
+                  onLoadingChange={handleLoadingChange}
                 />
               </div>
             )}

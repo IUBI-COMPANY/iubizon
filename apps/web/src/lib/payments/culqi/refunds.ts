@@ -61,7 +61,9 @@ export async function refundCulqiCharge(
     };
   } catch (err: unknown) {
     const msg =
-      err instanceof Error ? err.message : "Error al conectar con Culqi Refunds";
+      err instanceof Error
+        ? err.message
+        : "Error al conectar con Culqi Refunds";
     console.error("[Culqi refunds.ts] Error executing refund:", err);
     return {
       success: false,

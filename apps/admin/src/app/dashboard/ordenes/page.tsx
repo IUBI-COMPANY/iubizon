@@ -125,22 +125,25 @@ export default function OrdersPage() {
     estimatedDelivery?: string | null;
   } | null>(null);
 
-  const fetchOrders = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.set("status", statusFilter);
-      if (onlyConsolidated) params.set("deliveryType", "complete");
-      if (search) params.set("search", search);
-      const res = await fetch(`/api/orders?${params}`);
-      const data = await res.json();
-      setOrders(data.orders || []);
-    } catch (err) {
-      console.error("Error fetching orders:", err);
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, [statusFilter, onlyConsolidated, search]);
+  const fetchOrders = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (statusFilter) params.set("status", statusFilter);
+        if (onlyConsolidated) params.set("deliveryType", "complete");
+        if (search) params.set("search", search);
+        const res = await fetch(`/api/orders?${params}`);
+        const data = await res.json();
+        setOrders(data.orders || []);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [statusFilter, onlyConsolidated, search],
+  );
 
   useEffect(() => {
     fetchOrders(false);
@@ -376,17 +379,26 @@ export default function OrdersPage() {
                       </Badge>
                     )}
 
-                    {Boolean(order.refundedAmount && order.refundedAmount >= order.total_amount) ? (
+                    {Boolean(
+                      order.refundedAmount &&
+                      order.refundedAmount >= order.total_amount,
+                    ) ? (
                       <Badge className="bg-red-100 text-red-800 border-red-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
                         <IconRotateClockwise className="w-3 h-3 text-red-600" />
                         Reembolso Total
                       </Badge>
-                    ) : Boolean(order.refundedAmount && order.refundedAmount > 0) ? (
+                    ) : Boolean(
+                        order.refundedAmount && order.refundedAmount > 0,
+                      ) ? (
                       <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
                         <IconRotateClockwise className="w-3 h-3 text-emerald-600" />
-                        Reembolso Parcial (S/ {formatMoney(order.refundedAmount)})
+                        Reembolso Parcial (S/{" "}
+                        {formatMoney(order.refundedAmount)})
                       </Badge>
-                    ) : Boolean(order.pendingRefundAmount && order.pendingRefundAmount > 0) ? (
+                    ) : Boolean(
+                        order.pendingRefundAmount &&
+                        order.pendingRefundAmount > 0,
+                      ) ? (
                       <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] font-extrabold uppercase shrink-0 flex items-center gap-1">
                         <IconClock className="w-3 h-3 text-amber-600" />
                         Reembolso en Revisión
@@ -404,7 +416,9 @@ export default function OrdersPage() {
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 mt-0.5 text-xs">
-                        {Boolean(order.refundedAmount && order.refundedAmount > 0) ? (
+                        {Boolean(
+                          order.refundedAmount && order.refundedAmount > 0,
+                        ) ? (
                           <>
                             <span className="font-bold text-[#112237]">
                               S/ {formatMoney(order.netPaidAmount)}
@@ -478,13 +492,16 @@ export default function OrdersPage() {
                     />
 
                     {/* Historial de Reembolsos & Devoluciones si existen */}
-                    {Boolean(order.refundRequests && order.refundRequests.length > 0) && (
+                    {Boolean(
+                      order.refundRequests && order.refundRequests.length > 0,
+                    ) && (
                       <div className="bg-red-50/40 border border-red-200/80 rounded-xl p-3.5 space-y-2.5 text-xs">
                         <div className="flex items-center justify-between border-b border-red-200/60 pb-2">
                           <div className="flex items-center gap-1.5 font-bold text-red-900">
                             <IconRotateClockwise className="w-4 h-4 text-red-600" />
                             <span>
-                              Historial de Reembolsos & Devoluciones ({order.refundRequests.length})
+                              Historial de Reembolsos & Devoluciones (
+                              {order.refundRequests.length})
                             </span>
                           </div>
                           <Link
@@ -508,7 +525,9 @@ export default function OrdersPage() {
                                     REF-{rf.id.slice(0, 8).toUpperCase()}
                                   </span>
                                   <span className="font-bold text-slate-800 text-xs">
-                                    {rf.type === "full" ? "Reembolso Completo" : "Reembolso Parcial"}
+                                    {rf.type === "full"
+                                      ? "Reembolso Completo"
+                                      : "Reembolso Parcial"}
                                   </span>
                                   <Badge
                                     variant="outline"
@@ -540,11 +559,18 @@ export default function OrdersPage() {
                                   </Badge>
                                 </div>
                                 <p className="text-[11px] text-slate-600">
-                                  <strong>Motivo:</strong> &quot;{rf.reason}&quot;
+                                  <strong>Motivo:</strong> &quot;{rf.reason}
+                                  &quot;
                                 </p>
                                 {rf.refund_method && (
                                   <p className="text-[10px] text-slate-500">
-                                    Método: {rf.refund_method === "niubiz" ? "Pasarela Niubiz (Extorno Tarjeta)" : rf.refund_method} {rf.refund_reference ? `· Ref: ${rf.refund_reference}` : ""}
+                                    Método:{" "}
+                                    {rf.refund_method === "niubiz"
+                                      ? "Pasarela Niubiz (Extorno Tarjeta)"
+                                      : rf.refund_method}{" "}
+                                    {rf.refund_reference
+                                      ? `· Ref: ${rf.refund_reference}`
+                                      : ""}
                                   </p>
                                 )}
                               </div>
@@ -553,7 +579,11 @@ export default function OrdersPage() {
                                   - S/ {formatMoney(rf.refund_amount)}
                                 </span>
                                 <span className="text-[10px] text-slate-400">
-                                  {rf.created_at ? new Date(rf.created_at).toLocaleDateString("es-PE") : ""}
+                                  {rf.created_at
+                                    ? new Date(
+                                        rf.created_at,
+                                      ).toLocaleDateString("es-PE")
+                                    : ""}
                                 </span>
                               </div>
                             </div>
@@ -582,16 +612,23 @@ export default function OrdersPage() {
                       </p>
                       <div className="space-y-1.5">
                         {items.map((item: any, idx: number) => {
-                          const isItemRefunded = item.isRefunded || (order.refundedItemIds && order.refundedItemIds.includes(item.id));
+                          const isItemRefunded =
+                            item.isRefunded ||
+                            (order.refundedItemIds &&
+                              order.refundedItemIds.includes(item.id));
                           return (
                             <div
                               key={idx}
                               className={`flex items-center justify-between text-sm rounded-md px-3 py-1.5 ${
-                                isItemRefunded ? "bg-red-50/50 border border-red-100" : "bg-background"
+                                isItemRefunded
+                                  ? "bg-red-50/50 border border-red-100"
+                                  : "bg-background"
                               }`}
                             >
                               <div className="flex items-center gap-2 truncate flex-1">
-                                <span className={`truncate ${isItemRefunded ? "text-slate-600 line-through" : ""}`}>
+                                <span
+                                  className={`truncate ${isItemRefunded ? "text-slate-600 line-through" : ""}`}
+                                >
                                   {item.product?.title || "Producto"}
                                 </span>
                                 {isItemRefunded && (
@@ -603,7 +640,9 @@ export default function OrdersPage() {
                               <span className="text-muted-foreground text-xs ml-2">
                                 x{item.quantity}
                               </span>
-                              <span className={`font-medium ml-3 ${isItemRefunded ? "text-red-700" : ""}`}>
+                              <span
+                                className={`font-medium ml-3 ${isItemRefunded ? "text-red-700" : ""}`}
+                              >
                                 S/{" "}
                                 {formatMoney(
                                   item.subtotal ||
@@ -633,37 +672,54 @@ export default function OrdersPage() {
                         <div className="flex justify-between text-slate-600">
                           <span>Subtotal de Productos:</span>
                           <span className="font-medium text-slate-800">
-                            S/ {formatMoney(order.subtotal || order.total_amount)}
+                            S/{" "}
+                            {formatMoney(order.subtotal || order.total_amount)}
                           </span>
                         </div>
                         <div className="flex justify-between text-slate-600">
                           <span>Costo de Envío:</span>
                           <span className="font-medium text-emerald-700">
-                            {Number(order.shipping_cost || 0) === 0 ? "GRATIS" : `S/ ${formatMoney(order.shipping_cost)}`}
+                            {Number(order.shipping_cost || 0) === 0
+                              ? "GRATIS"
+                              : `S/ ${formatMoney(order.shipping_cost)}`}
                           </span>
                         </div>
-                        {Boolean(order.refundedAmount && order.refundedAmount > 0) && (
+                        {Boolean(
+                          order.refundedAmount && order.refundedAmount > 0,
+                        ) && (
                           <div className="flex justify-between text-emerald-800 bg-emerald-50/70 -mx-2 px-2 py-1 rounded-md font-bold">
                             <span className="flex items-center gap-1">
                               <IconRotateClockwise className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>(-) Reembolso Liquidado / Extornado a Tarjeta:</span>
+                              <span>
+                                (-) Reembolso Liquidado / Extornado a Tarjeta:
+                              </span>
                             </span>
-                            <span>- S/ {formatMoney(order.refundedAmount)}</span>
+                            <span>
+                              - S/ {formatMoney(order.refundedAmount)}
+                            </span>
                           </div>
                         )}
-                        {Boolean(order.pendingRefundAmount && order.pendingRefundAmount > 0) && (
+                        {Boolean(
+                          order.pendingRefundAmount &&
+                          order.pendingRefundAmount > 0,
+                        ) && (
                           <div className="flex justify-between text-amber-900 bg-amber-50/70 -mx-2 px-2 py-1 rounded-md font-medium">
                             <span className="flex items-center gap-1">
                               <IconClock className="w-3.5 h-3.5 text-amber-600" />
                               <span>Reembolso en Trámite / Revisión:</span>
                             </span>
-                            <span>S/ {formatMoney(order.pendingRefundAmount)}</span>
+                            <span>
+                              S/ {formatMoney(order.pendingRefundAmount)}
+                            </span>
                           </div>
                         )}
                         <div className="flex justify-between items-center text-sm font-extrabold pt-1 text-[#112237]">
                           <span>Monto Total Cobrado Efectivo (Neto):</span>
                           <span className="text-base font-black text-[#f25c05]">
-                            S/ {formatMoney(order.netPaidAmount ?? order.total_amount)}
+                            S/{" "}
+                            {formatMoney(
+                              order.netPaidAmount ?? order.total_amount,
+                            )}
                           </span>
                         </div>
                       </div>
@@ -673,61 +729,72 @@ export default function OrdersPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                             <IconWallet className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Liquidación a Vendedores (Seller Payouts)</span>
+                            <span>
+                              Liquidación a Vendedores (Seller Payouts)
+                            </span>
                           </span>
                         </div>
 
                         <div className="space-y-1.5">
-                          {(order.packages || []).map((pkg: any, pIdx: number) => (
-                            <div
-                              key={pkg.id || pIdx}
-                              className="bg-slate-50 rounded-lg p-2.5 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
-                            >
-                              <div className="space-y-0.5">
-                                <span className="font-bold text-[#112237]">
-                                  {pkg.company?.name || `Tienda ${pIdx + 1}`}
-                                </span>
-                                <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                                  <span>Venta: S/ {formatMoney(pkg.effectiveSubtotal)}</span>
-                                  <span>·</span>
-                                  <span className="text-red-600">Comisión: -S/ {formatMoney(pkg.effectiveCommission)}</span>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                  <span className="text-[10px] text-slate-400 block">Monto a Transferir</span>
-                                  <span className="font-black text-emerald-700 text-xs">
-                                    S/ {formatMoney(pkg.effectiveEarnings)}
+                          {(order.packages || []).map(
+                            (pkg: any, pIdx: number) => (
+                              <div
+                                key={pkg.id || pIdx}
+                                className="bg-slate-50 rounded-lg p-2.5 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                              >
+                                <div className="space-y-0.5">
+                                  <span className="font-bold text-[#112237]">
+                                    {pkg.company?.name || `Tienda ${pIdx + 1}`}
                                   </span>
+                                  <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                                    <span>
+                                      Venta: S/{" "}
+                                      {formatMoney(pkg.effectiveSubtotal)}
+                                    </span>
+                                    <span>·</span>
+                                    <span className="text-red-600">
+                                      Comisión: -S/{" "}
+                                      {formatMoney(pkg.effectiveCommission)}
+                                    </span>
+                                  </div>
                                 </div>
-                                <Badge
-                                  variant="outline"
-                                  className={`text-[10px] font-bold uppercase ${
-                                    pkg.payoutStatus === "paid"
-                                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <span className="text-[10px] text-slate-400 block">
+                                      Monto a Transferir
+                                    </span>
+                                    <span className="font-black text-emerald-700 text-xs">
+                                      S/ {formatMoney(pkg.effectiveEarnings)}
+                                    </span>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-[10px] font-bold uppercase ${
+                                      pkg.payoutStatus === "paid"
+                                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                                        : pkg.payoutStatus === "in_hold"
+                                          ? "bg-blue-50 text-blue-800 border-blue-200"
+                                          : pkg.payoutStatus === "refunded"
+                                            ? "bg-slate-100 text-slate-600 border-slate-200"
+                                            : "bg-amber-50 text-amber-800 border-amber-200"
+                                    }`}
+                                  >
+                                    {pkg.payoutStatus === "paid"
+                                      ? "Transferido"
                                       : pkg.payoutStatus === "in_hold"
-                                        ? "bg-blue-50 text-blue-800 border-blue-200"
+                                        ? "En custodia (7 días)"
                                         : pkg.payoutStatus === "refunded"
-                                          ? "bg-slate-100 text-slate-600 border-slate-200"
-                                          : "bg-amber-50 text-amber-800 border-amber-200"
-                                  }`}
-                                >
-                                  {pkg.payoutStatus === "paid"
-                                    ? "Transferido"
-                                    : pkg.payoutStatus === "in_hold"
-                                      ? "En custodia (7 días)"
-                                      : pkg.payoutStatus === "refunded"
-                                        ? "Reembolsado"
-                                        : "Pendiente"}
-                                </Badge>
+                                          ? "Reembolsado"
+                                          : "Pendiente"}
+                                  </Badge>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       </div>
                     </div>
-
 
                     {order.status !== "cancelled" &&
                       order.status !== "completed" && (

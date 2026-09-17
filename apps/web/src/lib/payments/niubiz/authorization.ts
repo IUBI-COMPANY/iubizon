@@ -86,10 +86,7 @@ export async function authorizeNiubizTransaction(
     responseData.dataMap || responseData.data || responseData.order || {};
   const status = String(dataObj.STATUS || dataObj.status || "").trim();
   const actionCode = String(
-    dataObj.ACTION_CODE ||
-      dataObj.actionCode ||
-      responseData.errorCode ||
-      "",
+    dataObj.ACTION_CODE || dataObj.actionCode || responseData.errorCode || "",
   ).trim();
   const isApproved =
     res.ok &&

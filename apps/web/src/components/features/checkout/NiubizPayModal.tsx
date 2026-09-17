@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CreditCard, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type {
   PaymentWidgetProps,
@@ -64,32 +64,60 @@ export function NiubizPayModal({
 }: PaymentWidgetProps) {
   const [loadingSession, setLoadingSession] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(
-    "Conectando con la pasarela de pagos Niubiz...",
+    "Conectando de forma segura con la pasarela de pagos...",
   );
+
+  const propsRef = useRef({
+    amount,
+    cartItems,
+    shippingForm,
+    invoiceDetails,
+    onValidate,
+    onSuccess,
+    onError,
+    onLoadingChange,
+  });
+
+  useEffect(() => {
+    propsRef.current = {
+      amount,
+      cartItems,
+      shippingForm,
+      invoiceDetails,
+      onValidate,
+      onSuccess,
+      onError,
+      onLoadingChange,
+    };
+  });
 
   const updateLoading = (isLoading: boolean, msg?: string) => {
     setLoadingSession(isLoading);
     if (msg) setLoadingMsg(msg);
-    onLoadingChange?.(isLoading, msg);
+    propsRef.current.onLoadingChange?.(isLoading, msg);
   };
 
   // 1. Iniciar sesión de pago y abrir formulario modal
   const handleInitiatePayment = async () => {
-    if (onValidate && !onValidate()) {
+    if (propsRef.current.onValidate && !propsRef.current.onValidate()) {
       return;
     }
 
     try {
-      updateLoading(true, "Conectando con la pasarela de pagos Niubiz...");
+      updateLoading(
+        true,
+        "Conectando de forma segura con la pasarela de pagos...",
+      );
 
+      const currentProps = propsRef.current;
       const res = await fetch("/api/payments/niubiz/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount,
-          cartItems,
-          shipping: shippingForm,
-          invoiceDetails,
+          amount: currentProps.amount,
+          cartItems: currentProps.cartItems,
+          shipping: currentProps.shippingForm,
+          invoiceDetails: currentProps.invoiceDetails,
         }),
       });
 
@@ -102,20 +130,16 @@ export function NiubizPayModal({
 
       if (!window.VisanetCheckout) {
         throw new Error(
-          "El módulo de pago de Niubiz no está disponible en este momento.",
+          "El módulo de pago no está disponible en este momento.",
         );
       }
-
-      // Mantener el loading visible mientras carga el formulario de Niubiz.
-      // El formulario usa z-index 2147483646 (mayor que el overlay), por lo que
-      // aparecerá encima del loading cuando esté listo, sin dejar la página interactiva.
 
       window.VisanetCheckout.configure({
         sessiontoken: data.sessionKey,
         channel: "web",
         merchantid: data.merchantId,
         purchasenumber: Number(data.purchaseNumber),
-        amount: Number(amount.toFixed(2)),
+        amount: Number(currentProps.amount.toFixed(2)),
         expirationminutes: "20",
         timeouturl: `${window.location.origin}/cart?error=timeout`,
         merchantlogo: `${window.location.origin}/images/principal-logo.png`,
@@ -129,14 +153,14 @@ export function NiubizPayModal({
             );
           } else {
             updateLoading(false);
-            onError(
+            propsRef.current.onError(
               "El formulario de pago fue cerrado sin completar la transacción.",
             );
           }
         },
         cancel: () => {
           updateLoading(false);
-          onError(
+          propsRef.current.onError(
             "El formulario de pago fue cerrado sin completar la transacción.",
           );
         },
@@ -146,8 +170,10 @@ export function NiubizPayModal({
     } catch (err: unknown) {
       updateLoading(false);
       const msg =
-        err instanceof Error ? err.message : "Error al conectarse con Niubiz.";
-      onError(msg);
+        err instanceof Error
+          ? err.message
+          : "Error al conectarse con la pasarela de pagos.";
+      propsRef.current.onError(msg);
     }
   };
 
@@ -157,17 +183,18 @@ export function NiubizPayModal({
     purchaseNumber: string,
   ) => {
     try {
-      updateLoading(true, "Verificando tarjeta y registrando tu pedido...");
+      updateLoading(true, "Procesando pago seguro y registrando tu pedido...");
+      const activeProps = propsRef.current;
       const res = await fetch("/api/payments/niubiz/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transactionToken,
           purchaseNumber,
-          amount,
-          cartItems,
-          shipping: shippingForm,
-          invoiceDetails,
+          amount: activeProps.amount,
+          cartItems: activeProps.cartItems,
+          shipping: activeProps.shippingForm,
+          invoiceDetails: activeProps.invoiceDetails,
         }),
       });
 
@@ -193,9 +220,9 @@ export function NiubizPayModal({
         true,
         "¡Pago Aprobado! Redireccionando al comprobante de tu compra...",
       );
-      onSuccess({
+      activeProps.onSuccess({
         orderCode: data.orderCode || data.sessionCode,
-        amount: data.amount ?? amount,
+        amount: data.amount ?? activeProps.amount,
         currency: data.currency || "PEN",
         cardBrand: data.cardBrand ?? null,
         cardLast4: data.cardLast4 ?? null,
@@ -205,36 +232,12 @@ export function NiubizPayModal({
       updateLoading(false);
       const msg =
         err instanceof Error ? err.message : "Error al confirmar el pago.";
-      onError(msg);
+      propsRef.current.onError(msg);
     }
   };
 
   return (
     <div className="w-full space-y-3">
-      {/* Overlay Bloqueante de Carga en Pantalla Completa */}
-      {loadingSession && (
-        <div className="fixed inset-0 z-[999999] bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 text-white text-center animate-fade-in select-none">
-          <div className="bg-[#112237] border border-slate-700/80 p-8 rounded-3xl shadow-2xl max-w-md w-full flex flex-col items-center gap-5">
-            <div className="relative flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full border-4 border-[#f25c05]/20 border-t-[#f25c05] animate-spin" />
-              <ShieldCheck className="w-8 h-8 text-[#f25c05] absolute" />
-            </div>
-            <div>
-              <h3 className="text-lg font-extrabold text-white mb-1.5">
-                Procesando Pago Seguro
-              </h3>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                {loadingMsg}
-              </p>
-            </div>
-            <div className="w-full bg-slate-800/80 py-2.5 px-4 rounded-xl border border-slate-700 text-[11px] text-emerald-400 font-medium flex items-center justify-center gap-2">
-              <Lock className="w-3.5 h-3.5 shrink-0" />
-              <span>Protegido con encriptación PCI-DSS 256-bit</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <Button
         onClick={handleInitiatePayment}
         disabled={loadingSession}
@@ -243,12 +246,12 @@ export function NiubizPayModal({
         {loadingSession ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Conectando con Niubiz...</span>
+            <span>{loadingMsg}</span>
           </>
         ) : (
           <>
             <CreditCard className="w-5 h-5" />
-            <span>Pagar S/ {amount.toFixed(2)} con Tarjeta (Niubiz)</span>
+            <span>Pagar S/ {amount.toFixed(2)} con Tarjeta</span>
           </>
         )}
       </Button>

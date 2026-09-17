@@ -60,7 +60,6 @@ import {
   SellerOrderShipment,
 } from "@/app/api/seller/orders/route";
 
-
 function formatDate(isoString: string | null | undefined) {
   if (!isoString) return "No asignada";
   try {
@@ -816,7 +815,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                 </div>
 
                 {/* Desglose de Devolución / Reembolso si existe */}
-                {Boolean(order.refundedSubtotal && order.refundedSubtotal > 0) && (
+                {Boolean(
+                  order.refundedSubtotal && order.refundedSubtotal > 0,
+                ) && (
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-red-50/50 -mx-2 px-2 py-1.5 rounded-xl border border-red-100">
                     <span className="text-red-800 font-bold flex items-center gap-1.5">
                       <RotateCcw className="w-3.5 h-3.5 text-red-600" />
@@ -828,7 +829,11 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                   </div>
                 )}
 
-                {Boolean(order.refundedSubtotal && order.refundedSubtotal > 0 && order.subtotal > 0) && (
+                {Boolean(
+                  order.refundedSubtotal &&
+                  order.refundedSubtotal > 0 &&
+                  order.subtotal > 0,
+                ) && (
                   <div className="flex justify-between border-b border-slate-100 pb-2 text-[#334155]">
                     <span className="font-semibold text-slate-700">
                       Venta Neta Efectiva:
@@ -857,7 +862,10 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                 </div>
 
                 {/* Totalizador Neto */}
-                {Boolean(order.payoutStatus === "refunded" || (order.subtotal <= 0 && order.refundedSubtotal > 0)) ? (
+                {Boolean(
+                  order.payoutStatus === "refunded" ||
+                  (order.subtotal <= 0 && order.refundedSubtotal > 0),
+                ) ? (
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wider block">
@@ -871,10 +879,13 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                       S/ 0.00
                     </span>
                     <p className="text-[10px] text-slate-500 font-medium pt-0.5">
-                      Venta anulada por devolución de producto. No existe saldo pendiente de transferencia.
+                      Venta anulada por devolución de producto. No existe saldo
+                      pendiente de transferencia.
                     </p>
                   </div>
-                ) : Boolean(order.refundedSubtotal && order.refundedSubtotal > 0) ? (
+                ) : Boolean(
+                    order.refundedSubtotal && order.refundedSubtotal > 0,
+                  ) ? (
                   <div className="bg-emerald-50/70 rounded-2xl p-4 border border-emerald-200/90 space-y-1">
                     <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
                       Monto Neto Ajustado a Transferir
@@ -883,7 +894,9 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                       S/ {formatMoney(order.netEarnings)}
                     </span>
                     <p className="text-[10px] text-emerald-900/80 font-medium pt-1">
-                      ✓ Monto recalculado tras descuento de S/ {formatMoney(order.refundedSubtotal)} por producto devuelto.
+                      ✓ Monto recalculado tras descuento de S/{" "}
+                      {formatMoney(order.refundedSubtotal)} por producto
+                      devuelto.
                     </p>
                   </div>
                 ) : (
@@ -895,8 +908,8 @@ function SellerOrderDetailContent({ packageId }: { packageId: string }) {
                       S/ {formatMoney(order.netEarnings)}
                     </span>
                     <p className="text-[10px] text-emerald-900/80 font-medium pt-1">
-                      ✓ Disponible para transferencia al cumplirse los 7 días del
-                      seguro de protección del comprador.
+                      ✓ Disponible para transferencia al cumplirse los 7 días
+                      del seguro de protección del comprador.
                     </p>
                   </div>
                 )}

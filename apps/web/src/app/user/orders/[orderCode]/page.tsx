@@ -39,7 +39,6 @@ import { formatTrackingId } from "@/lib/utils/tracking";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtimeOrders, notifyOrderSync } from "@/hooks/useRealtimeOrders";
 
-
 interface PackageItem {
   id: string;
   productId: string;
@@ -175,7 +174,6 @@ export default function OrderDetailPage({ params }: PageProps) {
     useState<PackageDetailData | null>(null);
 
   useEffect(() => {
-
     if (!authLoading && !user) {
       router.push(`/auth/login?redirect=/user/orders/${orderCode}`);
     }
@@ -345,7 +343,6 @@ export default function OrderDetailPage({ params }: PageProps) {
   );
 
   const destinationAddress =
-
     session.destinationAddress ||
     session.shippingAddress ||
     "Dirección acordada";
@@ -1017,7 +1014,9 @@ export default function OrderDetailPage({ params }: PageProps) {
                   <Receipt className="w-4 h-4 text-[#f25c05]" />
                   <span>Resumen Global de Pago</span>
                 </h2>
-                {Boolean(session.refundedAmount && session.refundedAmount > 0) && (
+                {Boolean(
+                  session.refundedAmount && session.refundedAmount > 0,
+                ) && (
                   <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                     {session.refundedAmount! >= session.totalAmount
                       ? "Reembolso Total"
@@ -1048,7 +1047,9 @@ export default function OrderDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Desglose de Reembolso Liquidado / Extornado */}
-                {Boolean(session.refundedAmount && session.refundedAmount > 0) && (
+                {Boolean(
+                  session.refundedAmount && session.refundedAmount > 0,
+                ) && (
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-emerald-50/60 -mx-2 px-2 py-1.5 rounded-xl border border-emerald-100">
                     <span className="text-emerald-800 font-bold flex items-center gap-1.5">
                       <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
@@ -1061,7 +1062,10 @@ export default function OrderDetailPage({ params }: PageProps) {
                 )}
 
                 {/* Desglose de Reembolso en Trámite si existe */}
-                {Boolean(session.pendingRefundAmount && session.pendingRefundAmount > 0) && (
+                {Boolean(
+                  session.pendingRefundAmount &&
+                  session.pendingRefundAmount > 0,
+                ) && (
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2 bg-amber-50/60 -mx-2 px-2 py-1.5 rounded-xl border border-amber-100">
                     <span className="text-amber-900 font-medium flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-amber-600" />
@@ -1112,7 +1116,9 @@ export default function OrderDetailPage({ params }: PageProps) {
                 )}
 
                 {/* Totalizador Final */}
-                {Boolean(session.refundedAmount && session.refundedAmount > 0) ? (
+                {Boolean(
+                  session.refundedAmount && session.refundedAmount > 0,
+                ) ? (
                   <div className="bg-[#f8fafc] rounded-2xl p-4 border border-[#e2e8f0] flex flex-col justify-center items-end text-right mt-3 space-y-1">
                     <div className="flex items-center justify-between w-full text-xs text-slate-500 pb-1.5 border-b border-slate-200/80">
                       <span>Monto Pagado Inicial:</span>
@@ -1124,11 +1130,19 @@ export default function OrderDetailPage({ params }: PageProps) {
                       Monto Total Final Cobrado:
                     </span>
                     <span className="text-3xl font-black text-[#112237]">
-                      S/ {(session.netPaidAmount ?? Math.max(0, session.totalAmount - session.refundedAmount!)).toFixed(2)}
+                      S/{" "}
+                      {(
+                        session.netPaidAmount ??
+                        Math.max(
+                          0,
+                          session.totalAmount - session.refundedAmount!,
+                        )
+                      ).toFixed(2)}
                     </span>
                     <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mt-2 inline-flex items-center gap-1.5">
                       <CheckCircle className="w-3.5 h-3.5" />
-                      Reembolso de S/ {session.refundedAmount!.toFixed(2)} liquidado a tarjeta
+                      Reembolso de S/ {session.refundedAmount!.toFixed(2)}{" "}
+                      liquidado a tarjeta
                     </span>
                   </div>
                 ) : (

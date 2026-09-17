@@ -291,9 +291,7 @@ export function aggregateOrderFinancials(
 }
 
 /** Formatea montos con 2 decimales de forma segura para tipos number/string/null/undefined */
-export function formatMoney(
-  value: number | string | null | undefined,
-): string {
+export function formatMoney(value: number | string | null | undefined): string {
   const num = typeof value === "number" ? value : Number(value || 0);
   return (isNaN(num) ? 0 : num).toFixed(2);
 }
@@ -350,4 +348,3 @@ export function computeRecalculatedPackageFinancials(
     payoutStatus,
   };
 }
-

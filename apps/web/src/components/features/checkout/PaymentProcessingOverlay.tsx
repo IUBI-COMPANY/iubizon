@@ -59,7 +59,9 @@ export function PaymentProcessingOverlay({
         <div className="w-full bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3.5 flex items-center gap-2.5 text-left">
           <Lock className="w-4 h-4 text-amber-700 shrink-0" />
           <p className="text-[11px] text-amber-900 font-medium leading-tight">
-            Por favor, <strong className="font-bold">no cierres ni recargues</strong> esta ventana mientras se confirma la operación.
+            Por favor,{" "}
+            <strong className="font-bold">no cierres ni recargues</strong> esta
+            ventana mientras se confirma la operación.
           </p>
         </div>
 

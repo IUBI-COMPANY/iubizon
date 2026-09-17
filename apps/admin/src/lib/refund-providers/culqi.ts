@@ -46,7 +46,8 @@ export class CulqiRefundProvider implements RefundProvider {
         rawResponse: data,
       };
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Error al conectar con Culqi";
+      const msg =
+        err instanceof Error ? err.message : "Error al conectar con Culqi";
       return {
         success: false,
         cancellationCode: null,

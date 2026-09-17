@@ -280,9 +280,9 @@ export async function getSellerOrders(companyId: string): Promise<{
     const rawRate =
       pkgOriginalSubtotal > 0
         ? Number(
-            (
-              Number(pkg.commission_total || 0) / pkgOriginalSubtotal
-            ).toFixed(4),
+            (Number(pkg.commission_total || 0) / pkgOriginalSubtotal).toFixed(
+              4,
+            ),
           )
         : commissionConfig.base_rate;
 
@@ -308,7 +308,6 @@ export async function getSellerOrders(companyId: string): Promise<{
           commissionConfig,
           pkg.status,
         );
-
 
     const allOrderPkgs: Array<{ id: string }> = order.packages || [];
     const globalIndex = allOrderPkgs.findIndex((p) => p.id === pkg.id);
@@ -871,12 +870,7 @@ export async function markSellerOrdersShipped(
       where: {
         order_id: pkg.order_id,
         status: {
-          notIn: [
-            "shipped",
-            "received_in_warehouse",
-            "delivered",
-            "completed",
-          ],
+          notIn: ["shipped", "received_in_warehouse", "delivered", "completed"],
         },
       },
     });

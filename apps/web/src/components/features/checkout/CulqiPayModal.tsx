@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type {
@@ -19,6 +19,10 @@ declare global {
       token?: {
         id: string;
         email: string;
+        [key: string]: unknown;
+      };
+      order?: {
+        id: string;
         [key: string]: unknown;
       };
       error?: {
@@ -51,9 +55,7 @@ function loadCulqiScript(): Promise<void> {
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () =>
-      reject(
-        new Error("No se pudo cargar el módulo de pago seguro de Culqi."),
-      );
+      reject(new Error("No se pudo cargar el módulo de pago seguro de Culqi."));
     document.body.appendChild(script);
   });
 }
@@ -70,47 +72,78 @@ export function CulqiPayModal({
 }: PaymentWidgetProps) {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(
-    "Conectando con la pasarela de pagos Culqi...",
+    "Conectando de forma segura con la pasarela de pagos...",
   );
+
+  // Mantener referencias actualizadas de las props para evitar recrear callbacks o desincronizar closures
+  const propsRef = useRef({
+    amount,
+    cartItems,
+    shippingForm,
+    invoiceDetails,
+    onValidate,
+    onSuccess,
+    onError,
+    onLoadingChange,
+  });
+
+  useEffect(() => {
+    propsRef.current = {
+      amount,
+      cartItems,
+      shippingForm,
+      invoiceDetails,
+      onValidate,
+      onSuccess,
+      onError,
+      onLoadingChange,
+    };
+  });
 
   const updateLoading = (isLoading: boolean, msg?: string) => {
     setLoading(isLoading);
     if (msg) setLoadingMsg(msg);
-    onLoadingChange?.(isLoading, msg);
+    propsRef.current.onLoadingChange?.(isLoading, msg);
   };
 
+  // Limpieza ÚNICAMENTE al desmontar el componente (para que los re-renders no borren window.culqi)
   useEffect(() => {
     return () => {
       if (typeof window !== "undefined" && window.culqi) {
         delete window.culqi;
       }
-      onLoadingChange?.(false);
     };
-  }, [onLoadingChange]);
+  }, []);
 
   const handleInitiatePayment = async () => {
-    if (onValidate && !onValidate()) {
+    if (propsRef.current.onValidate && !propsRef.current.onValidate()) {
       return;
     }
 
     try {
-      updateLoading(true, "Conectando con la pasarela de pagos Culqi...");
+      updateLoading(
+        true,
+        "Conectando de forma segura con la pasarela de pagos...",
+      );
 
       // 1. Iniciar sesión en el backend de iubizon
+      const currentProps = propsRef.current;
       const res = await fetch("/api/payments/culqi/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount,
-          cartItems,
-          shipping: shippingForm,
-          invoiceDetails,
+          amount: currentProps.amount,
+          cartItems: currentProps.cartItems,
+          shipping: currentProps.shippingForm,
+          invoiceDetails: currentProps.invoiceDetails,
         }),
       });
 
       const data = await res.json();
       if (!res.ok || data.error) {
-        throw new Error(data.error || "No se pudo iniciar el proceso de pago con Culqi.");
+        throw new Error(
+          data.error || "No se pudo iniciar el proceso de pago con Culqi.",
+        );
       }
 
       const { purchaseNumber, sessionKey } = data;
@@ -118,19 +151,17 @@ export function CulqiPayModal({
         sessionKey || process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY || "";
 
       if (!publicKey) {
-        throw new Error(
-          "La llave pública de Culqi no está configurada.",
-        );
+        throw new Error("La llave pública de Culqi no está configurada.");
       }
 
-      // 2. Cargar SDK de Culqi
+      // 2. Cargar SDK de Culqi v4
       await loadCulqiScript();
 
       if (!window.Culqi) {
         throw new Error("El SDK de Culqi no se inicializó correctamente.");
       }
 
-      const amountInCents = Math.round(Number(amount) * 100);
+      const amountInCents = Math.round(Number(currentProps.amount) * 100);
 
       window.Culqi.publicKey = publicKey;
       window.Culqi.settings({
@@ -166,23 +197,36 @@ export function CulqiPayModal({
 
       // 3. Callback global que Culqi JS invoca al completar tokenización o cerrar
       window.culqi = async () => {
+        console.log("[Culqi] window.culqi ejecutado:", {
+          hasToken: Boolean(window.Culqi?.token),
+          tokenId: window.Culqi?.token?.id,
+          hasError: Boolean(window.Culqi?.error),
+          error: window.Culqi?.error,
+        });
+
         if (window.Culqi?.token) {
           const tokenId = window.Culqi.token.id;
-          window.Culqi.close();
+          try {
+            window.Culqi.close();
+          } catch {}
 
-          updateLoading(true, "Procesando pago seguro y registrando tu orden...");
+          updateLoading(
+            true,
+            "Procesando pago seguro y registrando tu orden...",
+          );
 
           try {
+            const activeProps = propsRef.current;
             const confirmRes = await fetch("/api/payments/culqi/confirm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 transactionToken: tokenId,
                 purchaseNumber,
-                amount,
-                cartItems,
-                shipping: shippingForm,
-                invoiceDetails,
+                amount: activeProps.amount,
+                cartItems: activeProps.cartItems,
+                shipping: activeProps.shippingForm,
+                invoiceDetails: activeProps.invoiceDetails,
               }),
             });
 
@@ -198,7 +242,7 @@ export function CulqiPayModal({
 
             const successPayload: PaymentSuccessData = {
               orderCode: confirmData.orderCode || purchaseNumber,
-              amount: Number(confirmData.amount || amount),
+              amount: Number(confirmData.amount || activeProps.amount),
               currency: confirmData.currency || "PEN",
               cardBrand: confirmData.cardBrand || null,
               cardLast4: confirmData.cardLast4 || null,
@@ -206,22 +250,26 @@ export function CulqiPayModal({
                 confirmData.transactionDate || new Date().toISOString(),
             };
 
-            onSuccess(successPayload);
+            activeProps.onSuccess(successPayload);
           } catch (err: unknown) {
             const msg =
               err instanceof Error ? err.message : "Error al procesar el pago.";
+            console.error("[Culqi] Error en confirmación:", err);
             updateLoading(false);
-            onError(msg);
+            propsRef.current.onError(msg);
           }
         } else if (window.Culqi?.error) {
           const err = window.Culqi.error;
+          console.warn("[Culqi] Error devuelto por el SDK:", err);
           const userMsg =
             err.user_message ||
             err.merchant_message ||
             "Error en la validación de la tarjeta.";
           updateLoading(false);
-          onError(userMsg);
+          propsRef.current.onError(userMsg);
         } else {
+          // El modal fue cerrado por el usuario
+          console.log("[Culqi] Modal cerrado sin token ni error.");
           updateLoading(false);
         }
       };
@@ -231,8 +279,11 @@ export function CulqiPayModal({
     } catch (err: unknown) {
       updateLoading(false);
       const msg =
-        err instanceof Error ? err.message : "Error inesperado al iniciar Culqi.";
-      onError(msg);
+        err instanceof Error
+          ? err.message
+          : "Error inesperado al iniciar Culqi.";
+      console.error("[Culqi] Error al iniciar:", err);
+      propsRef.current.onError(msg);
     }
   };
 

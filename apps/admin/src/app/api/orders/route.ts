@@ -99,10 +99,20 @@ export async function GET(req: Request) {
       const pkgNetEarnings = Number(pkg.net_earnings || 0);
       const payout = pkg.payouts?.[0];
 
-      const effectiveSubtotal = payout ? Number(payout.subtotal || 0) : pkgSubtotal;
-      const effectiveCommission = payout ? Number(payout.commission || 0) : pkgCommission;
-      const effectiveEarnings = payout ? Number(payout.net_amount || 0) : pkgNetEarnings;
-      const payoutStatus = payout ? payout.status : (pkg.status === "delivered" || pkg.status === "completed" ? "in_hold" : "pending");
+      const effectiveSubtotal = payout
+        ? Number(payout.subtotal || 0)
+        : pkgSubtotal;
+      const effectiveCommission = payout
+        ? Number(payout.commission || 0)
+        : pkgCommission;
+      const effectiveEarnings = payout
+        ? Number(payout.net_amount || 0)
+        : pkgNetEarnings;
+      const payoutStatus = payout
+        ? payout.status
+        : pkg.status === "delivered" || pkg.status === "completed"
+          ? "in_hold"
+          : "pending";
 
       packagesSubtotal += effectiveSubtotal;
       platformCommissionTotal += effectiveCommission;
@@ -140,7 +150,6 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({ orders, total });
-
 }
 
 export async function PATCH(req: Request) {

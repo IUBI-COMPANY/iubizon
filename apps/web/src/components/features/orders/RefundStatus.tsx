@@ -17,10 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { formatShortDateTime } from "@/lib/utils";
 import { BuyerRefundTimeline } from "./BuyerRefundTimeline";
-import {
-  RefundDetailModal,
-  RefundDetailData,
-} from "./RefundDetailModal";
+import { RefundDetailModal, RefundDetailData } from "./RefundDetailModal";
 import { ReturnShipmentModal } from "./ReturnShipmentModal";
 
 interface RefundItemData {
@@ -283,7 +280,8 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
                           : `Reembolso (${idx + 1} de ${requests.length})`}
                       </span>
                       <span className="text-xs font-semibold text-slate-500">
-                        · {totalUnits} {totalUnits === 1 ? "unidad" : "unidades"}
+                        · {totalUnits}{" "}
+                        {totalUnits === 1 ? "unidad" : "unidades"}
                       </span>
                     </div>
 

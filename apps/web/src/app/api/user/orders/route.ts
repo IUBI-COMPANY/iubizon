@@ -305,7 +305,6 @@ export async function GET(req: Request) {
       };
     });
 
-
     return NextResponse.json({
       sessions,
       session: sessions[0] || null,

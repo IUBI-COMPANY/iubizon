@@ -141,7 +141,8 @@ export async function GET(req: Request) {
       ...p,
       orderCode: order?.order_code || null,
       orderId: order?.id || null,
-      originalSubtotal: originalSubtotal > 0 ? originalSubtotal : Number(p.subtotal),
+      originalSubtotal:
+        originalSubtotal > 0 ? originalSubtotal : Number(p.subtotal),
       refundedAmount,
       hasRefundDeduction: refundedAmount > 0,
       refundDetails: relevantRefunds.map((r) => ({
@@ -154,7 +155,6 @@ export async function GET(req: Request) {
       })),
     };
   });
-
 
   const adminIds = [
     ...new Set(payouts.map((p) => p.updated_by).filter(Boolean)),

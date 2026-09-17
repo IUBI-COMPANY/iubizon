@@ -22,8 +22,7 @@ export const culqiProvider: PaymentProvider = {
     return {
       sessionKey: publicKey,
       merchantId: publicKey,
-      environment:
-        publicKey.startsWith("pk_live_") ? "production" : "test",
+      environment: publicKey.startsWith("pk_live_") ? "production" : "test",
       raw: {
         publicKey,
         amount: params.amount,
@@ -34,8 +33,7 @@ export const culqiProvider: PaymentProvider = {
   },
 
   async confirm(params: ConfirmPaymentParams): Promise<ConfirmPaymentResult> {
-    const tokenId =
-      params.transactionToken || params.chargeToken || "";
+    const tokenId = params.transactionToken || params.chargeToken || "";
 
     if (!tokenId) {
       return {
@@ -70,8 +68,7 @@ export const culqiProvider: PaymentProvider = {
           params.customer?.address ||
           (params.context?.shipping as any)?.address,
         address_city:
-          params.customer?.city ||
-          (params.context?.shipping as any)?.district,
+          params.customer?.city || (params.context?.shipping as any)?.district,
         country_code: "PE",
       },
     });

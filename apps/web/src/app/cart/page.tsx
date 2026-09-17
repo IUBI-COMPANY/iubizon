@@ -113,10 +113,7 @@ export default function CartCheckoutPage() {
       localStorage.removeItem(FORM_STORAGE_KEY);
       localStorage.removeItem(INVOICE_STORAGE_KEY);
       localStorage.removeItem(TERMS_STORAGE_KEY);
-      toast.success(
-        `¡Pago exitoso! Orden #${orderCode}`,
-        "Pago Confirmado",
-      );
+      toast.success(`¡Pago exitoso! Orden #${orderCode}`, "Pago Confirmado");
       router.push(`/cart/result?order_code=${orderCode}`);
       return;
     }

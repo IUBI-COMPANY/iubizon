@@ -102,7 +102,8 @@ export function ReturnShippedEmail(data: ReturnShippedEmailData) {
               <Column style={{ paddingLeft: "12px", verticalAlign: "top" }}>
                 <Text style={itemTitleStyle}>{item.title}</Text>
                 <Text style={itemMetaStyle}>
-                  Cant: {item.quantity} × S/ {Number(item.price || 0).toFixed(2)} c/u
+                  Cant: {item.quantity} × S/{" "}
+                  {Number(item.price || 0).toFixed(2)} c/u
                 </Text>
               </Column>
             </Row>

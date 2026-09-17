@@ -106,7 +106,11 @@ export function RefundDetailModal({
 
   const statusConfig: Record<
     string,
-    { label: string; icon: React.ReactNode; badgeVariant: "warning" | "success" | "pro" | "danger" | "secondary" }
+    {
+      label: string;
+      icon: React.ReactNode;
+      badgeVariant: "warning" | "success" | "pro" | "danger" | "secondary";
+    }
   > = {
     pending: {
       label: "En revisión",
@@ -160,7 +164,9 @@ export function RefundDetailModal({
                     : "Reembolso Parcial"}
                 </DialogTitle>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
-                  {refund.orderCode && <span>Orden #{refund.orderCode} · </span>}
+                  {refund.orderCode && (
+                    <span>Orden #{refund.orderCode} · </span>
+                  )}
                   <span className="font-mono text-[#f25c05]">{refCode}</span>
                 </div>
               </div>
@@ -208,13 +214,17 @@ export function RefundDetailModal({
             </div>
 
             <p className="text-[11px] text-[#334155] bg-white p-2.5 rounded-xl border border-slate-200/80">
-              <strong className="text-[#112237] block mb-0.5">Motivo de la solicitud:</strong>
+              <strong className="text-[#112237] block mb-0.5">
+                Motivo de la solicitud:
+              </strong>
               &quot;{refund.reason}&quot;
             </p>
 
             {refund.adminNotes && (
               <p className="text-[11px] text-slate-600 bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/60">
-                <strong className="text-amber-900 block mb-0.5">Notas de Soporte iubizon:</strong>
+                <strong className="text-amber-900 block mb-0.5">
+                  Notas de Soporte iubizon:
+                </strong>
                 {refund.adminNotes}
               </p>
             )}
@@ -265,7 +275,9 @@ export function RefundDetailModal({
                         Llegada Estimada:
                       </span>
                       <span className="font-extrabold text-[#112237] mt-1 block">
-                        {formatShortDateWithPeriod(refund.returnEstimatedDelivery)}
+                        {formatShortDateWithPeriod(
+                          refund.returnEstimatedDelivery,
+                        )}
                       </span>
                     </div>
                   )}
@@ -431,7 +443,8 @@ export function RefundDetailModal({
                 <span>Reembolso Liquidado Exitosamente</span>
               </div>
               <p className="text-[11px] text-emerald-700">
-                Monto devuelto: <strong>S/ {Number(refund.refundAmount).toFixed(2)}</strong>
+                Monto devuelto:{" "}
+                <strong>S/ {Number(refund.refundAmount).toFixed(2)}</strong>
                 {refund.refundMethod && (
                   <span>
                     {" "}
@@ -458,33 +471,38 @@ export function RefundDetailModal({
 
           {/* 7. Acciones Principales dentro del Modal */}
           <div className="pt-2 flex items-center justify-end gap-2">
-            {!isSeller && isBuyer && refund.status === "approved" && onOpenReturnShipment && (
-              <Button
-                size="sm"
-                className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer"
-                onClick={() => {
-                  onClose();
-                  onOpenReturnShipment(refund.id);
-                }}
-              >
-                <Truck className="w-4 h-4 mr-1.5" />
-                <span>Registrar Despacho de Devolución</span>
-              </Button>
-            )}
+            {!isSeller &&
+              isBuyer &&
+              refund.status === "approved" &&
+              onOpenReturnShipment && (
+                <Button
+                  size="sm"
+                  className="bg-[#f25c05] hover:bg-[#d94d04] text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer"
+                  onClick={() => {
+                    onClose();
+                    onOpenReturnShipment(refund.id);
+                  }}
+                >
+                  <Truck className="w-4 h-4 mr-1.5" />
+                  <span>Registrar Despacho de Devolución</span>
+                </Button>
+              )}
 
-            {isSeller && refund.status === "return_in_transit" && onConfirmReceiptPrompt && (
-              <Button
-                size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer"
-                onClick={() => {
-                  onClose();
-                  onConfirmReceiptPrompt(refund.id);
-                }}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                <span>Confirmar Recepción del Producto</span>
-              </Button>
-            )}
+            {isSeller &&
+              refund.status === "return_in_transit" &&
+              onConfirmReceiptPrompt && (
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer"
+                  onClick={() => {
+                    onClose();
+                    onConfirmReceiptPrompt(refund.id);
+                  }}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  <span>Confirmar Recepción del Producto</span>
+                </Button>
+              )}
 
             <Button
               size="sm"

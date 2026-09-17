@@ -52,7 +52,6 @@ export function BuyerRefundTimeline({
   const estDeliveryText = formatShortDate(estimatedDelivery);
   const completionDateText = formatShortDate(deliveredAt);
 
-
   return (
     <div className="py-2">
       {/* Stepper horizontal alineado al tope para simetría exacta */}
@@ -163,7 +162,9 @@ export function BuyerRefundTimeline({
           <span className="text-[10px] text-emerald-600 font-medium min-h-[15px]">
             {isRefunded
               ? completionDateText ||
-                (formatMoney(refundAmount) ? `S/ ${formatMoney(refundAmount)}` : "Liquidado")
+                (formatMoney(refundAmount)
+                  ? `S/ ${formatMoney(refundAmount)}`
+                  : "Liquidado")
               : isReceived
                 ? "En revisión final"
                 : "\u00A0"}

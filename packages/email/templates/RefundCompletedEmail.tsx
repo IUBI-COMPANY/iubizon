@@ -22,7 +22,8 @@ export function RefundCompletedEmail(data: RefundCompletedEmailData) {
         <Text style={subtitleStyle}>
           Hola {data.buyerName}, tu reembolso por la orden{" "}
           <strong>#{data.orderCode}</strong> ha sido procesado exitosamente. El
-          monto de <strong>S/ {Number(data.refundAmount || 0).toFixed(2)}</strong> será
+          monto de{" "}
+          <strong>S/ {Number(data.refundAmount || 0).toFixed(2)}</strong> será
           devuelto a tu tarjeta en los próximos días hábiles según las políticas
           de tu banco.
         </Text>
@@ -79,7 +80,8 @@ export function RefundCompletedEmail(data: RefundCompletedEmailData) {
               <Column style={{ paddingLeft: "12px", verticalAlign: "top" }}>
                 <Text style={itemTitleStyle}>{item.title}</Text>
                 <Text style={itemMetaStyle}>
-                  Cant: {item.quantity} × S/ {Number(item.price || 0).toFixed(2)} c/u
+                  Cant: {item.quantity} × S/{" "}
+                  {Number(item.price || 0).toFixed(2)} c/u
                 </Text>
               </Column>
             </Row>

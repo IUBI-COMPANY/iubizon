@@ -50,8 +50,7 @@ export async function createCulqiCharge(
     currency_code: input.currency || CULQI_CONFIG.currency,
     email: input.email,
     source_id: input.tokenId,
-    description:
-      input.description || `Compra iubizon #${input.purchaseNumber}`,
+    description: input.description || `Compra iubizon #${input.purchaseNumber}`,
     antifraud_details: input.antifraudDetails,
     metadata: {
       purchaseNumber: input.purchaseNumber,
