@@ -96,7 +96,7 @@ export const culqiProvider: PaymentProvider = {
 
     return {
       success: result.success,
-      cancellationCode: result.refundId || null,
+      cancellationCode: result.refundId || undefined,
       rawResponse: result.rawResponse,
     };
   },

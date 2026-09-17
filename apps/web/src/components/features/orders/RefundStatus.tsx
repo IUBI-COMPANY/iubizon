@@ -168,7 +168,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
     {
       label: string;
       icon: React.ReactNode;
-      badgeVariant: "warning" | "success" | "pro" | "danger" | "secondary";
+      badgeVariant: "warning" | "success" | "pro" | "destructive" | "secondary";
     }
   > = {
     pending: {
@@ -194,7 +194,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = ({
     rejected: {
       label: "Rechazado",
       icon: <XCircle className="w-3.5 h-3.5" />,
-      badgeVariant: "danger",
+      badgeVariant: "destructive",
     },
     refunded: {
       label: "Reembolsado",
