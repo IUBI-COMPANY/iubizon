@@ -8,7 +8,7 @@ export interface PaymentProvidersConfig {
 }
 
 const DEFAULT_CONFIG: PaymentProvidersConfig = {
-  enabled: ["niubiz"],
+  enabled: ["niubiz", "culqi"],
   providers: {},
 };
 
@@ -27,10 +27,17 @@ export async function getPaymentProvidersConfig(): Promise<PaymentProvidersConfi
       setting.value !== null
     ) {
       const val = setting.value as Record<string, any>;
+      const enabledList: string[] = Array.isArray(val.enabled)
+        ? val.enabled.map(String)
+        : DEFAULT_CONFIG.enabled;
+
+      // Asegurar que los proveedores implementados en el código estén disponibles
+      if (!enabledList.includes("culqi")) {
+        enabledList.push("culqi");
+      }
+
       return {
-        enabled: Array.isArray(val.enabled)
-          ? val.enabled.map(String)
-          : DEFAULT_CONFIG.enabled,
+        enabled: enabledList,
         providers:
           val.providers && typeof val.providers === "object"
             ? (val.providers as Record<string, Record<string, unknown>>)

@@ -19,9 +19,12 @@ Este skill define la lógica de negocio inalterable para el proceso de compra de
 
 ---
 
-## 2. Unicidad de Transacción Niubiz (`PaymentTransaction.purchase_number`)
+## 2. Unicidad de Transacción y Pasarelas Soportadas (`PaymentTransaction`)
 
-- Para la pasarela Niubiz se genera un número de compra único e inmutable (`purchase_number`).
+- **Pasarelas Homologadas:** La plataforma soporta cobros mediante proveedores estandarizados (`PaymentProvider`):
+  - **Niubiz (`provider = "niubiz"`):** Tarjetas de crédito/débito vía Niubiz Checkout.
+  - **Culqi (`provider = "culqi"`):** Tarjetas de crédito/débito y billeteras (Yape) vía Culqi Checkout v4 con 3DS.
+- Para cada intento se genera un número de compra único e inmutable (`purchase_number`).
 - El estado de la transacción en `PaymentTransaction` sigue el flujo:
   - `pending`: Formulario de pago abierto esperando tokenización/autorización.
   - `authorized`: Pago aprobado por la pasarela de tarjeta. La orden se crea con `Order.status = "pending"` (no existe transición automática a `paid`; ver skill `iubizon-business-logistics`).
@@ -31,3 +34,4 @@ Este skill define la lógica de negocio inalterable para el proceso de compra de
 
 ## 3. Atomicidad y Rollback de Órdenes
 - La creación de la orden, los paquetes, ítems, registros de envío e impuestos se ejecuta dentro de una **Transacción Prisma Atómica** (`prisma.$transaction`). Si falla cualquier inserción o la llamada a la pasarela, se realiza rollback completo.
+- El motor `completeOrderFromPayment` es 100% agnóstico de pasarela, procesando de igual forma transacciones autorizadas por Niubiz o Culqi.

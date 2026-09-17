@@ -134,7 +134,7 @@ function DashboardContent() {
         localStorage.removeItem("iubizon_checkout_step");
         localStorage.removeItem("iubizon_checkout_form");
         toast.success(
-          `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
+          `¡Pago exitoso! Orden #${orderCode}`,
           "Pago Confirmado",
         );
       }

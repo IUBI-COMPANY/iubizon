@@ -114,7 +114,7 @@ export default function CartCheckoutPage() {
       localStorage.removeItem(INVOICE_STORAGE_KEY);
       localStorage.removeItem(TERMS_STORAGE_KEY);
       toast.success(
-        `¡Pago exitoso con tarjeta Niubiz! Orden #${orderCode}`,
+        `¡Pago exitoso! Orden #${orderCode}`,
         "Pago Confirmado",
       );
       router.push(`/cart/result?order_code=${orderCode}`);
@@ -209,7 +209,7 @@ export default function CartCheckoutPage() {
   // Éxito del pago: limpiar estado y redirigir al comprobante
   const handlePaymentSuccess = (data: PaymentSuccessData) => {
     toast.success(
-      "¡Pago autorizado con éxito por Niubiz! Tu pedido está confirmado.",
+      "¡Pago exitoso! Tu pedido está confirmado.",
       "¡Gracias por tu compra!",
     );
     clearCart();

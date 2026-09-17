@@ -182,7 +182,7 @@ function ResultContent() {
   const cardLabel =
     approvedCardBrand && approvedCardLast4
       ? `${approvedCardBrand} (**** ${approvedCardLast4})`
-      : approvedCardBrand || "Tarjeta (Niubiz)";
+      : approvedCardBrand || "Tarjeta de Crédito / Débito";
 
   return (
     <main className="flex-1 container mx-auto px-4 py-12 max-w-2xl">

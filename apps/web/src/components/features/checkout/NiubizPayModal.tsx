@@ -3,17 +3,10 @@
 import { useState } from "react";
 import { CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import type { PaymentSuccessData } from "@/components/features/checkout/paymentWidgets";
-
-interface NiubizPayModalProps {
-  amount: number;
-  cartItems: any[];
-  shippingForm: any;
-  invoiceDetails: any;
-  onValidate?: () => boolean;
-  onSuccess: (data: PaymentSuccessData) => void;
-  onError: (errorMessage: string) => void;
-}
+import type {
+  PaymentWidgetProps,
+  PaymentSuccessData,
+} from "@/components/features/checkout/paymentWidgets";
 
 declare global {
   interface Window {
@@ -67,11 +60,18 @@ export function NiubizPayModal({
   onValidate,
   onSuccess,
   onError,
-}: NiubizPayModalProps) {
+  onLoadingChange,
+}: PaymentWidgetProps) {
   const [loadingSession, setLoadingSession] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(
-    "Conectando con la pasarela de pagos segura Niubiz...",
+    "Conectando con la pasarela de pagos Niubiz...",
   );
+
+  const updateLoading = (isLoading: boolean, msg?: string) => {
+    setLoadingSession(isLoading);
+    if (msg) setLoadingMsg(msg);
+    onLoadingChange?.(isLoading, msg);
+  };
 
   // 1. Iniciar sesión de pago y abrir formulario modal
   const handleInitiatePayment = async () => {
@@ -80,8 +80,7 @@ export function NiubizPayModal({
     }
 
     try {
-      setLoadingMsg("Conectando con la pasarela de pagos segura Niubiz...");
-      setLoadingSession(true);
+      updateLoading(true, "Conectando con la pasarela de pagos Niubiz...");
 
       const res = await fetch("/api/payments/niubiz/initiate", {
         method: "POST",
@@ -129,14 +128,14 @@ export function NiubizPayModal({
               data.purchaseNumber,
             );
           } else {
-            setLoadingSession(false);
+            updateLoading(false);
             onError(
               "El formulario de pago fue cerrado sin completar la transacción.",
             );
           }
         },
         cancel: () => {
-          setLoadingSession(false);
+          updateLoading(false);
           onError(
             "El formulario de pago fue cerrado sin completar la transacción.",
           );
@@ -145,7 +144,7 @@ export function NiubizPayModal({
 
       window.VisanetCheckout.open();
     } catch (err: unknown) {
-      setLoadingSession(false);
+      updateLoading(false);
       const msg =
         err instanceof Error ? err.message : "Error al conectarse con Niubiz.";
       onError(msg);
@@ -158,8 +157,7 @@ export function NiubizPayModal({
     purchaseNumber: string,
   ) => {
     try {
-      setLoadingMsg("Verificando tarjeta y registrando tu pedido...");
-      setLoadingSession(true);
+      updateLoading(true, "Verificando tarjeta y registrando tu pedido...");
       const res = await fetch("/api/payments/niubiz/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -191,7 +189,8 @@ export function NiubizPayModal({
         );
       }
 
-      setLoadingMsg(
+      updateLoading(
+        true,
         "¡Pago Aprobado! Redireccionando al comprobante de tu compra...",
       );
       onSuccess({
@@ -203,7 +202,7 @@ export function NiubizPayModal({
         transactionDate: data.transactionDate || new Date().toISOString(),
       });
     } catch (err: unknown) {
-      setLoadingSession(false);
+      updateLoading(false);
       const msg =
         err instanceof Error ? err.message : "Error al confirmar el pago.";
       onError(msg);

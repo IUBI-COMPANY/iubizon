@@ -489,7 +489,7 @@ export default function OrderDetailPage({ params }: PageProps) {
                 <CheckCircle className="w-3.5 h-3.5" />
                 {session.paymentDetails?.cardBrand
                   ? `Tarjeta ${session.paymentDetails.cardBrand}`
-                  : "Tarjeta (Niubiz)"}
+                  : "Tarjeta de Crédito / Débito"}
               </span>
             </div>
           </div>
@@ -1080,7 +1080,9 @@ export default function OrderDetailPage({ params }: PageProps) {
                   <strong className="text-[#112237]">
                     {session.paymentDetails?.cardBrand
                       ? `Tarjeta ${session.paymentDetails.cardBrand} ${session.paymentDetails.cardLast4 ? `(**** ${session.paymentDetails.cardLast4})` : ""}`
-                      : "Tarjeta (Niubiz)"}
+                      : session.paymentDetails?.authorizationCode
+                        ? "Tarjeta de Crédito / Débito"
+                        : "Pago Electrónico"}
                   </strong>
                 </div>
 

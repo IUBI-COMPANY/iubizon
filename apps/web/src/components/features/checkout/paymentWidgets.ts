@@ -1,8 +1,9 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Wallet } from "lucide-react";
 import { NiubizPayModal } from "@/components/features/checkout/NiubizPayModal";
+import { CulqiPayModal } from "@/components/features/checkout/CulqiPayModal";
 import type { CartItem } from "@/hooks/useCart";
 import type { ShippingFormState } from "@/components/features/cart/checkout-schema";
 
@@ -29,6 +30,7 @@ export interface PaymentWidgetProps {
   onValidate: () => boolean;
   onSuccess: (data: PaymentSuccessData) => void;
   onError: (errorMessage: string) => void;
+  onLoadingChange?: (loading: boolean, message?: string) => void;
 }
 
 export interface PaymentMethodDefinition {
@@ -50,6 +52,13 @@ export const PAYMENT_METHODS: PaymentMethodDefinition[] = [
     description: "Visa, Mastercard, American Express. Pago 100% seguro.",
     icon: CreditCard,
     Widget: NiubizPayModal,
+  },
+  {
+    id: "culqi",
+    label: "Tarjeta / Billeteras (Culqi)",
+    description: "Visa, Mastercard, Diners, Amex y Yape.",
+    icon: Wallet,
+    Widget: CulqiPayModal,
   },
 ];
 

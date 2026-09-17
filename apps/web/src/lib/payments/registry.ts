@@ -1,5 +1,6 @@
 import type { PaymentProvider } from "./types";
 import { niubizProvider } from "./niubiz";
+import { culqiProvider } from "./culqi";
 
 /**
  * Registry de proveedores de pago disponibles.
@@ -9,6 +10,7 @@ import { niubizProvider } from "./niubiz";
  */
 const providers: Record<string, PaymentProvider> = {
   niubiz: niubizProvider,
+  culqi: culqiProvider,
 };
 
 export function getPaymentProvider(id: string): PaymentProvider | null {
