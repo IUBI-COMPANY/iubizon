@@ -1,12 +1,12 @@
 export const CULQI_CONFIG = {
   apiUrl: process.env.CULQI_API_URL || "https://api.culqi.com/v2",
-  publicKey: process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY || "",
+  publicKey: process.env.CULQI_PUBLIC_KEY || "",
   secretKey: process.env.CULQI_SECRET_KEY || "",
   currency: "PEN",
 };
 
 export function getCulqiPublicKey(): string {
-  return process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY || "";
+  return process.env.CULQI_PUBLIC_KEY || "";
 }
 
 export function getCulqiSecretKey(): string {

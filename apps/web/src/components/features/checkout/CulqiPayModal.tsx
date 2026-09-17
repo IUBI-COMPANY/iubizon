@@ -148,7 +148,7 @@ export function CulqiPayModal({
 
       const { purchaseNumber, sessionKey } = data;
       const publicKey =
-        sessionKey || process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY || "";
+        sessionKey || process.env.CULQI_PUBLIC_KEY || "";
 
       if (!publicKey) {
         throw new Error("La llave pública de Culqi no está configurada.");
