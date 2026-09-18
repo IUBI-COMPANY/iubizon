@@ -31,14 +31,7 @@ export function PaymentMethodsSection() {
       width: 45,
       height: 26,
       className: "h-[53px] sm:h-[53px] w-auto",
-    },
-    {
-      name: "Niubiz",
-      icon: "/svg/niubiz.svg",
-      width: 120,
-      height: 44,
-      className: "h-[77px] sm:h-[77px] w-auto",
-    },
+    }
   ];
 
   return (
